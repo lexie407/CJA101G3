@@ -1,4 +1,4 @@
-package com.toiukha.forum.model;
+package com.toiukha.forum.points.model;
 
 import java.io.Serializable;
 import java.sql.Date;
@@ -27,7 +27,6 @@ public class PointChangesVO implements Serializable{
 
 	public PointChangesVO() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Integer getChaId() {

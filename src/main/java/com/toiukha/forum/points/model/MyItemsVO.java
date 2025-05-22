@@ -1,4 +1,4 @@
-package com.toiukha.forum.model;
+package com.toiukha.forum.points.model;
 
 import java.io.Serializable;
 import java.sql.Date;
