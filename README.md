@@ -26,14 +26,14 @@
     解決衝突後重新 push
 
 ## 其他注意事項
-# Java package 命名建議
+#Java package 命名建議
 
 - 使用 `com.toiukha.<功能>`，例如：
     - `com.toiukha.groupactivity`
     - `com.toiukha.member`
     - `com.toiukha.itinerary`
 
-# 檔案與資料夾結構建議
+#檔案與資料夾結構建議
 
 ```
 src
@@ -59,7 +59,7 @@ src
 
 ```
 
-# 資料庫連線設定說明
+#資料庫連線設定說明
 
 請每位組員於 `src/main/resources` 中建立 `application-local.properties`，設定以下個人連線資訊：
 
