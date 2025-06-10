@@ -40,22 +40,29 @@ src
 └── main
     ├── java
     │   └── com
-    │       └── toiukha  ← 自己建立資料夾，放自己的模組檔案
-    │           ├── groupactivity
+    │       └── toiukha  
+    │           ├── groupactivity      ← 自己建立資料夾，放自己的模組檔案
     │           │   ├── controller
     │           │   ├── service
     │           │   ├── model
     │           │   └── dao
     │           ├── member
     │           └── itinerary
-	  └── resources
-        ├── templates    ← 自己建立資料夾，放 Thymeleaf 的 HTML 檔案
-        │   ├── groupactivity
-        │   │   └── testPage.html
-        │   └── member
-        └── application.properties       ← 資料庫設置，上線時統一，先不要動
-        ├── application-local.example    ← 範本檔，供大家複製修改
-        └── application-local.properties ← 設定自己的連線池&帳密(不會push)
+    └── resources
+        ├── static                  ← 放全部的css, js, images...(注意命名與分類)
+        ├── templates               ← 放 Thymeleaf 的 HTML 檔案 (依照前後台>自己建立資料夾)
+        │   ├── back-end
+        │   │   ├── groupactivity
+        │   │   ├── member
+        │   │   └── itinerary
+        │   └── front-end
+        │       ├── groupactivity
+        │       ├── member
+        │       └── itinerary
+        ├── application.properties           ← 資料庫設置，上線時統一合併，先不要動
+        ├── application-local.example        ← 範本檔，供大家複製修改(不要直接改)
+        └── application-local.properties     ← 自己新增，設定自己的連線池&帳密(不會push)
+
 
 ```
 
