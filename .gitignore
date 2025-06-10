@@ -1,10 +1,13 @@
-HELP.md
-target/
+# Maven & Build
+/target/
+/build/
+/bin/
+/.mvn/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# STS (Spring Tool Suite)
 .apt_generated
 .classpath
 .factorypath
@@ -13,22 +16,32 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
+# IntelliJ IDEA
 .idea
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
+/build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
+# VS Code
 .vscode/
+
+# 系統與開發工具
+.DS_Store
+Thumbs.db
+HELP.md
+
+# 敏感設定檔（不應上傳）
+src/main/resources/application.properties
+src/main/resources/application.yml
 src/main/resources/application-local.properties
+src/main/resources/hibernate.cfg.xml
