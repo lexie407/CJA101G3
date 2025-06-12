@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<!-- 					放自己需要的內容 -->
+				</ul>
+			</header>
+			<main class="content-area-main">
+
+				<div class="notification-detail-container">
+					<div class="botton-container">
+						<button class="back-to-list-btn material-button"
+							th:data-backUri="@{/notification/front/membersNotification}">
+							<span class="material-icons">arrow_back</span> 返回通知列表
+						</button>
+					</div>
+					<div class="notification-detail-card">
+						<div class="button_obj">
+							<button class="delete-btn material-button"
+								th:data-action="@{/notification/removeNotibyMember}"
+								th:data-notiId="${notificationVO.notiId}">
+								<span class="material-icons">delete</span> 刪除此通知
+							</button>
+						</div>
+						<h2 id="detail-notification-title"
+							class="notification-detail-title"
+							th:text="${notificationVO.notiTitle}"></h2>
+						<p id="detail-notification-date" class="notification-detail-date">
+							<span
+								th:text="${notificationVO.notiSendAt}"></span>
+						</p>
+						<div id="detail-notification-message"
+							class="notification-detail-message"
+							th:text="${notificationVO.notiCont}"></div>
+					</div>
+				</div>
+
+			</main>
+		</div>
+	</div>
+	
+	<script src="../js/memberNotificationDetail.js"></script>
+
+</body>
+</html>
