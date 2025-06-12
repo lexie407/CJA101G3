@@ -79,6 +79,7 @@ spring.datasource.password=你的密碼
 
 📌 此檔案不應被 commit，已在 `.gitignore` 中排除，保障安全。 📌 範例檔 `application-local.example` 由組長提供，clone 時可直接複製改名為 `application-local.properties`
 
+
 #thymeleaf template操作說明  
 1/ src > template > thymeleaf_template.html 複製到各自的front 或 back使用  
 2/ thymeleaf_template.html中 line17 line22請放入自己的內容  
@@ -91,4 +92,3 @@ spring.datasource.password=你的密碼
     討論區: forum  
     會員中心: account  
     成為廠商: bePartner  
-

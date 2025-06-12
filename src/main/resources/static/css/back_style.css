@@ -1,0 +1,967 @@
+/* 基本重設與 Material Design 基礎 */
+body {
+    margin: 0;
+    font-family: 'Roboto', 'Noto Sans TC', sans-serif; /* 考慮繁體中文 */
+    color: var(--md-sys-color-on-background); /* 使用 Material Design 變數 */
+    overflow-x: hidden;    /* 防止水平滾動條 */
+}
+
+/* 將 Material Design 配色變數加入 .light class */
+/* 將 Material Design 配色變數加入 .light class */
+.light {
+    /* Primary colors based on a desaturated #29abc2 */
+    --md-sys-color-primary: rgb(75, 160, 180); /* 調整為飽和度較低的主色 */
+    --md-sys-color-on-primary: rgb(255 255 255);
+    --md-sys-color-primary-container: rgb(200, 230, 238); /* 飽和度較低的主色容器 */
+    --md-sys-color-on-primary-container: rgb(20, 50, 60);
+
+    /* Secondary colors based on a desaturated #ffb347 */
+    --md-sys-color-secondary: rgb(230, 165, 80); /* 調整為飽和度較低的次色 */
+    --md-sys-color-on-secondary: rgb(255 255 255);
+    --md-sys-color-secondary-container: rgb(250, 230, 200); /* 飽和度較低的次色容器 */
+    --md-sys-color-on-secondary-container: rgb(60, 35, 0);
+
+    /* Tertiary colors (保持不變或根據需求調整) */
+    --md-sys-color-tertiary: rgb(129 85 18);
+    --md-sys-color-on-tertiary: rgb(255 255 255);
+    --md-sys-color-tertiary-container: rgb(255 221 182);
+    --md-sys-color-on-tertiary-container: rgb(100 63 0);
+    --md-sys-color-tertiary-fixed: rgb(255 221 182);
+    --md-sys-color-on-tertiary-fixed: rgb(42 24 0);
+    --md-sys-color-tertiary-fixed-dim: rgb(246 188 112);
+    --md-sys-color-on-tertiary-fixed-variant: rgb(100 63 0);
+
+    /* Error colors (通常保持不變) */
+    --md-sys-color-error: rgb(186 26 26);
+    --md-sys-color-on-error: rgb(255 255 255);
+    --md-sys-color-error-container: rgb(255 218 214);
+    --md-sys-color-on-error-container: rgb(147 0 10);
+
+    /* Background and surface colors (調整為白色，並確保漸變層次感) */
+    --md-sys-color-background: rgb(255 255 255);
+    --md-sys-color-on-background: rgb(24 28 31);
+    --md-sys-color-surface: rgb(255 255 255);
+    --md-sys-color-on-surface: rgb(24 28 31);
+    --md-sys-color-surface-variant: rgb(245 245 245); /* 稍微深一點的淺灰 */
+    --md-sys-color-on-surface-variant: rgb(65 72 77);
+    --md-sys-color-outline: rgb(200 200 200); /* 邊框顏色更淺 */
+    --md-sys-color-outline-variant: rgb(230 230 230); /* 邊框變體更淺 */
+    --md-sys-color-shadow: rgba(0, 0, 0, 0.08); /* 更輕的陰影 */
+    --md-sys-color-scrim: rgb(0 0 0);
+    --md-sys-color-inverse-surface: rgb(44 49 52);
+    --md-sys-color-inverse-on-surface: rgb(237 241 245);
+
+    /* Surface container colors (調整為白色或接近白色，以提供微妙的層次感) */
+    --md-sys-color-surface-dim: rgb(248 248 248);
+    --md-sys-color-surface-bright: rgb(255 255 255);
+    --md-sys-color-surface-container-lowest: rgb(255 255 255);
+    --md-sys-color-surface-container-low: rgb(252 252 252);
+    --md-sys-color-surface-container: rgb(249 249 249);
+    --md-sys-color-surface-container-high: rgb(245 245 245);
+    --md-sys-color-surface-container-highest: rgb(240 240 240);
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--md-sys-color-background);
+}
+
+/* 左側導覽列 (主要導覽列) */
+.left-nav {
+    width: 200px;
+    background-color: var(--md-sys-color-surface-container);
+    /* 修改陰影為細線或20%灰 */
+    box-shadow: 1px 0 0 0 rgba(0, 0, 0, 0.2);
+    /* 20% 灰的細線 */
+    /* box-shadow: none; border-right: 1px solid var(--md-sys-color-outline-variant); */
+    /* 僅保留細線 */
+    padding: 7px;
+    /* 增加 padding */
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: hidden;
+    z-index: 1000;
+}
+
+.left-nav .logo-area {
+    display: flex;
+    align-items: center; /* 垂直置中 */
+    justify-content: center; /* 水平置中 */
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    height: 60px;
+}
+
+.left-nav .logo-area img {
+    height: 100%;
+    /* 調整圖片大小以適應新高度 */
+    /* margin-right: 10px; */
+    /* margin-left: ; */
+}
+
+.left-nav .logo-area .site-name,
+.site-name2 {
+    /* margin-top: 5px; */
+    font-size: 25px;
+    /* 調整字體大小 */
+    font-weight: bold;
+    color: var(--md-sys-color-primary);
+    /* margin-right: 10px; */
+}
+
+.site-name2 {
+    color: var(--md-sys-color-secondary);
+
+}
+
+/* 會員資訊區塊 */
+.member-info-area {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.member-info-area .member-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    border: 2px solid var(--md-sys-color-primary);
+}
+
+.member-info-area .member-name {
+    font-weight: bold;
+    color: var(--md-sys-color-on-surface);
+    font-size: 16px;
+}
+
+.left-nav ul {
+    list-style: none;
+    /* margin: 0; */
+    margin: 0.5rem 0 0 0;
+    /* margin-top: 5; */
+    padding: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.left-nav li {
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+    /* 導圓角 */
+    margin-left: 5px;
+    /* 調整以配合圓角 */
+    margin-right: 5px;
+    /* 調整以配合圓角 */
+}
+
+.left-nav a {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 350;
+    /* 字體細一點 */
+    transition: background-color 0.3s ease;
+    border-radius: 5px;
+    /* 導圓角 */
+}
+
+.left-nav a:hover,
+.left-nav li.active a {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-radius: 5px;
+    /* 導圓角 */
+}
+
+.left-nav .material-icons {
+    margin-right: 15px;
+    font-size: 20px;
+    max-width: 20px;
+}
+
+.left-nav .bottom-notification {
+    padding: 20px 0;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+.left-nav .bottom-notification a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 400;
+    /* 字體細一點 */
+    border-radius: 5px;
+    /* 導圓角 */
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.left-nav .bottom-notification a.has_new_noti {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    text-decoration: none;
+    font-weight: 400;
+    /* 字體細一點 */
+    border-radius: 5px;
+    /* 導圓角 */
+    margin-left: 5px;
+    margin-right: 5px;
+
+    background-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+
+}
+
+.left-nav .bottom-notification a:hover {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+/* 登出按鈕區塊 */
+.logout-area {
+    padding: 15px 20px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    text-align: center;
+    flex-shrink: 0;
+    /* 移除可能導致空白的 margin-top */
+    margin-top: 0; /* 確保沒有額外的上邊距 */
+}
+
+.logout-area .logout-btn {
+    width: 100%;
+    justify-content: center;
+    background-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+}
+
+.logout-area .logout-btn:hover {
+    background-color: var(--md-sys-color-secondary-fixed-dim);
+}
+
+/* 主要內容區域 (包含次導覽列和實際內容) */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--md-sys-color-background);
+    /* 為固定導覽列騰出空間 */
+    margin-left: 200px;
+}
+
+/* 上方次導覽列 */
+.secondary-nav {
+    background-color: var(--md-sys-color-surface);
+    box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+
+    display: flex;
+    justify-content: flex-end;
+    /* 導覽列 ul 靠右 */
+}
+
+.secondary-nav ul {
+    list-style: none;
+    /* margin: 0 0 0 325px; */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center; /* 垂直居中對齊所有 li 元素 */
+    height: 60px; /* 設定 ul 的固定高度 */
+}
+
+.secondary-nav li {
+    /* 移除所有預設的 margin */
+    margin: 0;
+    height: 100%; /* 讓 li 佔滿 ul 的高度 */
+    display: flex; /* 讓 li 內部元素也能使用 flexbox 對齊 */
+    align-items: center; /* 垂直置中 li 內部的元素 */
+}
+
+/* 讓第一個 li (通知中心) 之後的 li 之間有間距 */
+.secondary-nav li:not(:last-child) {
+    margin-right: 20px;
+}
+
+/* 關鍵：讓會員資訊區塊的 li 靠右對齊 */
+.secondary-nav li:has(.member-info-area) {
+    margin-left: 20px; /* 將此 li 推到最右邊 */
+    margin-right: 20px; /* 與登出按鈕的間距 */
+}
+
+.secondary-nav a {
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 500;
+    padding: 0 5px; /* 稍微調整 padding，以適應 100% 高度 */
+    position: relative;
+    display: flex; /* 讓 a 內部元素也能使用 flexbox 對齊 */
+    align-items: center; /* 垂直置中 a 內部的文字 */
+    height: 100%; /* 讓 a 佔滿 li 的高度 */
+    box-sizing: border-box;
+}
+
+.secondary-nav a:hover {
+    color: var(--md-sys-color-primary);
+}
+
+.secondary-nav a.active {
+    color: var(--md-sys-color-primary);
+    border-bottom: 3px solid var(--md-sys-color-primary);
+}
+
+/* 會員資訊區塊 */
+.member-info-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    /* 移除 margin-left 和 margin-right，由父層 li 控制 */
+    margin: 20px 0;/* 清除所有 margin */
+    border-radius: 24px;
+    background-color: var(--md-sys-color-surface);/* 調整背景顏色為次導覽列的背景色 */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    height: 40px;
+    box-sizing: border-box;
+    line-height: 1;
+}
+
+/* 登出按鈕區塊 */
+.logout-area {
+    padding: 0;
+    margin: 0; /* 清除所有 margin */
+    text-align: center;
+    flex-shrink: 0;
+    border-top: none;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-area .logout-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+    border-radius: 24px;
+    background-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+    height: 40px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-area .logout-btn:hover {
+    background-color: var(--md-sys-color-secondary-fixed-dim);
+}
+
+/* 實際內容區域 (通知中心) */
+.content-area-main {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.notification-center-container {
+    background-color: var(--md-sys-color-surface-container-lowest);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.notification-actions {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 15px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    padding-bottom: 15px;
+}
+
+/* 自定義 checkbox */
+.checkbox-container {
+    display: block;
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 0;
+    cursor: pointer;
+    font-size: 16px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    color: var(--md-sys-color-on-surface);
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: var(--md-sys-color-surface-variant);
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.checkbox-container:hover input~.checkmark {
+    background-color: var(--md-sys-color-outline);
+}
+
+.checkbox-container input:checked~.checkmark {
+    background-color: var(--md-sys-color-primary);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-container input:checked~.checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--md-sys-color-on-primary);
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+
+/* Material Design 按鈕 */
+.material-button {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+}
+
+.material-button:hover {
+    background-color: rgb(0 76 105);
+    box-shadow: 0 4px 8px var(--md-sys-color-shadow);
+}
+
+.material-button:active {
+    background-color: var(--md-sys-color-primary-fixed);
+    box-shadow: none;
+}
+
+.material-button .material-icons {
+    font-size: 20px;
+}
+
+/* 通知列表 */
+.notification-list {
+    padding-top: 15px;
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container-low);
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease;
+    position: relative;
+}
+
+.notification-item.unread {
+    background-color: var(--md-sys-color-primary-container);
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.notification-item:not(.unread) {
+    color: var(--md-sys-color-outline);
+}
+
+.notification-item:hover {
+    background-color: var(--md-sys-color-surface-container);
+}
+
+.notification-item .checkbox-container {
+    margin-right: 15px;
+    margin-top: 2px;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.notification-title {
+    font-weight: bold;
+    color: inherit;
+    font-size: 16px;
+}
+
+.notification-date {
+    font-size: 13px;
+    color: inherit;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: inherit;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* 未讀通知的提醒圓點 */
+.notification-item.unread::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--md-sys-color-error);
+    border-radius: 50%;
+}
+
+/* 滾動條樣式 (針對 Webkit 瀏覽器) */
+.notification-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+    background: var(--md-sys-color-surface-container);
+    border-radius: 10px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline);
+    border-radius: 10px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+    background: var(--md-sys-color-on-surface-variant);
+}
+
+/* 左側導覽列內部選單的滾動條 */
+.left-nav ul::-webkit-scrollbar {
+    width: 8px;
+}
+
+.left-nav ul::-webkit-scrollbar-track {
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: 10px;
+}
+
+.left-nav ul::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline);
+    border-radius: 10px;
+}
+
+.left-nav ul::-webkit-scrollbar-thumb:hover {
+    background: var(--md-sys-color-on-surface-variant);
+}
+
+/* 單一通知詳情頁樣式 */
+.notification-detail-container {
+    background-color: var(--md-sys-color-background);
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.notification-detail-card {
+    background-color: var(--md-sys-color-surface-container-lowest);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-top: 20px;
+    position: relative;
+}
+
+.notification-detail-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    padding-bottom: 10px;
+}
+
+.notification-detail-date {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 20px;
+}
+
+.notification-detail-message {
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface);
+    line-height: 1.6;
+}
+
+/* 返回按鈕樣式 */
+.back-to-list-btn {
+    background-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    /* 膠囊狀按鈕 */
+    box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+}
+
+.back-to-list-btn:hover {
+    background-color: var(--md-sys-color-secondary-fixed-dim);
+    box-shadow: 0 4px 8px var(--md-sys-color-shadow);
+}
+
+.back-to-list-btn:active {
+    background-color: var(--md-sys-color-secondary-fixed);
+    box-shadow: none;
+}
+
+.back-to-list-btn .material-icons {
+    font-size: 18px;
+    margin-right: 5px;
+}
+
+/* --- 管理員後台專屬樣式 (新增) --- */
+
+/* 儀表板容器 (重用 notification-center-container 的基礎樣式) */
+.admin-dashboard-container {
+    /* 這裡可以添加 admin dashboard 特有的樣式，
+       但目前我們希望它保持與通知中心相似的外觀，所以直接重用 class */
+    padding: 30px;
+    /* 稍微多一點 padding */
+}
+
+/* 儀表板小部件 (Widgets) */
+.dashboard-widgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    /* 自動適應寬度 */
+    gap: 20px;
+    /* 小部件之間的間距 */
+    margin-top: 30px;
+}
+
+.dashboard-widgets .widget {
+    background-color: var(--md-sys-color-surface-container-low);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    /* 讓內容垂直分佈 */
+}
+
+.dashboard-widgets .widget h3 {
+    margin-top: 0;
+    color: var(--md-sys-color-primary);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dashboard-widgets .widget h3 .material-icons {
+    font-size: 24px;
+    color: var(--md-sys-color-primary);
+}
+
+.dashboard-widgets .widget .large-number {
+    font-size: 48px;
+    font-weight: bold;
+    color: var(--md-sys-color-on-surface);
+    margin: 15px 0;
+}
+
+.dashboard-widgets .widget .material-button.secondary-btn {
+    background-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    width: 100%;
+    /* 讓按鈕佔滿寬度 */
+    margin-top: auto;
+    /* 將按鈕推到底部 */
+}
+
+.dashboard-widgets .widget .material-button.secondary-btn:hover {
+    background-color: var(--md-sys-color-secondary-fixed-dim);
+}
+
+
+/* 管理員表格樣式 */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: var(--md-sys-color-surface-container-low);
+    border-radius: 8px;
+    overflow: hidden;
+    /* 確保圓角生效 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.admin-table th,
+.admin-table td {
+    text-align: left;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-on-surface);
+    white-space: nowrap;
+    /* 確保文本不換行，兼容性更廣 */
+    overflow: hidden;
+    /* 隱藏溢出內容 */
+    text-overflow: ellipsis;
+    /* 顯示省略號 */
+    max-width: 200px;
+    /* (可選) 設定一個最大寬度，避免某一列過長導致佈局問題 */
+}
+
+.admin-table thead th {
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+    /* 最後一行的底部沒有邊框 */
+}
+
+.admin-table tbody tr:nth-child(even) {
+    background-color: var(--md-sys-color-surface-container-low);
+    /* 偶數行顏色 */
+}
+
+.admin-table tbody tr:hover {
+    background-color: var(--md-sys-color-surface-container);
+    /* hover 效果 */
+}
+
+/* --- 管理員通知編輯頁面樣式 (新增) --- */
+
+.admin-notification-form {
+    padding-top: 15px;
+}
+
+.admin-notification-form h2 {
+    font-size: 22px;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    padding-bottom: 10px;
+}
+
+.admin-notification-form .form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    /* 讓 label 和 input 垂直排列 */
+}
+
+.admin-notification-form .form-group label {
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.admin-notification-form .form-group input[type="text"],
+.admin-notification-form .form-group input[type="datetime-local"],
+.admin-notification-form .form-group textarea {
+    padding: 12px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 4px;
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface);
+    background-color: var(--md-sys-color-surface-container-high);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+    /* 確保 padding 不增加寬度 */
+}
+
+.admin-notification-form .form-group input[type="text"]:focus,
+.admin-notification-form .form-group input[type="datetime-local"]:focus,
+.admin-notification-form .form-group textarea:focus {
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+    outline: none;
+}
+
+.admin-notification-form .form-group input[readonly] {
+    background-color: var(--md-sys-color-surface-container);
+    /* 唯讀欄位背景顏色不同 */
+    color: var(--md-sys-color-outline);
+    cursor: not-allowed;
+}
+
+/* 讓 textarea 佔滿剩餘寬度 */
+.admin-notification-form .form-group.full-width {
+    width: 100%;
+}
+
+.admin-notification-form .form-actions {
+    display: flex;
+    justify-content: flex-start;
+    /* 讓確定修改按鈕靠左 */
+    margin-top: 30px;
+}
+
+/* 調整通知列表項目的佈局，讓編輯按鈕在右側 */
+.notification-item {
+    display: flex;
+    align-items: center;
+    /* 垂直居中對齊 */
+    padding: 15px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container-low);
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease;
+    position: relative;
+    cursor: default;
+    /* 這裡的通知列表項目不直接點擊進入編輯頁面，而是透過按鈕 */
+}
+
+.notification-item .notification-content {
+    flex-grow: 1;
+    /* 讓內容佔據大部分空間 */
+}
+
+.notification-item .edit-notification-btn {
+    flex-shrink: 0;
+    /* 防止按鈕被壓縮 */
+    margin-left: 20px;
+    /* 與內容間距 */
+    background-color: var(--md-sys-color-primary);
+    /* 主要按鈕顏色 */
+    color: var(--md-sys-color-on-primary);
+}
+
+.notification-item .edit-notification-btn:hover {
+    background-color: rgb(0 76 105);
+}
+
+/* 重置 notification-item 內部的 checkbox 樣式，使其不影響點擊編輯按鈕 */
+.notification-item .checkbox-container {
+    /* 如果這個通知列表不需要 checkbox，可以移除 */
+    /*display: none; /* 暫時隱藏，如果需要，請移除此行 */
+}
+
+/*
+#notificationMemberId {
+	display: none;
+}
+*/
+
+/* 針對 select 元素的基本樣式 */
+.admin-notification-form select {
+    appearance: none; /* 移除瀏覽器預設的下拉箭頭 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%234A4A4A" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); /* 自訂下拉箭頭 */
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 24px; /* 箭頭大小 */
+    cursor: pointer;
+    /* 繼承 input 的基本樣式，以保持一致性 */
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 8px;
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* focus 狀態 */
+.admin-notification-form select:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--md-sys-color-on-primary-container), 0.2);
+}
+
+/* 禁用狀態 */
+.admin-notification-form select[disabled] {
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-outline);
+    cursor: not-allowed;
+}
+
+/* 確保下拉選項的樣式 */
+.admin-notification-form select option {
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+}
+
+/* 確保下拉選單在 Firefox 中的外觀一致性 */
+/*@-moz-document url-prefix() {
+    .admin-notification-form select {
+        padding-right: 36px; /* 留出空間給自訂箭頭 */
+
+/* } */

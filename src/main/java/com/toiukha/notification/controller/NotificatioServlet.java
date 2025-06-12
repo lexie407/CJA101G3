@@ -10,12 +10,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.toiukha.notification.model.NotificationService;
 import com.toiukha.notification.model.NotificationVO;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 @Validated
@@ -27,18 +30,22 @@ public class NotificatioServlet {
 	
 	////=====前台=====////
 	//取得該會員的通知資料
-	@PostMapping("getMemNoti")
+	@GetMapping("/getMemNoti")
 	public String getAllNoti(
 		//取得請求資料
-		@RequestParam("memId") String memId, 
+		HttpServletRequest req,
 		ModelMap model) {
 		
+//		登入功能放入要改!
+		Integer memId = ((Integer)req.getSession().getAttribute(null));
+		
 		//查詢資料
-		List<NotificationVO> list = notificationService.getMemNoti(Integer.valueOf(memId));
+		List<NotificationVO> list = notificationService.getMemNoti(1);
 		
 		//轉交資料
+		model.addAttribute("currentPage", "account");
 		model.addAttribute("list", list);
-		return "back-end/notification/notificationofMember";
+		return "front-end/notification/memberNotification";
 	}
 	
 	//顯示通知詳細資訊並更改讀取狀態
@@ -54,25 +61,32 @@ public class NotificatioServlet {
 		notificationService.updateNotiStatus(notiId, (byte)1);
 		
 		//轉交資料
+		model.addAttribute("currentPage", "account");
 		model.addAttribute("notificationVO", notificationVO);
-		return "back-end/notification/notificationDetail";
+		return "front-end/notification/memberNotificationDetail";
 	}
 	
 	//使用者移除通知
 	@PostMapping("removeNotibyMember")
 	public String removeNotibyMember(
 		//取得請求資料
-		@RequestParam("notiId") String notiNo,
+		@RequestParam("notiIds") String[] notiNos,
 		ModelMap model) {
 		
 		//查詢資料後並刪除資料
-		Integer notiId = Integer.valueOf(notiNo);
-		NotificationVO notificationVO = notificationService.getOneNoti(notiId);
-		notificationService.updateNotiStatus(notiId, (byte)2);
+//		登入功能放入要改!
+		notificationService.updateNotiStatuses(notiNos, (byte)2);
+		List<NotificationVO> list = notificationService.getMemNoti(1);
 		
 		//轉交資料
-		model.addAttribute("notificationVO", notificationVO);
-		return "back-end/notification/notificationofMember";
+		model.addAttribute("currentPage", "account");
+		model.addAttribute("list", list);
+		return "front-end/notification/memberNotification";
 		
+	}
+	
+	@GetMapping("/test")
+	public String test(ModelMap model) {
+		return "front-end/notification/thymeleaf_template";
 	}
 }

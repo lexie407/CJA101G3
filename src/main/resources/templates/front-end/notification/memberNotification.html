@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+<!-- 					放自己需要的內容 -->
+                </ul>
+            </header>
+			<main class="content-area-main">
+			
+				
+				<div class="notification-center-container">
+					<div class="notification-actions">
+						<label class="checkbox-container"> <input type="checkbox"
+							class="selectAllNotifications"> <span class="checkmark"></span>
+							全選通知
+						</label>
+						<button class="delete-selected-btn material-button"
+							th:data-action="@{/notification/removeNotibyMember}">
+							<span class="material-icons">delete</span> 刪除所選通知
+						</button>
+					</div>
+
+					<div class="notification-list">
+						<div th:each="notificationVO : ${list}">
+							<div
+								th:if="${notificationVO.notiStatus == 1 or notificationVO.notiStatus == 0}"
+								th:classappend="${notificationVO.notiStatus == 0} ? 'unread' : ''"
+								class="notification-item">
+
+								<label class="checkbox-container"
+									th:for="${'notiId_' + notificationVO.notiId}"> <input
+									type="checkbox" class="notification-checkbox" name="notiId"
+									th:value="${notificationVO.notiId}"
+									th:id="${'notiId_' + notificationVO.notiId}"> <span
+									class="checkmark"></span>
+								</label>
+								<div class="notification-content">
+									<div class="notification-header">
+										<span class="notification-title"
+											th:text="${notificationVO.notiTitle}"></span> <span
+											class="notification-date"> <span
+											th:text="${notificationVO.notiSendAt}"></span>
+										</span>
+									</div>
+									<p class="notification-message"
+										th:text="${notificationVO.notiCont}"></p>
+								</div>
+								<div class="notification-form-data"
+									th:data-action="@{/notification/readedNoti}"
+									th:data-noti-id="${notificationVO.notiId}"
+									th:data-noti-sta="${notificationVO.notiStatus}">
+									<input type="hidden" name="action" value="getNotiDetail">
+									<input type="hidden" name="notiId"
+										th:value="${notificationVO.notiId}"> <input
+										type="hidden" name="notiStatus"
+										th:value="${notificationVO.notiStatus}">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>	
+			
+            </main>
+		</div>
+	</div>
+	
+	<script src="../js/memberNotification.js"></script>
+    
+</body>
+</html>

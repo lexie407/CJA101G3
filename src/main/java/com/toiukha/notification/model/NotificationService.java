@@ -30,11 +30,22 @@ public class NotificationService {
 		repository.save(notificationVO);
 	}
 	
-	//修改通知狀態
+	//修改一個通知狀態
 	public void updateNotiStatus(Integer notiId, Byte notiStatus) {
 		Date nowDate = new Date();
 		Timestamp nowTime = new Timestamp(nowDate.getTime());
 		repository.updateSta(notiId, notiStatus, nowTime);
+	}
+	
+	//修改複數通知狀態
+	public void updateNotiStatuses(String[] notiIds, Byte notiStatus) {
+		Date nowDate = new Date();
+		Timestamp nowTime = new Timestamp(nowDate.getTime());
+		
+		for(String notiId : notiIds) {
+		repository.updateSta(Integer.valueOf(notiId), notiStatus, nowTime);
+		}
+		
 	}
 	
 	//查一個
