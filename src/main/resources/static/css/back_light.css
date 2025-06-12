@@ -1,0 +1,53 @@
+/* 將 Material Design 配色變數加入 .light class */
+.light {
+    /* Primary colors based on a desaturated #29abc2 */
+    --md-sys-color-primary: rgb(75, 160, 180); /* 調整為飽和度較低的主色 */
+    --md-sys-color-on-primary: rgb(255 255 255);
+    --md-sys-color-primary-container: rgb(200, 230, 238); /* 飽和度較低的主色容器 */
+    --md-sys-color-on-primary-container: rgb(20, 50, 60);
+
+    /* Secondary colors based on a desaturated #ffb347 */
+    --md-sys-color-secondary: rgb(230, 165, 80); /* 調整為飽和度較低的次色 */
+    --md-sys-color-on-secondary: rgb(255 255 255);
+    --md-sys-color-secondary-container: rgb(250, 230, 200); /* 飽和度較低的次色容器 */
+    --md-sys-color-on-secondary-container: rgb(60, 35, 0);
+
+    /* Tertiary colors (保持不變或根據需求調整) */
+    --md-sys-color-tertiary: rgb(129 85 18);
+    --md-sys-color-on-tertiary: rgb(255 255 255);
+    --md-sys-color-tertiary-container: rgb(255 221 182);
+    --md-sys-color-on-tertiary-container: rgb(100 63 0);
+    --md-sys-color-tertiary-fixed: rgb(255 221 182);
+    --md-sys-color-on-tertiary-fixed: rgb(42 24 0);
+    --md-sys-color-tertiary-fixed-dim: rgb(246 188 112);
+    --md-sys-color-on-tertiary-fixed-variant: rgb(100 63 0);
+
+    /* Error colors (通常保持不變) */
+    --md-sys-color-error: rgb(186 26 26);
+    --md-sys-color-on-error: rgb(255 255 255);
+    --md-sys-color-error-container: rgb(255 218 214);
+    --md-sys-color-on-error-container: rgb(147 0 10);
+
+    /* Background and surface colors (調整為白色，並確保漸變層次感) */
+    --md-sys-color-background: rgb(255 255 255);
+    --md-sys-color-on-background: rgb(24 28 31);
+    --md-sys-color-surface: rgb(255 255 255);
+    --md-sys-color-on-surface: rgb(24 28 31);
+    --md-sys-color-surface-variant: rgb(245 245 245); /* 稍微深一點的淺灰 */
+    --md-sys-color-on-surface-variant: rgb(65 72 77);
+    --md-sys-color-outline: rgb(200 200 200); /* 邊框顏色更淺 */
+    --md-sys-color-outline-variant: rgb(230 230 230); /* 邊框變體更淺 */
+    --md-sys-color-shadow: rgba(0, 0, 0, 0.08); /* 更輕的陰影 */
+    --md-sys-color-scrim: rgb(0 0 0);
+    --md-sys-color-inverse-surface: rgb(44 49 52);
+    --md-sys-color-inverse-on-surface: rgb(237 241 245);
+
+    /* Surface container colors (調整為白色或接近白色，以提供微妙的層次感) */
+    --md-sys-color-surface-dim: rgb(248 248 248);
+    --md-sys-color-surface-bright: rgb(255 255 255);
+    --md-sys-color-surface-container-lowest: rgb(255 255 255);
+    --md-sys-color-surface-container-low: rgb(252 252 252);
+    --md-sys-color-surface-container: rgb(249 249 249);
+    --md-sys-color-surface-container-high: rgb(245 245 245);
+    --md-sys-color-surface-container-highest: rgb(240 240 240);
+}
