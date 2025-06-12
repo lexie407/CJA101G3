@@ -87,7 +87,6 @@ public class NotificatioServlet {
 	
 	@GetMapping("/test")
 	public String test(ModelMap model) {
-		model.addAttribute("currentPage", "account");
-		return "front-end/notification/memberNotification";
+		return "front-end/notification/thymeleaf_template";
 	}
 }
