@@ -1,0 +1,90 @@
+.article-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.article-card {
+    background-color: var(--md-sys-color-surface-container-low);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    padding: 16px 20px;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.article-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 3px rgba(0, 0, 0, 0.12);
+}
+
+.article-meta {
+    max-width: 70%;
+}
+
+.article-meta .category {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 8px;
+    /*background-color: var(--md-sys-color-primary-container);*/
+    /*color: var(--md-sys-color-on-primary-container);*/
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+}
+
+
+.category-1 {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.category-2 {
+    background-color: var(--md-sys-color-secondary-container); /* 橘黃色 */
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.category-3 {
+    background-color: #d4f4dd;  /* 淺綠 */
+    color: #1e4620;             /* 深綠字體 */
+}
+
+
+.article-meta strong {
+    font-size: 1rem;
+    color: var(--md-sys-color-on-surface);
+}
+
+.article-meta .article-preview {
+    margin: 6px 0;
+    font-size: 0.9rem;
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.4;
+}
+
+.article-info {
+    font-size: 0.85rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.article-actions {
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.article-like {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.article-like .material-icons {
+    font-size: 20px; /* 也可以改成 24px 看起來更明顯 */
+    color: var(--md-sys-color-secondary); /* 讓 icon 亮起來 */
+}
