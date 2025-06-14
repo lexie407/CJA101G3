@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+
+<th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/notification/addNotification}">新增通知</a></li>
+        			<li><a th:href="@{/notification/unSendNotification}">待發送通知</a></li>
+        			<li><a th:href="@{/notification/searchNotification}">查詢通知</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<div
+					class="single-notification-container notification-center-container">
+					<div class="single-notification-actions">
+						<button id="backToAdminNotificationsBtn" class="material-button"
+							th:attr="data-originalUri=${originalUri}"
+							style="margin-bottom: 10px;">
+							<span class="material-icons">arrow_back</span> 返回
+						</button>
+						<button
+							th:if="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}"
+							id="deleteAdminNotificationBtn"
+							class="material-button delete-btn"
+							th:attr="data-notiId=${notificationVO.notiId}">
+							<span class="material-icons">delete</span> 刪除此通知
+						</button>
+					</div>
+
+					<div class="admin-notification-form">
+						<h2
+							th:if="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">編輯通知</h2>
+						<h2
+							th:unless="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">通知詳情</h2>
+
+						<form id="notificationEditForm" method="post"
+							th:action="@{/notification/updateNotification}">
+							<input type="hidden" name="action" value="updateNoti"> <input
+								type="hidden" name="notiId" th:value="${notificationVO.notiId}">
+							<input type="hidden" name="adminId" value="1"> <input
+								type="hidden" name="originalUri" th:value="${originalUri}">
+
+							<div class="form-group">
+								<label for="notificationMemberId">通知會員 ID:</label> <input
+									type="text" id="notificationMemberId" name="memId"
+									th:value="${notificationVO.memId}" readonly>
+							</div>
+							<div class="form-group">
+								<label for="notificationMemberName">會員名稱:</label> <input
+									type="text" id="notificationMemberName" value="開發中..." readonly>
+							</div>
+							<div class="form-group">
+								<label for="notificationStatus">通知狀態:</label> <input
+									type="hidden" name="notiStatus"
+									th:value="${notificationVO.notiStatus}"> <input
+									type="text" id="notificationStatus" readonly
+									th:if="${notificationVO.notiStatus == 3}" value="管理員刪除">
+								<input type="text" id="notificationStatus" readonly
+									th:if="${notificationVO.notiStatus == 2}" value="使用者刪除">
+								<input type="text" id="notificationStatus" readonly
+									th:if="${notificationVO.notiStatus == 1}" value="已讀"> <input
+									type="text" id="notificationStatus" readonly
+									th:if="${notificationVO.notiStatus == 0 and notificationVO.notiSendAt < nowTime}"
+									value="未讀"> <input type="text" id="notificationStatus"
+									readonly
+									th:if="${notificationVO.notiStatus == 0 and notificationVO.notiSendAt > nowTime}"
+									value="未發送">
+							</div>
+							<div class="form-group">
+								<label for="notificationCreatedAt">通知建立時間:</label> <input
+									type="text" id="notificationCreatedAt"
+									th:value="${#dates.format(notificationVO.notiCreatedAt, 'yyyy-MM-dd HH:mm')}" readonly>
+							</div>
+
+							<div
+								th:if="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">
+								<div class="form-group">
+									<label for="notificationSentAt">通知發送時間:</label> <input
+										type="datetime-local" name="notiSendAt"
+										th:value="${notificationVO.notiSendAt}"
+										id="notificationSentAt" required
+										th:min="${#dates.format(#dates.createNow(), 'yyyy-MM-dd''T''HH:mm')}">
+								</div>
+								<div class="form-group">
+									<label for="notificationTitle">通知標題:</label> <input type="text"
+										id="notificationTitle" name="notiTitle"
+										th:value="${notificationVO.notiTitle}" required>
+								</div>
+								<div class="form-group full-width">
+									<label for="notificationContent">通知內容:</label>
+									<textarea id="notificationContent" name="notiCont" rows="8"
+										required th:text="${notificationVO.notiCont}"></textarea>
+								</div>
+							</div>
+							<div
+								th:unless="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">
+								<div class="form-group">
+									<label for="notificationSentAt">通知發送時間:</label> <input
+										type="datetime-local" th:value="${notificationVO.notiSendAt}"
+										id="notificationSentAt" readonly>
+								</div>
+								<div class="form-group">
+									<label for="notificationTitle">通知標題:</label> <input type="text"
+										id="notificationTitle" th:value="${notificationVO.notiTitle}"
+										readonly>
+								</div>
+								<div class="form-group full-width">
+									<label for="notificationContent">通知內容:</label>
+									<textarea id="notificationContent" rows="8" readonly
+										th:text="${notificationVO.notiCont}"></textarea>
+								</div>
+							</div>
+
+							<div class="form-actions"
+								th:if="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">
+								<button type="submit" class="material-button">
+									<span class="material-icons">check_circle</span> 確定修改
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</main>
+		</div>
+	</div>
+
+	<script src="../js/notification/editNotification.js"></script>
+
+</body>
+</html>

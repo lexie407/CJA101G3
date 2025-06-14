@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+    
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+                <th:block th:insert="~{/back-end/notification/navBackEndNotification :: secNavResources}"></th:block>
+            </header>
+			<main class="content-area-main">
+				<div class="admin-dashboard-container notification-center-container"> <h1>待發送通知</h1>
+                    <p>以下的通知都是已建立待發送。</p>
+
+                    <div class="dashboard-widgets">
+                        <div class="widget">
+                            <h3><span class="material-icons">rocket_launch</span> 待發送通知數</h3>
+                            <p class="large-number">###</p>
+                        </div>
+                    </div>
+
+                    <h2 style="margin-top: 40px; margin-bottom: 20px;">待發送通知清單</h2>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>通知時間</th>
+                                <th>會員</th>
+                                <th>標題</th>
+                                <th>內容</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        	<tr th:each="notificationVO : ${list}"
+    							th:if="${notificationVO.notiStatus != 3 and notificationVO.notiSendAt > nowTime}"
+    							class="noti-table-line"
+    							th:attr="data-notiId=${notificationVO.notiId}">
+    							<td th:text="${#dates.format(notificationVO.notiSendAt, 'yyyy-MM-dd HH:mm')}"></td>
+   	 							<td th:text="${notificationVO.memId}"></td>
+    							<td th:text="${notificationVO.notiTitle}"></td>
+    							<td th:text="${notificationVO.notiCont}"></td>
+							</tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+		</div>
+	</div>
+	
+	<script src="../js/notification/unSendNotification.js"></script>
+    
+</body>
+</html>
