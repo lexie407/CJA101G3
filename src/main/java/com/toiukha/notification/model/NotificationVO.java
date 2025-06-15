@@ -25,7 +25,7 @@ public class NotificationVO implements java.io.Serializable {
 	private String notiCont;
 	@Column(name = "NOTICREATEDAT", insertable = false, updatable = false)
 	private Timestamp notiCreatedAt;
-	@Column(name = "MEMID", nullable = false)
+	@Column(name = "MEMID", nullable = false, updatable = false)
 	private Integer memId;
 	@Column(name = "NOTISTATUS", insertable = false)
 	private Byte notiStatus;
