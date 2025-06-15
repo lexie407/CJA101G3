@@ -1,6 +1,7 @@
 package com.toiukha.notification.model;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -113,6 +114,12 @@ public class NotificationService {
 		List<NotificationVO> list = FindNotificationByCriteria.getCompositeQuery(query, sessionFactory.openSession(), repository);
 		
 		return list;
+	}
+	
+	//待發送通知清單
+	public List<NotificationVO> getDueNotifications(){
+		Date nowTime = new Date();
+		return repository.searchUnSendNotification(nowTime);
 	}
 	
 }

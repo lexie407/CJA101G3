@@ -71,10 +71,10 @@
 								<input type="text" id="notificationStatus" readonly
 									th:if="${notificationVO.notiStatus == 1}" value="已讀"> <input
 									type="text" id="notificationStatus" readonly
-									th:if="${notificationVO.notiStatus == 0 and notificationVO.notiSendAt < nowTime}"
+									th:if="${notificationVO.notiStatus == 0}"
 									value="未讀"> <input type="text" id="notificationStatus"
 									readonly
-									th:if="${notificationVO.notiStatus == 0 and notificationVO.notiSendAt > nowTime}"
+									th:if="${notificationVO.notiStatus == 9}"
 									value="未發送">
 							</div>
 							<div class="form-group">

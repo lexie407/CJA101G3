@@ -39,7 +39,7 @@
                         </thead>
                         <tbody>
                         	<tr th:each="notificationVO : ${list}"
-    							th:if="${notificationVO.notiStatus != 3 and notificationVO.notiSendAt > nowTime}"
+    							th:if="${notificationVO.notiStatus == 9}"
     							class="noti-table-line"
     							th:attr="data-notiId=${notificationVO.notiId}">
     							<td th:text="${#dates.format(notificationVO.notiSendAt, 'yyyy-MM-dd HH:mm')}"></td>
