@@ -27,110 +27,164 @@ const citySelect = document.getElementById('citySelect');
 const districtSelect = document.getElementById('districtSelect');
 const addrDetailInput = document.getElementById('addrDetailInput');
 const memAddrInput = document.getElementById('memAddr');
+
 const memAvatarInput = document.getElementById('memAvatarInput');
 const avatarPreview = document.getElementById('avatarPreview');
+const avatarPlaceholder = avatarPreview?.nextElementSibling;
+
+const memAvatarFrameInput = document.getElementById('memAvatarFrame');
+const avatarFramePreview = document.getElementById('avatarFramePreview');
+const avatarFramePlaceholder = avatarFramePreview?.nextElementSibling;
+
+function updateMemAddr() {
+	const city = citySelect.value;
+	const district = districtSelect.value;
+	const detail = addrDetailInput.value;
+	memAddrInput.value = `${city}${district}${detail}`;
+}
 
 function populateCities() {
-    for (const city in taiwanData) {
-        const option = document.createElement('option');
-        option.value = city;
-        option.textContent = city;
-        citySelect.appendChild(option);
-    }
+	for (const city in taiwanData) {
+		const option = document.createElement('option');
+		option.value = city;
+		option.textContent = city;
+		citySelect.appendChild(option);
+	}
 }
 
 function populateDistricts(city) {
-    districtSelect.innerHTML = ''; // Clear previous districts
-    if (city && taiwanData[city]) {
-        taiwanData[city].forEach(district => {
-            const option = document.createElement('option');
-            option.value = district;
-            option.textContent = district;
-            districtSelect.appendChild(option);
-        });
-    }
+	districtSelect.innerHTML = '';
+	if (taiwanData[city]) {
+		taiwanData[city].forEach(district => {
+			const option = document.createElement('option');
+			option.value = district;
+			option.textContent = district;
+			districtSelect.appendChild(option);
+		});
+	}
 }
 
-if (!memAvatarInput.files || memAvatarInput.files.length === 0) {
-       avatarPreview.src = '';
-       avatarPreview.style.display = 'none';
-       const placeholder = document.querySelector('.avatar-placeholder');
-       if (placeholder) placeholder.style.display = 'inline-block';
-   }
+window.onload = function () {
+	populateCities();
 
-function updateMemAddr() {
-    const city = citySelect.value;
-    const district = districtSelect.value;
-    const detail = addrDetailInput.value;
-    memAddrInput.value = `${city}${district}${detail}`;
-}
+	const initialMemAddr = memAddrInput.value;
+	if (initialMemAddr) {
+		let matchedCity = '';
+		let matchedDistrict = '';
+		let detailPart = initialMemAddr;
+		for (const city in taiwanData) {
+			if (initialMemAddr.startsWith(city)) {
+				matchedCity = city;
+				detailPart = initialMemAddr.substring(city.length);
+				break;
+			}
+		}
+		if (matchedCity) {
+			citySelect.value = matchedCity;
+			populateDistricts(matchedCity);
+			for (const district of taiwanData[matchedCity]) {
+				if (detailPart.startsWith(district)) {
+					matchedDistrict = district;
+					detailPart = detailPart.substring(district.length);
+					break;
+				}
+			}
+			districtSelect.value = matchedDistrict;
+		}
+		addrDetailInput.value = detailPart;
+		updateMemAddr();
+	}
 
-// Initial population
-populateCities();
-populateDistricts(citySelect.value);
+	if (avatarPreview && avatarPreview.src && !avatarPreview.src.includes("null")) {
+		avatarPreview.style.display = 'block';
+		if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+	} else {
+		avatarPreview.style.display = 'none';
+		if (avatarPlaceholder) avatarPlaceholder.style.display = 'inline-block';
+	}
 
-// Event listeners
+	if (avatarFramePreview && avatarFramePreview.src && !avatarFramePreview.src.includes("null")) {
+		avatarFramePreview.style.display = 'block';
+		if (avatarFramePlaceholder) avatarFramePlaceholder.style.display = 'none';
+	} else {
+		avatarFramePreview.style.display = 'none';
+		if (avatarFramePlaceholder) avatarFramePlaceholder.style.display = 'inline-block';
+	}
+};
+
 citySelect.addEventListener('change', (event) => {
-    populateDistricts(event.target.value);
-    updateMemAddr();
+	populateDistricts(event.target.value);
+	updateMemAddr();
 });
 districtSelect.addEventListener('change', updateMemAddr);
 addrDetailInput.addEventListener('input', updateMemAddr);
 
-// Handle avatar preview
 memAvatarInput.addEventListener('change', function () {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            avatarPreview.src = e.target.result;
-            avatarPreview.style.display = 'block';
-            document.querySelector('.avatar-placeholder').style.display = 'none'; // 👈 加這行
-        };
-        reader.readAsDataURL(file);
-    } else {
-        avatarPreview.src = '';
-        avatarPreview.style.display = 'none';
-        document.querySelector('.avatar-placeholder').style.display = 'inline-block'; // 👈 恢復預設圖示
-    }
+	const file = this.files[0];
+	if (file) {
+		const reader = new FileReader();
+		reader.onload = function (e) {
+			avatarPreview.src = e.target.result;
+			avatarPreview.style.display = 'block';
+			if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+		};
+		reader.readAsDataURL(file);
+	} else {
+		avatarPreview.src = '';
+		avatarPreview.style.display = 'none';
+		if (avatarPlaceholder) avatarPlaceholder.style.display = 'inline-block';
+	}
 });
 
-// Set initial values if membersVO exists (for editing)
-window.onload = function() {
-    const initialMemAddr = memAddrInput.value;
-    if (initialMemAddr) {
-        let matchedCity = '';
-        let matchedDistrict = '';
-        let detailPart = initialMemAddr;
+memAvatarFrameInput.addEventListener('change', function () {
+	const file = this.files[0];
+	if (file) {
+		const reader = new FileReader();
+		reader.onload = function (e) {
+			avatarFramePreview.src = e.target.result;
+			avatarFramePreview.style.display = 'block';
+			if (avatarFramePlaceholder) avatarFramePlaceholder.style.display = 'none';
+		};
+		reader.readAsDataURL(file);
+	} else {
+		avatarFramePreview.src = '';
+		avatarFramePreview.style.display = 'none';
+		if (avatarFramePlaceholder) avatarFramePlaceholder.style.display = 'inline-block';
+	}
+});
 
-        for (const city in taiwanData) {
-            if (initialMemAddr.startsWith(city)) {
-                matchedCity = city;
-                detailPart = initialMemAddr.substring(city.length);
-                break;
-            }
-        }
+document.querySelector('form').addEventListener('submit', function (event) {
+	let valid = true;
+	let firstInvalid = null;
 
-        if (matchedCity) {
-            citySelect.value = matchedCity;
-            populateDistricts(matchedCity);
+	const requiredFields = [
+		{ id: 'memName', name: '會員姓名' },
+		{ id: 'memGender', name: '性別' },
+		{ id: 'memBirthDate', name: '生日' },
+		{ id: 'memMobile', name: '手機' },
+		{ id: 'memEmail', name: 'Email' },
+		{ id: 'citySelect', name: '縣市' },
+		{ id: 'districtSelect', name: '鄉鎮市區' },
+		{ id: 'addrDetailInput', name: '街道地址' },
+		{ id: 'memUsername', name: '使用者暱稱' }
+	];
 
-            if (taiwanData[matchedCity]) {
-                for (const district of taiwanData[matchedCity]) {
-                    if (detailPart.startsWith(district)) {
-                        matchedDistrict = district;
-                        detailPart = detailPart.substring(district.length);
-                        break;
-                    }
-                }
-            }
-            districtSelect.value = matchedDistrict;
-        }
-        addrDetailInput.value = detailPart;
-    }
-    if (avatarPreview.src && !avatarPreview.src.includes('null') && !avatarPreview.src.includes('undefined')) {
-        avatarPreview.style.display = 'block';
-    } else {
-        avatarPreview.style.display = 'none';
-    }
-};
+	requiredFields.forEach(field => {
+		const input = document.getElementById(field.id);
+		if (!input || !input.value.trim()) {
+			valid = false;
+			if (!firstInvalid) firstInvalid = input;
+			input.style.borderColor = 'red';
+			input.setCustomValidity(`請填寫${field.name}`);
+		} else {
+			input.style.borderColor = '';
+			input.setCustomValidity('');
+		}
+	});
+
+	if (!valid) {
+		event.preventDefault();
+		if (firstInvalid) firstInvalid.focus();
+		alert('請填寫所有必填欄位後再送出');
+	}
+});
