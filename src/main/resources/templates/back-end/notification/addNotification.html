@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+
+<th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+<link rel="stylesheet" th:href="@{/css/vendors/multi-select.css}">
+<link rel="stylesheet" th:href="@{/css/vendors/custom-material-multiselect.css}">
+
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<th:block th:replace="~{/back-end/notification/navBackEndNotification :: secNavResources}"></th:block>
+				</ul>
+			</header>
+			<main class="content-area-main">
+			
+				<div
+					class="single-notification-container notification-center-container">
+					<div class="admin-notification-form">
+						<input type="hidden" id="addMsgs" name="addMsgs"
+							th:value="${addMsgs}">
+						<h1>新增通知</h1>
+						<form id="notificationEditForm" method="post"
+							th:action="@{/notification/doAddNotification}">
+							<input type="hidden" name="action" value="createNoti"> <input
+								type="hidden" name="adminId" value="1">
+							<div class="form-group">
+								<select id="notificationMemberId" name="memIds" multiple required>
+									<option value="1">會員1</option>
+									<option value="2">會員2</option>
+									<option value="3">會員3</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="notificationSentAt">通知發送時間:</label> <input
+									type="datetime-local" name="notiSendAt" id="notificationSentAt"
+									th:min="${#dates.format(#dates.createNow(), 'yyyy-MM-dd''T''HH:mm')}" required>
+							</div>
+							<div class="form-group">
+								<label for="notificationTitle">通知標題:</label> <input type="text"
+									id="notificationTitle" name="notiTitle" required>
+							</div>
+							<div class="form-group full-width">
+								<label for="notificationContent">通知內容:</label>
+								<textarea id="notificationContent" name="notiCont" rows="8"
+									required></textarea>
+							</div>
+							<div class="form-actions">
+								<button type="submit" class="material-button">
+									<span class="material-icons">check_circle</span> 確定新增
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<input type="hidden" id="successMessage" th:value="${suessesMsg}" />
+			</main>
+		</div>
+	</div>
+
+	<script src="../js/vendors/jquery-3.7.1.min.js"></script>
+	<script src="../js/vendors/jquery.multi-select.js"></script>
+	<script src="../js/notification/addNotification.js"></script>
+	
+
+</body>
+</html>

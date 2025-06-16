@@ -1,0 +1,157 @@
+/* custom-material-multiselect.css */
+
+/* --- 容器與基礎樣式調整 --- */
+.ms-container {
+    font-family: 'Roboto', Arial, sans-serif; /* 使用 Roboto 字體 */
+    /* Material Design 的陰影 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+    border-radius: 4px; /* 輕微圓角 */
+    background-color: #ffffff; /* 卡片背景色 */
+    overflow: hidden; /* 防止內容溢出圓角 */
+    /* 移除預設邊框 */
+    border: none !important; /* 確保覆蓋原始函式庫的邊框 */
+}
+
+/* --- 內部區塊對齊調整 --- */
+/* 讓兩個主要選擇區塊緊密貼合，並移除預設的邊框和邊距 */
+.ms-container .ms-selectable,
+.ms-container .ms-selection {
+    border: none !important; /* 移除邊框，讓陰影生效 */
+    border-radius: 0; /* 內部容器不需圓角 */
+    margin: 0 !important; /* 移除所有外邊距 */
+    padding: 0 !important; /* 移除所有內邊距，由內部元素控制 */
+    box-shadow: none !important; /* 移除可能存在的內部陰影 */
+}
+
+/* 如果 .ms-container 是 flex 容器，則讓內部項撐滿 */
+/* 根據 jquery.multi-select.js 的結構，通常它是浮動的，
+   所以保持 float 和 width 百分比，並確保它們正確清浮動 */
+.ms-container .ms-selectable {
+    /* 函式庫預設可能就是 50% 或 49% */
+    /* 確保沒有額外的 padding/margin 導致總寬度超過 100% */
+    width: 50% !important; /* 讓它們各佔一半寬度 */
+    float: left !important;
+}
+
+.ms-container .ms-selection {
+    width: 50% !important; /* 讓它們各佔一半寬度 */
+    float: left !important;
+}
+
+/* 清浮動確保 ms-container 能正確包含內容 */
+.ms-container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+
+/* --- 搜尋輸入框樣式 --- */
+.ms-container .search-input {
+    width: calc(100% - 20px); /* 調整寬度 */
+    padding: 10px;
+    margin: 10px;
+    border: none; /* 移除邊框 */
+    border-bottom: 1px solid #ccc; /* Material Design 輸入框底線 */
+    font-size: 16px;
+    outline: none; /* 移除聚焦時的藍色邊框 */
+    transition: border-bottom-color 0.3s ease; /* 過渡效果 */
+}
+
+.ms-container .search-input:focus {
+    border-bottom-color: #6200ee; /* 聚焦時的 Material Design 主要顏色 */
+}
+
+/* --- 列表項樣式 --- */
+.ms-container .ms-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: none; /* 移除列表邊框 */
+    /* 添加內部間隔，確保清單內容不會碰到邊緣 */
+    padding: 0 0px; /* 移除左右內邊距 */
+}
+
+.ms-container .ms-list li {
+    padding: 12px 16px; /* 更大的點擊區域，內部間距 */
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.87); /* 標準文字顏色 */
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* hover 過渡效果 */
+    display: flex; /* 使用 Flexbox 布局 */
+    align-items: center; /* 垂直居中對齊 */
+    /* 移除可能存在的內部邊框 */
+    border: none !important;
+}
+
+/* --- 解決 hover 顏色問題：讓文字清晰可見 --- */
+.ms-container .ms-list li:not(.ms-selected):hover {
+    /* 使用 Material Design 輕微的 hover 背景色 */
+    background-color: rgba(0, 0, 0, 0.04); /* 淺灰色，文字清晰 */
+    color: rgba(0, 0, 0, 0.87); /* 確保文字顏色不變，維持清晰 */
+}
+
+/* 選中項目的樣式 */
+.ms-container .ms-list li.ms-selected {
+    background-color: #e8eaf6; /* 選中項目的背景色，更淺的藍色或灰色 */
+    color: rgba(0, 0, 0, 0.87); /* 選中項目文字顏色，保持清晰 */
+}
+
+/* 添加一個勾選圖標 (需要額外引入 Material Icons 或其他圖標庫) */
+.ms-container .ms-list li.ms-selected::before {
+    content: 'check'; /* Material Icons 的勾選圖標 */
+    font-family: 'Material Icons';
+    margin-right: 8px;
+    color: #3f51b5; /* Material Design 標準藍色 */
+    font-size: 18px;
+}
+
+/* --- 捲軸樣式 (可選，自定義捲軸樣式) --- */
+.ms-container .ms-list::-webkit-scrollbar {
+    width: 8px;
+}
+.ms-container .ms-list::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+.ms-container .ms-list::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* --- 標頭樣式 (您的 selectionHeader 和 selectableHeader) --- */
+.ms-container label {
+    display: block;
+    padding: 10px 16px; /* 調整內邊距，使其與列表項左右對齊 */
+    margin: 0; /* 移除可能存在的標籤外邊距 */
+    font-size: 16px;
+    font-weight: 500; /* Material Design 字體粗細 */
+    color: rgba(0, 0, 0, 0.6); /* 次要文字顏色 */
+    border-bottom: 1px solid #eee; /* 分隔線 */
+}
+
+/* --- 頁腳樣式 (您的 selectableFooter) --- */
+.ms-container .ms-selectable .ms-footer {
+    padding: 10px 16px; /* 調整內邊距，使其與列表項左右對齊 */
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.54);
+    text-align: center;
+    border-top: 1px solid #eee;
+    margin-top: auto; /* 將 footer 推到底部，如果父元素是 flex 容器 */
+}
+
+/* 如果 header/footer 導致內部列表不對齊，調整其寬度 */
+.ms-container .ms-optgroup-label,
+.ms-container .ms-selectable-header,
+.ms-container .ms-selection-header,
+.ms-container .ms-selectable-footer,
+.ms-container .ms-selection-footer {
+    padding: 10px 16px; /* 確保與列表項有相同左右內邊距 */
+    /* 函式庫生成的 header/footer 容器 */
+}
+
+/* 確保搜尋框和標頭/腳註的左右邊距與列表項內容對齊 */
+.ms-container .ms-selectable-header .search-input,
+.ms-container .ms-selection-header .search-input {
+    margin: 10px 16px; /* 調整外邊距，使其與內容對齊 */
+    width: calc(100% - 32px); /* 100% - 左右各 16px 內邊距 */
+}
