@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>討論區</title>
+    <th:block th:fragment="headResources">
+        <link rel="stylesheet" th:href="@{/css/light.css}">
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet" th:href="@{/css/forum-index.css}">
+    </th:block>
+</head>
+
+<body class="light">
+<div class="app-container">
+    <aside th:fragment="navbar" class="left-nav">
+        <div class="logo-area">
+            <img th:src="@{/images/logo.png}" alt="島遊 kak"> <p class="site-name">島遊<span class="site-name2">kha</span></p>
+        </div>
+
+        <ul>
+            <li th:classappend="${currentPage == 'home' ? 'active' : ''}"><a href="#"><span class="material-icons">home</span>首頁</a></li>
+            <li th:classappend="${currentPage == 'travel' ? 'active' : ''}"><a href="#"><span class="material-icons">card_travel</span>行程</a></li>
+            <li th:classappend="${currentPage == 'groups' ? 'active' : ''}"><a href="#"><span class="material-icons">groups</span>揪團</a></li>
+            <li th:classappend="${currentPage == 'store' ? 'active' : ''}"><a href="#"><span class="material-icons">store</span>商店</a></li>
+            <li th:classappend="${currentPage == 'forum' ? 'active' : ''}"><a href="#"><span class="material-icons">edit</span>討論區</a></li>
+            <hr>
+            <li th:classappend="${currentPage == 'account' ? 'active' : ''}"><a href="#"><span class="material-icons">account_circle</span>會員中心</a></li>
+            <li th:classappend="${currentPage == 'bePartner' ? 'active' : ''}"><a href="#"><span class="material-icons">add_circle_outline</span>成為廠商</a></li>
+        </ul>
+
+        <div class="bottom-notification">
+            <a href="#"><span class="material-icons">notifications</span>通知</a>
+        </div>
+
+    </aside>
+
+    <div class="main-content">
+        <header class="secondary-nav">
+            <ul>
+                <!--                     <li><a href="#" class="active">Tab1</a></li> -->
+                <!--                     <li><a href="#">Tab2</a></li> -->
+                <!--                     <li><a href="#">Tab3</a></li> -->
+                <!--                     <li><a href="#">Tab4</a></li> -->
+                <!--                     <li><a href="#">Tab5</a></li> -->
+                <!--                     <li><a href="#">Tab6</a></li> -->
+
+                <!--                     <li> -->
+                <!--                         <div class="member-info-area"> -->
+                <!--                             <img src="./images/user.png" alt="User Avatar" class="member-avatar"> <span class="member-name">會員名稱</span> -->
+                <!--                         </div> -->
+                <!--                     </li> -->
+                <!--                     <li> -->
+                <!--                         <div class="logout-area"> -->
+                <!--                             <button class="logout-btn material-button"> -->
+                <!--                                 <span class="material-icons">logout</span> 登出 -->
+                <!--                             </button> -->
+                <!--                         </div> -->
+                <!--                     </li> -->
+            </ul>
+        </header>
+
+        <!-- 這邊放你要的內容，建議使用https://gemini.google.com/app?hl=zh-TW，
+         請他生成內容，這個HTML以及CSS都要給他一起生成，此外指令中指令中要有「請依照Material Design的設計原則以及我所附上的HTML以及CSS進行生成，生成位置請在MAIN標籤內」，並詳細說明你的需求 -->
+        <main class="content-area-main">
+<!--            努力跑跑跑！-->
+            <div class="article-list" id="articleList">
+
+                <!-- 文章卡片會透過 AJAX 動態插入這裡 -->
+            </div>
+
+
+
+        </main>
+    </div>
+
+</div>
+
+<script th:src="@{/vendors/jquery/jquery-3.7.1.min.js}"></script>
+<script th:src="@{/js/forum-index.js}" ></script>
+
+</body>
+
+</html>
