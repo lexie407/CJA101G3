@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+<style>
+.app-container {
+	display: flex;
+	min-height: 100vh;
+	background-color: var(--md-sys-color-background);
+	/* 使用 light.css 中定義的背景色 */
+	color: var(--md-sys-color-on-background); /* 使用 light.css 中定義的文字色 */
+}
+
+.main-content {
+	flex-grow: 1;
+	padding: 20px; /* 內容區域周圍的間距 */
+	display: flex;
+	flex-direction: column;
+}
+
+.content-area-main {
+	flex-grow: 1;
+	padding: 20px;
+	background-color: var(--md-sys-color-surface); /* 內容區塊的背景色 */
+	border-radius: 12px; /* 圓角 */
+	box-shadow: 0px 1px 3px rgba(var(--md-sys-color-shadow-rgb), 0.2), 0px
+		1px 2px rgba(var(--md-sys-color-shadow-rgb), 0.1); /* 輕微陰影 */
+}
+
+/* Material Design 卡片樣式 */
+.md-card {
+	background-color: var(--md-sys-color-surface);
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	padding: 24px;
+	margin-bottom: 24px;
+}
+
+.md-headline {
+	font-size: 1.8rem;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface);
+	margin-bottom: 24px;
+	text-align: center;
+}
+
+/* 表單組件基礎樣式 */
+.form-group {
+	margin-bottom: 20px;
+	position: relative;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 8px;
+	color: var(--md-sys-color-on-surface-variant);
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+/* 文字輸入框樣式 */
+.md-text-field input[type="text"], .md-text-field input[type="password"],
+	.md-text-field input[type="email"], .md-text-field input[type="date"],
+	.md-text-field input[type="tel"], .md-text-field input[type="number"],
+	.md-text-field textarea {
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--md-sys-color-outline); /* 邊框顏色 */
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface-container-highest);
+	/* 淺色背景 */
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	box-sizing: border-box; /* 確保 padding 不增加寬度 */
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.md-text-field input:focus, .md-text-field textarea:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary); /* 焦點時邊框顏色 */
+	box-shadow: 0 0 0 3px rgba(var(--md-sys-color-primary-rgb), 0.2);
+	/* 焦點時陰影效果 */
+}
+
+.md-text-field input::placeholder, .md-text-field textarea::placeholder
+	{
+	color: var(--md-sys-color-on-surface-variant);
+	opacity: 0.7;
+}
+
+/* 下拉選單樣式 */
+.md-select-field select {
+	-webkit-appearance: none; /* 移除預設樣式 */
+	-moz-appearance: none;
+	appearance: none;
+	background-image:
+		url('data:image/svg+xml;utf8,<svg fill="%234A4A4A" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+	/* 自訂下拉箭頭 */
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	background-size: 24px;
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface-container-highest);
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	box-sizing: border-box;
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+	cursor: pointer;
+}
+
+.md-select-field select:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary);
+	box-shadow: 0 0 0 3px rgba(var(--md-sys-color-primary-rgb), 0.2);
+}
+
+/* 地址組件特殊佈局 (縣市/鄉鎮分兩欄) */
+.md-address-group .address-sub-group {
+	display: flex;
+	gap: 16px; /* 縣市和鄉鎮之間的間距 */
+	margin-bottom: 16px;
+}
+
+.md-address-group .address-sub-group .form-group {
+	flex: 1; /* 讓縣市和鄉鎮的表單組件各佔一半寬度 */
+	margin-bottom: 0; /* 移除內部 form-group 的下邊距 */
+}
+
+/* 檔案輸入框 (大頭貼) 樣式 */
+.md-file-input {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start; /* 左對齊 */
+}
+
+.md-file-input label {
+	margin-bottom: 8px;
+}
+
+.md-file-input input[type="file"] {
+	width: 100%;
+	padding: 10px 0; /* 調整內邊距 */
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface-container-highest);
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	box-sizing: border-box;
+	cursor: pointer;
+	/* 如果需要，可以隱藏預設檔案按鈕，透過 label 或其他元素美化 */
+	/* display: none; */
+}
+
+.avatar-preview {
+	width: 120px;
+	height: 120px;
+	border: 1px dashed var(--md-sys-color-outline);
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	margin-top: 10px;
+	background-color: var(--md-sys-color-surface-variant); /* 預覽框背景色 */
+}
+
+.avatar-preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover; /* 確保圖片覆蓋整個區域 */
+}
+
+.avatar-placeholder {
+	font-size: 80px; /* 大頭貼預設圖標大小 */
+	color: var(--md-sys-color-outline);
+}
+
+/* 按鈕樣式 */
+.form-actions {
+	margin-top: 30px;
+	text-align: right; /* 按鈕靠右對齊 */
+}
+
+.material-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px 20px;
+	border-radius: 20px; /* 更圓潤的按鈕 */
+	border: none;
+	font-size: 1rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s
+		ease;
+	text-decoration: none; /* 移除超連結下劃線 */
+	white-space: nowrap; /* 防止文字換行 */
+}
+
+.material-button .material-icons {
+	margin-right: 8px;
+	font-size: 1.2em; /* 圖標大小 */
+}
+
+.md-primary-button {
+	background-color: var(--md-sys-color-primary); /* 主色按鈕背景色 */
+	color: var(--md-sys-color-on-primary); /* 主色按鈕文字色 */
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-primary-button:hover {
+	background-color: var(--md-sys-color-primary-fixed-dim); /* 懸停時顏色稍深 */
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 錯誤訊息樣式 */
+.error-messages-container {
+	background-color: var(--md-sys-color-error-container);
+	color: var(--md-sys-color-on-error-container);
+	border-left: 5px solid var(--md-sys-color-error);
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	font-size: 0.9rem;
+}
+
+.error-message {
+	margin-bottom: 5px;
+}
+
+.error-message:last-child {
+	margin-bottom: 0;
+}
+
+/* 響應式設計 */
+@media ( max-width : 768px) {
+	.md-address-group .address-sub-group {
+		flex-direction: column; /* 小螢幕下地址的縣市區塊堆疊 */
+		gap: 0;
+	}
+}
+
+.md-secondary-button {
+    background-color: transparent; /* 透明背景 */
+    color: var(--md-sys-color-primary); /* 文字顏色使用主色 */
+    border: 1px solid var(--md-sys-color-outline); /* 輕微邊框 */
+    box-shadow: none; /* 沒有陰影 */
+    margin-right: 12px; /* 和主要按鈕保持間距 */
+}
+
+.md-secondary-button:hover {
+    background-color: var(--md-sys-color-primary-container); /* 懸停時有輕微背景色 */
+    color: var(--md-sys-color-on-primary-container);
+    box-shadow: none;
+}
+</style>
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+		
+			<main class="content-area-main">
+				<!-- 					放自己需要的內容 -->
+				<div th:fragment="registerFormContent"
+					class="md-card register-container">
+					<h2 class="md-headline">會員註冊</h2>
+
+					<div th:if="${not #lists.isEmpty(errorMsgs)}"
+						class="error-messages-container">
+						<div class="error-message" th:each="message : ${errorMsgs}"
+							th:text="${message}"></div>
+					</div>
+
+					<form method="post" th:action="@{/register}"
+						th:object="${membersVO}" enctype="multipart/form-data">
+						<div class="form-group md-text-field">
+							<label for="memAcc">會員帳號:</label> <input type="text" id="memAcc"
+								th:field="*{memAcc}" required placeholder="請輸入會員帳號">
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memPwd">會員密碼:</label> <input type="password"
+								id="memPwd" th:field="*{memPwd}" required placeholder="請輸入會員密碼">
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memName">會員姓名:</label> <input type="text"
+								id="memName" th:field="*{memName}" required
+								placeholder="請輸入會員姓名">
+						</div>
+						<div class="form-group md-select-field">
+							<label for="memGender">會員性別:</label> <select id="memGender"
+								th:field="*{memGender}" required>
+								<option value="">請選擇</option>
+								<option value="M">男</option>
+								<option value="F">女</option>
+							</select>
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memBirthDate">會員生日:</label> <input type="date"
+								id="memBirthDate" th:field="*{memBirthDate}" required>
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memMobile">手機:</label> <input type="text"
+								id="memMobile" th:field="*{memMobile}" required
+								placeholder="請輸入手機號碼">
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memEmail">Email:</label> <input type="email"
+								id="memEmail" th:field="*{memEmail}" required
+								placeholder="請輸入 Email">
+						</div>
+						<div class="form-group md-address-group">
+							<label class="address-label">地址:</label>
+							<div class="address-sub-group">
+								<div class="form-group md-select-field">
+									<label for="citySelect">縣市：</label> <select id="citySelect"
+										name="city" required></select>
+								</div>
+								<div class="form-group md-select-field">
+									<label for="districtSelect">鄉鎮市區：</label> <select
+										id="districtSelect" name="district" required></select>
+								</div>
+							</div>
+							<div class="form-group md-text-field">
+								<label for="addrDetailInput">街道地址：</label> <input type="text"
+									id="addrDetailInput" placeholder="請輸入詳細地址"> <input
+									type="hidden" id="memAddr" th:field="*{memAddr}">
+							</div>
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memUsername">使用者暱稱:</label> <input type="text"
+								id="memUsername" th:field="*{memUsername}" required
+								placeholder="請輸入使用者暱稱">
+						</div>
+						<div class="form-group md-file-input">
+							<label for="memAvatarInput">大頭貼:</label> <input type="file"
+								name="memAvatar" id="memAvatarInput" accept="image/*" />
+							<div class="avatar-preview">
+								<img id="avatarPreview"
+									th:src="${membersVO.memAvatar != null ? '/images/' + membersVO.memAvatar : ''}"
+									alt="大頭貼預覽"
+									th:style="${membersVO.memAvatar != null ? '' : 'display:none;'}" />
+								<span th:unless="${membersVO.memAvatar != null}"
+									class="material-icons avatar-placeholder">account_circle</span>
+							</div>
+						</div>
+
+						<div class="form-actions">
+							<a href="javascript:history.back()"
+								class="material-button md-secondary-button"> <span
+								class="material-icons">arrow_back</span> 返回
+							</a>
+							<button type="submit" class="material-button md-primary-button">
+								<span class="material-icons">person_add</span> 送出註冊
+							</button>
+						</div>
+					</form>
+				</div>
+				<script th:src="@{/js/membersRegister.js}"></script>
+			</main>
+		</div>
+	</div>
+
+</body>
+</html>
