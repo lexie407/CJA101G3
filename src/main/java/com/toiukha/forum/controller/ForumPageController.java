@@ -20,6 +20,7 @@ public class ForumPageController {
         return "front-end/forum/forum-index";
     }
 
+<<<<<<< Upstream, based on branch 'lexie' of https://github.com/lexie407/CJA101G3.git
     // 新增文章的處理
     @PostMapping("/article/insert")
     public String insertArticle(@ModelAttribute Article art) {
@@ -68,6 +69,16 @@ public class ForumPageController {
     @GetMapping("/article/edit")
     public String editArticle(){
         return "front-end/forum/add-article";
+=======
+    @GetMapping("/article")
+    public String article() {
+        return "front-end/forum/forum-article";
+    }
+
+    @GetMapping("/article/edit")
+    public String editArticle(){
+        return "front-end/forum/addArticle";
+>>>>>>> e70c5f5 fix(article): 修正前台文章瀏覽功能的 fetch 路徑
     }
 
 }
