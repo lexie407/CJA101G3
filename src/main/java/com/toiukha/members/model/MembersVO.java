@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Timestamp;
 
-import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -52,7 +52,6 @@ public class MembersVO implements Serializable {
 	
 	@Column (name= "MEMBIRTHDATE", updatable = false)
 	@NotNull(message = "生日請勿空白")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Past(message = "生日必須是過去的日期")
 	private Date memBirthDate;
 	
@@ -63,7 +62,7 @@ public class MembersVO implements Serializable {
 	
 	@Column (name= "MEMEMAIL")
 	@NotEmpty(message = "電子郵件: 請勿空白")
-	@Pattern(regexp = "^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,6}$", message = "電子郵件格式錯誤")
+	@Email(message = "電子郵件格式錯誤")
 	private String memEmail;
 	
 	@Column (name= "MEMADDR")

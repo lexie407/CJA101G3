@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email 驗證失敗</title>
+
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
+<style>
+body {
+    font-family: 'Roboto', sans-serif; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5; 
+    margin: 0;
+    color: #333;
+}
+
+.error-container {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    position: relative; 
+}
+
+.close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 28px; 
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.close-button:hover {
+    color: #666;
+}
+
+.error-icon {
+    font-size: 60px; 
+    color: #ef5350; 
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 24px;
+    color: #ef5350; /* Material Design Error color */
+    margin-bottom: 15px;
+}
+
+p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 0; 
+}
+</style>
+</head>
+<body>
+
+    <div class="error-container">
+        <button class="close-button" onclick="window.close()">×</button>
+        <div class="material-icons error-icon">error_outline</div>
+        <h1>電子郵件驗證失敗</h1>
+        <p th:text="${errorMsg}">
+            驗證連結無效或已過期。請檢查您的連結或聯繫客服。
+        </p>
+    </div>
+
+</body>
+</html>
