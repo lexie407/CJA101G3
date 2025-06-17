@@ -14,4 +14,14 @@ public class ForumPageController {
         return "front-end/forum/forum-index";
     }
 
+    @GetMapping("/article")
+    public String article() {
+        return "front-end/forum/forum-article";
+    }
+
+    @GetMapping("/article/edit")
+    public String editArticle(){
+        return "front-end/forum/addArticle";
+    }
+
 }
