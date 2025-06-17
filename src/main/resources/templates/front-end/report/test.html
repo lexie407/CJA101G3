@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dify 串流對話聊天室</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    #chat-container {
+      width: 100%;
+      max-width: 700px; /* 限制聊天室窗最大寬度 */
+      height: 600px; /* 固定聊天室窗高度 */
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      background-color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden; /* 確保內容不會超出邊界 */
+    }
+    #messages {
+      flex-grow: 1; /* 訊息區域佔據剩餘空間 */
+      padding: 15px;
+      overflow-y: auto; /* 啟用垂直滾動條 */
+      scroll-behavior: smooth; /* 平滑滾動 */
+    }
+    .message-bubble {
+      margin-bottom: 10px;
+      padding: 10px 15px;
+      border-radius: 20px;
+      max-width: 70%;
+      word-wrap: break-word; /* 防止長單詞溢出 */
+    }
+    .user-message {
+      background-color: #007bff;
+      color: white;
+      align-self: flex-end; /* 靠右對齊 */
+      margin-left: auto; /* 推到右邊 */
+      border-bottom-right-radius: 5px; /* 調整泡泡角 */
+    }
+    .ai-message {
+      background-color: #e2e6ea;
+      color: #333;
+      align-self: flex-start; /* 靠左對齊 */
+      margin-right: auto; /* 推到左邊 */
+      border-bottom-left-radius: 5px; /* 調整泡泡角 */
+    }
+    #input-area {
+      display: flex;
+      padding: 15px;
+      border-top: 1px solid #eee;
+      background-color: #f9f9f9;
+    }
+    #msg {
+      flex-grow: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+
+    /* 新增的載入動畫樣式 */
+    .loading-dots span {
+      display: inline-block;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0);
+      }
+      40% {
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Dify AI 聊天室</h2>
+
+  <div id="chat-container">
+    <div id="messages">
+      </div>
+    <div id="input-area">
+      <input id="msg" placeholder="請輸入訊息..." onkeypress="handleKeyPress(event)" />
+      <button onclick="send()">送出</button>
+    </div>
+  </div>
+
+  <script>
+    let conversationId = localStorage.getItem("conversation_id") || "";
+    const messagesContainer = document.getElementById("messages");
+    let currentAiMessageElement = null; // 用於追蹤當前正在寫入的 AI 訊息元素
+    let isFirstAiChunk = true; // 標記是否是 AI 回覆的第一個 chunk
+
+    // 處理 Enter 鍵發送訊息
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        send();
+      }
+    }
+
+    // 將訊息添加到聊天視窗中
+    function appendMessage(text, sender, isLoading = false) {
+      const messageBubble = document.createElement("div");
+      messageBubble.classList.add("message-bubble");
+      if (sender === "user") {
+        messageBubble.classList.add("user-message");
+        messageBubble.textContent = text;
+        messagesContainer.appendChild(messageBubble);
+      } else if (sender === "ai") {
+        messageBubble.classList.add("ai-message");
+        if (isLoading) {
+            // 顯示載入動畫
+            messageBubble.innerHTML = '<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>';
+        } else {
+            messageBubble.textContent = text;
+        }
+        messagesContainer.appendChild(messageBubble);
+      }
+      scrollToBottom(); // 每次添加訊息後滾動到底部
+      return messageBubble; // 返回創建的元素以便後續更新
+    }
+
+    // 滾動聊天視窗到底部
+    function scrollToBottom() {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    async function send() {
+      const msgInput = document.getElementById("msg");
+      const msg = msgInput.value.trim(); // 獲取訊息並移除前後空白
+
+      if (!msg) { // 如果訊息為空，則不發送
+        return;
+      }
+
+      // 添加使用者訊息到聊天室窗
+      appendMessage(msg, "user");
+      msgInput.value = ""; // 清空輸入框
+      
+      // 添加一個顯示「輸入中」的 AI 訊息泡泡
+      currentAiMessageElement = appendMessage("", "ai", true); 
+      isFirstAiChunk = true; // 重置標記
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: msg,
+          conversation_id: conversationId
+        })
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      let buffer = ""; // 使用 buffer 來累積數據
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        buffer += chunk; // 將新的數據塊添加到 buffer 中
+
+        // 處理 buffer 中的所有完整行
+        let newlineIndex;
+        while ((newlineIndex = buffer.indexOf('\n')) !== -1) { // 找到第一個換行符
+          const line = buffer.substring(0, newlineIndex);
+          buffer = buffer.substring(newlineIndex + 1); // 移除已處理的行
+
+          const trimmedLine = line.trim();
+
+          // 檢查行是否以 'data:' 開頭，並移除所有重複的 'data:' 前綴
+          if (trimmedLine.startsWith('data:')) {
+            const jsonString = trimmedLine.replace(/^(data:\s*)+/, '').trim(); // 移除一個或多個 'data:'
+            
+            // 只有當 jsonString 非空且看起來像有效的 JSON 時才嘗試解析
+            if (jsonString && (jsonString.startsWith('{') && jsonString.endsWith('}'))) { 
+              try {
+                const json = JSON.parse(jsonString);
+                if (json.answer) {
+                  // 如果是 AI 回覆的第一個 chunk，清空載入動畫並開始顯示內容
+                  if (isFirstAiChunk) {
+                      currentAiMessageElement.innerHTML = ""; // 清空載入動畫
+                      isFirstAiChunk = false;
+                  }
+                  // 將 AI 回覆追加到當前 AI 訊息元素中
+                  currentAiMessageElement.textContent += json.answer;
+                  scrollToBottom(); // 每次追加內容後滾動到底部
+                }
+
+                if (json.conversation_id) {
+                  conversationId = json.conversation_id;
+                  localStorage.setItem("conversation_id", conversationId);
+                }
+              } catch (e) {
+                console.warn("忽略無法解析的段落：", jsonString, e);
+              }
+            } else if (jsonString) { 
+                 console.warn("忽略無法解析的段落 (非JSON格式)：", jsonString);
+            }
+          } else if (trimmedLine) { 
+               console.warn("忽略無法解析的段落 (非data:開頭)：", trimmedLine);
+          }
+        }
+      }
+      
+      // 處理循環結束後 buffer 中可能剩下的最後一部分數據
+      // 這部分數據可能沒有以換行符結束，但仍然需要解析
+      if (buffer.trim() !== "") {
+          const trimmedLine = buffer.trim();
+          if (trimmedLine.startsWith('data:')) {
+              const jsonString = trimmedLine.replace(/^(data:\s*)+/, '').trim(); 
+              if (jsonString && (jsonString.startsWith('{') && jsonString.endsWith('}'))) {
+                  try {
+                      const json = JSON.parse(jsonString);
+                      if (json.answer) {
+                          if (isFirstAiChunk) { // 處理最後一個 chunk 還是第一個有效內容的情況
+                              currentAiMessageElement.innerHTML = "";
+                              isFirstAiChunk = false;
+                          }
+                          currentAiMessageElement.textContent += json.answer;
+                          scrollToBottom();
+                      }
+                      if (json.conversation_id) {
+                          conversationId = json.conversation_id;
+                          localStorage.setItem("conversation_id", conversationId);
+                      }
+                  } catch (e) {
+                      console.warn("忽略無法解析的段落 (結尾):", jsonString, e);
+                  }
+              } else if (jsonString) {
+                    console.warn("忽略無法解析的段落 (結尾非JSON格式)：", jsonString);
+              }
+          } else if (trimmedLine) {
+               console.warn("忽略無法解析的段落 (結尾非data:開頭)：", trimmedLine);
+          }
+      }
+
+      // 如果在整個串流結束後 AI 訊息泡泡仍然只顯示載入動畫，表示 AI 沒有回覆內容
+      if (isFirstAiChunk && currentAiMessageElement) {
+          currentAiMessageElement.innerHTML = "（AI 沒有回覆內容）";
+          scrollToBottom();
+      }
+    }
+  </script>
+</body>
+</html>
