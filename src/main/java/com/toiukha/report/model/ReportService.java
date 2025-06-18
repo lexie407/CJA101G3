@@ -25,5 +25,9 @@ public class ReportService {
     public List<ReportVO> getAll(){
     	return repository.findAll();
     }
+    
+    public List<ReportVO> getMemberReports(Integer memId){
+    	return repository.getByMemId(memId);
+    }
 	
 }

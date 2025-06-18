@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>與我聊聊</title>
+
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+<link rel="stylesheet" th:href="@{/css/report/chatWithMe.css}">
+
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/report/chat}"
+						th:classappend="${currentPage2 == 'chatWithMe' ? 'active' : ''}">聊天室</a></li>
+					<li><a th:href="@{/report/memberReportList}"
+						th:classappend="${currentPage2 == 'memberReportList' ? 'active' : ''}">回報明細</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+
+				<div id="chat-container-main">
+					<div class="chat-header">
+<!-- 						<h3>AI 客服</h3> -->
+						<button id="close-chat-btn" class="material-button icon-button"
+							style="display: none;">
+							<span class="material-icons">close</span>
+						</button>
+					</div>
+					<div id="messages"></div>
+					<div id="input-area">
+						<input id="msg" placeholder="請輸入訊息..."
+							onkeypress="handleKeyPress(event)" />
+						<button onclick="send()" class="material-button">
+							<span class="material-icons">send</span>
+						</button>
+					</div>
+				</div>
+
+			</main>
+		</div>
+	</div>
+
+	<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+	<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+	<script src="../js/notification/websocket.js"></script>
+	<script src="../js/report/chatWithMe.js"></script>
+
+</body>
+</html>

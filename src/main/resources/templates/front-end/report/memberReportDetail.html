@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+<link rel="stylesheet" th:href="@{/css/report/memberReportDetail.css}">
+
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/report/chat}"
+						th:classappend="${currentPage2 == 'chatWithMe' ? 'active' : ''}">聊天室</a></li>
+					<li><a th:href="@{/report/memberReportList}"
+						th:classappend="${currentPage2 == 'memberReportList' ? 'active' : ''}">回報明細</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+
+				<div class="notification-detail-container">
+					<div class="botton-container">
+						<button class="back-to-list-btn material-button">
+							<span class="material-icons">arrow_back</span> 返回列表
+						</button>
+					</div>
+					<div class="notification-detail-card">
+
+						<div class="progress-stepper">
+							<div class="step"
+								th:classappend="${reportVO.repStatus >= 0 ? 'completed' : ''}">
+								<div class="step-dot"></div>
+								<div class="step-label">成案</div>
+							</div>
+							<div class="step"
+								th:classappend="${reportVO.repStatus >= 1 ? 'completed' : ''}">
+								<div class="step-dot"></div>
+								<div class="step-label">處理中</div>
+								<div class="step-line" th:if="${reportVO.repStatus >= 1}"></div>
+							</div>
+							<div class="step"
+								th:classappend="${reportVO.repStatus >= 2 ? 'completed' : ''}">
+								<div class="step-dot"></div>
+								<div class="step-label">結案</div>
+								<div class="step-line" th:if="${reportVO.repStatus >= 2}"></div>
+							</div>
+						</div>
+
+						<h2 id="detail-notification-title"
+							class="notification-detail-title" th:text="${reportVO.repType}"></h2>
+						<p id="detail-notification-date" class="notification-detail-date">
+							<span
+								th:text="${#dates.format(reportVO.repAt, 'yyyy-MM-dd HH:mm')}"></span>
+						</p>
+						<p style="font-weight: bold;">處理進度：</p>
+						<div th:switch="${reportVO.repStatus}">
+							<span th:case="0" style="margin-left: 20px;">成案</span> <span
+								th:case="1" style="margin-left: 20px;">處理中</span> <span
+								th:case="2" style="margin-left: 20px;">結案</span>
+						</div>
+						<p style="font-weight: bold;">案件詳述：</p>
+						<div id="detail-notification-message"
+							class="notification-detail-message" th:text="${reportVO.repDesc}"
+							style="margin-left: 20px;"></div>
+						<div th:if="${reportVO.repStatus == 2}">
+							<p style="font-weight: bold;">結案說明：</p>
+							<div id="detail-notification-message"
+								class="notification-detail-message"
+								th:text="${reportVO.closExplan}"></div>
+						</div>
+					</div>
+				</div>
+
+			</main>
+		</div>
+	</div>
+
+	<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+	<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+	<script src="../js/notification/websocket.js"></script>
+	<script src="../js/report/memberReportDetail.js"></script>
+
+</body>
+</html>
