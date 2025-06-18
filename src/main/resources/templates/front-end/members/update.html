@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org"
+	th:with="currentPage='account'">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,7 +61,6 @@
 	box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
 }
 
-/* 地址欄位分組 */
 .address-sub-group {
 	display: flex;
 	gap: 16px;
@@ -96,19 +96,31 @@
 	color: var(--md-sys-color-outline);
 }
 
+.form-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+	margin-top: 30px;
+	flex-wrap: wrap;
+}
+
 .material-button {
-	width: 100%;
-	padding: 12px 20px;
+	padding: 10px 24px;
 	border: none;
-	border-radius: 8px;
-	font-size: 1.1rem;
+	border-radius: 24px;
+	font-size: 1rem;
 	font-weight: 600;
 	cursor: pointer;
 	transition: background-color 0.2s ease, box-shadow 0.2s ease;
 	text-align: center;
 	text-decoration: none;
-	display: block;
-	margin-top: 30px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.material-button .material-icons {
+	margin-right: 8px;
 }
 
 .md-primary-button {
@@ -123,13 +135,50 @@
 }
 </style>
 </head>
+
 <body class="light">
 	<div class="app-container">
 		<div th:insert="~{/navTemplate :: navbar}"></div>
 		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/members/update}"> <span
+							class="material-icons">person</span> 資料修改
+					</a></li>
+
+					<li><a th:href="@{/members/coupons}"> <span
+							class="material-icons">redeem</span> 我的優惠券
+					</a></li>
+
+					<li><a th:href="@{/members/points-record}"> <span
+							class="material-icons">history</span> 點數紀錄
+					</a></li>
+
+					<li><a th:href="@{/members/points-products}"> <span
+							class="material-icons">shopping_cart</span> 我的兌換商品
+					</a></li>
+
+					<li><a th:href="@{/members/notifications}"> <span
+							class="material-icons">notifications</span> 通知
+					</a></li>
+
+					<li><a th:href="@{/members/chat-records}"> <span
+							class="material-icons">chat</span> 與我聊聊
+					</a></li>
+
+					<li><a th:href="@{/members/favorites}"> <span
+							class="material-icons">favorite</span> 我的收藏
+					</a></li>
+				</ul>
+			</header>
 			<main class="content-area-main">
 				<div class="md-card register-container">
 					<h2 class="md-headline">會員資料修改</h2>
+
+					<!-- 成功訊息提示 -->
+					<div th:if="${param.success}" class="success-message"
+						style="color: green; text-align: center; margin-bottom: 20px;">
+						資料已成功更新！</div>
 
 					<div th:if="${not #lists.isEmpty(errorMsgs)}"
 						class="error-messages-container">
@@ -146,7 +195,8 @@
 
 						<div class="form-group">
 							<label for="memPwd">會員密碼:</label> <input type="password"
-								id="memPwd" th:field="*{memPwd}" required placeholder="請輸入會員密碼">
+								id="memPwd" name="memPwd" th:value="${membersVO.memPwd}"
+								placeholder="如需修改請輸入新密碼" />
 						</div>
 
 						<div class="form-group">
@@ -186,7 +236,6 @@
 								<label for="citySelect">縣市：</label> <select id="citySelect"
 									name="city" required></select>
 							</div>
-
 							<div class="form-group">
 								<label for="districtSelect">鄉鎮市區：</label> <select
 									id="districtSelect" name="district" required></select>
@@ -208,7 +257,7 @@
 						<div class="form-group">
 							<label for="memRegTime">註冊時間:</label> <input type="text"
 								id="memRegTime" readonly class="readonly-field"
-								th:value="${#temporals.format(membersVO.memRegTime, 'yyyy-MM-dd HH:mm:ss')}">
+								th:value="${#dates.format(membersVO.memRegTime, 'yyyy-MM-dd HH:mm:ss')}">
 						</div>
 
 						<div class="form-group">
@@ -216,9 +265,8 @@
 								name="memAvatarFile" id="memAvatarInput" accept="image/*">
 							<div class="avatar-preview">
 								<img id="avatarPreview"
-									th:src="@{/members/avatar(id=${membersVO.memId})}" alt="大頭貼預覽"
-									th:style="${membersVO.memAvatar != null} ? '' : 'display:none;'">
-								<span th:unless="${membersVO.memAvatar != null}"
+									th:src="@{/members/DBGifReader(memId=${membersVO.memId}, type='memAvatar')}"
+									alt="大頭貼預覽" /> <span th:unless="${membersVO.memId != null}"
 									class="material-icons avatar-placeholder">account_circle</span>
 							</div>
 						</div>
@@ -228,10 +276,8 @@
 								name="memAvatarFrameFile" id="memAvatarFrame" accept="image/*">
 							<div class="avatar-preview">
 								<img id="avatarFramePreview"
-									th:src="@{/members/avatarFrame(id=${membersVO.memId})}"
-									alt="頭像框預覽" style="max-width: 100%; max-height: 100%;"
-									th:style="${membersVO.memAvatarFrame != null} ? '' : 'display:none;'">
-								<span th:unless="${membersVO.memAvatarFrame != null}"
+									th:src="@{/members/DBGifReader(memId=${membersVO.memId}, type='memAvatarFrame')}"
+									alt="頭像框預覽" /> <span th:unless="${membersVO.memId != null}"
 									class="material-icons avatar-placeholder">crop_square</span>
 							</div>
 						</div>
@@ -248,6 +294,17 @@
 					</form>
 				</div>
 				<script th:src="@{/js/membersUpdate.js}"></script>
+				<script>
+				    document.addEventListener("DOMContentLoaded", function () {
+				        const currentPath = window.location.pathname;
+				
+				        document.querySelectorAll(".secondary-nav ul li a").forEach(link => {
+				            if (link.getAttribute("href") === currentPath) {
+				                link.classList.add("active");
+            }
+        });
+    });
+</script>
 			</main>
 		</div>
 	</div>

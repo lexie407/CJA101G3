@@ -9,13 +9,13 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,30 +23,32 @@ import com.toiukha.members.model.MembersVO;
 import com.toiukha.email.EmailService;
 import com.toiukha.members.model.MembersService;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @Controller
+@RequestMapping("/members")
 public class MembersController {
 	 @Autowired
 	    private MembersService membersService;
 	 @Autowired
 	 private EmailService emailService;
 
-    @GetMapping("/membersregister") 
+	 @GetMapping("/register")    
     public String showRegisterPage(Model model) { 
         
         model.addAttribute("membersVO", new MembersVO()); 
         model.addAttribute("errorMsgs", new ArrayList<>()); 
 
         
-        return "front-end/members/membersRegister";
+        return "front-end/members/register";
     }
     
-    @GetMapping("/members/verification-sent")
+	 @GetMapping("/verification-sent") 
     public String showVerificationSentPage(@RequestParam(value = "email", required = false) String email, Model model) {
     	 if (email == null || email.isBlank()) {
     	        // 若沒有 email，代表不是從註冊流程過來的，導回註冊頁
-    	        return "redirect:/membersregister";
+    	        return "redirect:/members/register";
     	    }
 
     	    model.addAttribute("email", email);
@@ -93,7 +95,7 @@ public class MembersController {
                     .map(FieldError::getDefaultMessage)
                     .collect(Collectors.toList());
             model.addAttribute("errorMsgs", errorMsgs);
-            return "front-end/members/membersRegister";
+            return "front-end/members/register";
         }
 
         /*************************** 2.開始新增資料 *****************************************/
@@ -108,7 +110,7 @@ public class MembersController {
     /**
      * 使用者點擊信件中的驗證連結，啟用帳號
      */
-    @GetMapping("/member/verify")
+    @GetMapping("/verify")
     public String verifyEmail(@RequestParam("token") String token, Model model) {
         boolean success = membersService.verifyAndActivateMember(token);
         if (success) {
@@ -137,18 +139,84 @@ public class MembersController {
     }
     
     
-    @GetMapping("/members/testUpdate")
-    public String showUpdateTestPage(Model model) {
-        
-        model.addAttribute("membersVO", new MembersVO());
-        return "front-end/members/membersUpdate"; 
+    @GetMapping("/update")
+    public String showUpdatePage(HttpSession session, Model model) {
+        MembersVO sessionMember = (MembersVO) session.getAttribute("member");
+        model.addAttribute("membersVO", sessionMember);
+        return "front-end/members/update";
     }
     
-    @GetMapping("/test/email-fail")
+    @PostMapping("/update")
+    public String updateMember(
+            @Valid @ModelAttribute("membersVO") MembersVO membersVO,
+            BindingResult result,
+            Model model,
+            HttpSession session,
+            @RequestParam("memAvatarFile") MultipartFile memAvatarFile,
+            @RequestParam("memAvatarFrameFile") MultipartFile memAvatarFrameFile
+    ) throws IOException {
+
+        MembersVO sessionMember = (MembersVO) session.getAttribute("member");
+        if (sessionMember == null) {
+            return "redirect:/members/login";
+        }
+
+        // 強制使用 Session 中的 memId & memAcc（防止偽造）
+        membersVO.setMemId(sessionMember.getMemId());
+        membersVO.setMemAcc(sessionMember.getMemAcc());
+        membersVO.setMemRegTime(sessionMember.getMemRegTime());
+        
+        membersVO.setMemGroupAuth(sessionMember.getMemGroupAuth());
+        membersVO.setMemGroupPoint(sessionMember.getMemGroupPoint());
+        membersVO.setMemStatus(sessionMember.getMemStatus());
+        membersVO.setMemStoreAuth(sessionMember.getMemStoreAuth());
+        membersVO.setMemStorePoint(sessionMember.getMemStorePoint());
+        membersVO.setMemPoint(sessionMember.getMemPoint());
+        membersVO.setMemLogErrCount(sessionMember.getMemLogErrCount());
+        membersVO.setMemLogErrTime(sessionMember.getMemLogErrTime());
+
+        // 處理頭像（若上傳新圖片才更新）
+        if (!memAvatarFile.isEmpty() && memAvatarFile.getContentType().startsWith("image/")) {
+            membersVO.setMemAvatar(memAvatarFile.getBytes());
+        } else {
+            membersVO.setMemAvatar(sessionMember.getMemAvatar());
+        }
+
+        if (!memAvatarFrameFile.isEmpty() && memAvatarFrameFile.getContentType().startsWith("image/")) {
+            membersVO.setMemAvatarFrame(memAvatarFrameFile.getBytes());
+        } else {
+            membersVO.setMemAvatarFrame(sessionMember.getMemAvatarFrame());
+        }
+
+        // 若驗證有錯誤，回填資料並返回表單
+        if (result.hasErrors()) {
+            List<String> errorMsgs = result.getFieldErrors().stream()
+                    .map(FieldError::getDefaultMessage)
+                    .collect(Collectors.toList());
+            model.addAttribute("errorMsgs", errorMsgs);
+            return "front-end/members/update";
+        }
+
+        // 更新會員資料
+        membersService.updateMembers(membersVO);
+
+        // 更新 session 裡的資料（避免還是舊資料）
+        session.setAttribute("member", membersVO);
+
+        return "redirect:/members/update?success"; // 可以在 update 頁面用參數判斷顯示「修改成功」
+    }
+    
+    @GetMapping("/email-fail")
     public String showEmailVerificationFailed() {
         return "front-end/members/emailVerificationFailed";
     }
     
+    
+    @GetMapping("/selectPage")
+    public String showSelectPage(Model model) {
+        model.addAttribute("membersList", membersService.findAllMembers());
+        return "back-end/members/selectPage";
+    }
     
     
     

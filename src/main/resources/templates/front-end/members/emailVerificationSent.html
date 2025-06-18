@@ -19,25 +19,24 @@
 	padding: 20px;
 	display: flex;
 	flex-direction: column;
-	align-items: center; 
-	justify-content: center; 
+	align-items: center;
+	justify-content: center;
 }
-
 
 .md-card {
 	background-color: var(--md-sys-color-surface);
-	border-radius: 12px; 
+	border-radius: 12px;
 	box-shadow: 0px 4px 8px rgba(var(--md-sys-color-shadow-rgb), 0.1);
 	padding: 40px;
 	text-align: center;
-	max-width: 500px; 
-	width: 90%; 
+	max-width: 500px;
+	width: 90%;
 }
 
 .md-headline {
-	font-size: 2rem; 
+	font-size: 2rem;
 	font-weight: 500;
-	color: var(--md-sys-color-primary); 
+	color: var(--md-sys-color-primary);
 	margin-bottom: 24px;
 }
 
@@ -49,18 +48,17 @@
 }
 
 .md-icon-large {
-	font-size: 64px; 
-	color: var(--md-sys-color-tertiary); 
+	font-size: 64px;
+	color: var(--md-sys-color-tertiary);
 	margin-bottom: 20px;
 }
-
 
 .material-button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	padding: 12px 24px;
-	border-radius: 28px; 
+	border-radius: 28px;
 	border: none;
 	font-size: 1.05rem;
 	font-weight: 500;
@@ -95,7 +93,6 @@
 
 .md-text-button:hover {
 	background-color: rgba(var(--md-sys-color-primary-rgb), 0.1);
-
 }
 </style>
 
@@ -128,7 +125,7 @@
 						<span th:text="${msg}"></span>
 					</div>
 
-					<form th:action="@{/resend-verification}" method="post"
+					<form th:action="@{/members/resend-verification}" method="post"
 						style="display: inline;">
 						<input type="hidden" name="email" th:value="${email}" />
 						<button type="submit" class="material-button md-primary-button">
@@ -137,7 +134,7 @@
 					</form>
 
 					<p style="margin-top: 20px;">
-						<a th:href="@{/login}" class="md-text-button">返回登入頁面</a>
+						<a th:href="@{/members/login}" class="md-text-button">返回登入頁面</a>
 					</p>
 				</div>
 			</main>
