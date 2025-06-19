@@ -32,6 +32,7 @@
             </ul>
 
             <div class="bottom-notification">
+            	<a th:classappend="${currentPage == 'chatWithMe' ? 'active' : ''}" th:href="@{/report/chat}" id="chatWithMe"><span class="material-icons">support_agent</span>與我聊聊</a>
                 <a th:href="@{/notification/getMemNoti}" id="notificationButton"><span class="material-icons">notifications</span>通知</a>
             </div>
 

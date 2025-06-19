@@ -106,13 +106,11 @@
 									th:text="${#dates.format(notificationVO.notiSendAt, 'yyyy-MM-dd HH:mm')}"></td>
 								<td th:text="${notificationVO.memId}"></td>
 								<td><span th:switch="${notificationVO.notiStatus}">
-										<span th:case="0">
-											<span th:if="${notificationVO.notiSendAt < nowTime}">未讀</span>
-											<span th:unless="${notificationVO.notiSendAt < nowTime}">待發送</span>
-										</span>
+										<span th:case="0">未讀</span>
 										<span th:case="1">已讀</span>
 										<span th:case="2">使用者刪除</span>
 										<span th:case="3">管理員刪除</span>
+										<span th:case="9">待發送</span>
 								</span></td>
 								<td th:text="${notificationVO.notiTitle}"></td>
 								<td th:text="${notificationVO.notiCont}"></td>
