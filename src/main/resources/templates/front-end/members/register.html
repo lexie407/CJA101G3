@@ -293,7 +293,7 @@
 							th:text="${message}"></div>
 					</div>
 
-					<form method="post" th:action="@{/register}"
+					<form method="post" th:action="@{/members/register}"
 						th:object="${membersVO}" enctype="multipart/form-data">
 						<div class="form-group md-text-field">
 							<label for="memAcc">會員帳號:</label> <input type="text" id="memAcc"

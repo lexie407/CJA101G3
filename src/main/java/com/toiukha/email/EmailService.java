@@ -54,7 +54,7 @@ public class EmailService {
             message.setFrom(new InternetAddress("ixlogic.wu3@gmail.com"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
             message.setSubject("會員註冊驗證信");
-            message.setText("您好，請點選以下連結完成註冊驗證：\n\n" + link);
+            message.setText("您好，請點選以下連結完成註冊驗證（30分鐘內有效）：\n\n" + link);
 
             // 寄出郵件
             Transport.send(message);
@@ -68,12 +68,7 @@ public class EmailService {
         }
     }
 
-    /**
-     * 從 Redis 驗證 token → 拿到 memId（會員ID）
-     *
-     * @param token 驗證連結中的 token
-     * @return memId，如果驗證碼不存在則回傳 null
-     */
+     // 從 Redis 驗證 token → 拿到 memId（會員ID）
     public Integer verifyToken(String token) {
         String memIdStr = redisTemplate.opsForValue().get("verify:" + token);
         if (memIdStr == null) return null;
@@ -116,6 +111,13 @@ public class EmailService {
             System.out.println("❌ 重設密碼信寄送失敗！");
             e.printStackTrace();
         }
+    }
+    
+    
+     // 驗證「忘記密碼」token 是否存在
+    public Integer verifyResetToken(String token) {
+        String memIdStr = redisTemplate.opsForValue().get("reset:" + token);
+        return (memIdStr != null) ? Integer.parseInt(memIdStr) : null;
     }
     
     
