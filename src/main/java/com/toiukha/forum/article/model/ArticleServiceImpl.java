@@ -5,10 +5,8 @@ import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.util.Debug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.sql.Date;
 import java.util.*;
-
 
 @Service("articleService")
 public class ArticleServiceImpl implements ArticleService {
@@ -64,6 +62,15 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     //===================  新增  ===================
+    /**
+     * 新增文章
+     * @param artCat 文章分類
+     * @param artSta 文章上下架狀態
+     * @param artHol 所屬會員編號
+     * @param artTitle 文章標題
+     * @param artCon 文章內容
+     * @return 新增的文章實體
+     */
     //新增文章
     @Override
     public Article add(Byte artCat, Byte artSta, Integer artHol, String artTitle, String artCon) {
@@ -117,7 +124,10 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public Article updateBasic(Integer artId, Byte artCat, Byte artSta, String artTitle, String artCon) {
-        Article artVO = new Article();
+        Article artVO = articleRepository.findById(artId).orElse(null);
+        if (artVO == null) {
+            artVO = new Article();
+        }
         artVO.setArtId(artId);
         artVO.setArtCat(artCat);
         artVO.setArtSta(artSta);

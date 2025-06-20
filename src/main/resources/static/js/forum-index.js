@@ -57,11 +57,13 @@ function createArticleCard(article) {
     const artCat = artCatMap[article.artCat] || "文章*";  //若文章類別沒有被適當的歸類，顯示成文章*類別
     const artTitle = article.artTitle;
     const artCon = function () {
+        const cleanText = article.artCon.replace(/<img[^>]*>/gi, ""); // 移除 img 標籤
+
         // 如果文章內容超過50個字，則截斷並加上省略號
-        if (article.artCon.length > 50) {
-            return article.artCon.substring(0, 50) + "...";
+        if (cleanText.length > 50) {
+            return cleanText.substring(0, 50) + "...";
         } else {
-            return article.artCon;
+            return cleanText;
         }
     };
     const mamName = article.mamName;
