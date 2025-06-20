@@ -1,10 +1,90 @@
 <!DOCTYPE html>
-<html lang="ZH-TW">
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>討論區的某篇文章標題</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章 | 前台 | 島遊kha</title>
+
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
 </head>
-<body>
-這裡之後會顯示一篇文章跟它底下的留言
+<body class="light">
+
+<div class="app-container">
+    <div th:insert="~{/navTemplate :: navbar}"></div>
+    <div class="main-content">
+        <header class="secondary-nav">
+            <ul>
+                <!-- 					放自己需要的內容 -->
+            </ul>
+        </header>
+        <main class="content-area-main">
+            <!-- 					放自己需要的內容 -->
+<!--            這裡之後會顯示一篇文章跟它底下的留言-->
+            <div id="articleDetail">載入中...</div>
+        </main>
+    </div>
+</div>
+
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="../js/notification/websocket.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+function getArtIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('artId');
+}
+
+function renderArticle(article) {
+    if (!article) {
+        $('#articleDetail').html('找不到文章');
+        return;
+    }
+    $('#articleDetail').html(`
+        <h2>${article.artTitle}</h2>
+        <div>作者：${article.mamName || ''}</div>
+        <div>分類：${article.artCat}</div>
+        <div>建立時間：${article.artCreTime}</div>
+        <div>內容：${article.artCon}</div>
+    `);
+}
+
+$(function() {
+// 取得 host + context path
+    function getFullContextPath() {
+        const path = window.location.pathname;
+        const firstSlash = path.indexOf("/", 1);
+        const ctx = firstSlash === -1 ? "" : path.substring(0, firstSlash);
+        return window.location.origin + ctx;
+    }
+    const contextPath = getFullContextPath(); // 拿到contextPath
+    // const pathname = window.location.pathname;
+    // const contextPath = window.location.origin + pathname.substring(0, pathname.lastIndexOf('/') + 1);
+// console.log(pathname);
+console.log(contextPath);
+    const artId = getArtIdFromUrl();
+    if (!artId) {
+        $('#articleDetail').html('缺少文章編號');
+        return;
+    }
+    fetch(`${contextPath}/article/${artId}`)
+        .then(response => {
+            if (!response.ok) {
+                console.error(`Fetch error: ${response.status} ${response.statusText}`);
+                throw new Error('網路錯誤或文章不存在');
+            }
+            return response.json();
+        })
+        .then(article => {
+            renderArticle(article);
+        })
+        .catch(error => {
+            console.error('載入文章失敗:', error);
+            $('#articleDetail').html('載入文章失敗，請稍後再試。');
+        });
+});
+</script>
 </body>
 </html>

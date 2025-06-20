@@ -26,4 +26,6 @@ public interface ArticleService {
     void delete(Integer artId);
 
     List<ArticleDTO> getAllDTO(String sortBy, String sortDirection);
+
+    ArticleDTO getDTOById(Integer id);
 }
