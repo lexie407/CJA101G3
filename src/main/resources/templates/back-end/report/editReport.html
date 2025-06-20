@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+    
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+	                <li><a th:href="@{/report/allReportList}"
+							th:classappend="${currentPage2 == 'allReportList' ? 'active' : ''}">案件列表</a></li>
+					<li><a th:href="@{/report/addReportbyAdmin}"
+						th:classappend="${currentPage2 == 'addReportbyAdmin' ? 'active' : ''}">新增案件</a></li>
+                </ul>
+            </header>
+			<main class="content-area-main">
+				<div
+					class="single-notification-container notification-center-container">
+					<div class="single-notification-actions">
+						<button id="backToAdminNotificationsBtn" class="material-button"
+							th:attr="data-originalUri=${originalUri}"
+							style="margin-bottom: 10px;">
+							<span class="material-icons">arrow_back</span> 返回
+						</button>
+					</div>
+
+					<div class="admin-notification-form">
+						<h2
+							th:if="${reportVO.repStatus != 2}">編輯案件</h2>
+						<h2
+							th:if="${reportVO.repStatus == 2}">案件詳情</h2>
+
+						<form id="notificationEditForm" method="post"
+							th:action="@{/report/updateReport}">
+<!-- 							記得放管理員 -->
+							<input type="hidden" name="adminId" value="1">
+							<div class="form-group">
+								<label for="notificationMemberId">案件編號:</label> <input
+									type="text" id="notificationMemberId" name="repId"
+									th:value="${reportVO.repId}" readonly>
+							</div>
+							<div class="form-group">
+								<label for="notificationMemberId">回報會員 ID:</label> <input
+									type="text" id="notificationMemberId" name="memId"
+									th:value="${reportVO.memId}" readonly>
+							</div>
+							<div class="form-group">
+<!-- 							記得放會員 -->
+								<label for="notificationMemberName">會員名稱:</label> <input
+									type="text" id="notificationMemberName" value="開發中..." readonly>
+							</div>
+							<div class="form-group">
+								<label for="notificationStatus">案件進度:</label> <input
+									type="hidden" name="repStatus"
+									th:value="${reportVO.repStatus}"> <input
+									type="text" id="repStatus" readonly
+									th:if="${reportVO.repStatus == 2}" value="結案">
+								<input type="text" id="repStatus" readonly
+									th:if="${reportVO.repStatus == 1}" value="處理中">
+								<input type="text" id="repStatus" readonly
+									th:if="${reportVO.repStatus == 0}" value="成案">
+							</div>
+							<div class="form-group">
+								<label for="notificationCreatedAt">案件建立時間:</label> <input
+									type="text" id="notificationCreatedAt"
+									th:value="${#dates.format(reportVO.repAt, 'yyyy-MM-dd HH:mm')}" readonly>
+							</div>
+
+							<div
+								th:if="${reportVO.repStatus == 1}">
+								<div class="form-group">
+									<label for="notificationTitle">案件簡述:</label> <input type="text"
+										id="notificationTitle" name="repType"
+										th:value="${reportVO.repType}" required>
+								</div>
+								<div class="form-group full-width">
+									<label for="notificationContent">案件內容:</label>
+									<textarea id="notificationContent" name="repDesc" rows="8"
+										required th:text="${reportVO.repDesc}"></textarea>
+								</div>
+								<div class="form-group full-width">
+									<label for="notificationContent">結案說明:</label>
+									<textarea id="notificationContent" name="closExplan" rows="8"
+										th:text="${reportVO.closExplan}"></textarea>
+								</div>
+							</div>
+							<div
+								th:if="${reportVO.repStatus == 2}">
+								<div class="form-group">
+									<label for="notificationSentAt">案件建立時間:</label> <input
+										type="datetime-local" th:value="${reportVO.repAt}"
+										id="notificationSentAt" readonly>
+								</div>
+								<div class="form-group">
+									<label for="notificationTitle">案件簡述:</label> <input type="text"
+										id="notificationTitle" th:value="${reportVO.repType}"
+										readonly>
+								</div>
+								<div class="form-group full-width">
+									<label for="notificationContent">案件內容:</label>
+									<textarea id="notificationContent" rows="8" readonly
+										th:text="${reportVO.repDesc}"></textarea>
+								</div>
+								<div class="form-group full-width">
+									<label for="notificationContent">結案說明:</label>
+									<textarea id="notificationContent" name="closExplan" rows="8"
+										readonly th:text="${reportVO.closExplan}"></textarea>
+								</div>
+							</div>
+
+							<div class="form-actions"
+								th:if="${reportVO.repStatus == 1}">
+								<button type="submit" class="material-button">
+									<span class="material-icons">check_circle</span> 資料送出
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+            </main>
+		</div>
+	</div>
+    
+    <script src="../js/report/editReport.js"></script>
+    
+</body>
+</html>
