@@ -4,23 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <!--前台CSS-->
+    <link rel="stylesheet" th:href="@{/css/light.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!--次導覽列CSS-->
+    <link rel="stylesheet" th:href="@{/css/subnav.css}">
     
 </head>
 <body class="light">
-
 	<div class="app-container">
-		<div th:insert="~{/navTemplate :: navbar}"></div>
-		<div class="main-content">
-			<header class="secondary-nav">
-                <ul>
-<!-- 					放自己需要的內容 -->
-                </ul>
-            </header>
+	<!--前台:側邊攔，通用樣式，不用改-->
+	<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		
+		<div class="main-content">		
+			<!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
+			<div th:insert="~{/fragments/subnavXxx :: subnav('all')}"></div>
+			
+			<!--main 以下為頁面主要內容 -->
 			<main class="content-area-main">
-<!-- 					放自己需要的內容 -->
-            </main>
+				
+			
+			
+			
+			
+			
+			
+			
+           	</main>
 		</div>
 	</div>
     
