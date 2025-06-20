@@ -81,7 +81,7 @@ spring.datasource.password=你的密碼
 
 
 #thymeleaf template操作說明  
-1/ src > template > thymeleaf_template.html 複製到各自的front 或 back使用  
+1/ src > main > resources > templates > thymeleaf_template.html 複製到各自的front 或 back使用  
 2/ thymeleaf_template.html中 line17 line22請放入自己的內容  
 3/ 自己的controller各方法內請加上「model.addAttribute("currentPage", "???");」???是放所屬頁面屬性的值，這屬性是為了讓左側導覽列知道目前的頁面，讓其標籤套用目前頁面的CSS  
     各頁面英文屬性值如下  
