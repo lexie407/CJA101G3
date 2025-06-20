@@ -1,5 +1,6 @@
 package com.toiukha.forum.article.model;
 
+import com.toiukha.forum.article.dto.ArticleDTO;
 import com.toiukha.forum.article.entity.Article;
 
 import java.sql.Date;
@@ -8,7 +9,6 @@ import java.util.List;
 public interface ArticleService {
     List<Article> getAll();
 //    List<ArticleDTO> getAllDTO();
-
 
     Article getArticleById(Integer id);
 //    ArticleDTO getDTOById(Integer id);
@@ -25,4 +25,5 @@ public interface ArticleService {
     void update(Article artVO);
     void delete(Integer artId);
 
+    List<ArticleDTO> getAllDTO(String sortBy, String sortDirection);
 }
