@@ -39,8 +39,7 @@ $(function () {
 
 // 取得 host + context path
 function getFullContextPath() {
-    const path = window.location.pathname;  // 獲取當前頁面的pathname
-    // 找到第一個斜線後的部分，這通常是context path
+    const path = window.location.pathname;
     const firstSlash = path.indexOf("/", 1);
     const ctx = firstSlash === -1 ? "" : path.substring(0, firstSlash);
     return window.location.origin + ctx;
