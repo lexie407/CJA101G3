@@ -5,10 +5,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文章 | 前台 | 島遊kha</title>
-
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
 
 </head>
+<style>
+    .article-card {
+        background-color: var(--md-sys-color-surface-container-lowest);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .article-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .article-category {
+        font-size: 14px;
+        background-color: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        padding: 4px 10px;
+        border-radius: 16px;
+    }
+
+    .article-title {
+        font-size: 20px;
+        color: var(--md-sys-color-on-surface);
+        margin: 0;
+    }
+
+    .article-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: var(--md-sys-color-on-surface-variant);
+        margin-bottom: 15px;
+    }
+
+    .meta-left span,
+    .meta-right span {
+        margin-right: 12px;
+    }
+
+    .article-content {
+        color: var(--md-sys-color-on-surface);
+        font-size: 16px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .article-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .actions-left {
+        display: flex;
+        gap: 10px;
+    }
+
+    .actions-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .more-icon {
+        cursor: pointer;
+        font-size: 24px;
+        color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .likes.material-icons {
+        font-size: 24px; /* 按讚 icon */
+        color: var(--md-sys-color-secondary); /* 讓 icon 亮起來 */
+    }
+    .likes.material-button {
+        background-color: var(--md-sys-color-secondary);
+    }
+    .likes.material-button:hover {
+        background-color: rgb(215, 144, 44);
+        /*color: var(--md-sys-color-on-secondary-container);*/
+    }
+    .material-button:hover {
+        background-color: rgb(36, 124, 148);
+        box-shadow: 0 4px 3px rgba(0, 0, 0, 0.12);
+    }
+    .material-button{
+        box-shadow: 0 4px 3px rgba(0, 0, 0, 0.05);
+    }
+
+</style>
 <body class="light">
 
 <div class="app-container">
@@ -43,12 +135,48 @@ function renderArticle(article) {
         $('#articleDetail').html('找不到文章');
         return;
     }
+    // 文章類別對應
+    const artCatMap = {
+        1: "文章",
+        2: "發問中",
+        3: "已解決"
+    }
+    const artCat = artCatMap[article.artCat] || "文章*";  //若文章類別沒有被適當的歸類，顯示成文章*類別
+    // 把日期轉換用台灣常用的日期
+    const createDate = new Date(article.artCreTime).toLocaleDateString("zh-TW");
+    console.log(createDate);
     $('#articleDetail').html(`
-        <h2>${article.artTitle}</h2>
-        <div>作者：${article.mamName || ''}</div>
-        <div>分類：${article.artCat}</div>
-        <div>建立時間：${article.artCreTime}</div>
-        <div>內容：${article.artCon}</div>
+      <div class="article-card">
+        <div class="article-header">
+          <span class="article-category">${artCat}</span>
+          <h2 class="article-title">${article.artTitle}</h2>
+        </div>
+
+        <div class="article-meta">
+          <div class="meta-left">
+            <span class="author">會員：${article.mamName || ''}</span>
+            <span class="create-time">${createDate}</span>
+          </div>
+          <div class="meta-right">
+            <span class="likes material-icons">thumb_up</span> ${article.artLike || 0}
+            <span class="article-id">#${article.artId}</span>
+          </div>
+        </div>
+
+        <div class="article-content">
+          ${article.artCon}
+        </div>
+
+        <div class="article-actions">
+          <div class="actions-left">
+            <button class="likes material-button secondary-btn"><span class="material-icons">thumb_up</span> 按讚</button>
+            <button class="material-button secondary-btn"><span class="material-icons">favorite</span> 收藏</button>
+          </div>
+          <div class="actions-right">
+            <span class="material-icons more-icon">more_vert</span>
+          </div>
+        </div>
+      </div>
     `);
 }
 
