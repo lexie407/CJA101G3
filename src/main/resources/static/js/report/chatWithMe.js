@@ -1,4 +1,5 @@
-let conversationId = localStorage.getItem("conversation_id") || "";
+let conversationId = "";
+//let conversationId = localStorage.getItem("conversation_id") || "";
     const messagesContainer = document.getElementById("messages");
     const msgInput = document.getElementById("msg"); // 獲取輸入框元素
 
@@ -98,7 +99,7 @@ let conversationId = localStorage.getItem("conversation_id") || "";
 
                 if (json.conversation_id) {
                   conversationId = json.conversation_id;
-                  localStorage.setItem("conversation_id", conversationId);
+//                  localStorage.setItem("conversation_id", conversationId);
                 }
               } catch (e) {
                 console.warn("忽略無法解析的段落：", jsonString, e);
