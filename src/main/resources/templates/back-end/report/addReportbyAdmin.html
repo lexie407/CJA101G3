@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+    
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+                	<li><a th:href="@{/report/allReportList}"
+						th:classappend="${currentPage2 == 'allReportList' ? 'active' : ''}">案件列表</a></li>
+					<li><a th:href="@{/report/addReportbyAdmin}"
+						th:classappend="${currentPage2 == 'addReportbyAdmin' ? 'active' : ''}">新增案件</a></li>
+                </ul>
+            </header>
+			<main class="content-area-main">
+				<div
+					class="single-notification-container notification-center-container">
+					<div class="admin-notification-form">
+						<input type="hidden" id="addMsgs" name="addMsgs"
+							th:value="${addMsgs}">
+						<h1>新增回報案件</h1>
+						<form id="notificationEditForm" method="post"
+							th:action="@{/report/doAddReportbyAdmin}">
+<!-- 							記得放管理員 -->
+							<input type="hidden" name="adminId" value="1">
+							<div class="form-group">
+<!-- 							記得放會員 -->
+								<label>回報會員:</label>
+								<select id="notificationMemberId" name="memId" required>
+									<option value="" selected>請選擇</option>
+									<option value="1">會員1</option>
+									<option value="2">會員2</option>
+									<option value="3">會員3</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="notificationTitle">案件簡述:</label> <input type="text"
+									id="notificationTitle" name="repType" required>
+							</div>
+							<div class="form-group full-width">
+								<label for="notificationContent">案件內容:</label>
+								<textarea id="notificationContent" name="repDesc" rows="8"
+									required></textarea>
+							</div>
+							<div class="form-actions">
+								<button type="submit" class="material-button">
+									<span class="material-icons">check_circle</span> 確定新增
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<input type="hidden" id="successMessage" th:value="${successMsg}" />
+            </main>
+		</div>
+	</div>
+	
+	<script src="../js/report/addReportbyAdmin.js"></script>
+	    
+</body>
+</html>

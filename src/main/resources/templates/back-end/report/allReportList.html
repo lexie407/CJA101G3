@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+
+<th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+<link rel="stylesheet" href="../css/vendors/datatables.css" />
+<link rel="stylesheet" href="../css/report/myDatatable.css" />
+
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/report/allReportList}"
+						th:classappend="${currentPage2 == 'allReportList' ? 'active' : ''}">案件列表</a></li>
+					<li><a th:href="@{/report/addReportbyAdmin}"
+						th:classappend="${currentPage2 == 'addReportbyAdmin' ? 'active' : ''}">新增案件</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+
+				<div class="admin-dashboard-container notification-center-container">
+
+					<div class="dashboard-widgets">
+						<div class="widget">
+							<h3>
+								<span class="material-icons">check</span>已成案件數
+							</h3>
+							<p class="large-number">###</p>
+						</div>
+						<div class="widget">
+							<h3>
+								<span class="material-icons">arrow_circle_right</span>處理中件數
+							</h3>
+							<p class="large-number">###</p>
+						</div>
+					</div>
+
+					<h1>案件明細</h1>
+					<input type="hidden" id="successMsg" th:value=${successMsg}>
+					<table class="admin-table" id="admin-table">
+						<thead>
+							<tr>
+								<th>案件編號</th>
+								<th>案件時間</th>
+								<th>會員</th>
+								<th>進度</th>
+								<th>案件標題</th>
+								<th>案件內容</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="reportVO : ${list}" class="noti-table-line"
+								th:attr="data-repId=${reportVO.repId}, data-repStatus=${reportVO.repStatus}">
+								<td th:text="${reportVO.repId}"></td>
+								<td
+									th:text="${#dates.format(reportVO.repAt, 'yyyy-MM-dd HH:mm')}"></td>
+								<td th:text="${reportVO.memId}"></td>
+								<td><span th:switch="${reportVO.repStatus}"> <span
+										th:case="0">成案</span> <span th:case="1">處理中</span> <span
+										th:case="2">結案</span>
+								</span></td>
+								<td th:text="${reportVO.repType}"></td>
+								<td th:text="${reportVO.repDesc}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</main>
+		</div>
+	</div>
+
+	<script src="../vendors/jquery/jquery-3.7.1.min.js"></script>
+	<script src="../vendors/datatables.js"></script>
+	<script src="../js/report/allReportList.js"></script>
+	
+
+
+</body>
+</html>

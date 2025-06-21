@@ -14,7 +14,12 @@ public class ReportService {
 	
 	
     public void saveReport(ReportVO reportVO) {
-        repository.save(reportVO);
+        if(reportVO.getClosExplan() == "" || reportVO.getClosExplan() == null) {
+        	repository.save(reportVO);
+        }else {
+        	reportVO.setRepStatus((byte)2);
+        	repository.save(reportVO);
+        }
     }
     
     public ReportVO getOne(Integer repoId) {
