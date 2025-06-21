@@ -27,17 +27,18 @@ public class Article implements Serializable{
 	@Column(name = "ARTHOL")
 	private Integer artHol;		//會員編號
 	
-	@Column(name = "ARTLIKE")
+	@Column(name = "ARTLIKE" , insertable = false)
 	private Integer artLike;	//文章按讚數
 	
 	@Column(name = "ARTTITLE")
 	private String artTitle;	//文章標題
-	
-	//可能試著改用圖片轉base64的做法，或是用CKeditor
-	@Column(name = "ARTCON")
+
+	@Lob
+	@Column(name = "ARTCON",columnDefinition = "LONGTEXT")
 	private String artCon;		//文章內容
+
 	
-	@Column(name = "ARTCRETIME")
+	@Column(name = "ARTCRETIME" , updatable = false, insertable = false)
 	private Date artCreTime;	//文章建立時間
 
 	//只有部分資料填入，給Insert語法用(因為部分欄位由資料庫生成)

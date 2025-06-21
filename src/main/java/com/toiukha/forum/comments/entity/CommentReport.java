@@ -33,7 +33,6 @@ public class CommentReport implements Serializable {
 
 	public CommentReport() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Integer getCommRepId() {

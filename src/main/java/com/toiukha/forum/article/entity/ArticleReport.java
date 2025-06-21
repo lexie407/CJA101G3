@@ -56,7 +56,6 @@ public class ArticleReport implements Serializable {
 
 	public ArticleReport() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Integer getArtRepId() {

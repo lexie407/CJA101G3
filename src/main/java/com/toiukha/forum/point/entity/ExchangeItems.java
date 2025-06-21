@@ -29,7 +29,6 @@ public class ExchangeItems implements Serializable {
 
 	public ExchangeItems() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Integer getItemId() {

@@ -22,7 +22,6 @@ public class MyItems implements Serializable {
 
 	public MyItems() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Integer getMemId() {

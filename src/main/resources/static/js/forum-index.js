@@ -1,8 +1,8 @@
 $(function () {
-    let main_el = document.querySelector("main");
-    const forumPath = "/forum"; // 這是論壇的基礎路徑
+    let main_el = document.querySelector("#articleList");
+    const contextPath = getFullContextPath(); // 獲取完整的上下文路徑
 
-    fetch("/articles?sortBy=artCreTime&order=desc") // 取得最新文章
+    fetch(`${contextPath}/articles?sortBy=artCreTime&order=desc`) // 取得最新文章
         .then(response => {
             if (!response.ok) {
                 // 開發除錯用：輸出詳細錯誤
@@ -22,19 +22,28 @@ $(function () {
             main_el.html(`<p>${error.message}</p>`);
         });
 
-    // 點擊整張卡片跳轉到文章詳情頁(施工中)
-    // main_el.addEventListener("click", event => {
-    //     const card = event.target.closest(".article-card");
-    //     if (card) {
-    //         const artId = card.dataset.artid;
-    //         console.log(artId);
-    //         if (artId) {
-    //             window.location.href = `${forumPath}/article?artId=${artId}`;
-    //         }
-    //     }
-    // })
+    // 點擊整張卡片跳轉到文章詳情頁
+    // FIXME: 單一文章瀏覽與顯示留言功能施工中
+    main_el.addEventListener("click", event => {
+        const card = event.target.closest(".article-card");
+        if (card) {
+            const artId = card.dataset.artid;
+            console.log(artId);
+            if (artId) {
+                window.location.href = `${contextPath}/forum/article?artId=${artId}`;
+            }
+        }
+    });
 
 });
+
+// 取得 host + context path
+function getFullContextPath() {
+    const path = window.location.pathname;
+    const firstSlash = path.indexOf("/", 1);
+    const ctx = firstSlash === -1 ? "" : path.substring(0, firstSlash);
+    return window.location.origin + ctx;
+}
 
 // 建立文章卡片
 function createArticleCard(article) {
@@ -47,11 +56,13 @@ function createArticleCard(article) {
     const artCat = artCatMap[article.artCat] || "文章*";  //若文章類別沒有被適當的歸類，顯示成文章*類別
     const artTitle = article.artTitle;
     const artCon = function () {
+        const cleanText = article.artCon.replace(/<img[^>]*>/gi, ""); // 移除 img 標籤
+
         // 如果文章內容超過50個字，則截斷並加上省略號
-        if (article.artCon.length > 50) {
-            return article.artCon.substring(0, 50) + "...";
+        if (cleanText.length > 50) {
+            return cleanText.substring(0, 50) + "...";
         } else {
-            return article.artCon;
+            return cleanText;
         }
     };
     const mamName = article.mamName;

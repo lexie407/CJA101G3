@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增文章 | 前台 | 島遊kha</title>
+    <link th:href="@{/vendors/quillEditor/quill.snow.css}" rel="stylesheet">
+
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <style>
+        body {
+            font-family: "Noto Sans TC", sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 40px;
+        }
+        .form-container {
+            background-color: #fff;
+            max-width: 600px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            margin-top: 16px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        select,
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button[type="reset"] {
+            background-color: #6c757d;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #output {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-break: break-all;
+            white-space: pre-wrap;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        /* 改變 header 選單中 false 對應項的顯示為 default */
+        /*.ql-snow .ql-picker.ql-header .ql-picker-label[data-value="false"]::before,*/
+        /*.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="false"]::before {*/
+        /*    content: 'default';*/
+        /*}*/
+    </style>
+</head>
+<body style="padding: 0" class="light">
+
+<div class="app-container">
+    <div th:insert="~{/navTemplate :: navbar}"></div>
+    <div class="main-content">
+        <header class="secondary-nav">
+            <ul>
+                <li>文章管理</li>
+                <li>文章建立</li>
+                <!-- 					放自己需要的內容 -->
+            </ul>
+        </header>
+        <main class="content-area-main">
+            <h2>新增文章</h2>
+            <!-- 					放自己需要的內容 -->
+            <form style="padding: 10px" th:action="@{/forum/article/insert}" method="post" enctype="multipart/form-data">
+                <label for="artTitle">文章標題</label>
+                <input type="text" id="artTitle" name="artTitle" required value="測試用123">
+
+                <label for="artHol">會員編號</label>
+                <input type="number" id="artHol" name="artHol" required min="1" value="1">
+
+                <label for="artCat">分類</label>
+                <select id="artCat" name="artCat" required>
+                    <!--                <option value="">請選擇分類</option>-->
+                    <option value="1">文章</option>
+                    <option value="2">問題</option>
+                    <!--            <option value="3">已解決</option>-->
+                </select>
+
+                <label for="artSta">分類</label>
+                <select id="artSta" name="artSta" required>
+                    <option value="1">上架</option>
+                    <option value="2">下架</option>
+                </select>
+
+                <label for="editor">內容</label>
+                <!--        <textarea id="artCon" name="artCon" rows="8" required></textarea>-->
+
+                <textarea id="artCon" name="artCon" style="display:none;"></textarea>
+                <div id="editor">
+                    <p>測試用456</p>
+                    <!--Qill編輯器-->
+                </div>
+                <!--        <label for="image">圖片上傳</label>-->
+                <!--        <input type="file" id="image" name="image">-->
+
+                <div class="button-group">
+                    <button type="submit">送出</button>
+                    <button type="reset">清除</button>
+                </div>
+            </form>
+            <!-- ===================================================================== -->
+
+            <button onclick="getContent()">查看輸出內容</button>
+
+            <pre id="output"></pre>
+        </main>
+    </div>
+</div>
+
+<!--<script src="/webjars/sockjs-client/sockjs.min.js"></script>-->
+<!--<script src="/webjars/stomp-websocket/stomp.min.js"></script>-->
+<!--<script src="../js/notification/websocket.js"></script>-->
+
+<!-- Include the Quill library -->
+<script th:src="@{/vendors/quillEditor/quilljs.js}"></script>
+
+<!-- Initialize Quill editor -->
+<script>
+    const quill = new Quill('#editor', {
+        modules: {
+            toolbar: [
+                [{ 'size': ['small', false, 'large', 'huge'] }, 'bold', 'italic', 'underline', 'strike', 'blockquote'],        // toggled buttons
+                ['link', 'image', 'video'],
+
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
+                [{ 'direction': 'rtl' }],                         // text direction
+
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+                [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+                [{ 'align': [] }],
+
+                ['clean']                                         // remove formatting button
+            ],
+        },
+        placeholder: '來寫點什麼吧……',
+        theme: 'snow', // or 'bubble'
+    });
+
+
+</script>
+<script>
+    document.querySelector('form').addEventListener('submit', async function (e) {
+        e.preventDefault(); // 一律先攔截
+
+        // 1️⃣ 文章內容檢查
+        // const content = quill.getText().trim(); 這樣是純文字內容
+        const content = quill.root.innerHTML.trim();
+
+        if (!content) {
+            alert('文章內容為必填！');
+            return; // 不送出
+        }
+
+        // 2️⃣ 將 HTML 填入隱藏的 textarea 中
+        document.getElementById('artCon').value = content;
+
+        // 3️⃣ 確認無誤，手動送出表單
+        e.target.submit();
+    });
+    // 用來查看編輯器目前內容(測試用)
+    function getContent() {
+        const html = quill.root.innerHTML;
+        document.getElementById('output').textContent = html;
+    }
+</script>
+
+<!--<script>-->
+<!--    document.querySelector('form').addEventListener('submit', async function (e) {-->
+<!--        e.preventDefault(); // 一律先攔截-->
+
+<!--        // 1️⃣ 文章內容檢查-->
+<!--        const content = quill.getText().trim();-->
+<!--        if (!content) {-->
+<!--            alert('文章內容為必填！');-->
+<!--            return; // 不送出-->
+<!--        }-->
+
+<!--        // 2️⃣ 上傳 base64 圖片-->
+<!--        const images = quill.root.querySelectorAll('img');-->
+<!--        const uploadPromises = [];-->
+<!--        const pathname = window.location.pathname;-->
+<!--        const contextPath = window.location.origin + pathname.substring(0, pathname.lastIndexOf('/') + 1);-->
+
+
+<!--        images.forEach((img) => {-->
+<!--            const src = img.getAttribute('src');-->
+<!--            if (src && src.startsWith('data:image/')) {-->
+<!--                const uploadPromise = fetch(contextPath + '/forum/artImage/uploadBase64', {-->
+<!--                    method: 'POST',-->
+<!--                    headers: { 'Content-Type': 'application/json' },-->
+<!--                    body: JSON.stringify({ imageData: src })-->
+<!--                })-->
+<!--                    .then(async res => {-->
+<!--                        const id = await res.text();-->
+<!--                        if (!res.ok || isNaN(Number(id))) {-->
+<!--                            alert('圖片上傳失敗：' + id);-->
+<!--                            img.remove(); // 移除錯誤圖片-->
+<!--                            return;-->
+<!--                        }-->
+<!--                        img.setAttribute('src', `/forum/artImage/showBase64/${id}`);-->
+<!--                    })-->
+<!--                    .catch(() => {-->
+<!--                        alert('圖片上傳失敗，圖片將被移除！');-->
+<!--                        img.remove();-->
+<!--                    });-->
+
+<!--                uploadPromises.push(uploadPromise);-->
+<!--            }-->
+<!--        });-->
+
+<!--        await Promise.all(uploadPromises); // 確保全部圖片都上傳完-->
+
+<!--        // 文章 HTML 儲存進隱藏欄位-->
+<!--        document.getElementById('artCon').value = quill.root.innerHTML;-->
+
+<!--        // 真正送出表單-->
+<!--        e.target.submit();-->
+<!--        getContent(); // 測試用，查看輸出內容-->
+<!--    });-->
+<!--    // 用來查看編輯器目前內容(測試用)-->
+<!--    function getContent() {-->
+<!--        const html = quill.root.innerHTML;-->
+<!--        document.getElementById('output').textContent = html;-->
+<!--    }-->
+<!--</script>-->
+
+
+
+</body>
+</html>
