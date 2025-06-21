@@ -32,7 +32,7 @@ public class EmailService {
         redisTemplate.opsForValue().set("verify:" + token, memId.toString(), 30, TimeUnit.MINUTES);
 
         // 組驗證連結
-        String link = "http://localhost:8080/member/verify?token=" + token;
+        String link = "http://localhost:8080/members/verifyEmail?token=" + token;
 
         try {
             // 設定 Gmail SMTP 屬性
@@ -60,10 +60,10 @@ public class EmailService {
             Transport.send(message);
 
             // 成功訊息
-            System.out.println("✅ 驗證信已成功寄出至：" + email);
+            System.out.println(" 驗證信已成功寄出至：" + email);
         } catch (MessagingException e) {
             // 失敗訊息
-            System.out.println("❌ 驗證信寄送失敗！");
+            System.out.println("驗證信寄送失敗！");
             e.printStackTrace(); // 印出詳細錯誤（用來除錯）
         }
     }
@@ -84,7 +84,7 @@ public class EmailService {
         redisTemplate.opsForValue().set("reset:" + token, memId.toString(), 15, TimeUnit.MINUTES);
 
         // 建立重設密碼連結
-        String resetLink = "http://localhost:8080/members/reset-password?token=" + token;
+        String resetLink = "http://localhost:8080/members/resetPassword?token=" + token;
 
         try {
             Properties props = new Properties();

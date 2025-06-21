@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>更改會員資料</title>
+<title>更改會員資料|會員|島遊kha</title>
 
 <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
 
@@ -293,7 +293,10 @@
 						</div>
 					</form>
 				</div>
-				<script th:src="@{/js/membersUpdate.js}"></script>
+				<script th:src="@{/js/members/membersUpdate.js}"></script>
+				<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+				<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+				<script src="../js/notification/websocket.js"></script>
 				<script>
 				    document.addEventListener("DOMContentLoaded", function () {
 				        const currentPath = window.location.pathname;
