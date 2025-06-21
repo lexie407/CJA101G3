@@ -55,6 +55,14 @@ import jakarta.persistence.Table;
 			this.commCon = commCon;
 			this.commImg = commImg;
 		}
+		
+		// 修改用
+		public CommentsVO(Integer commId, String commCon, byte[] commImg) {
+			super();
+			this.commId = commId;
+			this.commCon = commCon;
+			this.commImg = commImg;
+		}
 
 		public Integer getCommId() {
 			return commId;
