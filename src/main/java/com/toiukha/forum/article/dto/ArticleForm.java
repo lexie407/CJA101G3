@@ -4,8 +4,11 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+// 給使用者「寫入」用的資料格式，包含資料驗證
 public class ArticleForm {
 
+    @NotNull(message = "文章編號：請勿空白")
+    @Min(value = 1, message = "文章編號: 不能小於{value}")
     private Integer artId;  // 文章編號
 
     @NotNull(message = "請選擇文章類別")

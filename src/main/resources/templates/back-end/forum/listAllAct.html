@@ -28,7 +28,7 @@
 			
 			<!--main 以下為頁面主要內容 -->
 			<main class="content-area-main">
-                <h3><a class="navbar-brand" th:href="@{/forum/admin/selectPage}">前往文章查詢</label></a></h3>
+                <h3><a class="navbar-brand" th:href="@{/forum/admin/selectPage}">前往文章查詢</a></h3>
 
                 <div>
                     <label>搜尋標題：<input type="text" id="searchTitle"></label>
@@ -75,7 +75,7 @@
 <!--                                <span th:text="${#strings.abbreviate(#strings.replaceAll(article.artCon, '<[^>]*>', ''), 30)}">預覽</span>-->
 <!--                            </td>-->
                             <td>
-                                <form method="post" th:action="@{/article/getOne_For_Update}" style="margin-bottom: 0px;">
+                                <form method="post" th:action="@{/forum/admin/getOne_For_Update}" style="margin-bottom: 0px;">
                                     <input type="submit" value="編輯">
                                     <input type="hidden" name="artId" th:value="${article.artId}">
                                 </form>

@@ -22,8 +22,7 @@ $(function () {
             main_el.html(`<p>${error.message}</p>`);
         });
 
-    // 點擊整張卡片跳轉到文章詳情頁
-    // FIXME: 單一文章瀏覽與顯示留言功能施工中
+    // 點擊整張卡片跳轉到單一文章瀏覽
     main_el.addEventListener("click", event => {
         const card = event.target.closest(".article-card");
         if (card) {

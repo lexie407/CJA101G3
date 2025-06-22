@@ -1,15 +1,22 @@
 package com.toiukha.forum.article.controller;
 
+import com.toiukha.forum.article.dto.ArticleForm;
+import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticleService;
+import com.toiukha.forum.util.ArticleMapper;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 // 文章後台的controller
 @Controller
 @RequestMapping("/forum/admin")
+@Validated
 public class ArticleAdminController {
 
     private final ArticleService articleService;
@@ -41,15 +48,37 @@ public class ArticleAdminController {
         return "back-end/forum/select_page"; // 假設有一個名為 admin/article/index.html 的模板
     }
 
-    // 文章後台的相關方法可以在這裡實現，例如新增文章、編輯文章、刪除文章等
-    // 這些方法可以使用Spring MVC的註解來處理HTTP請求，例如@GetMapping, @PostMapping等
+    // 顯示文章編輯頁面
+    @PostMapping("/getOne_For_Update")
+    public String getOne_For_Update(@RequestParam("artId") String artId, ModelMap model) {
+        /*************************** 1.接收請求參數 - 輸入格式的錯誤處理 ************************/
+        /*************************** 2.開始查詢資料 *****************************************/
+        Article art = articleService.getOneById(Integer.valueOf(artId));
+        ArticleForm form = ArticleMapper.toForm(art);
+        /*************************** 3.查詢完成,準備轉交(Send the Success view) **************/
+        model.addAttribute("articleForm", form); //將查詢到的結果塞進Attribute
+        model.addAttribute("currentPage", "forum"); //讓左側導覽列知道目前的頁面
+        return "back-end/forum/update_art_input"; // 查詢完成後轉交update_art_input.html
+    }
 
-    // 例如：
-    // @GetMapping("/admin/articles")
-    // public String listArticles(Model model) {
-    //     // 獲取文章列表並添加到模型中
-    //     return "admin/article/list"; // 返回視圖名稱
-    // }
+    // 處理文章更新的請求
+    @PostMapping("/update")
+    public String updateArticle(@ModelAttribute("articleForm") @Valid ArticleForm form, BindingResult result, Model model) {
+
+        if (result.hasErrors()) {
+            model.addAttribute("articleForm", form);
+            model.addAttribute("error", "欄位錯誤！");
+            return "back-end/forum/update_art_input";
+        }
+
+        // 將表單轉成 Entity
+        Article art = articleService.getOneById(form.getArtId());
+        ArticleMapper.updateEntity(art, form);
+        articleService.update(art);
+
+        return "redirect:/forum/admin/listAllAct"; //重新導向
+    }
+
 
 
 }

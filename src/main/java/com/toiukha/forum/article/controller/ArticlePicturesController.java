@@ -3,19 +3,15 @@ package com.toiukha.forum.article.controller;
 import com.toiukha.forum.article.entity.ArticlePictures;
 import com.toiukha.forum.article.model.ArticlePicturesService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/forum/artImage")
-public class ArticleImageController {
+public class ArticlePicturesController {
 
     @Autowired
     private ArticlePicturesService apService;
