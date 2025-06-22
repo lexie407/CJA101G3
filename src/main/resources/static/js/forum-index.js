@@ -39,12 +39,8 @@ $(function () {
 
 // 取得 host + context path
 function getFullContextPath() {
-<<<<<<< Upstream, based on branch 'lexie' of https://github.com/lexie407/CJA101G3.git
+
     const path = window.location.pathname;
-=======
-    const path = window.location.pathname;  // 獲取當前頁面的pathname
-    // 找到第一個斜線後的部分，這通常是context path
->>>>>>> e70c5f5 fix(article): 修正前台文章瀏覽功能的 fetch 路徑
     const firstSlash = path.indexOf("/", 1);
     const ctx = firstSlash === -1 ? "" : path.substring(0, firstSlash);
     return window.location.origin + ctx;
