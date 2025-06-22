@@ -1,0 +1,34 @@
+<!-- src/main/resources/templates/fragments/subnavActBack.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="subnav(activeItem)">
+      <header class="secondary-nav">
+        <ul>
+          <li>
+            <!-- th:href=頁面的url mapping，記得要改 -->
+            <a
+              th:href="@{/act/admin/listAllAct}"
+              th:classappend="${activeItem == 'list' ? 'active' : ''}"
+              >查看所有活動</a
+            >
+          </li>
+          <li>
+            <a
+              th:href="@{/act/admin/addAct}"
+              th:classappend="${activeItem == 'add' ? 'active' : ''}"
+              >建立活動</a
+            >
+          </li>
+          <li>
+            <a
+              th:href="@{/act/admin/report}"
+              th:classappend="${activeItem == 'report' ? 'active' : ''}"
+              >檢舉活動管理</a
+            >
+          </li>
+        </ul>
+      </header>
+    </div>
+  </body>
+</html>

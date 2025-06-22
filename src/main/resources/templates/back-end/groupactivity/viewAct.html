@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<!-- 
+  ========================================
+  注意：此檔案僅供測試用途
+  ========================================
+  
+  說明：
+  - 此檔案原本用於檢視單一活動詳情
+  - 由於後台管理已採用 DataTables 的顯示詳情功能
+  - 此檔案暫時保留作為設計參考和測試用途
+  - 如需重新啟用，請：
+    1. 移除此註解
+    2. 在 listAllAct.html 中重新加入「檢視」按鈕
+    3. 確認 ActBackController 中的 viewAct 路由正常運作
+  
+  最後更新：2024-12-19
+  ========================================
+-->
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>檢視活動 | 島遊kha後台</title>
+
+    <!-- 模板與樣式 -->
+    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/back_light.css}" />
+    <link rel="stylesheet" th:href="@{/css/back_style.css}" />
+    <link rel="stylesheet" th:href="@{/css/styleAct_admin.css}" />
+
+    <!-- DataTables CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"
+    />
+    <!-- Responsive 外掛 CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css"
+    />
+  </head>
+  <body class="light">
+    <div class="app-container">
+      <div th:insert="~{/navBackTemplate :: navbar}"></div>
+
+      <div class="main-content act-page">
+        <div
+          th:insert="~{/fragments/back-end/subnavAct :: subnav('list')}"
+        ></div>
+
+        <main class="content-area-main act-area">
+          <<!-- viewAct.html -->
+          <form
+            th:action="@{/act/admin/update}"
+            method="post"
+            enctype="multipart/form-data"
+            th:object="${actVo}"
+            id="updateForm"
+            class="act-form"
+          >
+            <input type="hidden" th:field="*{actId}" />
+
+            <div class="group">
+              <label>活動名稱：</label>
+              <span class="show-text" th:text="*{actName}"></span>
+              <input
+                type="text"
+                th:field="*{actName}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>活動說明：</label>
+              <span class="show-text" th:text="*{actDesc}"></span>
+              <textarea
+                th:field="*{actDesc}"
+                class="edit-input -none"
+              ></textarea>
+            </div>
+            <div class="group">
+              <label>行程編號：</label>
+              <span class="show-text" th:text="*{itnId}"></span>
+              <input
+                type="number"
+                th:field="*{itnId}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>團主編號：</label>
+              <span class="show-text" th:text="*{hostId}"></span>
+              <input
+                type="number"
+                th:field="*{hostId}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>報名開始：</label>
+              <span
+                class="show-text"
+                th:text="${#temporals.format(actVo.signupStart,'yyyy-MM-dd HH:mm')}"
+              ></span>
+              <input
+                type="datetime-local"
+                th:field="*{signupStart}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>報名截止：</label>
+              <span
+                class="show-text"
+                th:text="${#temporals.format(actVo.signupEnd,'yyyy-MM-dd HH:mm')}"
+              ></span>
+              <input
+                type="datetime-local"
+                th:field="*{signupEnd}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>人數需求：</label>
+              <span class="show-text" th:text="*{maxCap}"></span>
+              <input
+                type="number"
+                th:field="*{maxCap}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>已報名人數：</label>
+              <span class="show-text" th:text="*{signupCnt}"></span>
+              <input
+                type="number"
+                th:field="*{signupCnt}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>活動開始：</label>
+              <span
+                class="show-text"
+                th:text="${#temporals.format(actVo.actStart,'yyyy-MM-dd HH:mm')}"
+              ></span>
+              <input
+                type="datetime-local"
+                th:field="*{actStart}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>活動結束：</label>
+              <span
+                class="show-text"
+                th:text="${#temporals.format(actVo.actEnd,'yyyy-MM-dd HH:mm')}"
+              ></span>
+              <input
+                type="datetime-local"
+                th:field="*{actEnd}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>是否公開：</label>
+              <span class="show-text" th:text="*{isPublic}"></span>
+              <input
+                type="number"
+                th:field="*{isPublic}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>允許退出：</label>
+              <span class="show-text" th:text="*{allowCancel}"></span>
+              <input
+                type="number"
+                th:field="*{allowCancel}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>招募狀態：</label>
+              <span class="show-text" th:text="*{recruitStatus}"></span>
+              <input
+                type="number"
+                th:field="*{recruitStatus}"
+                class="edit-input -none"
+              />
+            </div>
+            <div class="group">
+              <label>圖片上傳：</label>
+              <span class="show-text">（點編輯後可上傳）</span>
+              <input type="file" name="file" class="edit-input -none" />
+            </div>
+
+            <div class="group">
+              <button type="button" class="act-btn act-edit" id="editBtn">
+                編輯
+              </button>
+              <button
+                type="submit"
+                class="act-btn act-view -none"
+                id="submitBtn"
+              >
+                送出
+              </button>
+              <button
+                type="button"
+                class="act-btn act-delete -none"
+                id="cancelBtn"
+              >
+                取消
+              </button>
+            </div>
+          </form>
+        </main>
+      </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script>
+      function confirmDelete() {
+        return confirm("確定要刪除這筆資料嗎？");
+      }
+      // 可直接貼在頁面最後
+      document.addEventListener("DOMContentLoaded", function () {
+        const editBtn = document.getElementById("editBtn");
+        const submitBtn = document.getElementById("submitBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
+
+        editBtn.addEventListener("click", function () {
+          // 隱藏span，顯示input/textarea
+          document
+            .querySelectorAll(".show-text")
+            .forEach((e) => e.classList.add("-none"));
+          document
+            .querySelectorAll(".edit-input")
+            .forEach((e) => e.classList.remove("-none"));
+          // 按鈕切換
+          editBtn.classList.add("-none");
+          submitBtn.classList.remove("-none");
+          cancelBtn.classList.remove("-none");
+        });
+
+        cancelBtn.addEventListener("click", function () {
+          // 還原：顯示span，隱藏input/textarea
+          document
+            .querySelectorAll(".show-text")
+            .forEach((e) => e.classList.remove("-none"));
+          document
+            .querySelectorAll(".edit-input")
+            .forEach((e) => e.classList.add("-none"));
+          // 按鈕切換
+          editBtn.classList.remove("-none");
+          submitBtn.classList.add("-none");
+          cancelBtn.classList.add("-none");
+        });
+      });
+    </script>
+  </body>
+</html>

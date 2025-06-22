@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+  <title>編輯活動</title>
+    <link rel="stylesheet" th:href="@{/css/styleAct_front.css}">
+</head>
+<body>
+<form id="editActForm" class="act-form">
+  <input type="hidden" name="actId" th:value="${actVo.actId}">
+  <div class="form-group">
+    <label>活動名稱</label>
+    <input type="text" name="actName" th:value="${actVo.actName}">
+  </div>
+  <div class="form-group">
+    <label>活動說明</label>
+    <textarea name="actDesc" th:text="${actVo.actDesc}"></textarea>
+  </div>
+  <div class="form-group">
+    <label>行程編號</label>
+    <input type="number" name="itnId" th:value="${actVo.itnId}">
+  </div>
+  <div class="form-group">
+    <label>團主編號</label>
+    <input type="number" name="hostId" th:value="${actVo.hostId}">
+  </div>
+  <div class="form-group">
+    <label>報名開始</label>
+    <input type="datetime-local" name="signupStart" th:value="${#dates.format(actVo.signupStart,'yyyy-MM-dd''T''HH:mm')}">
+  </div>
+  <div class="form-group">
+    <label>報名截止</label>
+    <input type="datetime-local" name="signupEnd" th:value="${#dates.format(actVo.signupEnd,'yyyy-MM-dd''T''HH:mm')}">
+  </div>
+  <div class="form-group">
+    <label>人數需求</label>
+    <input type="number" name="maxCap" th:value="${actVo.maxCap}">
+  </div>
+  <div class="form-group">
+    <label>已報名人數</label>
+    <input type="number" name="signupCnt" th:value="${actVo.signupCnt}">
+  </div>
+  <div class="form-group">
+    <label>活動開始</label>
+    <input type="datetime-local" name="actStart" th:value="${#dates.format(actVo.actStart,'yyyy-MM-dd''T''HH:mm')}">
+  </div>
+  <div class="form-group">
+    <label>活動結束</label>
+    <input type="datetime-local" name="actEnd" th:value="${#dates.format(actVo.actEnd,'yyyy-MM-dd''T''HH:mm')}">
+  </div>
+  <div class="form-group">
+    <label>是否公開</label>
+    <input type="number" name="isPublic" th:value="${actVo.isPublic}">
+  </div>
+  <div class="form-group">
+    <label>允許退出</label>
+    <input type="number" name="allowCancel" th:value="${actVo.allowCancel}">
+  </div>
+  <div class="form-group">
+    <label>招募狀態</label>
+    <input type="number" name="recruitStatus" th:value="${actVo.recruitStatus}">
+  </div>
+  <div class="form-group">
+    <label>活動圖片</label>
+    <input type="file" name="file">
+  </div>
+  <button type="submit">儲存</button>
+</form>
+
+<script>
+// AJAX 更新活動
+document.getElementById('editActForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const file = form.querySelector('input[name="file"]').files[0];
+  const readFile = file ? new Promise(res => {
+    const reader = new FileReader();
+    reader.onload = () => res(reader.result.split(',')[1]);
+    reader.readAsDataURL(file);
+  }) : Promise.resolve(null);
+
+  readFile.then(base64 => {
+    const data = {
+      actId: form.actId.value,
+      actName: form.actName.value,
+      actDesc: form.actDesc.value,
+      itnId: form.itnId.value,
+      hostId: form.hostId.value,
+      signupStart: form.signupStart.value,
+      signupEnd: form.signupEnd.value,
+      maxCap: form.maxCap.value,
+      signupCnt: form.signupCnt.value,
+      actStart: form.actStart.value,
+      actEnd: form.actEnd.value,
+      isPublic: form.isPublic.value,
+      allowCancel: form.allowCancel.value,
+      recruitStatus: form.recruitStatus.value,
+      actImg: base64
+    };
+    fetch('/api/act/update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+      .then(r => r.text())
+      .then(() => alert('更新完成'))
+      .catch(err => console.error(err));
+  });
+});
+</script>
+</body>
+</html>

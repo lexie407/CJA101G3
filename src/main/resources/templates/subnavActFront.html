@@ -1,0 +1,38 @@
+<!-- src/main/resources/templates/fragments/subnavActBack.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="subnav(activeItem)">
+      <header class="secondary-nav">
+        <ul>
+          <li>
+            <a th:href="@{/act/member/search}"
+              th:classappend="${activeItem == 'search' ? 'active' : ''}"
+              >活動列表</a
+            >
+          </li>
+          <li>
+            <!--後續要動態帶入memId-->
+            <a th:href="@{/act/member/listMy/1}"
+              th:classappend="${activeItem == 'my' ? 'active' : ''}"
+              >我揪的團</a
+            >
+          </li>
+          <li>
+            <!--後續要動態帶入memId-->
+            <a th:href="@{/act/member/listMyJoin/1}"
+               th:classappend="${activeItem == 'myjoin' ? 'active' : ''}"
+            >我跟的團</a
+            >
+          </li>
+          <li>
+            <a th:href="@{/act/member/add}"
+               th:classappend="${activeItem == 'add' ? 'active' : ''}"
+            >建立活動</a
+            >
+          </li>
+        </ul>
+      </header>
+    </div>
+  </body>
+</html>

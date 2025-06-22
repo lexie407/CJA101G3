@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>編輯活動 - 後台管理</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css"
+    />
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .header h1 {
+        margin: 0;
+        color: #333;
+        font-size: 24px;
+      }
+
+      .form-container {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+
+      .form-group textarea {
+        height: 100px;
+        resize: vertical;
+      }
+
+      .form-row {
+        display: flex;
+        gap: 20px;
+      }
+
+      .form-row .form-group {
+        flex: 1;
+      }
+
+      .current-image {
+        margin: 10px 0;
+      }
+
+      .current-image img {
+        max-width: 200px;
+        max-height: 150px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+
+      .btn-group {
+        margin-top: 30px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .btn-primary {
+        background-color: #007bff;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #0056b3;
+      }
+
+      .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background-color: #545b62;
+      }
+
+      .btn-danger {
+        background-color: #dc3545;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #c82333;
+      }
+
+      .error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>編輯活動</h1>
+      </div>
+
+      <div class="form-container">
+        <form
+          th:action="@{/act/admin/update}"
+          method="post"
+          enctype="multipart/form-data"
+          th:object="${actVo}"
+        >
+          <input type="hidden" th:field="*{actId}" />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>活動名稱 *</label>
+              <input type="text" th:field="*{actName}" required />
+              <span
+                class="error"
+                th:if="${#fields.hasErrors('actName')}"
+                th:errors="*{actName}"
+              ></span>
+            </div>
+
+            <div class="form-group">
+              <label>行程編號 *</label>
+              <input type="number" th:field="*{itnId}" required />
+              <span
+                class="error"
+                th:if="${#fields.hasErrors('itnId')}"
+                th:errors="*{itnId}"
+              ></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>活動說明</label>
+            <textarea
+              th:field="*{actDesc}"
+              placeholder="請輸入活動說明"
+            ></textarea>
+            <span
+              class="error"
+              th:if="${#fields.hasErrors('actDesc')}"
+              th:errors="*{actDesc}"
+            ></span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>團主編號 *</label>
+              <input type="number" th:field="*{hostId}" required />
+              <span
+                class="error"
+                th:if="${#fields.hasErrors('hostId')}"
+                th:errors="*{hostId}"
+              ></span>
+            </div>
+
+            <div class="form-group">
+              <label>人數需求 *</label>
+              <input type="number" th:field="*{maxCap}" min="1" required />
+              <span
+                class="error"
+                th:if="${#fields.hasErrors('maxCap')}"
+                th:errors="*{maxCap}"
+              ></span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>報名開始時間 *</label>
+              <input type="datetime-local" th:field="*{signupStart}" required />
+              <span
+                class="error"
+                th:if="${#fields.hasErrors('signupStart')}"
+                th:errors="*{signupStart}"
+              ></span>
+            </div>
+
+            <div class="form-group">
+              <label>報名截止時間 *</label>
+              <input type="datetime-local" th:field="*{signupEnd}" required />
+              <span
+                class="error"
+                th:if="${#fields.hasErrors('signupEnd')}"
+                th:errors="*{signupEnd}"
+              ></span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>活動開始時間 *</label>
+              <input type="datetime-local" th:field="*{actStart}" required />
+              <span
+                class="error"
+                th:if="${#fields.hasErrors('actStart')}"
+                th:errors="*{actStart}"
+              ></span>
+            </div>
+
+            <div class="form-group">
+              <label>活動結束時間 *</label>
+              <input type="datetime-local" th:field="*{actEnd}" required />
+              <span
+                class="error"
+                th:if="${#fields.hasErrors('actEnd')}"
+                th:errors="*{actEnd}"
+              ></span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>公開狀態</label>
+              <select th:field="*{isPublic}">
+                <option value="0">私人</option>
+                <option value="1">公開</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>允許退出</label>
+              <select th:field="*{allowCancel}">
+                <option value="0">不允許</option>
+                <option value="1">允許</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>招募狀態</label>
+            <select th:field="*{recruitStatus}">
+              <option value="0">招募中</option>
+              <option value="1">成團</option>
+              <option value="2">未成團</option>
+              <option value="3">團主取消</option>
+              <option value="4">系統凍結</option>
+              <option value="5">活動結束</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>活動圖片</label>
+            <input type="file" name="file" accept="image/*" />
+            <small style="color: #666; display: block; margin-top: 5px">
+              ※ 如果不上傳新圖片，將保留原有圖片
+            </small>
+            <div
+              class="current-image"
+              th:if="${actVo.actImg != null and actVo.actImg.length > 0}"
+              style="margin-top: 10px"
+            >
+              <label style="font-weight: bold; color: #333">目前圖片：</label>
+              <img
+                th:src="@{'/act/admin/image/' + ${actVo.actId}}"
+                alt="目前圖片"
+                style="
+                  max-width: 200px;
+                  max-height: 150px;
+                  border: 1px solid #ddd;
+                  border-radius: 4px;
+                  margin-top: 5px;
+                "
+              />
+            </div>
+            <div
+              th:if="${actVo.actImg == null or actVo.actImg.length == 0}"
+              style="
+                margin-top: 10px;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                color: #666;
+              "
+            >
+              <strong>目前狀態：</strong> 使用預設圖片
+            </div>
+            <span
+              class="error"
+              th:if="${errorMessage}"
+              th:text="${errorMessage}"
+            ></span>
+          </div>
+
+          <div class="btn-group">
+            <button type="submit" class="btn btn-primary">更新活動</button>
+            <a th:href="@{/act/admin/listAllAct}" class="btn btn-secondary"
+              >返回列表</a
+            >
+            <a
+              th:href="@{'/act/admin/viewAct/' + ${actVo.actId}}"
+              class="btn btn-secondary"
+              >檢視活動</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

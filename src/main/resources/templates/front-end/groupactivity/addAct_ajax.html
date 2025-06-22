@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>新增活動 | 島遊kha</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/light.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
+  </head>
+  <body class="light">
+  <div class="app-container">
+    <div th:insert="~{/navTemplate :: navbar}"></div>
+
+    <div class="main-content act-page">
+      <div th:insert="~{/subnavActFront :: subnav('add')}"></div>
+
+      <main class="content-area-main act-area">
+      <h3 class="act-front-title">新增活動</h3>
+
+      <div class="act-detail-container">
+        <form id="addActForm" class="act-form">
+          <div class="act-detail-info">
+            <div class="act-detail-item">
+              <label class="act-detail-label">活動名稱 *</label>
+              <input
+                type="text"
+                name="actName"
+                class="act-search-input"
+                placeholder="請輸入活動名稱"
+                required
+              />
+            </div>
+
+            <div class="act-detail-item">
+              <label class="act-detail-label">行程編號 *</label>
+              <input
+                type="number"
+                name="itnId"
+                class="act-search-input"
+                placeholder="請輸入行程編號"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="act-detail-item" style="grid-column: 1 / -1">
+            <label class="act-detail-label">活動說明</label>
+            <textarea
+              name="actDesc"
+              class="act-search-input"
+              placeholder="請輸入活動說明"
+              rows="4"
+            ></textarea>
+          </div>
+
+          <div class="act-detail-info">
+            <div class="act-detail-item">
+              <label class="act-detail-label">報名開始時間 *</label>
+              <input
+                type="datetime-local"
+                name="signupStart"
+                class="act-search-input"
+                required
+              />
+            </div>
+
+            <div class="act-detail-item">
+              <label class="act-detail-label">報名截止時間 *</label>
+              <input
+                type="datetime-local"
+                name="signupEnd"
+                class="act-search-input"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="act-detail-info">
+            <div class="act-detail-item">
+              <label class="act-detail-label">活動開始時間 *</label>
+              <input
+                type="datetime-local"
+                name="actStart"
+                class="act-search-input"
+                required
+              />
+            </div>
+
+            <div class="act-detail-item">
+              <label class="act-detail-label">活動結束時間 *</label>
+              <input
+                type="datetime-local"
+                name="actEnd"
+                class="act-search-input"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="act-detail-info">
+            <div class="act-detail-item">
+              <label class="act-detail-label">人數需求 *</label>
+              <input
+                type="number"
+                name="maxCap"
+                class="act-search-input"
+                placeholder="請輸入人數需求"
+                min="1"
+                required
+              />
+            </div>
+
+            <div class="act-detail-item">
+              <label class="act-detail-label">是否公開</label>
+              <select name="isPublic" class="act-search-input">
+                <option value="0">私人</option>
+                <option value="1">公開</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="act-detail-info">
+            <div class="act-detail-item">
+              <label class="act-detail-label">允許退出</label>
+              <select name="allowCancel" class="act-search-input">
+                <option value="0">不允許</option>
+                <option value="1">允許</option>
+              </select>
+            </div>
+
+            <div class="act-detail-item">
+              <label class="act-detail-label">活動圖片</label>
+              <input
+                type="file"
+                name="file"
+                class="act-search-input"
+                accept="image/*"
+              />
+            </div>
+          </div>
+
+          <!-- 隱藏欄位 -->
+          <input type="hidden" name="hostId" value="1" />
+          <input type="hidden" name="signupCnt" value="0" />
+          <input type="hidden" name="recruitStatus" value="0" />
+
+          <div class="act-form-actions">
+            <button type="submit" class="act-btn act-btn-primary">
+              新增活動
+            </button>
+            <button
+              type="button"
+              onclick="window.location.href='/act/member/search'"
+              class="act-btn act-btn-secondary"
+            >
+              返回搜尋
+            </button>
+
+            <!-- ======================================== -->
+            <!-- 測試相關按鈕 - 開發完成後可移除 -->
+            <!-- ======================================== -->
+            <button
+              type="button"
+              onclick="testImageUpload()"
+              class="act-btn act-btn-secondary"
+              style="background-color: #ff9800"
+            >
+              測試圖片上傳
+            </button>
+          </div>
+        </form>
+      </div>
+      </main>>
+    </div>
+  </div>
+
+    <script>
+      // 以 AJAX 新增活動
+      document
+        .getElementById("addActForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const form = e.target;
+          const file = form.querySelector('input[name="file"]').files[0];
+
+          // 表單驗證
+          const requiredFields = [
+            "actName",
+            "itnId",
+            "signupStart",
+            "signupEnd",
+            "actStart",
+            "actEnd",
+            "maxCap",
+          ];
+          for (const fieldName of requiredFields) {
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            if (!field.value.trim()) {
+              alert(
+                `請填寫 ${field.previousElementSibling.textContent.replace(
+                  " *",
+                  ""
+                )}`
+              );
+              field.focus();
+              return;
+            }
+          }
+
+          // 時間驗證
+          const signupStart = new Date(form.signupStart.value);
+          const signupEnd = new Date(form.signupEnd.value);
+          const actStart = new Date(form.actStart.value);
+          const actEnd = new Date(form.actEnd.value);
+
+          if (signupEnd <= signupStart) {
+            alert("報名截止時間必須晚於報名開始時間");
+            return;
+          }
+
+          if (actEnd <= actStart) {
+            alert("活動結束時間必須晚於活動開始時間");
+            return;
+          }
+
+          if (actStart <= signupEnd) {
+            alert("活動開始時間必須晚於報名截止時間");
+            return;
+          }
+
+          // 處理檔案
+          const readFile = file
+            ? new Promise((res) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const base64 = reader.result.split(",")[1];
+                  res(base64);
+                };
+                reader.readAsDataURL(file);
+              })
+            : Promise.resolve(null);
+
+          readFile.then((base64) => {
+            const data = {
+              actName: form.actName.value.trim(),
+              actDesc: form.actDesc.value.trim(),
+              itnId: parseInt(form.itnId.value),
+              hostId: parseInt(form.hostId.value),
+              signupStart: form.signupStart.value,
+              signupEnd: form.signupEnd.value,
+              maxCap: parseInt(form.maxCap.value),
+              signupCnt: parseInt(form.signupCnt.value),
+              actStart: form.actStart.value,
+              actEnd: form.actEnd.value,
+              isPublic: parseInt(form.isPublic.value),
+              allowCancel: parseInt(form.allowCancel.value),
+              recruitStatus: parseInt(form.recruitStatus.value),
+              actImgBase64: base64,
+            };
+
+            console.log("準備傳送的資料:", {
+              ...data,
+              actImgBase64: base64 ? base64.substring(0, 50) + "..." : null,
+            });
+
+            // 顯示載入狀態
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = "建立中...";
+            submitBtn.disabled = true;
+
+            fetch("/api/act/add", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            })
+              .then((r) => {
+                if (r.ok) {
+                  return r.text();
+                } else {
+                  throw new Error(`新增失敗: ${r.status} ${r.statusText}`);
+                }
+              })
+              .then((response) => {
+                console.log("伺服器回應:", response);
+                alert("活動建立成功！");
+                window.location.href = "/act/member/listMy/1";
+              })
+              .catch((err) => {
+                console.error("建立失敗:", err);
+                alert("建立失敗，請稍後再試\n錯誤訊息: " + err.message);
+              })
+              .finally(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+              });
+          });
+        });
+    </script>
+
+    <script>
+      // ========================================
+      // 測試相關函數 - 開發完成後可移除
+      // ========================================
+
+      /**
+       * 測試圖片上傳功能
+       * 用途：測試前端傳送的 base64 圖片是否能正確解碼
+       * 移除時機：開發完成後
+       */
+      function testImageUpload() {
+        const fileInput = document.querySelector('input[name="file"]');
+        const file = fileInput.files[0];
+
+        if (!file) {
+          alert("請先選擇圖片檔案");
+          return;
+        }
+
+        console.log("開始測試圖片上傳...");
+        console.log("檔案資訊:", {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+        });
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const base64 = e.target.result.split(",")[1]; // 移除 data:image/...;base64, 前綴
+
+          console.log("Base64 長度:", base64.length);
+          console.log("Base64 前50字元:", base64.substring(0, 50));
+
+          // 測試圖片上傳端點
+          fetch("/api/act/test-image", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              actImgBase64: base64,
+            }),
+          })
+            .then((r) => r.json())
+            .then((data) => {
+              console.log("圖片上傳測試結果:", data);
+              if (data.success) {
+                alert(
+                  `圖片上傳測試成功！\n圖片大小: ${data.imageSize} bytes\n訊息: ${data.message}`
+                );
+              } else {
+                alert(`圖片上傳測試失敗！\n錯誤: ${data.message}`);
+              }
+            })
+            .catch((error) => {
+              console.error("圖片上傳測試失敗:", error);
+              alert("圖片上傳測試失敗: " + error.message);
+            });
+        };
+
+        reader.readAsDataURL(file);
+      }
+    </script>
+  </body>
+</html>

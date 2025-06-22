@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的活動 | 島遊kha</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/light.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
+  </head>
+  <body class="light">
+  <div class="app-container">
+    <div th:insert="~{/navTemplate :: navbar}"></div>
+
+    <div class="main-content act-page">
+      <div th:insert="~{/subnavActFront :: subnav('my')}"></div>
+
+      <main class="content-area-main act-area">
+
+        <h3 class="act-front-title">近期新增活動...</h3>
+
+        <div id="myActList" th:data-host-id="${hostId}" class="act-loading">
+          載入中...
+        </div>
+
+        <div
+                class="act-card-actions"
+                style="justify-content: center; margin-top: 24px"
+        >
+          <a href="/act/member/add" class="act-btn act-btn-primary">建立新活動</a>
+        </div>
+      </main>
+    </div>
+  </div>
+
+    <script>
+      // 載入個人活動列表
+      const listEl = document.getElementById("myActList");
+      const hostId = listEl.dataset.hostId;
+
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("zh-TW", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+      }
+
+      function getStatusText(status) {
+        const statusMap = {
+          0: { text: "招募中", class: "recruiting" },
+          1: { text: "成團", class: "full" },
+          2: { text: "未成團", class: "ended" },
+          3: { text: "已取消", class: "ended" },
+          4: { text: "已凍結", class: "ended" },
+          5: { text: "已結束", class: "ended" },
+        };
+        return statusMap[status] || { text: "未知", class: "ended" };
+      }
+
+      function createActCard(act) {
+        const status = getStatusText(act.recruitStatus);
+        let imageHtml = '<div class="act-card-image-placeholder">無圖片</div>';
+
+        // 檢查是否有圖片資料
+        if (act.actImg && act.actImg.length > 0) {
+          // 使用圖片端點直接顯示 byte[] 圖片，現在會自動顯示預設圖片
+          imageHtml = `<img src="/act/member/image/${act.actId}" alt="活動圖片" class="act-card-image">`;
+        }
+
+        return `
+                <div class="act-card">
+                    ${imageHtml}
+                    <h3 class="act-card-title">${act.actName}</h3>
+                    <p class="act-card-desc">${act.actDesc || "無描述"}</p>
+
+                    <div class="act-card-info">
+                        <div class="act-info-item">
+                            <span class="act-info-label">人數</span>
+                            <span class="act-info-value">${act.signupCnt || 0}/${act.maxCap}</span>
+                        </div>
+                        <div class="act-info-item">
+                            <span class="act-info-label">開始日期</span>
+                            <span class="act-info-value">${formatDate(act.actStart)}</span>
+                        </div>
+                    </div>
+
+                    <span class="act-status ${status.class}">${status.text}</span>
+
+                    <div class="act-card-actions">
+                        <a href="/act/member/view/${act.actId}" class="act-btn act-btn-primary">查看詳情</a>
+                        <a href="/act/member/edit/${act.actId}" class="act-btn act-btn-secondary">編輯</a>
+                    </div>
+                </div>
+            `;
+      }
+
+      fetch("/api/act/my/" + hostId)
+              .then((r) => r.json())
+              .then((list) => {
+                listEl.classList.remove("act-loading");
+                if (list.length === 0) {
+                  listEl.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: var(--md-sys-color-on-surface-variant);">
+                            <h3>還沒有建立任何活動</h3>
+                            <p>開始建立您的第一個活動吧！</p>
+                        </div>
+                    `;
+                } else {
+                  listEl.innerHTML = `
+                        <div class="act-card-container">
+                            ${list.map(createActCard).join("")}
+                        </div>
+                    `;
+                }
+              })
+              .catch((error) => {
+                console.error("載入活動失敗:", error);
+                listEl.classList.remove("act-loading");
+                listEl.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--md-sys-color-error);">
+                        <h3>載入失敗</h3>
+                        <p>無法載入活動列表，請稍後再試</p>
+                    </div>
+                `;
+              });
+
+      function deleteAct(actId) {
+        if (confirm("確定要刪除這個活動嗎？此操作無法復原。")) {
+          fetch(`/api/act/${actId}/status/3?operatorId=${hostId}&admin=false`, {
+            method: "PUT",
+          })
+                  .then((response) => {
+                    if (response.ok) {
+                      location.reload();
+                    } else {
+                      alert("刪除失敗，請稍後再試");
+                    }
+                  })
+                  .catch((error) => {
+                    console.error("刪除失敗:", error);
+                    alert("刪除失敗，請稍後再試");
+                  });
+        }
+      }
+    </script>
+    </body>
+
+</html>
