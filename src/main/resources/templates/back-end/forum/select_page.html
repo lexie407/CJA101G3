@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章管理 | 後台 | 島遊kha</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <!--前台CSS-->
+    <link rel="stylesheet" th:href="@{/css/light.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!--次導覽列CSS-->
+    <link rel="stylesheet" th:href="@{/css/subnav.css}">
+    
+</head>
+<body class="light">
+	<div class="app-container">
+	<!--前台:側邊攔，通用樣式，不用改-->
+	<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		
+		<div class="main-content">		
+			<!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
+            <div th:insert="~{back-end/forum/subnavForum :: subnav('select')}"></div>
+			
+			<!--main 以下為頁面主要內容 -->
+			<main class="content-area-main">
+                <h4><span>資料查詢:</span></h4>
+                <!-- 錯誤表列 -->
+                <div class="errorblock" th:utext="${errorMessage}">${errorMessage}</div><br>
+                <div class="a">
+                    <ul>
+                        <li><h5><a th:href="@{/forum/admin/listAllAct}">List</a> all Articles. <br><br></h5></li>
+
+                        <li>
+                            <form method="post" th:action="@{getOne_For_Display}">
+                                輸入文章編號:
+                                <input type="text" name="artId" th:value="${param.artId}" >
+                                <input type="submit" value="送出"> (請輸入數字)
+                            </form><br>
+                        </li>
+
+                        <li>
+                            <form method="post" th:action="@{getOne_For_Display}">
+                                選擇會員編號:
+                                <select name="artHol">
+                                    <option th:each="articleVO : ${articleListData}" th:value="${articleVO.artHol}" th:text="${articleVO.artHol}" />
+                                </select>
+                                <input type="submit" value="送出">
+                            </form><br>
+                        </li>
+
+                        <li>
+                            <form method="post" th:action="@{search_By_Title}">
+                                輸入文章標題關鍵字:
+                                <input type="text" name="keyword" th:value="${param.keyword}">
+                                <input type="submit" value="搜尋">
+                            </form><br>
+                        </li>
+                        <!-- 萬用複合查詢-暫時刪除 -->
+                    </ul>
+
+<!--                    //TODO: 後臺管理員會新增文章嗎？-->
+<!--                    <h4><span>文章管理</span></h4>-->
+<!--                    <ul>-->
+<!--                        <li><h5><a href='addAct'>Add</a> a new Article.</h5></li>-->
+<!--                    </ul>-->
+                </div>
+
+
+            </main>
+		</div>
+	</div>
+    
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../js/notification/websocket.js"></script>
+    
+</body>
+</html>

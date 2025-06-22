@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// 文章相關的 RESTful API Controller
 @RestController
 public class ArticleController {
 

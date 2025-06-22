@@ -6,6 +6,7 @@ import com.toiukha.forum.util.Debug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Service("articleService")
@@ -38,19 +39,22 @@ public class ArticleServiceImpl implements ArticleService {
     // 用一個HashMap去存每個Key代表的排序邏輯(Comparator)。
     private final Map<SortKey, Comparator<ArticleDTO>> sortMap = new HashMap<SortKey, Comparator<ArticleDTO>>();
     {
+        // 用匿名類別 new出Comparator，override compare方法，使他根據getArtId排列
         sortMap.put(new SortKey(ArticleSortField.artId, SortDirection.ASC),
                 new Comparator<ArticleDTO>() {
                     @Override
                     public int compare(ArticleDTO o1, ArticleDTO o2) {
                         return o1.getArtId().compareTo(o2.getArtId());
                     }
-                });   // 用匿名類別 new出Comparator，override compare方法，使他根據getArtId排列
+                });
+
         // 也可以用 lambda 表達式 new Comparator<IArticleDTO>出來，再放進sortMap
         Comparator<ArticleDTO> idDescComp = (dto1, dto2) -> dto1.getArtId().compareTo(dto2.getArtId());
         sortMap.put(
                 new SortKey(ArticleSortField.artId, SortDirection.DESC),
                 idDescComp.reversed() // 直接使用reversed()方法反轉比較器(Comparator)的順序
         );
+
         // 使用方法參照(語法糖)建立 Comparator，根據 getArtCreTime() 進行升冪排序，等同於 Lambda 表達式：(dto1, dto2) -> dto1.getArtCreTime().compareTo(dto2.getArtCreTime())
         sortMap.put(new SortKey(ArticleSortField.artCreTime, SortDirection.ASC), Comparator.comparing(ArticleDTO::getArtCreTime));
         sortMap.put(new SortKey(ArticleSortField.artCreTime, SortDirection.DESC), Comparator.comparing(ArticleDTO::getArtCreTime).reversed());
@@ -105,7 +109,7 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public Article update(Integer artId, Byte artCat, Byte artSta, Integer artHol, Integer artLike,
-                          String artTitle, String artCon, Date artCreTime) {
+                          String artTitle, String artCon, Timestamp artCreTime) {
         Article artVO = new Article();
         artVO.setArtId(artId);
         artVO.setArtCat(artCat);
@@ -126,7 +130,7 @@ public class ArticleServiceImpl implements ArticleService {
     public Article updateBasic(Integer artId, Byte artCat, Byte artSta, String artTitle, String artCon) {
         Article artVO = articleRepository.findById(artId).orElse(null);
         if (artVO == null) {
-            artVO = new Article();
+            artVO = new Article(); // FIXME: 這裡應該拋出一個例外，表示找不到文章
         }
         artVO.setArtId(artId);
         artVO.setArtCat(artCat);
@@ -144,7 +148,7 @@ public class ArticleServiceImpl implements ArticleService {
     //===================  查詢  ===================
 
     @Override
-    public Article getArticleById(Integer id) {
+    public Article getOneById(Integer id) {
         return articleRepository.findById(id).orElse(null);
     }
 
