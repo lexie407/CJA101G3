@@ -1,0 +1,87 @@
+/* 進度條樣式 - 最終調整版 (線條動態出現) */
+.progress-stepper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 讓點和文字垂直居中對齊 */
+    margin-bottom: 30px;
+    position: relative;
+    padding: 0 0; /* 移除額外 padding，讓內部元素控制間距 */
+    height: 60px; /* 固定高度，確保佈局穩定 */
+}
+
+/* 每個步驟容器 */
+.progress-stepper .step {
+    flex: 1; /* 讓每個步驟佔據等寬空間 */
+    text-align: center;
+    position: relative;
+    z-index: 2; /* 確保點在線的上方 */
+    display: flex;
+    flex-direction: column; /* 點和文字垂直排列 */
+    align-items: center; /* 水平居中 */
+    justify-content: center; /* 垂直居中內容 */
+    height: 100%;
+}
+
+/* 每個步驟的圓點 */
+.progress-stepper .step-dot {
+    width: 16px;
+    height: 16px;
+    background-color: var(--md-sys-color-surface-container-high); /* 預設圓點顏色 */
+    border: 2px solid var(--md-sys-color-outline); /* 預設邊框顏色 */
+    border-radius: 50%;
+    margin-bottom: 8px; /* 點與文字的間距 */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 3; /* 比線條更高的 z-index */
+}
+
+/* 每個步驟的文字標籤 */
+.progress-stepper .step-label {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant); /* 預設文字顏色 */
+    font-weight: 500;
+    transition: color 0.3s ease;
+    white-space: nowrap; /* 確保文字不換行 */
+}
+
+/* 新增：線條的樣式 */
+.progress-stepper .step .step-line {
+    position: absolute;
+    top: 50%; /* 垂直居中 */
+    left: -50%; /* 從前一個步驟的中心開始 */
+    width: 100%; /* 覆蓋當前步驟的寬度，延伸到前一個步驟的中心 */
+    height: 2px;
+    background-color: var(--md-sys-color-primary); /* 藍色活動線 */
+    transform: translateY(-50%);
+    z-index: 1; /* 在點下方 */
+}
+
+/* 第一個步驟不需要左邊的線 */
+.progress-stepper .step:first-child .step-line {
+    display: none;
+}
+
+/* 完成狀態的圓點和文字樣式 */
+.progress-stepper .step.completed .step-dot {
+    background-color: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+}
+
+.progress-stepper .step.completed .step-label {
+    color: var(--md-sys-color-primary);
+    font-weight: bold;
+}
+
+/* 未完成的線條背景 (現在只需要一條背景線貫穿所有點) */
+.progress-stepper::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 8px; /* 從第一個點的中心開始 */
+    right: 8px; /* 到最後一個點的中心結束 */
+    height: 2px;
+    background-color: var(--md-sys-color-outline-variant); /* 灰色背景線 */
+    z-index: 0; /* 確保在所有活動線和點的下方 */
+    transform: translateY(-50%);
+}

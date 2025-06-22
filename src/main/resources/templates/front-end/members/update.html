@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org"
+	th:with="currentPage='account'">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>更改會員資料</title>
+
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
+<style>
+.md-card {
+	max-width: 600px;
+	margin: 40px auto;
+	padding: 30px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	border-radius: 12px;
+	background-color: var(--md-sys-color-surface-container-low);
+}
+
+.md-headline {
+	text-align: center;
+	margin-bottom: 30px;
+	color: var(--md-sys-color-primary);
+}
+
+.form-group {
+	margin-bottom: 20px;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface);
+}
+
+.form-group input:not([readonly]), .form-group select {
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	box-sizing: border-box;
+	font-size: 1rem;
+	color: var(--md-sys-color-on-surface);
+	background-color: var(--md-sys-color-surface);
+}
+
+.readonly-field {
+	border: none;
+	padding-left: 0;
+	background-color: transparent;
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	cursor: default;
+}
+
+.form-group input:focus, .form-group select:focus {
+	border-color: var(--md-sys-color-primary);
+	outline: none;
+	box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
+}
+
+.address-sub-group {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.address-sub-group .form-group {
+	flex: 1;
+	margin-bottom: 0;
+}
+
+.avatar-preview {
+	width: 120px;
+	height: 120px;
+	border: 1px dashed var(--md-sys-color-outline);
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	margin-top: 10px;
+	background-color: var(--md-sys-color-surface-variant);
+}
+
+.avatar-preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.avatar-placeholder {
+	font-size: 80px;
+	color: var(--md-sys-color-outline);
+}
+
+.form-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+	margin-top: 30px;
+	flex-wrap: wrap;
+}
+
+.material-button {
+	padding: 10px 24px;
+	border: none;
+	border-radius: 24px;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.2s ease, box-shadow 0.2s ease;
+	text-align: center;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.material-button .material-icons {
+	margin-right: 8px;
+}
+
+.md-primary-button {
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+}
+
+.md-primary-button:hover {
+	background-color: var(--md-sys-color-primary-container);
+	color: var(--md-sys-color-on-primary-container);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+</style>
+</head>
+
+<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/members/update}"> <span
+							class="material-icons">person</span> 資料修改
+					</a></li>
+
+					<li><a th:href="@{/members/coupons}"> <span
+							class="material-icons">redeem</span> 我的優惠券
+					</a></li>
+
+					<li><a th:href="@{/members/points-record}"> <span
+							class="material-icons">history</span> 點數紀錄
+					</a></li>
+
+					<li><a th:href="@{/members/points-products}"> <span
+							class="material-icons">shopping_cart</span> 我的兌換商品
+					</a></li>
+
+					<li><a th:href="@{/members/notifications}"> <span
+							class="material-icons">notifications</span> 通知
+					</a></li>
+
+					<li><a th:href="@{/members/chat-records}"> <span
+							class="material-icons">chat</span> 與我聊聊
+					</a></li>
+
+					<li><a th:href="@{/members/favorites}"> <span
+							class="material-icons">favorite</span> 我的收藏
+					</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<div class="md-card register-container">
+					<h2 class="md-headline">會員資料修改</h2>
+
+					<!-- 成功訊息提示 -->
+					<div th:if="${param.success}" class="success-message"
+						style="color: green; text-align: center; margin-bottom: 20px;">
+						資料已成功更新！</div>
+
+					<div th:if="${not #lists.isEmpty(errorMsgs)}"
+						class="error-messages-container">
+						<div class="error-message" th:each="message : ${errorMsgs}"
+							th:text="${message}"></div>
+					</div>
+
+					<form method="post" th:action="@{/members/update}"
+						th:object="${membersVO}" enctype="multipart/form-data">
+						<div class="form-group">
+							<label for="memAcc">會員帳號:</label> <input type="text" id="memAcc"
+								th:field="*{memAcc}" readonly class="readonly-field">
+						</div>
+
+						<div class="form-group">
+							<label for="memPwd">會員密碼:</label> <input type="password"
+								id="memPwd" name="memPwd" th:value="${membersVO.memPwd}"
+								placeholder="如需修改請輸入新密碼" />
+						</div>
+
+						<div class="form-group">
+							<label for="memName">會員姓名:</label> <input type="text"
+								id="memName" th:field="*{memName}" required
+								placeholder="請輸入會員姓名">
+						</div>
+
+						<div class="form-group">
+							<label for="memGender">會員性別:</label> <select id="memGender"
+								th:field="*{memGender}" required>
+								<option value="">請選擇</option>
+								<option value="M">男</option>
+								<option value="F">女</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label for="memBirthDate">會員生日:</label> <input type="date"
+								id="memBirthDate" th:field="*{memBirthDate}" required>
+						</div>
+
+						<div class="form-group">
+							<label for="memMobile">手機:</label> <input type="text"
+								id="memMobile" th:field="*{memMobile}" required
+								placeholder="請輸入手機號碼">
+						</div>
+
+						<div class="form-group">
+							<label for="memEmail">Email:</label> <input type="email"
+								id="memEmail" th:field="*{memEmail}" required
+								placeholder="請輸入 Email">
+						</div>
+
+						<div class="address-sub-group">
+							<div class="form-group">
+								<label for="citySelect">縣市：</label> <select id="citySelect"
+									name="city" required></select>
+							</div>
+							<div class="form-group">
+								<label for="districtSelect">鄉鎮市區：</label> <select
+									id="districtSelect" name="district" required></select>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="addrDetailInput">街道地址：</label> <input type="text"
+								id="addrDetailInput" placeholder="請輸入詳細地址"> <input
+								type="hidden" id="memAddr" th:field="*{memAddr}">
+						</div>
+
+						<div class="form-group">
+							<label for="memUsername">使用者暱稱:</label> <input type="text"
+								id="memUsername" th:field="*{memUsername}" required
+								placeholder="請輸入使用者暱稱">
+						</div>
+
+						<div class="form-group">
+							<label for="memRegTime">註冊時間:</label> <input type="text"
+								id="memRegTime" readonly class="readonly-field"
+								th:value="${#dates.format(membersVO.memRegTime, 'yyyy-MM-dd HH:mm:ss')}">
+						</div>
+
+						<div class="form-group">
+							<label for="memAvatarInput">大頭貼:</label> <input type="file"
+								name="memAvatarFile" id="memAvatarInput" accept="image/*">
+							<div class="avatar-preview">
+								<img id="avatarPreview"
+									th:src="@{/members/DBGifReader(memId=${membersVO.memId}, type='memAvatar')}"
+									alt="大頭貼預覽" /> <span th:unless="${membersVO.memId != null}"
+									class="material-icons avatar-placeholder">account_circle</span>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="memAvatarFrame">頭像框圖片:</label> <input type="file"
+								name="memAvatarFrameFile" id="memAvatarFrame" accept="image/*">
+							<div class="avatar-preview">
+								<img id="avatarFramePreview"
+									th:src="@{/members/DBGifReader(memId=${membersVO.memId}, type='memAvatarFrame')}"
+									alt="頭像框預覽" /> <span th:unless="${membersVO.memId != null}"
+									class="material-icons avatar-placeholder">crop_square</span>
+							</div>
+						</div>
+
+						<div class="form-actions">
+							<button type="button" onclick="history.back()"
+								class="material-button md-primary-button">
+								<span class="material-icons">arrow_back</span> 返回
+							</button>
+							<button type="submit" class="material-button md-primary-button">
+								<span class="material-icons">save</span> 儲存變更
+							</button>
+						</div>
+					</form>
+				</div>
+				<script th:src="@{/js/membersUpdate.js}"></script>
+				<script>
+				    document.addEventListener("DOMContentLoaded", function () {
+				        const currentPath = window.location.pathname;
+				
+				        document.querySelectorAll(".secondary-nav ul li a").forEach(link => {
+				            if (link.getAttribute("href") === currentPath) {
+				                link.classList.add("active");
+            }
+        });
+    });
+</script>
+			</main>
+		</div>
+	</div>
+</body>
+</html>

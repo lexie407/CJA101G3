@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+
+<th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+<link rel="stylesheet" th:href="@{/css/vendors/multi-select.css}">
+<link rel="stylesheet" th:href="@{/css/vendors/custom-material-multiselect.css}">
+
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<th:block th:insert="~{/back-end/notification/navBackEndNotification :: secNavResources}"></th:block>
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<div class="admin-dashboard-container notification-center-container">
+					<h1>查詢通知</h1>
+
+					<div class="admin-notification-form">
+						<div class="widget">
+							<h2 style="margin-top: 0px; margin-bottom: 20px;">查詢條件</h2>
+							<form id="notificationEditForm"
+								th:action="@{/notification/doSearchNotification}" method="post">
+								<div class="form-group">
+									<select id="notificationMemberId" name="memIds" multiple>
+										<option value="1"
+											>會員1</option>
+										<option value="2"
+											>會員2</option>
+										<option value="3"
+											>會員3</option>
+									</select>
+								</div>
+
+								<div class="form-group">
+									<label for="notificationTimeStart">通知時間 (開始):</label> <input
+										type="datetime-local" id="notificationTimeStart"
+										name="notiSendAtStart" >
+								</div>
+
+								<div class="form-group">
+									<label for="notificationTimeEnd">通知時間 (結束):</label> <input
+										type="datetime-local" id="notificationTimeEnd"
+										name="notiSendAtEnd" >
+								</div>
+
+								<div class="form-group">
+									<label for="notificationTitle">通知標題:</label> <input type="text"
+										id="notificationTitle" name="notiTitle" placeholder="輸入通知標題"
+										>
+								</div>
+
+								<div class="form-group full-width">
+									<label for="notificationContent">通知內容:</label>
+									<textarea id="notificationContent" name="notiCont" rows="4"
+										placeholder="輸入通知內容" ></textarea>
+								</div>
+
+								<div class="form-group">
+									<label for="notificationStatus">通知狀態:</label> <select
+										id="notificationStatus" name="notiStatus">
+										<option value=""
+											th:selected="${param.notiStatus == null or param.notiStatus == ''}">--
+											請選擇狀態 --</option>
+										<option value="0" >已發送 - 未讀</option>
+										<option value="1" >已讀</option>
+										<option value="2" >使用者刪除</option>
+										<option value="3" >管理員刪除</option>
+										<option value="9" >待發送</option>
+									</select>
+								</div>
+
+								<div class="form-actions">
+									<button type="submit" class="material-button">
+										<span class="material-icons">search</span> 查詢
+									</button>
+									<input type="hidden" name="action" value="searchNoti">
+								</div>
+							</form>
+						</div>
+					</div>
+
+					<h2 style="margin-top: 40px; margin-bottom: 20px;">查詢結果</h2>
+					<table class="admin-table">
+						<thead>
+							<tr>
+								<th>通知時間</th>
+								<th>會員</th>
+								<th>狀態</th>
+								<th>標題</th>
+								<th>內容</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="notificationVO : ${list}" class="noti-table-line"
+								th:attr="data-form-action=@{/notification/noti.do}, data-notiId=${notificationVO.notiId}">
+								<td
+									th:text="${#dates.format(notificationVO.notiSendAt, 'yyyy-MM-dd HH:mm')}"></td>
+								<td th:text="${notificationVO.memId}"></td>
+								<td><span th:switch="${notificationVO.notiStatus}">
+										<span th:case="0">未讀</span>
+										<span th:case="1">已讀</span>
+										<span th:case="2">使用者刪除</span>
+										<span th:case="3">管理員刪除</span>
+										<span th:case="9">待發送</span>
+								</span></td>
+								<td th:text="${notificationVO.notiTitle}"></td>
+								<td th:text="${notificationVO.notiCont}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</main>
+		</div>
+	</div>
+	
+	<script src="../js/vendors/jquery-3.7.1.min.js"></script>
+	<script src="../js/vendors/jquery.multi-select.js"></script>
+	<script src="../js/notification/searchNotification.js"></script>
+
+</body>
+</html>

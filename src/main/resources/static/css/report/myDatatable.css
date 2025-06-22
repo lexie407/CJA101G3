@@ -1,0 +1,136 @@
+/* Custom styles for DataTables to match Material Design */
+
+/* Adjusting DataTables variables to use Material Design colors */
+:root {
+    --dt-row-selected: var(--md-sys-color-primary); /* Use primary color for selected rows */
+    --dt-row-selected-text: var(--md-sys-color-on-primary);
+    --dt-row-stripe: var(--md-sys-color-surface-container-low); /* Light stripe for rows */
+    --dt-row-hover: var(--md-sys-color-surface-container-medium); /* Hover effect */
+    --dt-column-ordering: var(--md-sys-color-on-surface);
+    --dt-html-background: var(--md-sys-color-background);
+}
+
+/* Dark mode adjustments (if you have a dark theme) */
+.dark {
+    --dt-html-background: var(--md-sys-color-background); /* Ensure consistency in dark mode */
+}
+
+/* General table styling */
+.admin-table.dataTable {
+    border-collapse: collapse; /* Ensure borders collapse nicely */
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 8px; /* Apply border-radius to the table */
+    overflow: hidden; /* Ensures border-radius is applied to content */
+}
+
+.admin-table.dataTable thead th {
+    background-color: var(--md-sys-color-surface-container-high); /* Header background */
+    color: var(--md-sys-color-on-surface-variant); /* Header text color */
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--md-sys-color-outline); /* Subtle separator */
+    font-weight: 500; /* Material Design standard */
+}
+
+.admin-table.dataTable tbody tr {
+    background-color: var(--md-sys-color-surface); /* Row background */
+    transition: background-color 0.3s ease;
+}
+
+.admin-table.dataTable tbody tr:nth-child(even) {
+    background-color: var(--md-sys-color-surface-container-low); /* Zebra striping */
+}
+
+.admin-table.dataTable tbody tr:hover {
+    background-color: var(--md-sys-color-surface-container-highest); /* Hover effect */
+}
+
+.admin-table.dataTable tbody td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant); /* Lighter border for cells */
+    color: var(--md-sys-color-on-surface);
+}
+
+/* DataTables specific elements styling */
+.dt-container .dt-search input,
+.dt-container .dt-length select {
+    border: 1px solid var(--md-sys-color-outline); /* Input border */
+    border-radius: 8px; /* Rounded corners for inputs */
+    padding: 10px 15px;
+    background-color: var(--md-sys-color-surface-container-highest); /* Input background */
+    color: var(--md-sys-color-on-surface); /* Input text color */
+    box-shadow: none; /* Remove default box-shadow */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dt-container .dt-search input:focus,
+.dt-container .dt-length select:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary); /* Primary color on focus */
+    box-shadow: 0 0 0 3px rgba(var(--md-sys-color-primary-rgb), 0.2); /* Subtle shadow on focus */
+}
+
+.dt-container .dt-paging .dt-paging-button {
+    border-radius: 4px; /* Slightly rounded pagination buttons */
+    padding: 8px 12px;
+    margin: 0 4px;
+    background-color: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface-variant);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.dt-container .dt-paging .dt-paging-button:hover:not(.current):not(.disabled) {
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    border-color: var(--md-sys-color-outline);
+    cursor: pointer;
+}
+
+.dt-container .dt-paging .dt-paging-button.current {
+    background-color: var(--md-sys-color-primary); /* Current page button */
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+    font-weight: 500;
+}
+
+.dt-container .dt-paging .dt-paging-button.disabled {
+    background-color: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Information text */
+.dt-container .dt-info {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+/* Top and bottom layout adjustments for better spacing */
+.dt-layout-row:first-child {
+    margin-bottom: 15px;
+}
+
+.dt-layout-row:last-child {
+    margin-top: 15px;
+}
+
+/* Ensure the DataTables wrapper also respects Material Design spacing */
+.dataTables_wrapper {
+    padding: 20px;
+    background-color: var(--md-sys-color-surface);
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+}
+
+/* Responsive adjustments for smaller screens */
+@media screen and (max-width: 768px) {
+    .dt-container .dt-search input,
+    .dt-container .dt-length select {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

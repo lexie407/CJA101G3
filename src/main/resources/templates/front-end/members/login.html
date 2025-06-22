@@ -1,0 +1,212 @@
+	<!DOCTYPE html>
+	<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+	<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>會員登入</title>
+	<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+	<style>
+	.app-container {
+		display: flex;
+		min-height: 100vh;
+		background-color: var(--md-sys-color-background);
+		color: var(--md-sys-color-on-background);
+	}
+	
+	.main-content {
+	    flex-grow: 1;
+	    padding: 24px;
+	    display: flex;
+	    justify-content: center;
+	    align-items: center;
+	    overflow-x: hidden; /* ✅ 禁止橫向滾動 */
+	}
+	
+	.md-card {
+	    width: 100%;
+	    max-width: 800px;
+	    padding: 48px;
+	    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+	    border-radius: 16px;
+	    background-color: var(--md-sys-color-surface-container-low);
+	    text-align: center;
+	    box-sizing: border-box; 
+	}
+	
+	.md-headline {
+		font-size: 2.2rem;
+		font-weight: 500;
+		color: var(--md-sys-color-primary);
+		margin-bottom: 32px;
+		text-align: center;
+	}
+	
+	.form-group {
+		margin-bottom: 20px;
+		position: relative;
+		text-align: left;
+	}
+	
+	.form-group label {
+		display: block;
+		margin-bottom: 8px;
+		font-weight: 500;
+		color: var(--md-sys-color-on-surface-variant);
+		font-size: 0.9rem;
+	}
+	
+	.md-text-field input[type="text"],
+	.md-text-field input[type="password"] {
+		width: 100%;
+		padding: 14px;
+		border: 1px solid var(--md-sys-color-outline);
+		border-radius: 8px;
+		background-color: var(--md-sys-color-surface);
+		color: var(--md-sys-color-on-surface);
+		font-size: 1rem;
+		box-sizing: border-box;
+		transition: border-color 0.3s ease, box-shadow 0.3s ease;
+	}
+	
+	.md-text-field input:focus {
+		outline: none;
+		border-color: var(--md-sys-color-primary);
+		box-shadow: 0 0 0 3px rgba(41, 153, 194, 0.2);
+	}
+	
+	.md-text-field input::placeholder {
+		color: var(--md-sys-color-on-surface-variant);
+		opacity: 0.7;
+	}
+	
+	.error-messages-container {
+		background-color: var(--md-sys-color-error-container);
+		color: var(--md-sys-color-on-error-container);
+		border-left: 5px solid var(--md-sys-color-error);
+		padding: 15px;
+		margin-bottom: 20px;
+		border-radius: 4px;
+		font-size: 0.9rem;
+		text-align: left;
+	}
+	
+	.error-message {
+		margin-bottom: 5px;
+	}
+	
+	.error-message:last-child {
+		margin-bottom: 0;
+	}
+	
+	.form-actions {
+		margin-top: 30px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		align-items: center;
+	}
+	
+	.material-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		padding: 12px 24px;
+		border-radius: 24px;
+		border: none;
+		font-size: 1rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	
+	.material-button .material-icons {
+		margin-right: 8px;
+		font-size: 1.2em;
+	}
+	
+	.md-primary-button {
+		background-color: var(--md-sys-color-primary);
+		color: var(--md-sys-color-on-primary);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+	
+	.md-primary-button:hover {
+		background-color: var(--md-sys-color-primary-fixed-dim);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	}
+	
+	.link-group {
+		margin-top: 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		text-align: center;
+	}
+	
+	.link-group a {
+		color: var(--md-sys-color-primary);
+		text-decoration: none;
+		font-size: 0.9rem;
+		transition: text-decoration 0.2s ease;
+	}
+	
+	.link-group a:hover {
+		text-decoration: underline;
+	}
+	
+	
+	.content-area-main {
+	    width: 100%;
+	    max-width: 480px;
+	    margin: auto;
+	}
+	
+	.md-card.login-container {
+	    width: 100% !important;
+	    max-width: 480px !important;
+	}
+
+	
+	</style>
+	</head>
+	<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<main class="content-area-main">
+				<div class="md-card login-container">
+					<h2 class="md-headline">會員登入</h2>
+					<div th:if="${not #lists.isEmpty(errorMsgs)}" class="error-messages-container">
+						<div class="error-message" th:each="message : ${errorMsgs}" th:text="${message}"></div>
+					</div>
+					<div th:if="${errorMsg} and ${#lists.isEmpty(errorMsgs)}" class="error-messages-container">
+						<div class="error-message" th:text="${errorMsg}"></div>
+					</div>
+					<form method="post" th:action="@{/members/login}">
+						<div class="form-group md-text-field">
+							<label for="memAcc">會員帳號:</label>
+							<input type="text" id="memAcc" name="memAcc" required placeholder="請輸入會員帳號" th:value="${memAcc}">
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memPwd">會員密碼:</label>
+							<input type="password" id="memPwd" name="memPwd" required placeholder="請輸入會員密碼">
+						</div>
+						<div class="form-actions">
+							<button type="submit" class="material-button md-primary-button">
+								<span class="material-icons">login</span> 登入
+							</button>
+						</div>
+					</form>
+					<div class="link-group">
+						<a th:href="@{/members/forgotPassword}">忘記密碼？</a>
+						<a th:href="@{/members/register}">還沒有帳號？註冊帳號</a>
+					</div>
+				</div>
+			</main>
+		</div>
+	</div>
+	</body>
+	</html>

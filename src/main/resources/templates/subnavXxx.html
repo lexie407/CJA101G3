@@ -1,0 +1,29 @@
+<!-- src/main/resources/templates/fragments/subnavXxx.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    
+</head>
+<body>
+<div th:fragment="subnav(activeItem)">
+    <header class="secondary-nav">
+        <ul>
+            <li>
+            	<!-- th:href=頁面的url mapping，記得要改 -->
+                <a th:href="@{/emp/listAll}"
+                   th:classappend="${activeItem == 'all' ? 'active' : ''}">TAB1</a>
+            </li>
+            <li>
+                <a th:href="@{/emp/listOne}"
+                   th:classappend="${activeItem == 'one' ? 'active' : ''}">TAB2</a>
+            </li>
+            <li>
+                <a th:href="@{/emp/addEmp}"
+                   th:classappend="${activeItem == 'add' ? 'active' : ''}">TAB3</a>
+            </li>
+
+        </ul>
+    </header>
+</div>
+</body>
+</html>

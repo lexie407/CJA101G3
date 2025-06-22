@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>請驗證您的電子郵件</title>
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
+<style>
+.app-container {
+	display: flex;
+	min-height: 100vh;
+	background-color: var(--md-sys-color-background);
+	color: var(--md-sys-color-on-background);
+}
+
+.main-content {
+	flex-grow: 1;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.md-card {
+	background-color: var(--md-sys-color-surface);
+	border-radius: 12px;
+	box-shadow: 0px 4px 8px rgba(var(--md-sys-color-shadow-rgb), 0.1);
+	padding: 40px;
+	text-align: center;
+	max-width: 500px;
+	width: 90%;
+}
+
+.md-headline {
+	font-size: 2rem;
+	font-weight: 500;
+	color: var(--md-sys-color-primary);
+	margin-bottom: 24px;
+}
+
+.md-body-text {
+	font-size: 1.1rem;
+	line-height: 1.6;
+	color: var(--md-sys-color-on-surface-variant);
+	margin-bottom: 30px;
+}
+
+.md-icon-large {
+	font-size: 64px;
+	color: var(--md-sys-color-tertiary);
+	margin-bottom: 20px;
+}
+
+.material-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px 24px;
+	border-radius: 28px;
+	border: none;
+	font-size: 1.05rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s
+		ease;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.md-primary-button {
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-primary-button:hover {
+	background-color: var(--md-sys-color-primary-fixed-dim);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.md-text-button {
+	background-color: transparent;
+	color: var(--md-sys-color-primary);
+	border: none;
+	padding: 8px 16px;
+	font-size: 0.95rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.md-text-button:hover {
+	background-color: rgba(var(--md-sys-color-primary-rgb), 0.1);
+}
+</style>
+
+</head>
+
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+
+		<div class="main-content">
+
+			<main class="content-area-main">
+				<div class="md-card">
+					<span class="material-icons md-icon-large">email</span>
+					<h1 class="md-headline">請驗證您的電子郵件</h1>
+					<p class="md-body-text">
+						我們已發送一封驗證郵件到您的信箱：<br> <strong th:text="${email}">[這裡會顯示用戶註冊的
+							Email]</strong><br> 請點擊郵件中的連結以完成註冊並啟用您的帳號。
+					</p>
+
+
+					<p class="md-body-text"
+						style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant);">
+						如果沒有在收件箱中找到郵件，請檢查您的垃圾郵件。</p>
+
+
+					<div th:if="${msg}" class="md-body-text"
+						style="color: var(--md-sys-color-primary); margin-bottom: 16px;">
+						<span th:text="${msg}"></span>
+					</div>
+
+					<form th:action="@{/members/resend-verification}" method="post"
+						style="display: inline;">
+						<input type="hidden" name="email" th:value="${email}" />
+						<button type="submit" class="material-button md-primary-button">
+							<span class="material-icons">refresh</span> 重新發送驗證信
+						</button>
+					</form>
+
+					<p style="margin-top: 20px;">
+						<a th:href="@{/members/login}" class="md-text-button">返回登入頁面</a>
+					</p>
+				</div>
+			</main>
+		</div>
+	</div>
+
+</body>
+</html>

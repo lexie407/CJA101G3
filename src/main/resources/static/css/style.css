@@ -245,6 +245,13 @@ body {
 
 }
 
+.left-nav .bottom-notification a.active{
+	background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-radius: 5px;
+    /* 導圓角 */
+}
+
 .left-nav .bottom-notification a:hover {
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>會員註冊</title> <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
+<style>
+
+.app-container {
+	display: flex;
+	min-height: 100vh;
+	background-color: var(--md-sys-color-background); 
+	color: var(--md-sys-color-on-background);
+}
+
+.main-content {
+	flex-grow: 1;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+}
+
+.content-area-main {
+	flex-grow: 1;
+	padding: 20px;
+	background-color: var(--md-sys-color-background);
+	border-radius: 12px;
+	box-shadow: 0px 1px 3px rgba(var(--md-sys-color-shadow-rgb), 0.2), 0px
+		1px 2px rgba(var(--md-sys-color-shadow-rgb), 0.1);
+}
+
+.md-card {
+	
+	max-width: 600px; 
+	margin: 40px auto; 
+	padding: 30px; 
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+	border-radius: 12px; 
+	background-color: var(--md-sys-color-surface-container-low); 
+}
+
+.md-headline {
+	font-size: 1.8rem;
+	font-weight: 500;
+	color: var(--md-sys-color-primary); 
+	margin-bottom: 24px; 
+	text-align: center;
+}
+
+
+.form-group {
+	margin-bottom: 20px;
+	position: relative;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 8px;
+	color: var(--md-sys-color-on-surface-variant);
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+
+.md-text-field input[type="text"], .md-text-field input[type="password"],
+	.md-text-field input[type="email"], .md-text-field input[type="date"],
+	.md-text-field input[type="tel"], .md-text-field input[type="number"],
+	.md-text-field textarea {
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface); 
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	box-sizing: border-box;
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.md-text-field input:focus, .md-text-field textarea:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary);
+	box-shadow: 0 0 0 3px rgba(var(--md-sys-color-primary-rgb), 0.2);
+}
+
+.md-text-field input::placeholder, .md-text-field textarea::placeholder
+	{
+	color: var(--md-sys-color-on-surface-variant);
+	opacity: 0.7;
+}
+
+
+.md-select-field select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background-image:
+		url('data:image/svg+xml;utf8,<svg fill="%234A4A4A" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	background-size: 24px;
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface); 
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	box-sizing: border-box;
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+	cursor: pointer;
+}
+
+.md-select-field select:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary);
+	box-shadow: 0 0 0 3px rgba(var(--md-sys-color-primary-rgb), 0.2);
+}
+
+
+.md-address-group .address-sub-group {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.md-address-group .address-sub-group .form-group {
+	flex: 1;
+	margin-bottom: 0;
+}
+
+
+.md-file-input {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.md-file-input label {
+	margin-bottom: 8px;
+}
+
+.md-file-input input[type="file"] {
+	width: 100%;
+	padding: 10px 0;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface); 
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+
+.avatar-preview {
+	width: 120px;
+	height: 120px;
+	border: 1px dashed var(--md-sys-color-outline);
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	margin-top: 10px;
+	background-color: var(--md-sys-color-surface-variant); 
+}
+
+.avatar-preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.avatar-placeholder {
+	font-size: 80px;
+	color: var(--md-sys-color-outline);
+}
+
+
+.form-actions {
+	margin-top: 30px;
+	text-align: right;
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 12px; 
+}
+
+.material-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px 20px;
+	border-radius: 20px;
+	border: none;
+	font-size: 1rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s
+		ease;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.material-button .material-icons {
+	margin-right: 8px;
+	font-size: 1.2em;
+}
+
+.md-primary-button {
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-primary-button:hover {
+	background-color: var(--md-sys-color-primary-fixed-dim);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.md-secondary-button {
+    background-color: transparent;
+    color: var(--md-sys-color-primary);
+    border: 1px solid var(--md-sys-color-outline);
+    box-shadow: none;
+}
+
+.md-secondary-button:hover {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    box-shadow: none;
+}
+
+
+.error-messages-container {
+	background-color: var(--md-sys-color-error-container);
+	color: var(--md-sys-color-on-error-container);
+	border-left: 5px solid var(--md-sys-color-error);
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	font-size: 0.9rem;
+}
+
+.error-message {
+	margin-bottom: 5px;
+}
+
+.error-message:last-child {
+	margin-bottom: 0;
+}
+
+
+@media ( max-width : 768px) {
+	.md-address-group .address-sub-group {
+		flex-direction: column;
+		gap: 0;
+	}
+}
+
+
+.readonly-field {
+    background-color: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: default;
+    border: 1px solid var(--md-sys-color-outline);
+    padding: 12px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+.readonly-field:focus {
+    outline: none;
+    border-color: var(--md-sys-color-outline);
+    box-shadow: none;
+}
+</style>
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+		
+			<main class="content-area-main">
+				<div th:fragment="registerFormContent"
+					class="md-card register-container">
+					<h2 class="md-headline">會員註冊</h2>
+
+					<div th:if="${not #lists.isEmpty(errorMsgs)}"
+						class="error-messages-container">
+						<div class="error-message" th:each="message : ${errorMsgs}"
+							th:text="${message}"></div>
+					</div>
+
+					<form method="post" th:action="@{/members/register}"
+						th:object="${membersVO}" enctype="multipart/form-data">
+						<div class="form-group md-text-field">
+							<label for="memAcc">會員帳號:</label> <input type="text" id="memAcc"
+								th:field="*{memAcc}" required placeholder="請輸入會員帳號">
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memPwd">會員密碼:</label> <input type="password"
+								id="memPwd" th:field="*{memPwd}" required placeholder="請輸入會員密碼">
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memName">會員姓名:</label> <input type="text"
+								id="memName" th:field="*{memName}" required
+								placeholder="請輸入會員姓名">
+						</div>
+						<div class="form-group md-select-field">
+							<label for="memGender">會員性別:</label> <select id="memGender"
+								th:field="*{memGender}" required>
+								<option value="">請選擇</option>
+								<option value="M">男</option>
+								<option value="F">女</option>
+							</select>
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memBirthDate">會員生日:</label> <input type="date"
+								id="memBirthDate" th:field="*{memBirthDate}" required>
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memMobile">手機:</label> <input type="text"
+								id="memMobile" th:field="*{memMobile}" required
+								placeholder="請輸入手機號碼">
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memEmail">Email:</label> <input type="email"
+								id="memEmail" th:field="*{memEmail}" required
+								placeholder="請輸入 Email">
+						</div>
+						<div class="form-group md-address-group">
+							<label class="address-label">地址:</label>
+							<div class="address-sub-group">
+								<div class="form-group md-select-field">
+									<label for="citySelect">縣市：</label> <select id="citySelect"
+										name="city" required></select>
+								</div>
+								<div class="form-group md-select-field">
+									<label for="districtSelect">鄉鎮市區：</label> <select
+										id="districtSelect" name="district" required></select>
+								</div>
+							</div>
+							<div class="form-group md-text-field">
+								<label for="addrDetailInput">街道地址：</label> <input type="text"
+									id="addrDetailInput" placeholder="請輸入詳細地址"> <input
+									type="hidden" id="memAddr" th:field="*{memAddr}">
+							</div>
+						</div>
+						<div class="form-group md-text-field">
+							<label for="memUsername">使用者暱稱:</label> <input type="text"
+								id="memUsername" th:field="*{memUsername}" required
+								placeholder="請輸入使用者暱稱">
+						</div>
+						<div class="form-group md-file-input">
+							<label for="memAvatarInput">大頭貼:</label> <input type="file"
+								name="memAvatar" id="memAvatarInput" accept="image/*" />
+							<div class="avatar-preview">
+								<img id="avatarPreview"
+									th:src="${membersVO.memAvatar != null ? '/images/' + membersVO.memAvatar : ''}"
+									alt="大頭貼預覽"
+									th:style="${membersVO.memAvatar != null ? '' : 'display:none;'}" />
+								<span th:unless="${membersVO.memAvatar != null}"
+									class="material-icons avatar-placeholder">account_circle</span>
+							</div>
+						</div>
+
+						<div class="form-actions">
+							<a href="javascript:history.back()"
+								class="material-button md-secondary-button"> <span
+								class="material-icons">arrow_back</span> 返回
+							</a>
+							<button type="submit" class="material-button md-primary-button">
+								<span class="material-icons">person_add</span> 送出註冊
+							</button>
+						</div>
+					</form>
+				</div>
+				<script th:src="@{/js/membersRegister.js}"></script>
+			</main>
+		</div>
+	</div>
+
+</body>
+</html>
