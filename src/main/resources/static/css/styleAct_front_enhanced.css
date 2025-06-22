@@ -315,7 +315,7 @@
 .act-search-input:focus {
   outline: none;
   border-color: var(--md-sys-color-primary);
-  box-shadow: 0 0 0 2px rgba(var(--md-sys-color-primary-rgb), 0.1);
+  box-shadow: 0 0 0 2px rgba(var(--md-sys-color-inverse-primary), 0.1);
 }
 
 .act-search-btn {
