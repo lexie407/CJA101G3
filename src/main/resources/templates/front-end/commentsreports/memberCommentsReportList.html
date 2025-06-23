@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<div class="notification-detail-container">
+					<h2 style="margin-top: 0px; margin-bottom: 20px;">以下是你的留言檢舉案件明細</h2>
+					<p>可點擊各列資料觀看詳細資訊</p>
+					<table class="admin-table">
+						<thead>
+							<tr>
+								<th>留言檢舉編號</th>
+								<th>案件簡述</th>
+								<th>處理進度</th>
+								<th>建立時間</th>
+							</tr>
+						</thead>
+						<div class="notification-list">
+							<tbody>
+								<div th:each="CommentsReportVO : ${list}">
+									<tr th:attr="data-commRepId=${CommentsReportVO.commRepId}" class="report_line">
+										<td th:text="${CommentsReportVO.commRepId}"></td>
+										<td th:text="${CommentsReportVO.repCat}"></td>
+										<td><span th:switch="${CommentsReportVO.rptSta}"> <span
+												th:case="0">處理中</span> <span th:case="1">檢舉通過</span> <span
+												th:case="2">檢舉未通過</span>
+										</span></td>
+										<td
+											th:text="${#dates.format(CommentsReportVO.repTime, 'yyyy-MM-dd HH:mm')}"></td>
+									</tr>
+								</div>
+							</tbody>
+						</div>
+					</table>
+				</div>
+			</main>
+		</div>
+
+	</div>
+	</div>
+
+	<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+	<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+	<script src="../js/notification/websocket.js"></script>
+	<script src="../js/commentsreports/memberCommentsReportList.js"></script>
+
+</body>
+</html>
