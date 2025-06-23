@@ -39,6 +39,7 @@ $(function () {
 
 // 取得 host + context path
 function getFullContextPath() {
+
     const path = window.location.pathname;
     const firstSlash = path.indexOf("/", 1);
     const ctx = firstSlash === -1 ? "" : path.substring(0, firstSlash);

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>活動詳細 | 島遊kha</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/light.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
+  </head>
+  <body class="light">
+  <div class="app-container">
+    <div th:insert="~{/navTemplate :: navbar}"></div>
+
+    <div class="main-content act-page">
+      <div th:insert="~{/subnavActFront :: subnav('my')}"></div>
+
+      <main class="content-area-main act-area">
+
+      <div class="content-area-main">
+      <div id="actDetail" th:data-id="${actVo.actId}" class="act-loading">
+        載入中...
+      </div>
+
+      <div
+        class="act-card-actions"
+        style="justify-content: center; margin-top: 24px"
+      >
+        <button
+          id="signupBtn"
+          class="act-btn act-btn-primary"
+          style="display: none"
+        >
+          報名參加
+        </button>
+        <button
+          id="cancelBtn"
+          class="act-btn act-btn-danger"
+          style="display: none"
+        >
+          取消報名
+        </button>
+        <a href="/act/member/search" class="act-btn act-btn-outline"
+          >返回搜尋</a
+        >
+      </div>
+    </div>
+      </main>
+    </div>
+  </div>
+
+    <script>
+      // 取得活動詳細資料
+      const detailEl = document.getElementById("actDetail");
+      const actId = detailEl.dataset.id;
+      const memId = 1; // 範例會員ID，實際應該從session取得
+
+      function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString("zh-TW", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function getStatusText(status) {
+        const statusMap = {
+          0: { text: "招募中", class: "recruiting" },
+          1: { text: "成團", class: "full" },
+          2: { text: "未成團", class: "ended" },
+          3: { text: "已取消", class: "ended" },
+          4: { text: "已凍結", class: "ended" },
+          5: { text: "已結束", class: "ended" },
+        };
+        return statusMap[status] || { text: "未知", class: "ended" };
+      }
+
+      function createActDetail(act) {
+        const status = getStatusText(act.recruitStatus);
+        let imageHtml =
+          '<div class="act-card-image-placeholder" style="height: 300px;">無圖片</div>';
+
+        // 檢查是否有圖片資料
+        if (act.actImg && act.actImg.length > 0) {
+          // 使用圖片端點直接顯示 byte[] 圖片，現在會自動顯示預設圖片
+          imageHtml = `<img src="/act/member/image/${act.actId}" alt="活動圖片" class="act-detail-image">`;
+        }
+
+        return `
+                <div class="act-detail-container">
+                    <div class="act-detail-header">
+                        <h1 class="act-detail-title">${act.actName}</h1>
+                        <p class="act-detail-meta">活動編號: ${
+                          act.actId
+                        } | 團主: ${act.hostId}</p>
+                        <span class="act-status ${status.class}">${
+          status.text
+        }</span>
+                    </div>
+                    
+                    <div class="act-detail-content">
+                        <div class="act-detail-image-container">
+                            ${imageHtml}
+                        </div>
+                        
+                        <div class="act-detail-info">
+                            <div class="act-info-section">
+                                <h3>活動說明</h3>
+                                <p>${act.actDesc || "無說明"}</p>
+                            </div>
+                            
+                            <div class="act-info-section">
+                                <h3>活動資訊</h3>
+                                <div class="act-info-grid">
+                                    <div class="act-info-item">
+                                        <span class="act-info-label">報名開始</span>
+                                        <span class="act-info-value">${formatDateTime(
+                                          act.signupStart
+                                        )}</span>
+                                    </div>
+                                    <div class="act-info-item">
+                                        <span class="act-info-label">報名截止</span>
+                                        <span class="act-info-value">${formatDateTime(
+                                          act.signupEnd
+                                        )}</span>
+                                    </div>
+                                    <div class="act-info-item">
+                                        <span class="act-info-label">活動開始</span>
+                                        <span class="act-info-value">${formatDateTime(
+                                          act.actStart
+                                        )}</span>
+                                    </div>
+                                    <div class="act-info-item">
+                                        <span class="act-info-label">活動結束</span>
+                                        <span class="act-info-value">${formatDateTime(
+                                          act.actEnd
+                                        )}</span>
+                                    </div>
+                                    <div class="act-info-item">
+                                        <span class="act-info-label">人數限制</span>
+                                        <span class="act-info-value">${
+                                          act.signupCnt || 0
+                                        }/${act.maxCap}</span>
+                                    </div>
+                                    <div class="act-info-item">
+                                        <span class="act-info-label">行程編號</span>
+                                        <span class="act-info-value">${
+                                          act.itnId
+                                        }</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="act-detail-actions">
+                        <button onclick="window.location.href='/act/member/search'" class="act-btn act-btn-secondary">
+                            返回搜尋
+                        </button>
+                        <button onclick="joinAct(${
+                          act.actId
+                        })" class="act-btn act-btn-primary">
+                            報名參加
+                        </button>
+                    </div>
+                </div>
+            `;
+      }
+
+      // 載入活動詳細資料
+      fetch("/api/act/get/" + actId)
+        .then((r) => r.json())
+        .then((act) => {
+          detailEl.classList.remove("act-loading");
+          detailEl.innerHTML = createActDetail(act);
+          // 檢查報名狀態
+          return fetch(`/api/participate/${actId}/members`);
+        })
+        .then((r) => r.json())
+        .then((members) => {
+          const signupBtn = document.getElementById("signupBtn");
+          const cancelBtn = document.getElementById("cancelBtn");
+          if (members.includes(memId)) {
+            signupBtn.style.display = "none";
+            cancelBtn.style.display = "inline-block";
+          } else {
+            signupBtn.style.display = "inline-block";
+            cancelBtn.style.display = "none";
+          }
+        })
+        .catch((error) => {
+          detailEl.classList.remove("act-loading");
+          console.error("載入活動詳細失敗:", error);
+          detailEl.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--md-sys-color-error);">
+                        <h3>載入失敗</h3>
+                        <p>無法載入活動詳細資料，請稍後再試</p>
+                    </div>
+                `;
+        });
+
+      // 報名事件
+      document.getElementById("signupBtn").addEventListener("click", () => {
+        fetch(`/api/participate/${actId}/signup/${memId}`, {
+          method: "POST",
+        })
+          .then((response) => {
+            if (response.ok) {
+              alert("報名成功！");
+              location.reload();
+            } else {
+              alert("報名失敗，請稍後再試");
+            }
+          })
+          .catch((error) => {
+            console.error("報名失敗:", error);
+            alert("報名失敗，請稍後再試");
+          });
+      });
+
+      // 取消報名事件
+      document.getElementById("cancelBtn").addEventListener("click", () => {
+        if (confirm("確定要取消報名嗎？")) {
+          fetch(`/api/participate/${actId}/signup/${memId}`, {
+            method: "DELETE",
+          })
+            .then((response) => {
+              if (response.ok) {
+                alert("取消報名成功！");
+                location.reload();
+              } else {
+                alert("取消報名失敗，請稍後再試");
+              }
+            })
+            .catch((error) => {
+              console.error("取消報名失敗:", error);
+              alert("取消報名失敗，請稍後再試");
+            });
+        }
+      });
+    </script>
+  </body>
+</html>

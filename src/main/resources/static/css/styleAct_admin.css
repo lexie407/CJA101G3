@@ -1,0 +1,132 @@
+/*統一主內容位置*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 只針對 act-admin 頁面生效 */
+.main-content.act-page {
+    max-width: calc(100vw - 200px);
+    margin-right: 10px;
+}
+.content-area-main.act-area {
+    max-width: 100%;
+    margin-right: 10px;
+}
+
+
+/* 活動管理專用樣式 - styleAct_admin.css */
+.act-admin-title {
+    font-size: 1.75rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: var(--md-sys-color-primary);
+}
+
+/*=============表格樣式===================*/
+
+/* 所有表頭/表格欄位的共同樣式 */
+.act-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--md-sys-color-surface-container-low);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* 所有表頭/表格欄位的共同樣式 */
+.act-admin-table th,
+.act-admin-table td {
+    white-space: nowrap;
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 15px;
+    color: var(--md-sys-color-on-surface);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* 圖片獨立寫，不與 th, td 合併 */
+.act-admin-table td img {
+    max-width: 100px;
+    height: auto;
+    display: block;
+    margin: 0 auto; /* 讓圖片置中 */
+}
+
+/* 表頭 th 特化 */
+.act-admin-table thead th {
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+/* 偶數行底色 */
+.act-admin-table tbody tr:nth-child(even) {
+    background-color: var(--md-sys-color-surface-container-low);
+}
+
+/* 滑鼠 hover 行 */
+.act-admin-table tbody tr:hover {
+    background-color: var(--md-sys-color-surface-container);
+}
+
+/*=============按鈕樣式===================*/
+.act-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 2px var(--md-sys-color-shadow);
+}
+
+.act-view {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.act-edit {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.act-delete {
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
+.act-btn:hover {
+    opacity: 0.9;
+}
+
+/*讓表格橫向出現捲軸，不影響其他排版 */
+.dataTables_wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* 活動表單共用樣式 */
+.act-form .form-group {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.act-form .form-group label {
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.act-form .form-group input,
+.act-form .form-group textarea {
+    padding: 8px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 4px;
+    font-size: 14px;
+}

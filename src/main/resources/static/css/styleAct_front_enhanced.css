@@ -1,0 +1,384 @@
+/* 前端活動頁面專用樣式 - styleAct_front_enhanced.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 統一主內容位置 */
+.content-area-main.act-page {
+  padding: 32px 56px 32px 56px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 頁面標題 */
+.act-front-title.act-area {
+  max-width: 100%;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 24px;
+  color: var(--md-sys-color-primary);
+  text-align: center;
+}
+
+/*============= 卡片樣式===================*/
+
+/* 卡片容器 */
+.act-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* 活動卡片 */
+.act-card {
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.act-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 活動圖片 */
+.act-card-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.act-card-image-placeholder {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(
+    135deg,
+    var(--md-sys-color-surface-container),
+    var(--md-sys-color-outline-variant)
+  );
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 1.2rem;
+}
+
+/* 活動標題 */
+.act-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* 活動描述 */
+.act-card-desc {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 活動資訊 */
+.act-card-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.act-info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background-color: var(--md-sys-color-surface-container);
+  border-radius: 6px;
+}
+
+.act-info-label {
+  font-size: 0.75rem;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 4px;
+}
+
+.act-info-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* 狀態標籤 */
+.act-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.act-status.recruiting {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.act-status.full {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.act-status.ended {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+/* 按鈕組 */
+.act-card-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.act-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+}
+
+.act-btn-primary {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.act-btn-secondary {
+  background-color: var(--md-sys-color-secondary);
+  color: var(--md-sys-color-on-secondary);
+}
+
+.act-btn-outline {
+  background-color: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-primary);
+}
+
+.act-btn-danger {
+  background-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+
+.act-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.act-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 詳細頁面樣式 */
+.act-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.act-detail-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.act-detail-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 8px;
+}
+
+.act-detail-meta {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.9rem;
+}
+
+.act-detail-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.act-detail-content {
+  margin-bottom: 32px;
+}
+
+.act-detail-desc {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 24px;
+}
+
+.act-detail-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.act-detail-item {
+  padding: 16px;
+  background-color: var(--md-sys-color-surface-container);
+  border-radius: 8px;
+}
+
+.act-detail-label {
+  font-size: 0.8rem;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.act-detail-value {
+  font-size: 1rem;
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
+}
+
+/* 搜尋區域 */
+.act-search-container {
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.act-search-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.act-search-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.act-search-label {
+  font-size: 0.9rem;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.act-search-input {
+  padding: 8px 12px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.act-search-input:focus {
+  outline: none;
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--md-sys-color-inverse-primary), 0.1);
+}
+
+.act-search-btn {
+  padding: 8px 16px;
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.act-search-btn:hover {
+  opacity: 0.9;
+}
+
+/* 載入狀態 */
+.act-loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.act-loading::after {
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--md-sys-color-outline);
+  border-radius: 50%;
+  border-top-color: var(--md-sys-color-primary);
+  animation: spin 1s ease-in-out infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .content-area-main {
+    padding: 16px;
+  }
+
+  .act-card-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .act-detail-container {
+    padding: 16px;
+  }
+
+  .act-search-form {
+    grid-template-columns: 1fr;
+  }
+
+  .act-detail-info {
+    grid-template-columns: 1fr;
+  }
+}

@@ -68,6 +68,9 @@ public class ForumPageController {
     @GetMapping("/article/edit")
     public String editArticle(){
         return "front-end/forum/add-article";
+
+
+
     }
 
 }
