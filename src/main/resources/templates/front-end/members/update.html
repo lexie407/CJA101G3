@@ -133,6 +133,11 @@
 	color: var(--md-sys-color-on-primary-container);
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
+
+.alert.alert-danger,
+.error-messages-container {
+  color: var(--md-sys-color-error) !important; 
+}
 </style>
 </head>
 
@@ -140,37 +145,7 @@
 	<div class="app-container">
 		<div th:insert="~{/navTemplate :: navbar}"></div>
 		<div class="main-content">
-			<header class="secondary-nav">
-				<ul>
-					<li><a th:href="@{/members/update}"> <span
-							class="material-icons">person</span> 資料修改
-					</a></li>
-
-					<li><a th:href="@{/members/coupons}"> <span
-							class="material-icons">redeem</span> 我的優惠券
-					</a></li>
-
-					<li><a th:href="@{/members/points-record}"> <span
-							class="material-icons">history</span> 點數紀錄
-					</a></li>
-
-					<li><a th:href="@{/members/points-products}"> <span
-							class="material-icons">shopping_cart</span> 我的兌換商品
-					</a></li>
-
-					<li><a th:href="@{/members/notifications}"> <span
-							class="material-icons">notifications</span> 通知
-					</a></li>
-
-					<li><a th:href="@{/members/chat-records}"> <span
-							class="material-icons">chat</span> 與我聊聊
-					</a></li>
-
-					<li><a th:href="@{/members/favorites}"> <span
-							class="material-icons">favorite</span> 我的收藏
-					</a></li>
-				</ul>
-			</header>
+			<div th:replace="~{subnavMembers :: subnav(activeItem='profile')}"></div>
 			<main class="content-area-main">
 				<div class="md-card register-container">
 					<h2 class="md-headline">會員資料修改</h2>

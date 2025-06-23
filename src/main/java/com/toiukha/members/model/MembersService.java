@@ -1,6 +1,9 @@
 package com.toiukha.members.model;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.toiukha.email.EmailService;
@@ -200,33 +203,41 @@ public class MembersService {
 	
 	
 	 
-	    public List<MembersVO> searchByCriteria(Integer status, String memAcc, Integer memId, String memName) {
-	        return membersRepository.findAll((root, query, cb) -> {
-	            List<Predicate> predicates = new ArrayList<>();
+	public Page<MembersVO> searchByCriteria(
+            Byte memStatus,
+            String memAcc,
+            Integer memId,
+            String memName,
+            Pageable pageable) {
 
-	            // 會員編號（Integer 精確）
-	            if (memId != null) {
-	                predicates.add(cb.equal(root.get("memId"), memId));
-	            }
-	            // 帳號（String 模糊）
-	            if (memAcc != null && !memAcc.isBlank()) {
-	                predicates.add(cb.like(root.get("memAcc"), "%" + memAcc + "%"));
-	            }
-	            // 姓名（String 模糊）
-	            if (memName != null && !memName.isBlank()) {
-	                predicates.add(cb.like(root.get("memName"), "%" + memName + "%"));
-	            }
-	            // 權限狀態（Integer 精確）
-	            if (status != null) {
-	                predicates.add(cb.equal(root.get("memStatus"), status));
-	            }
+        Specification<MembersVO> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-	            // 你可以繼續依照需要，加入更多欄位的條件……
-	            // 例如：信箱模糊、點數範圍、日期區間等
+            if (memId != null) {
+                predicates.add(cb.equal(root.get("memId"), memId));
+            }
+            if (memAcc != null && !memAcc.isBlank()) {
+                predicates.add(cb.like(root.get("memAcc"), "%" + memAcc + "%"));
+            }
+            if (memName != null && !memName.isBlank()) {
+                predicates.add(cb.like(root.get("memName"), "%" + memName + "%"));
+            }
+            if (memStatus != null) {
+                predicates.add(cb.equal(root.get("memStatus"), memStatus));
+            }
 
-	            return cb.and(predicates.toArray(new Predicate[0]));
-	        });
-	    }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return membersRepository.findAll(spec, pageable);
+    }
+	
+	
+	@Transactional
+    public void editMember(MembersVO membersvo) {
+        // 直接 save() 就會做 update
+        membersRepository.save(membersvo);
+    }
 	
 	
 }

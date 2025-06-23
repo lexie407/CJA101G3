@@ -23,12 +23,8 @@
     <div class="app-container">
         <div th:insert="~{/navTemplate :: navbar}"></div>
         <div class="main-content">
-            <header class="secondary-nav">
-                <ul>
-                    <li th:classappend="${currentPage=='account'}?'active':''"><a th:href="@{/members/view}"><span class="material-icons">person</span> 資料檢視</a></li>
-                    <li th:classappend="${currentPage=='account'}?'active':''"><a th:href="@{/members/update}"><span class="material-icons">edit</span> 資料修改</a></li>
-                </ul>
-            </header>
+            <div th:replace="~{subnavMembers :: subnav(activeItem='profile')}"></div>
+
             <main class="content-area-main">
                 <div class="md-card">
                     <h2 class="md-headline">會員資料檢視</h2>

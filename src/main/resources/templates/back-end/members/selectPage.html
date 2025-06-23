@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>會員管理 – 查詢</title>
+<title>會員查詢頁|管理員|島遊kha</title>
 <!-- 載入共用資源 -->
 <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
 <!-- 自訂表單與按鈕樣式 -->
@@ -85,11 +85,11 @@ input, select {
 						<label></label> <a th:href="@{/members/listAll}"
 							class="show-all-link">顯示全部會員</a>
 					</div>
-					<form th:action="@{/members/selectPage}" method="post"
-						class="form-group">
+					<form th:action="@{/members/searchResults}" method="get" class="form-group">
 						<!-- 權限（下拉選單） -->
 						<div class="form-field">
-							<label for="status">權限</label> <select id="status" name="status">
+							<label for="memStatus">會員狀態</label>
+							<select id="memStatus" name="memStatus">
 								<option value="">── 全部權限 ──</option>
 								<option value="0">0：未啟用</option>
 								<option value="1">1：啟用</option>
@@ -101,7 +101,7 @@ input, select {
 							<label for="memAcc">帳號</label> <input id="memAcc" type="text"
 								name="memAcc" placeholder="輸入會員帳號以模糊查詢">
 						</div>
-						<!-- 原有：會員 ID -->
+						<!-- 會員 ID -->
 						<div class="form-field">
 							<label for="memId">會員 ID</label> <select id="memId" name="memId">
 								<option value="" selected>── 請選擇會員 ──</option>
@@ -109,7 +109,7 @@ input, select {
 									th:text="${m.memId + ' – ' + m.memName}"></option>
 							</select>
 						</div>
-						<!-- 原有：會員姓名 -->
+						<!-- 會員姓名 -->
 						<div class="form-field">
 							<label for="memName">會員姓名</label> <input id="memName" type="text"
 								name="memName" placeholder="輸入會員姓名以模糊查詢">

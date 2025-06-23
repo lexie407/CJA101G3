@@ -1,6 +1,10 @@
 package com.toiukha.members.controller; // 確保這是你的 Controller 實際套件路徑
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -166,13 +170,11 @@ public class MembersController {
 			return "redirect:/members/login";
 		}
 
-		// 2. （選擇性）重新從 DB 拿一次完整資料
-		// member = membersService.getById(member.getMemId());
 
-		// 3. 加入模型供 Thymeleaf 使用
+		// 2. 加入模型供 Thymeleaf 使用
 		model.addAttribute("membersVO", member);
 
-		// 4. 回傳「會員資料檢視」的模板名稱（與檔名一致）
+		// 3. 回傳「會員資料檢視」的模板名稱（與檔名一致）
 		return "front-end/members/membersProfile";
 	}
 
@@ -251,23 +253,93 @@ public class MembersController {
 		return "back-end/members/selectPage";
 	}
 
-	@PostMapping("/selectPage")
-	public String doSearch(@RequestParam(value = "status", required = false) Integer status,
-			@RequestParam(value = "memAcc", required = false) String memAcc,
-			@RequestParam(value = "memId", required = false) Integer memId,
-			@RequestParam(value = "memName", required = false) String memName, Model model) {
+	
+	
+	
+	@GetMapping("/searchResults")
+	public String showSearchResults(
+	        @RequestParam(value = "memStatus", required = false) Byte memStatus,
+	        @RequestParam(value = "memAcc",    required = false) String memAcc,
+	        @RequestParam(value = "memId",     required = false) Integer memId,
+	        @RequestParam(value = "memName",   required = false) String memName,
+	        @RequestParam(value = "page",      defaultValue = "0")    int page,
+	        @RequestParam(value = "size",      defaultValue = "5")    int size,
+	        Model model) {
 
-		boolean noCriteria = (status == null) && (memAcc == null || memAcc.isBlank()) && (memId == null)
-				&& (memName == null || memName.isBlank());
-		if (noCriteria) {
-			// 若無任何搜尋條件，直接跳到全部列表
-			return "redirect:/members/listAll";
-		}
+	    boolean noCriteria =
+	        (memStatus == null)
+	     && (memAcc    == null    || memAcc.isBlank())
+	     && (memId     == null)
+	     && (memName   == null    || memName.isBlank());
+	    if (noCriteria) {
+	        return "redirect:/members/listAll";
+	    }
 
-		List<MembersVO> results = membersService.searchByCriteria(status, memAcc, memId, memName);
-		model.addAttribute("membersList", results);
-		return "back-end/members/searchResults"; // <-- 這裡回傳搜尋結果專用的模板
+	    // 使用 page 和 size 動態分頁
+	    Pageable pageable = PageRequest.of(page, size, Sort.by("memId").ascending());
+	    Page<MembersVO> pageResult =
+	        membersService.searchByCriteria(memStatus, memAcc, memId, memName, pageable);
+
+	    model.addAttribute("page",        pageResult);
+	    model.addAttribute("membersList", pageResult.getContent());
+
+	    model.addAttribute("memStatus",   memStatus);
+	    model.addAttribute("memAcc",      memAcc);
+	    model.addAttribute("memId",       memId);
+	    model.addAttribute("memName",     memName);
+
+	    return "back-end/members/searchResults";
 	}
+	
+	@GetMapping("/listAll")
+    public String listAll(Model model) {
+        // 一次拿所有會員，交給前端 DataTables 處理
+        List<MembersVO> all = membersService.findAllMembers();
+        model.addAttribute("membersList", all);
+        return "back-end/members/listAll";
+    }
+	
+	@GetMapping("/editMembers")
+    public String showEditForm(@RequestParam("memId") Integer memId, Model model) {
+        MembersVO member = membersService.getOneMember(memId);
+        model.addAttribute("membersVO", member);
+        return "back-end/members/editMembers";
+    }
+	
+	
+	@PostMapping("/editMembers")
+	public String updateMember(
+	        @Valid @ModelAttribute("membersVO") MembersVO membersVO,
+	        BindingResult br,
+	        Model model,                                          // ← 加入
+	        @RequestParam(value = "memAvatarFile", required = false) MultipartFile avatar,
+	        @RequestParam(value = "memAvatarFrameFile", required = false) MultipartFile frame
+	) throws IOException {
+	    // 1. 驗證錯誤時，收集並回傳錯誤列表
+	    if (br.hasErrors()) {
+	        List<String> errorMsgs = br.getFieldErrors().stream()
+	            .map(FieldError::getDefaultMessage)
+	            .collect(Collectors.toList());
+	        model.addAttribute("errorMsgs", errorMsgs);
+	        return "back-end/members/editMembers";
+	    }
+
+	    // 2. 處理上傳檔案
+	    if (avatar != null && !avatar.isEmpty()) {
+	        membersVO.setMemAvatar(avatar.getBytes());
+	    }
+	    if (frame != null && !frame.isEmpty()) {
+	        membersVO.setMemAvatarFrame(frame.getBytes());
+	    }
+
+	    // 3. 執行更新
+	    membersService.editMember(membersVO);
+
+	    // 4. 重導到查詢頁
+	    return "redirect:/members/searchResults?memId=" + membersVO.getMemId();
+	}
+	
+	
 
 	// 去除 BindingResult 中某個欄位的 FieldError 紀錄
 	private BindingResult removeFieldError(MembersVO membersVO, BindingResult result, String removedFieldname) {

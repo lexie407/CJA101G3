@@ -25,7 +25,7 @@ public class DBGifReaderController {
             HttpServletRequest req,
             HttpServletResponse res) throws IOException {
 
-        res.setContentType("image/gif");
+        res.setContentType("image/png");
         ServletOutputStream out = res.getOutputStream();
 
         try {
@@ -41,13 +41,17 @@ public class DBGifReaderController {
             if (imageBytes != null) {
                 out.write(imageBytes);
             } else {
-                InputStream in = req.getServletContext().getResourceAsStream("/NoData/nopic.jpg");
+                InputStream in = getClass()
+                        .getClassLoader()
+                        .getResourceAsStream("static/images/user.png");
                 out.write(in.readAllBytes());
                 in.close();
             }
 
         } catch (Exception e) {
-            InputStream in = req.getServletContext().getResourceAsStream("/NoData/nopic.jpg");
+            InputStream in = getClass()
+                    .getClassLoader()
+                    .getResourceAsStream("static/images/user.png");
             out.write(in.readAllBytes());
             in.close();
         }

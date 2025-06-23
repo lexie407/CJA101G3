@@ -15,7 +15,7 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(membersInterceptor)
-                // 要攔截的路徑模式：所有 /members/ 下的請求
+                // 要攔截的路徑模式：
                 .addPathPatterns("/members/update","/members/view")
                 // 排除靜態資源，以及登入與註冊頁面
                 .excludePathPatterns(

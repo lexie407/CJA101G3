@@ -1,5 +1,7 @@
 package com.toiukha.members.controller;
 
+import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,8 +74,16 @@ public class MembersLoginController {
         }
         //4.狀態檢查 只有啟用時才能通過
         if (member.getMemStatus() == 0) {
-        	model.addAttribute("errorMsgs", List.of("帳號尚未啟用，請先完成 Email 驗證"));
-        	return "front-end/members/login";
+            // 先把 member 放進 Session，好讓後續可以重發驗證信
+            session.setAttribute("member", member);
+            try {
+                // UTF-8 一定會支援，理論上不會走到 catch 裡
+                String encodedEmail = URLEncoder.encode(member.getMemEmail(), "UTF-8");
+                return "redirect:/members/verificationSent?email=" + encodedEmail;
+            } catch (UnsupportedEncodingException e) {
+                // 萬一真有問題，就直接帶 raw email
+                return "redirect:/members/verificationSent?email=" + member.getMemEmail();
+            }
         }
         if (member.getMemStatus() == 2) {
         	model.addAttribute("errorMsgs", List.of("帳號已被停權，如有問題請聯絡客服"));
@@ -106,16 +116,16 @@ public class MembersLoginController {
             @RequestParam("email") String email,
             RedirectAttributes redirectAttrs) {
 
-        //  呼 Service：查 DB → (有的話) 寄信
+        //  呼 Service：查 DB → 有的話 寄信
         membersService.processForgotPassword(email);
 
-        //  Controller 決定跳轉到「已寄出」提示頁
+        //  Controller 決定跳轉到已寄出提示頁
         redirectAttrs.addFlashAttribute(
             "success", "若信箱存在，重設連結已寄出，請至信箱查看。");
         return "redirect:/members/forgotPasswordSent";
     }
     
-    //顯示「重設密碼連結已寄出」提示畫面
+    //顯示重設密碼連結已寄出提示畫面
     @GetMapping("/forgotPasswordSent")
     public String showForgotPasswordSentPage() {
         return "front-end/members/forgotPasswordSent";
@@ -123,7 +133,7 @@ public class MembersLoginController {
     
     
     
-//      處理「點擊重設密碼連結」的畫面顯示。
+//      處理點擊重設密碼連結的畫面顯示
     
     @GetMapping("/resetPassword")
     public String showResetPasswordForm(@RequestParam("token") String token, Model model) {
@@ -148,7 +158,7 @@ public class MembersLoginController {
         Integer memId = emailService.verifyResetToken(token);
         if (memId == null) {
             model.addAttribute("errorMsg", "連結已失效，請重新申請重設密碼。");
-            return "front-end/members/resetPasswordError"; // 錯誤頁（與 GET 共用）
+            return "front-end/members/resetPasswordError"; // 錯誤頁與 GET 共用
         }
 
         MembersVO member = membersService.getOneMember(memId);
