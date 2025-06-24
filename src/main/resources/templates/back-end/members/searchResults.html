@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org"
+	th:with="currentPage='accounts'">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>搜尋結果|管理員|島遊kha</title>
+<!-- 載入共用資源：包含 Material Design 的顏色變數、字體和圖標 -->
+<th:block th:replace="~{/navBackTemplate :: headResources}" />
+
+<!-- DataTables CSS -->
+<link
+	th:href="@{https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css}"
+	rel="stylesheet" />
+
+<style>
+/* ==================================================================== */
+/* 以下是從「忘記密碼頁」母模板繼承的通用 Material Design 樣式，確保頁面外觀一致 */
+/* ==================================================================== */
+.app-container {
+	display: flex;
+	min-height: 100vh;
+	background-color: var(--md-sys-color-background);
+	color: var(--md-sys-color-on-background);
+}
+
+.main-content {
+	flex-grow: 1;
+	margin-left: 200px;
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.md-card {
+	max-width: 100%;
+	width: 100%;
+	padding: 40px;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+	border-radius: 16px;
+	background-color: var(--md-sys-color-surface-container);
+	text-align: center;
+	box-sizing: border-box;
+}
+
+.md-headline {
+	font-size: 2rem;
+	font-weight: 500;
+	color: var(--md-sys-color-primary);
+	margin-bottom: 24px;
+	text-align: center;
+}
+
+.form-group {
+	margin-bottom: 20px;
+	text-align: left;
+}
+
+label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface-variant);
+	font-size: 0.9rem;
+}
+
+.md-text-field {
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface-container-high);
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	box-sizing: border-box;
+	transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.md-text-field:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary);
+	box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+}
+
+.md-text-field::placeholder {
+	color: var(--md-sys-color-on-surface-variant);
+	opacity: 0.7;
+}
+
+.material-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px 24px;
+	border-radius: 24px;
+	border: none;
+	font-size: 1rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.3s, box-shadow 0.3s, color 0.3s;
+	text-decoration: none;
+	white-space: nowrap;
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+}
+
+.material-button .material-icons {
+	margin-right: 8px;
+	font-size: 1.2em;
+}
+
+.md-primary-button {
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+}
+
+.md-primary-button:hover {
+	background-color: var(--md-sys-color-primary-fixed-dim);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.md-secondary-button {
+	background-color: var(--md-sys-color-secondary-container);
+	color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-secondary-button:hover {
+	background-color: var(--md-sys-color-secondary);
+	color: var(--md-sys-color-on-secondary);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.error-messages-container {
+	background-color: var(--md-sys-color-error-container);
+	color: var(--md-sys-color-on-error-container);
+	border-left: 5px solid var(--md-sys-color-error);
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	text-align: left;
+}
+
+.error-message {
+	margin-bottom: 5px;
+}
+
+.error-message:last-child {
+	margin-bottom: 0;
+}
+
+.content-area-main {
+	width: 100%;
+}
+
+.table-container {
+	padding-bottom: 0.5rem;
+	margin: 2rem 0;
+	overflow-x: auto;
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface-container-low);
+	box-sizing: border-box;
+}
+
+.table-container::-webkit-scrollbar {
+	height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+	background: var(--md-sys-color-surface-container);
+	border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+	background: var(--md-sys-color-outline);
+	border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+	background: var(--md-sys-color-on-surface-variant);
+}
+
+table {
+	width: max-content;
+	min-width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+	white-space: nowrap;
+}
+
+th, td {
+	padding: 0.75rem 1rem;
+	border: 1px solid var(--md-sys-color-outline-variant);
+	text-align: left;
+}
+
+thead th {
+	background-color: var(--md-sys-color-surface-container-high);
+	color: var(--md-sys-color-on-surface-variant);
+	font-weight: 600;
+	text-transform: capitalize;
+}
+
+tbody tr:nth-child(even) {
+	background-color: var(--md-sys-color-surface-container-low);
+}
+
+tbody tr:hover {
+	background-color: var(--md-sys-color-surface-container);
+}
+
+img.avatar {
+	max-width: 50px;
+	max-height: 50px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid var(--md-sys-color-outline);
+}
+
+.edit-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.5rem 0.8rem;
+	font-size: 0.9rem;
+	border-radius: 18px;
+	background-color: var(--md-sys-color-secondary-container);
+	color: var(--md-sys-color-on-secondary-container);
+	border: none;
+	box-shadow: 0 1px 2px var(--md-sys-color-shadow);
+	text-decoration: none;
+	transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.edit-btn:hover {
+	background-color: var(--md-sys-color-secondary);
+}
+
+td[colspan="23"] {
+	padding: 20px;
+	color: var(--md-sys-color-on-surface-variant);
+	font-style: italic;
+}
+
+.left-nav {
+	width: 200px;
+	background-color: var(--md-sys-color-surface-container);
+	box-shadow: 1px 0 0 0 rgba(0, 0, 0, 0.2);
+	padding: 7px;
+	display: flex;
+	flex-direction: column;
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100vh;
+	overflow-y: auto;
+	z-index: 1000;
+}
+
+.secondary-nav {
+	background-color: var(--md-sys-color-surface);
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+	padding: 0 20px;
+	position: sticky;
+	top: 0;
+	z-index: 999;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	height: 60px;
+}
+
+.dataTables_wrapper {
+	width: 100%;
+	padding: 0;
+}
+
+.dataTables_wrapper .dataTables_length {
+	float: left;
+	margin-bottom: .5rem;
+}
+
+.dataTables_wrapper .dataTables_filter {
+	float: right;
+	margin-bottom: .5rem;
+}
+
+.dataTables_wrapper .dataTables_info {
+	text-align: left;
+	margin-top: .5rem;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+	text-align: right;
+	margin-top: 1rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	margin: 0 4px !important;
+	padding: 12px 24px !important;
+	border-radius: 24px !important;
+	border: none !important;
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow) !important;
+	background-color: var(--md-sys-color-secondary-container) !important;
+	color: var(--md-sys-color-on-secondary-container) !important;
+	cursor: pointer !important;
+	transition: background-color .3s, box-shadow .3s, color .3s;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+	.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+	background-color: var(--md-sys-color-primary) !important;
+	color: var(--md-sys-color-on-primary) !important;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+	opacity: .4 !important;
+	cursor: default !important;
+}
+</style>
+</head>
+<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/members/selectPage}">查詢主頁</a></li>
+					<li><a th:href="@{/members/listAll}">列出所有會員</a></li>
+					<li><a class="active">搜尋結果</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<section class="md-card">
+					<h2 class="md-headline">搜尋結果</h2>
+
+					<th:block
+						th:replace="~{back-end/members/pagination :: paginationTop(
+      ${page}, ${page.size}, ${memStatus}, ${memAcc}, ${memId}, ${memName}
+  )}" />
+					<div class="table-container">
+						<table class="datatable-class">
+							<thead>
+								<tr>
+									<th>會員編號</th>
+									<th>帳號</th>
+									<th>密碼</th>
+									<th>姓名</th>
+									<th>性別</th>
+									<th>出生年月日</th>
+									<th>手機</th>
+									<th>信箱</th>
+									<th>地址</th>
+									<th>註冊時間</th>
+									<th>點數</th>
+									<th>更新時間</th>
+									<th>帳號狀態</th>
+									<th>會員頭像</th>
+									<th>暱稱</th>
+									<th>頭像框</th>
+									<th>錯誤次數</th>
+									<th>錯誤時間</th>
+									<th>頁面權限</th>
+									<th>違規記點</th>
+									<th>商城權限</th>
+									<th>商城記點</th>
+									<th>修改</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="m : ${membersList}">
+									<td th:text="${m.memId}"></td>
+									<td th:text="${m.memAcc}"></td>
+									<td th:text="${m.memPwd}"></td>
+									<td th:text="${m.memName}"></td>
+									<td th:text="${m.memGender}"></td>
+									<td th:text="${#dates.format(m.memBirthDate,'yyyy-MM-dd')}"></td>
+									<td th:text="${m.memMobile}"></td>
+									<td th:text="${m.memEmail}"></td>
+									<td th:text="${m.memAddr}"></td>
+									<td
+										th:text="${#dates.format(m.memRegTime,'yyyy-MM-dd HH:mm:ss')}"></td>
+									<td th:text="${m.memPoint}"></td>
+									<td
+										th:text="${#dates.format(m.memUpdatedAt,'yyyy-MM-dd HH:mm:ss')}"></td>
+									<td th:text="${m.memStatus}"></td>
+									<td><img class="avatar"
+										th:src="@{/members/DBGifReader(memId=${m.memId},type='memAvatar')}" /></td>
+									<td th:text="${m.memUsername}"></td>
+									<td><img class="avatar"
+										th:src="@{/members/DBGifReader(memId=${m.memId},type='memAvatarFrame')}" /></td>
+									<td th:text="${m.memLogErrCount}"></td>
+									<td
+										th:text="${#dates.format(m.memLogErrTime,'yyyy-MM-dd HH:mm:ss')}"></td>
+									<td th:text="${m.memGroupAuth}"></td>
+									<td th:text="${m.memGroupPoint}"></td>
+									<td th:text="${m.memStoreAuth}"></td>
+									<td th:text="${m.memStorePoint}"></td>
+									<td><a class="edit-btn"
+										th:href="@{/members/editMembers(memId=${m.memId})}">修改</a></td>
+								</tr>
+								<tr th:if="${#lists.isEmpty(membersList)}">
+									<td colspan="23" style="text-align: center;">查無符合條件的會員。</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- 後端分頁片段，不用修改 pagination.html -->
+					 <th:block
+   th:replace="~{back-end/members/pagination :: paginationBottom(
+      ${page}, ${page.size}, ${memStatus}, ${memAcc}, ${memId}, ${memName}
+ )}" />
+				</section>
+			</main>
+		</div>
+	</div>
+
+	<!-- === 3. 載入 JS 並調整初始化設定 === -->
+	<script th:src="@{https://code.jquery.com/jquery-3.6.0.min.js}"></script>
+<script th:src="@{https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js}"></script>
+<script th:inline="javascript">
+  $(document).ready(function() {
+    $('.datatable-class').DataTable({
+      lengthMenu: [5, 10],
+      searching: true,
+      paging:    false,    // 關閉 DataTables 原生分頁
+      info:      false,    // 關閉 DataTables 原生 info
+      dom:       'lfrt',   // 只留下 length + filter + table + 排序
+      ordering:  true,
+      language:  { /* 你的中文設定 */ }
+    });
+  });
+</script>
+</body>
+</html>
+

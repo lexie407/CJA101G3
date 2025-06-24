@@ -1,0 +1,118 @@
+<!-- back-end/members/pagination.html -->
+<!-- Thymeleaf pagination fragments for searchResults with embedded style -->
+
+<!-- 上方分頁：僅筆數選擇 -->
+<th:block
+	th:fragment="paginationTop(page, size, memStatus, memAcc, memId, memName)">
+	<div class="page-length">
+		顯示 <select onchange="location.href=this.value;">
+			
+			<option
+				th:value="@{/members/searchResults(page=0,size=5,memStatus=${memStatus},memAcc=${memAcc},memId=${memId},memName=${memName})}"
+				th:selected="${size}==5">5</option>
+			<option
+				th:value="@{/members/searchResults(page=0,size=10,memStatus=${memStatus},memAcc=${memAcc},memId=${memId},memName=${memName})}"
+				th:selected="${size}==10">10</option>
+		</select> 筆結果
+	</div>
+</th:block>
+
+<!-- 下方分頁：資訊 + 頁碼，同時嵌入必要的樣式 -->
+<th:block
+	th:fragment="paginationBottom(page, size, memStatus, memAcc, memId, memName)">
+	<!-- 分頁 CSS (嵌入，確保載入) -->
+	<style>
+.page-length {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 0.9rem;
+	margin-bottom: 8px;
+}
+
+.page-length select {
+	padding: 4px 8px;
+	border-radius: 4px;
+	border: 1px solid var(--md-sys-color-outline-variant);
+	background: var(--md-sys-color-surface-container-high);
+}
+
+.pagination-info {
+	margin: 16px 0 8px;
+	font-size: 0.9rem;
+	text-align: center;
+}
+
+.pagination-info .total-count {
+	color: var(--md-sys-color-error);
+	font-weight: bold;
+}
+
+.custom-pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 12px;
+	margin: 16px 0;
+	padding: 0;
+	list-style: none;
+}
+
+.custom-pagination li.disabled .page-btn {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+.page-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 40px;
+	height: 40px;
+	padding: 0 12px;
+	border-radius: 20px;
+	background: var(--md-sys-color-secondary-container);
+	color: var(--md-sys-color-on-secondary-container);
+	text-decoration: none;
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+	transition: background-color .3s, box-shadow .3s, color .3s;
+	font-size: 0.9rem;
+	white-space: nowrap;
+}
+
+.page-btn.prev, .page-btn.next {
+	border-radius: 24px;
+}
+
+.custom-pagination li.current .page-btn {
+	background: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+	box-shadow: 0 4px 8px var(--md-sys-color-shadow);
+}
+
+.custom-pagination li:not(.current):not(.disabled) .page-btn:hover {
+	background: var(--md-sys-color-secondary);
+	color: var(--md-sys-color-on-secondary);
+	box-shadow: 0 4px 8px var(--md-sys-color-shadow);
+}
+</style>
+
+	<div class="pagination-info">
+		顯示第 <span th:text="${page.number*size+1}"></span> 至 <span
+			th:text="${page.number*size+page.numberOfElements}"></span> 筆結果，共 <span
+			th:text="${page.totalElements}" class="total-count"></span> 筆
+	</div>
+	<ul class="custom-pagination">
+		<li th:classappend="${page.hasPrevious()}?'':'disabled'"><a
+			class="page-btn prev"
+			th:href="@{/members/searchResults(page=${page.number-1},size=${size},memStatus=${memStatus},memAcc=${memAcc},memId=${memId},memName=${memName})}">上一頁</a></li>
+		<li th:each="i : ${#numbers.sequence(0, page.totalPages-1)}"
+			th:classappend="${i}==${page.number}?'current':''"><a
+			class="page-btn"
+			th:href="@{/members/searchResults(page=${i},size=${size},memStatus=${memStatus},memAcc=${memAcc},memId=${memId},memName=${memName})}"
+			th:text="${i+1}"></a></li>
+		<li th:classappend="${page.hasNext()}?'':'disabled'"><a
+			class="page-btn next"
+			th:href="@{/members/searchResults(page=${page.number+1},size=${size},memStatus=${memStatus},memAcc=${memAcc},memId=${memId},memName=${memName})}">下一頁</a></li>
+	</ul>
+</th:block>

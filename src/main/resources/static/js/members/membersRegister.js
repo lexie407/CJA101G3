@@ -23,80 +23,69 @@ const taiwanData = {
     "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"]
 };
 
-const citySelect = document.getElementById('citySelect');
-const districtSelect = document.getElementById('districtSelect');
+// 2. 取得 DOM 元素
+const citySelect      = document.getElementById('citySelect');
+const districtSelect  = document.getElementById('districtSelect');
 const addrDetailInput = document.getElementById('addrDetailInput');
-const memAddrInput = document.getElementById('memAddr');
-const memAvatarInput = document.getElementById('memAvatarInput');
-const avatarPreview = document.getElementById('avatarPreview');
+const memAddrInput    = document.getElementById('memAddr');
+const memAvatarInput  = document.getElementById('memAvatarInput');
+const avatarPreview   = document.getElementById('avatarPreview');
 
+// 3. 填「縣市」下拉（加 placeholder）
 function populateCities() {
+    citySelect.innerHTML = '';
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = '──請選縣市──';
+    citySelect.appendChild(ph);
+
     for (const city in taiwanData) {
-        const option = document.createElement('option');
-        option.value = city;
-        option.textContent = city;
-        citySelect.appendChild(option);
+        const opt = document.createElement('option');
+        opt.value = city;
+        opt.textContent = city;
+        citySelect.appendChild(opt);
     }
 }
 
+// 4. 填「鄉鎮」下拉（加 placeholder）
 function populateDistricts(city) {
-    districtSelect.innerHTML = ''; // Clear previous districts
+    districtSelect.innerHTML = '';
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = '──請選鄉鎮──';
+    districtSelect.appendChild(ph);
+
     if (city && taiwanData[city]) {
         taiwanData[city].forEach(district => {
-            const option = document.createElement('option');
-            option.value = district;
-            option.textContent = district;
-            districtSelect.appendChild(option);
+            const opt = document.createElement('option');
+            opt.value = district;
+            opt.textContent = district;
+            districtSelect.appendChild(opt);
         });
     }
 }
 
+// 5. 如果一開始無檔案，就隱藏預覽、顯示 placeholder
 if (!memAvatarInput.files || memAvatarInput.files.length === 0) {
-       avatarPreview.src = '';
-       avatarPreview.style.display = 'none';
-       const placeholder = document.querySelector('.avatar-placeholder');
-       if (placeholder) placeholder.style.display = 'inline-block';
-   }
+    avatarPreview.src = '';
+    avatarPreview.style.display = 'none';
+    const placeholder = document.querySelector('.avatar-placeholder');
+    if (placeholder) placeholder.style.display = 'inline-block';
+}
 
+// 6. 合併選擇到隱藏欄位
 function updateMemAddr() {
-    const city = citySelect.value;
+    const city     = citySelect.value;
     const district = districtSelect.value;
-    const detail = addrDetailInput.value;
+    const detail   = addrDetailInput.value;
     memAddrInput.value = `${city}${district}${detail}`;
 }
 
-// Initial population
-populateCities();
-populateDistricts(citySelect.value);
-
-// Event listeners
-citySelect.addEventListener('change', (event) => {
-    populateDistricts(event.target.value);
-    updateMemAddr();
-});
-districtSelect.addEventListener('change', updateMemAddr);
-addrDetailInput.addEventListener('input', updateMemAddr);
-
-// Handle avatar preview
-memAvatarInput.addEventListener('change', function () {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            avatarPreview.src = e.target.result;
-            avatarPreview.style.display = 'block';
-            document.querySelector('.avatar-placeholder').style.display = 'none'; // 👈 加這行
-        };
-        reader.readAsDataURL(file);
-    } else {
-        avatarPreview.src = '';
-        avatarPreview.style.display = 'none';
-        document.querySelector('.avatar-placeholder').style.display = 'inline-block'; // 👈 恢復預設圖示
-    }
-});
-
-// Set initial values if membersVO exists (for editing)
+// 7. 初次填入、編輯時回填、驗證失敗回填
 window.onload = function() {
+    populateCities();
+    populateDistricts(citySelect.value);
+
     const initialMemAddr = memAddrInput.value;
     if (initialMemAddr) {
         let matchedCity = '';
@@ -104,33 +93,59 @@ window.onload = function() {
         let detailPart = initialMemAddr;
 
         for (const city in taiwanData) {
-            if (initialMemAddr.startsWith(city)) {
+            if (detailPart.startsWith(city)) {
                 matchedCity = city;
-                detailPart = initialMemAddr.substring(city.length);
+                detailPart = detailPart.substring(city.length);
                 break;
             }
         }
-
         if (matchedCity) {
             citySelect.value = matchedCity;
             populateDistricts(matchedCity);
 
-            if (taiwanData[matchedCity]) {
-                for (const district of taiwanData[matchedCity]) {
-                    if (detailPart.startsWith(district)) {
-                        matchedDistrict = district;
-                        detailPart = detailPart.substring(district.length);
-                        break;
-                    }
+            for (const district of taiwanData[matchedCity]) {
+                if (detailPart.startsWith(district)) {
+                    matchedDistrict = district;
+                    detailPart = detailPart.substring(district.length);
+                    break;
                 }
             }
             districtSelect.value = matchedDistrict;
         }
         addrDetailInput.value = detailPart;
     }
+
+    updateMemAddr();
+
+    // 8. Avatar 預覽（保留你原本沒壞的邏輯）
     if (avatarPreview.src && !avatarPreview.src.includes('null') && !avatarPreview.src.includes('undefined')) {
         avatarPreview.style.display = 'block';
     } else {
         avatarPreview.style.display = 'none';
     }
+
+    memAvatarInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                avatarPreview.src = e.target.result;
+                avatarPreview.style.display = 'block';
+                document.querySelector('.avatar-placeholder').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            avatarPreview.src = '';
+            avatarPreview.style.display = 'none';
+            document.querySelector('.avatar-placeholder').style.display = 'inline-block';
+        }
+    });
+
+    // 9. 綁事件：改變下拉或輸入時更新隱藏欄位並同步 district
+    citySelect.addEventListener('change', event => {
+        populateDistricts(event.target.value);
+        updateMemAddr();
+    });
+    districtSelect.addEventListener('change', updateMemAddr);
+    addrDetailInput.addEventListener('input', updateMemAddr);
 };

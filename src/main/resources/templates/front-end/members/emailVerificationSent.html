@@ -125,7 +125,7 @@
 						<span th:text="${msg}"></span>
 					</div>
 
-					<form th:action="@{/members/resend-verification}" method="post"
+					<form th:action="@{/members/resendVerification}" method="post"
 						style="display: inline;">
 						<input type="hidden" name="email" th:value="${email}" />
 						<button type="submit" class="material-button md-primary-button">

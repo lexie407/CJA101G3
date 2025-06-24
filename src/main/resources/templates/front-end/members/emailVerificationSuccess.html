@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信箱驗證成功</title>
+
+<!-- 共用 head Resources -->
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<!-- 共用 Navbar -->
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+
+		<div class="main-content">
+			<header class="secondary-nav"> </header>
+
+			<main class="content-area-main">
+				<div class="md-card register-container"
+					style="text-align: center; padding: 40px;">
+					<h2 class="md-headline" style="margin-bottom: 20px;">驗證成功</h2>
+					<p>您的信箱已完成驗證，恭喜您成為本站會員！</p>
+					<div style="margin-top: 30px;">
+						<a th:href="@{/members/login}"
+							style="color: #1a73e8; text-decoration: underline; font-weight: 600;">
+							現在就去登入 </a> 
+					</div>
+				</div>
+			</main>
+		</div>
+	</div>
+
+
+
+</body>
+</html>

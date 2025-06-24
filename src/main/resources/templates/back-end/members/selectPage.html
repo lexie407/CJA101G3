@@ -1,121 +1,126 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org" th:with="currentPage='accounts'">
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org"
+	th:with="currentPage='accounts'">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>會員管理 – 查詢</title>
-  <!-- 載入共用資源 -->
-  <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
-  <!-- 自訂表單與按鈕樣式 -->
-  <style>
-    body { font-size: 1.1rem; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>會員查詢頁|管理員|島遊kha</title>
+<!-- 載入共用資源 -->
+<th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+<!-- 自訂表單與按鈕樣式 -->
+<style>
+body {
+	font-size: 1.1rem;
+}
 
-    /* 表單欄位對齊容器 */
-    .form-field {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-    .form-field label {
-      width: 120px;
-      flex-shrink: 0;
-      font-size: 1.1rem;
-    }
+.form-field {
+	display: flex;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
 
-    /* 統一 input/select 樣式 */
-    input, select {
-      flex: 1;
-      max-width: 360px;
-      height: 2.2rem;
-      font-size: 1rem;
-      padding: 0 0.5rem;
-      background-color: var(--md-sys-color-surface-container);
-      color: var(--md-sys-color-on-surface);
-      border: 1px solid var(--md-sys-color-outline);
-      border-radius: 4px;
-      box-shadow: 0 1px 2px var(--md-sys-color-shadow);
-      box-sizing: border-box;
-    }
+.form-field label {
+	width: 120px;
+	flex-shrink: 0;
+	font-size: 1.1rem;
+}
 
-    /* 顯示全部會員 文字連結 */
-    .show-all-link {
-      font-size: 1.2rem;
-      color: var(--md-sys-color-primary);
-      text-decoration: underline;
-      cursor: pointer;
-    }
+input, select {
+	flex: 1;
+	max-width: 360px;
+	height: 2.2rem;
+	font-size: 1rem;
+	padding: 0 0.5rem;
+	background-color: var(--md-sys-color-surface-container);
+	color: var(--md-sys-color-on-surface);
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 4px;
+	box-shadow: 0 1px 2px var(--md-sys-color-shadow);
+	box-sizing: border-box;
+}
 
-    /* 查詢按鈕 */
-    .form-actions {
-      text-align: center;
-      margin-top: 2rem;
-    }
-    .form-actions button {
-      font-size: 1.2rem;
-      padding: 0.8rem 1.5rem;
-      background-color: var(--md-sys-color-primary);
-      color: var(--md-sys-color-on-primary);
-      border: none;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px var(--md-sys-color-shadow);
-      cursor: pointer;
-    }
-    .form-actions button:hover {
-      background-color: var(--md-sys-color-primary-container);
-    }
-  </style>
+.show-all-link {
+	font-size: 1.2rem;
+	color: var(--md-sys-color-primary);
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.form-actions {
+	text-align: center;
+	margin-top: 2rem;
+}
+
+.form-actions button {
+	font-size: 1.2rem;
+	padding: 0.8rem 1.5rem;
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+	border: none;
+	border-radius: 4px;
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+	cursor: pointer;
+}
+
+.form-actions button:hover {
+	background-color: var(--md-sys-color-primary-container);
+}
+</style>
 </head>
 <body class="light">
-
-  <div class="app-container">
-    <!-- 左側導覽列 -->
-    <div th:insert="~{/navBackTemplate :: navbar}"></div>
-
-    <div class="main-content">
-      <!-- 次導覽 -->
-      <header class="secondary-nav">
-        <ul>
-          <li><a th:href="@{/admin/members}" class="active">查詢主頁</a></li>
-          <li><a th:href="@{/admin/members/all}">列出所有會員</a></li>
-        </ul>
-      </header>
-
-      <!-- 主內容 -->
-      <main class="content-area-main">
-        <section class="md-card" style="max-width: 700px; margin: 2rem auto;">
-          <h2 class="md-headline">會員查詢</h2>
-
-          <!-- 顯示全部會員，與欄位左緣對齊 -->
-          <div class="form-field">
-            <label></label>
-            <a th:href="@{/admin/members/all}" class="show-all-link">顯示全部會員</a>
-          </div>
-
-          <!-- 查詢表單 -->
-          <form th:action="@{/admin/members/search}" method="post" class="form-group">
-            <div class="form-field">
-              <label for="memId">會員 ID</label>
-              <select id="memId" name="memId">
-                <option value="" selected>── 請選擇會員 ──</option>
-                <option th:each="m : ${membersList}"
-                        th:value="${m.memId}"
-                        th:text="${m.memId + ' – ' + m.memName}"></option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label for="memName">會員姓名</label>
-              <input id="memName" type="text" name="memName"
-                     placeholder="輸入會員姓名以模糊查詢">
-            </div>
-            <div class="form-actions">
-              <button type="submit">查　詢</button>
-            </div>
-          </form>
-
-        </section>
-      </main>
-    </div>
-  </div>
-
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/members/selectPage}" class="active">查詢主頁</a></li>
+					<li><a th:href="@{/members/listAll}">列出所有會員</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<section class="md-card"
+					style="max-width: 700px; margin: 2rem auto;">
+					<h2 class="md-headline">會員查詢</h2>
+					<div class="form-field">
+						<label></label> <a th:href="@{/members/listAll}"
+							class="show-all-link">顯示全部會員</a>
+					</div>
+					<form th:action="@{/members/searchResults}" method="get" class="form-group">
+						<!-- 權限（下拉選單） -->
+						<div class="form-field">
+							<label for="memStatus">會員狀態</label>
+							<select id="memStatus" name="memStatus">
+								<option value="">── 全部權限 ──</option>
+								<option value="0">0：未啟用</option>
+								<option value="1">1：啟用</option>
+								<option value="2">2：停權</option>
+							</select>
+						</div>
+						<!-- 帳號（模糊查詢） -->
+						<div class="form-field">
+							<label for="memAcc">帳號</label> <input id="memAcc" type="text"
+								name="memAcc" placeholder="輸入會員帳號以模糊查詢">
+						</div>
+						<!-- 會員 ID -->
+						<div class="form-field">
+							<label for="memId">會員 ID</label> <select id="memId" name="memId">
+								<option value="" selected>── 請選擇會員 ──</option>
+								<option th:each="m : ${membersList}" th:value="${m.memId}"
+									th:text="${m.memId + ' – ' + m.memName}"></option>
+							</select>
+						</div>
+						<!-- 會員姓名 -->
+						<div class="form-field">
+							<label for="memName">會員姓名</label> <input id="memName" type="text"
+								name="memName" placeholder="輸入會員姓名以模糊查詢">
+						</div>
+						<div class="form-actions">
+							<button type="submit">查 詢</button>
+						</div>
+					</form>
+				</section>
+			</main>
+		</div>
+	</div>
 </body>
 </html>
