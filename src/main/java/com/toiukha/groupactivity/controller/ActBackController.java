@@ -101,6 +101,24 @@ public class ActBackController {
         actSvc.addAct(actDto);
         return "redirect:/act/admin/listAllAct";
     }
+//    @PostMapping("/insert")
+//    public String insertAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
+//                            BindingResult bindingResult,
+//                            @RequestParam(value = "upFile", required = false) MultipartFile file,
+//                            Model model) throws IOException {
+//        if (bindingResult.hasErrors()) {
+//            // 保持畫面已填欄位
+//            model.addAttribute("actVo", actDto);
+//            return "back-end/groupactivity/addAct"; // 回到新增畫面，顯示所有錯誤
+//        }
+//        if (file != null && !file.isEmpty()) {
+//            actDto.setActImg(file.getBytes());
+//        } else {
+//            actDto.setActImg(defaultImageService.getDefaultImage());
+//        }
+//        actSvc.addAct(actDto);
+//        return "redirect:/act/admin/listAllAct";
+//    }
 
     @PostMapping("/delete/{actId}")
     public String deleteAct(@PathVariable Integer actId) {

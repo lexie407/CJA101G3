@@ -23,34 +23,47 @@ public class ActFrontController {
     @Autowired
     private DefaultImageService defaultImageService;
 
-    @GetMapping("/listMy/{hostId}")
-    public String listMyAct(@PathVariable Integer hostId, Model model) {
-        model.addAttribute("actList", actSvc.getByHost(hostId));
-        model.addAttribute("hostId", hostId); // 供 JS 取得會員編號
-        return "front-end/groupactivity/listMyAct";
-    }
-
+    //新增活動
     @GetMapping("/add")
     public String addActPage() {
         return "front-end/groupactivity/addAct_ajax";
     }
 
+    //編輯活動
+    @GetMapping("/edit/{id}")
+    public String editAct(@PathVariable Integer id, Model model) {
+        model.addAttribute("actVo", actSvc.getOneAct(id));
+        return "front-end/groupactivity/editAct_ajax";
+    }
+
+    //搜尋所有揪團活動
+    @GetMapping("/search")
+    public String searchActPage() {
+        return "front-end/groupactivity/searchAct";
+    }
+
+    //檢視活動詳情
     @GetMapping("/view/{id}")
     public String viewAct(@PathVariable Integer id, Model model) {
         model.addAttribute("actVo", actSvc.getOneAct(id));
         return "front-end/groupactivity/listOneAct";
     }
 
-    @GetMapping("/search")
-    public String searchActPage() {
-        return "front-end/groupactivity/searchAct";
+    //我揪的團
+    @GetMapping("/listMy/{hostId}")
+    public String listMyAct(@PathVariable Integer hostId, Model model) {
+        model.addAttribute("actList", actSvc.getByHost(hostId));
+        model.addAttribute("hostId", hostId); // 供 JS 取得會員編號
+        return "front-end/groupactivity/listMyAct";
     }
+    //我跟的團->應該要移入part
+//    @GetMapping("/listMyJoin/{memId}")
+//    public String listMyJoinAct(@PathVariable Integer memId, Model model) {
+//        model.addAttribute("actList", actSvc.getByHost(memId));
+//        model.addAttribute("memId", memId); // 供 JS 取得會員編號
+//        return "front-end/groupactivity/listMyJoinAct";
+//    }
 
-    @GetMapping("/edit/{id}")
-    public String editAct(@PathVariable Integer id, Model model) {
-        model.addAttribute("actVo", actSvc.getOneAct(id));
-        return "front-end/groupactivity/editAct_ajax";
-    }
 
     /**
      * 圖片顯示端點 - 直接回傳 byte[] 圖片資料
