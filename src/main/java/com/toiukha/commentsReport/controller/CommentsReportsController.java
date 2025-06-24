@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.toiukha.comments.model.CommentsService;
+import com.toiukha.comments.model.CommentsVO;
 import com.toiukha.commentsReport.model.CommentsReportService;
 import com.toiukha.commentsReport.model.CommentsReportVO;
 
@@ -75,7 +77,10 @@ public class CommentsReportsController {
 			@RequestParam("commRepId") Integer commRepId,
 			ModelMap model) {
 		CommentsReportVO commentsReportVO = commentsReportService.getOne(commRepId);
+		CommentsVO commentsVO = commentsService.getOne(commentsReportVO.getCommId());
+		
 		model.addAttribute("commentsReportVO", commentsReportVO);
+		model.addAttribute("commentsVO", commentsVO);
 		model.addAttribute("currentPage", "account");
 		return "back-end/commentsreports/editCommentsReport";
 	}
@@ -86,7 +91,7 @@ public class CommentsReportsController {
 			@RequestParam("commId") Integer commId,
 			@RequestParam("remarks") String remarks, 
 			@RequestParam("commRepId") Integer commRepId,
-			ModelMap model) {
+			RedirectAttributes redirectAttributes) {
 		//修改留言狀態
 		commentsService.changeSta(commId, (byte)2);
 		
@@ -100,9 +105,9 @@ public class CommentsReportsController {
 		commentsReportVO.setRevTime(now);
 		commentsReportService.changeSta(commentsReportVO);
 		
-		model.addAttribute("successMsg", "檢舉案件處理已完成!");
+		redirectAttributes.addFlashAttribute("successMsg", "檢舉案件處理已完成!");
 		
-		return "redirect:/CommentsReports/established";
+		return "redirect:/CommentsReports/allReportList";
 	}
 	
 	//案件不成立處理
@@ -110,8 +115,9 @@ public class CommentsReportsController {
 	public String unEstablished(
 			@RequestParam("remarks") String remarks, 
 			@RequestParam("commRepId") Integer commRepId,
-			ModelMap model) {
+			RedirectAttributes redirectAttributes) {
 		//修改檢舉狀態
+		System.out.println(commRepId);
 		CommentsReportVO commentsReportVO = new CommentsReportVO();
 		Date date = new Date();
 		Timestamp now = new Timestamp(date.getTime());
@@ -119,11 +125,12 @@ public class CommentsReportsController {
 		commentsReportVO.setRemarks(remarks);
 		commentsReportVO.setRptSta((byte)2);
 		commentsReportVO.setRevTime(now);
+		System.out.println(commRepId+1);
 		commentsReportService.changeSta(commentsReportVO);
+		System.out.println(commRepId+2);
+		redirectAttributes.addFlashAttribute("successMsg", "檢舉案件處理已完成!");
 		
-		model.addAttribute("successMsg", "檢舉案件處理已完成!");
-		
-		return "redirect:/CommentsReports/unEstablished";
+		return "redirect:/CommentsReports/allReportList";
 	}
 			
 }
