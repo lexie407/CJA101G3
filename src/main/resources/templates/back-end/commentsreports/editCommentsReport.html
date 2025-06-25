@@ -53,6 +53,7 @@
 								<label for="notificationMemberName">會員名稱:</label> <input
 									type="text" id="notificationMemberName" value="開發中..." readonly>
 							</div>
+							
 							<div class="form-group">
 								<label for="notificationStatus">案件進度:</label> <input
 									type="hidden" name="rptSta"
@@ -69,7 +70,14 @@
 									type="text" id="notificationCreatedAt"
 									th:value="${#dates.format(commentsReportVO.repTime, 'yyyy-MM-dd HH:mm')}" readonly>
 							</div>
-
+							<div class="form-group full-width">
+									<label for="commCon">被檢舉內容:</label>
+									<textarea id="commCon" name="commCon" rows="8"
+										th:text="${commentsVO.commCon}" readonly></textarea>
+									<div th:if="${commentsVO.commImg != null}">
+										<img th:alt="${commentsVO.commId}" th:src="@{/commentsReport/read.do(commId=${commentsVO.commId})}" style="max-width: 200px;">
+									</div>	
+								</div>
 							<div
 								th:if="${commentsReportVO.rptSta == 0}">
 								<div class="form-group">
@@ -78,8 +86,8 @@
 										th:value="${commentsReportVO.repCat}" readonly>
 								</div>
 								<div class="form-group full-width">
-									<label for="notificationContent">案件內容:</label>
-									<textarea id="notificationContent" name="repDes" rows="8"
+									<label for="repDes">案件說明:</label>
+									<textarea id="repDes" name="repDes" rows="8"
 										required th:text="${commentsReportVO.repDes}" readonly></textarea>
 								</div>
 								<div class="form-group full-width">
@@ -101,8 +109,8 @@
 										readonly>
 								</div>
 								<div class="form-group full-width">
-									<label for="notificationContent">案件內容:</label>
-									<textarea id="notificationContent" rows="8" readonly
+									<label for="repDes">案件說明:</label>
+									<textarea id="repDes" rows="8" readonly
 										th:text="${commentsReportVO.repDes}"></textarea>
 								</div>
 								<div class="form-group full-width">

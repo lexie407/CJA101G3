@@ -19,21 +19,21 @@ document.addEventListener("DOMContentLoaded", function(){
 	}
 	
 	//計算儀表數據
-	let sta0 = 0;
-	let sta1 = 0;
+	let sta = 0;
 	for(let i = 0; i < report_line.length; i++){
-		if(report_line[i].getAttribute("data-repStatus") === 0){
-			sta0++;
+		if(report_line[i].getAttribute("data-rptSta") == 0){
+			sta++;
 		}
 	}
 	let staNum = document.getElementsByClassName("large-number");
-	staNum[0].innerHTML = sta0;
+	staNum[0].innerHTML = sta;
 	
 	//datatable
 	let table = new DataTable("#admin-table");
 	
 	//成功案件修改訊息
 	let successMsg = document.getElementById("successMsg");
+	console.log(successMsg.value);
 	if(successMsg.value != ""){
 		alert(successMsg.value);	
 	}
