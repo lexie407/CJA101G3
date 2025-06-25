@@ -75,7 +75,6 @@ public class MembersLoginController {
         //4.狀態檢查 只有啟用時才能通過
         if (member.getMemStatus() == 0) {
             // 先把 member 放進 Session，好讓後續可以重發驗證信
-            session.setAttribute("member", member);
             try {
                 // UTF-8 一定會支援，理論上不會走到 catch 裡
                 String encodedEmail = URLEncoder.encode(member.getMemEmail(), "UTF-8");
@@ -140,7 +139,7 @@ public class MembersLoginController {
         Integer memId = emailService.verifyResetToken(token);
         
         if (memId == null) {
-            model.addAttribute("errorMsg", "重設連結已失效或無效，請重新申請。");
+            model.addAttribute("errorMsg", "重設連結已失效，請重新申請。");
             return "front-end/members/resetPasswordError"; // 錯誤頁面
         }
 

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>商家登入</title>
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+<style>
+.app-container {
+	display: flex;
+	min-height: 100vh;
+	background-color: var(--md-sys-color-background);
+	color: var(--md-sys-color-on-background);
+}
+
+.main-content {
+	flex-grow: 1;
+	padding: 24px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow-x: hidden;
+}
+
+.md-card {
+	width: 100%;
+	max-width: 480px;
+	padding: 48px;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+	border-radius: 16px;
+	background-color: var(--md-sys-color-surface-container-low);
+	text-align: center;
+	box-sizing: border-box;
+}
+
+.md-headline {
+	font-size: 2.2rem;
+	font-weight: 500;
+	color: var(--md-sys-color-primary);
+	margin-bottom: 32px;
+}
+
+.form-group {
+	margin-bottom: 20px;
+	text-align: left;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface-variant);
+	font-size: 0.9rem;
+}
+
+.md-text-field input {
+	width: 100%;
+	padding: 14px;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface);
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	box-sizing: border-box;
+	transition: border-color .3s, box-shadow .3s;
+}
+
+.md-text-field input:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary);
+	box-shadow: 0 0 0 3px rgba(41, 153, 194, 0.2);
+}
+
+.error-messages-container {
+	background-color: var(--md-sys-color-error-container);
+	color: var(--md-sys-color-on-error-container);
+	border-left: 5px solid var(--md-sys-color-error);
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	text-align: left;
+}
+
+.form-actions {
+	margin-top: 30px;
+}
+
+.material-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 12px 24px;
+	border-radius: 24px;
+	border: none;
+	font-size: 1rem;
+	font-weight: 500;
+	cursor: pointer;
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	text-decoration: none;
+	transition: background-color .3s, box-shadow .3s;
+}
+
+.material-button:hover {
+	background-color: var(--md-sys-color-primary-fixed-dim);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.link-group {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	text-align: center;
+}
+
+.link-group a {
+	color: var(--md-sys-color-primary);
+	text-decoration: none;
+	font-size: 0.9rem;
+}
+
+.link-group a:hover {
+	text-decoration: underline;
+}
+
+.success-card {
+	margin-bottom: 16px;
+	padding: 16px;
+	border-left: 4px solid var(--md-sys-color-primary-container);
+	background-color: var(--md-sys-color-surface-container-low);
+	border-radius: 16px;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+	text-align: left;
+	color: var(--md-sys-color-on-surface);
+}
+</style>
+</head>
+<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<div class="md-card login-container">
+				<h2 class="md-headline">商家登入</h2>
+
+				<div th:if="${successMsg}" class="success-card">
+					<p th:text="${successMsg}" style="margin: 0;"></p>
+				</div>
+
+				<div th:if="${not #lists.isEmpty(errorMsgs)}"
+					class="error-messages-container">
+					<div th:each="msg : ${errorMsgs}" th:text="${msg}"
+						style="margin-bottom: 5px;"></div>
+				</div>
+
+				<form method="post" th:action="@{/store/login}">
+					<div class="form-group md-text-field">
+						<label for="storeAcc">商家帳號</label> <input type="text"
+							id="storeAcc" name="storeAcc" placeholder="請輸入商家帳號"
+							th:value="${storeAcc}" required />
+					</div>
+					<div class="form-group md-text-field">
+						<label for="storePwd">商家密碼</label> <input type="password"
+							id="storePwd" name="storePwd" placeholder="請輸入商家密碼" required />
+					</div>
+					<div class="form-actions">
+						<button type="submit" class="material-button">
+							<span class="material-icons">login</span> 登入
+						</button>
+					</div>
+				</form>
+				<div class="link-group">
+					<a th:href="@{/store/forgotPassword}">忘記密碼？</a>
+				</div>
+				<div class="link-group">
+					<a th:href="@{/store/register}">還沒有商家帳號？註冊商家</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

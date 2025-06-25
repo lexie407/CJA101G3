@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -149,8 +150,10 @@ public class MembersController {
 		 *****************************************/
 		MembersVO member = membersService.getByEmail(email);
 		if (member != null && member.getMemStatus() == 0) {
-			emailService.sendVerificationEmail(email, member.getMemId());
-			redirectAttr.addFlashAttribute("msg", "驗證信已重新發送，請查收！");
+			new Thread(() -> {
+		        emailService.sendVerificationEmail(email, member.getMemId());
+		    }).start();
+		    redirectAttr.addFlashAttribute("msg", "驗證信已重新發送，請查收！");
 		} else {
 			redirectAttr.addFlashAttribute("msg", "此信箱尚未註冊或已啟用。");
 		}
@@ -309,33 +312,54 @@ public class MembersController {
 	
 	@PostMapping("/editMembers")
 	public String updateMember(
-	        @Valid @ModelAttribute("membersVO") MembersVO membersVO,
-	        BindingResult br,
-	        Model model,                                          // ← 加入
-	        @RequestParam(value = "memAvatarFile", required = false) MultipartFile avatar,
-	        @RequestParam(value = "memAvatarFrameFile", required = false) MultipartFile frame
+	    @Valid @ModelAttribute("membersVO") MembersVO membersVO,
+	    BindingResult br,
+	    Model model,
+	    @RequestParam(value = "memAvatarFile", required = false) MultipartFile avatar,
+	    @RequestParam(value = "memAvatarFrameFile", required = false) MultipartFile frame
 	) throws IOException {
-	    // 1. 驗證錯誤時，收集並回傳錯誤列表
+
+	    MembersVO original = membersService.getById(membersVO.getMemId());
+
+	    /*************************** 1. 驗證錯誤處理 ***************************/
 	    if (br.hasErrors()) {
-	        List<String> errorMsgs = br.getFieldErrors().stream()
-	            .map(FieldError::getDefaultMessage)
-	            .collect(Collectors.toList());
+	        // 補回畫面沒綁定的欄位，避免空值造成畫面壞掉或資料被清空
+	        membersVO.setMemAvatar(original.getMemAvatar());
+	        membersVO.setMemAvatarFrame(original.getMemAvatarFrame());
+	        membersVO.setMemRegTime(original.getMemRegTime());
+	        membersVO.setMemUpdatedAt(original.getMemUpdatedAt());
+
+	        if (membersVO.getMemStorePoint() == null)
+	            membersVO.setMemStorePoint(original.getMemStorePoint());
+	        if (membersVO.getMemLogErrTime() == null)
+	            membersVO.setMemLogErrTime(original.getMemLogErrTime());
+
+	        List<String> errorMsgs = new ArrayList<>();
+	        for (FieldError error : br.getFieldErrors()) {
+	            errorMsgs.add(error.getDefaultMessage());
+	        }
 	        model.addAttribute("errorMsgs", errorMsgs);
 	        return "back-end/members/editMembers";
 	    }
 
-	    // 2. 處理上傳檔案
+	    /*************************** 2. 處理上傳圖片（補原圖） ***************************/
 	    if (avatar != null && !avatar.isEmpty()) {
 	        membersVO.setMemAvatar(avatar.getBytes());
+	    } else {
+	        membersVO.setMemAvatar(original.getMemAvatar());
 	    }
+
 	    if (frame != null && !frame.isEmpty()) {
 	        membersVO.setMemAvatarFrame(frame.getBytes());
+	    } else {
+	        membersVO.setMemAvatarFrame(original.getMemAvatarFrame());
 	    }
 
-	    // 3. 執行更新
-	    membersService.editMember(membersVO);
+	    /*************************** 3. 設定更新時間 ***************************/
+	    membersVO.setMemUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
-	    // 4. 重導到查詢頁
+	    /*************************** 4. 執行更新並導向查詢結果頁 ***************************/
+	    membersService.editMember(membersVO);
 	    return "redirect:/members/searchResults?memId=" + membersVO.getMemId();
 	}
 	
