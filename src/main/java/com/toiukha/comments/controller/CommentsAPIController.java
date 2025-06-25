@@ -40,7 +40,7 @@ public class CommentsAPIController {
 	}
 	
 	@PostMapping("/addComments")
-	public String addComments(
+	public CommentsVO addComments(
 	        @RequestParam("commCat") Byte commCat,
 	        @RequestParam("commHol") Integer commHol,
 	        @RequestParam("commArt") Integer commArt,
@@ -53,12 +53,12 @@ public class CommentsAPIController {
 	        // 手動建立 CommentsVO 物件
 	        CommentsVO commentsVO = new CommentsVO(commCat, commHol, commArt, commCon, commImg);
 
-	        commentsService.editOne(commentsVO);
-	        return "留言新增成功";
-
+	        CommentsVO newcommentsVO = commentsService.editOne(commentsVO);
+	        return commentsService.getOne(newcommentsVO.getCommId());
+	        
 	    } catch (IOException e) {
 	        e.printStackTrace();
-	        return "上傳圖片失敗：" + e.getMessage();
+	        return null;
 	    }
 	}
 	
