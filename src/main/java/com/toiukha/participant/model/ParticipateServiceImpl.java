@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 參加者服務實作，處理報名與取消邏輯
@@ -66,8 +67,8 @@ public class ParticipateServiceImpl implements ParticipateService {
         // 刪除參加記錄
         participateRepository.delete(part);
         
-        // 更新活動報名人數
-        ActVO act = part.getActVO();
+        // 直接透過 actId 查找活動，避免使用關聯物件
+        ActVO act = actRepository.findById(actId).orElseThrow();
         act.setSignupCnt(act.getSignupCnt() - 1);
         if (act.getRecruitStatus() == ActStatus.FULL && act.getSignupCnt() < act.getMaxCap()) {
             act.setRecruitStatus((byte) ActStatus.OPEN);
@@ -78,5 +79,32 @@ public class ParticipateServiceImpl implements ParticipateService {
     @Override
     public List<Integer> getParticipants(Integer actId) {
         return participateRepository.findMemIdsByActId(actId);
+    }
+    
+    @Override
+    public List<ParticipantDTO> getParticipantsAsDTO(Integer actId) {
+        List<ParticipantVO> participants = participateRepository.findByActId(actId);
+        return participants.stream()
+                .map(ParticipantDTO::fromVO)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public ParticipantDTO getParticipantAsDTO(Integer actId, Integer memId) {
+        Optional<ParticipantVO> participant = participateRepository.findByActIdAndMemId(actId, memId);
+        return participant.map(ParticipantDTO::fromVO).orElse(null);
+    }
+    
+    @Override
+    public List<Integer> getJoinedActivities(Integer memId) {
+        return participateRepository.findActIdsByMemId(memId);
+    }
+    
+    @Override
+    public List<ParticipantDTO> getJoinedActivitiesAsDTO(Integer memId) {
+        List<ParticipantVO> joinedActivities = participateRepository.findByMemId(memId);
+        return joinedActivities.stream()
+                .map(ParticipantDTO::fromVO)
+                .collect(Collectors.toList());
     }
 }

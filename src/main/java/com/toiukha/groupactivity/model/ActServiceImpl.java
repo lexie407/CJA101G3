@@ -1,5 +1,6 @@
 package com.toiukha.groupactivity.model;
 
+import com.toiukha.participant.model.ParticipateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,9 @@ public class ActServiceImpl implements ActService {
     
     @Autowired
     private DefaultImageService defaultImageService;
+    
+    @Autowired
+    private ParticipateService participateService;
 
     @Override
     public void addAct(ActDTO actDto) {
@@ -67,7 +71,25 @@ public class ActServiceImpl implements ActService {
 
     @Override
     public List<ActVO> getByHost(Integer hostId) {
-        return actRepo.findByHostId(hostId);
+        return actRepo.findByHostIdOrderByActIdDesc(hostId);
+    }
+    
+    @Override
+    public List<ActVO> getJoinedActs(Integer memId) {
+        // 取得會員參加的活動ID列表
+        List<Integer> actIds = participateService.getJoinedActivities(memId);
+        // 根據活動ID列表查詢活動詳細資料，並按actId降序排序
+        List<ActVO> activities = actRepo.findAllById(actIds);
+        activities.sort((a, b) -> Integer.compare(b.getActId(), a.getActId()));
+        return activities;
+    }
+    
+    @Override
+    public List<ActCardDTO> getJoinedActsAsCard(Integer memId) {
+        List<ActVO> joinedActs = getJoinedActs(memId);
+        return joinedActs.stream()
+                .map(this::convertToCardDTO)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     //===========複雜方法===========
@@ -84,6 +106,41 @@ public class ActServiceImpl implements ActService {
     @Override
     public Page<ActVO> searchActs(Specification<ActVO> spec, Pageable pageable) {
         return actRepo.findAll(spec, pageable);
+    }
+
+    @Override
+    public Page<ActCardDTO> searchActsAsCard(Specification<ActVO> spec, Pageable pageable) {
+        Page<ActVO> actPage = actRepo.findAll(spec, pageable);
+        return actPage.map(this::convertToCardDTO);
+    }
+    
+    @Override
+    public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName, 
+                                           Integer hostId, LocalDateTime actStart, 
+                                           Integer maxCap, Pageable pageable) {
+        // 商業邏輯：強制設定 isPublic=1，確保只搜尋公開活動
+        // 這裡不允許外部控制 isPublic 參數，防止前端篡改查看私人活動
+        Byte isPublic = (byte) 1; // 強制公開活動
+        
+        Specification<ActVO> spec = ActSpecification.buildSpec(
+            recruitStatus, actName, hostId, isPublic, actStart, maxCap
+        );
+        
+        Page<ActVO> actPage = actRepo.findAll(spec, pageable);
+        return actPage.map(this::convertToCardDTO);
+    }
+
+    private ActCardDTO convertToCardDTO(ActVO actVO) {
+        ActCardDTO dto = new ActCardDTO();
+        dto.setActId(actVO.getActId());
+        dto.setActName(actVO.getActName());
+        dto.setActDesc(actVO.getActDesc());
+        dto.setActStart(actVO.getActStart());
+        dto.setSignupCnt(actVO.getSignupCnt());
+        dto.setMaxCap(actVO.getMaxCap());
+        dto.setRecruitStatus(actVO.getRecruitStatus());
+        dto.setHostId(actVO.getHostId());
+        return dto;
     }
 
     @Override

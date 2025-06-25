@@ -1,14 +1,18 @@
 package com.toiukha.groupactivity.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * 活動資料傳輸物件-進行欄位錯誤驗證
  */
-public class ActDTO {
+public class ActDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     // ===== 資料欄位 =====
 
     private Integer actId;
@@ -23,6 +27,7 @@ public class ActDTO {
     // 前端以 base64 傳入圖片
     // 後端以 byte[] 傳入圖片
     private String actImgBase64; // 前端傳送的 base64 字串
+    @JsonIgnore
     private byte[] actImg;
 
     @NotNull(message="行程編號: 請勿空白")

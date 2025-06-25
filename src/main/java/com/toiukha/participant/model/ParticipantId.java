@@ -7,6 +7,7 @@ import java.util.Objects;
  * ParticipantVO 的複合主鍵類別
  */
 public class ParticipantId implements Serializable {
+    private static final long serialVersionUID = 1L;
     
     private Integer actId;
     private Integer memId;

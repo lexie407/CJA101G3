@@ -1,113 +1,335 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>編輯活動</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/light.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
+  </head>
+  <body class="light">
+    <div class="app-container">
+      <div th:insert="~{/navTemplate :: navbar}"></div>
 
-  <title>編輯活動</title>
-    <link rel="stylesheet" th:href="@{/css/styleAct_front.css}">
-</head>
-<body>
-<form id="editActForm" class="act-form">
-  <input type="hidden" name="actId" th:value="${actVo.actId}">
-  <div class="form-group">
-    <label>活動名稱</label>
-    <input type="text" name="actName" th:value="${actVo.actName}">
-  </div>
-  <div class="form-group">
-    <label>活動說明</label>
-    <textarea name="actDesc" th:text="${actVo.actDesc}"></textarea>
-  </div>
-  <div class="form-group">
-    <label>行程編號</label>
-    <input type="number" name="itnId" th:value="${actVo.itnId}">
-  </div>
-  <div class="form-group">
-    <label>團主編號</label>
-    <input type="number" name="hostId" th:value="${actVo.hostId}">
-  </div>
-  <div class="form-group">
-    <label>報名開始</label>
-    <input type="datetime-local" name="signupStart" th:value="${#dates.format(actVo.signupStart,'yyyy-MM-dd''T''HH:mm')}">
-  </div>
-  <div class="form-group">
-    <label>報名截止</label>
-    <input type="datetime-local" name="signupEnd" th:value="${#dates.format(actVo.signupEnd,'yyyy-MM-dd''T''HH:mm')}">
-  </div>
-  <div class="form-group">
-    <label>人數需求</label>
-    <input type="number" name="maxCap" th:value="${actVo.maxCap}">
-  </div>
-  <div class="form-group">
-    <label>已報名人數</label>
-    <input type="number" name="signupCnt" th:value="${actVo.signupCnt}">
-  </div>
-  <div class="form-group">
-    <label>活動開始</label>
-    <input type="datetime-local" name="actStart" th:value="${#dates.format(actVo.actStart,'yyyy-MM-dd''T''HH:mm')}">
-  </div>
-  <div class="form-group">
-    <label>活動結束</label>
-    <input type="datetime-local" name="actEnd" th:value="${#dates.format(actVo.actEnd,'yyyy-MM-dd''T''HH:mm')}">
-  </div>
-  <div class="form-group">
-    <label>是否公開</label>
-    <input type="number" name="isPublic" th:value="${actVo.isPublic}">
-  </div>
-  <div class="form-group">
-    <label>允許退出</label>
-    <input type="number" name="allowCancel" th:value="${actVo.allowCancel}">
-  </div>
-  <div class="form-group">
-    <label>招募狀態</label>
-    <input type="number" name="recruitStatus" th:value="${actVo.recruitStatus}">
-  </div>
-  <div class="form-group">
-    <label>活動圖片</label>
-    <input type="file" name="file">
-  </div>
-  <button type="submit">儲存</button>
-</form>
+      <div class="main-content act-page">
+        <main class="content-area-main act-area">
+          <h3 class="act-front-title">編輯活動</h3>
 
-<script>
-// AJAX 更新活動
-document.getElementById('editActForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const form = e.target;
-  const file = form.querySelector('input[name="file"]').files[0];
-  const readFile = file ? new Promise(res => {
-    const reader = new FileReader();
-    reader.onload = () => res(reader.result.split(',')[1]);
-    reader.readAsDataURL(file);
-  }) : Promise.resolve(null);
+          <div class="act-detail-container">
+            <form id="editActForm" class="act-detail-form">
+              <input type="hidden" name="actId" th:value="${actVo.actId}" />
 
-  readFile.then(base64 => {
-    const data = {
-      actId: form.actId.value,
-      actName: form.actName.value,
-      actDesc: form.actDesc.value,
-      itnId: form.itnId.value,
-      hostId: form.hostId.value,
-      signupStart: form.signupStart.value,
-      signupEnd: form.signupEnd.value,
-      maxCap: form.maxCap.value,
-      signupCnt: form.signupCnt.value,
-      actStart: form.actStart.value,
-      actEnd: form.actEnd.value,
-      isPublic: form.isPublic.value,
-      allowCancel: form.allowCancel.value,
-      recruitStatus: form.recruitStatus.value,
-      actImg: base64
-    };
-    fetch('/api/act/update', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-      .then(r => r.text())
-      .then(() => alert('更新完成'))
-      .catch(err => console.error(err));
-  });
-});
-</script>
-</body>
+              <div class="act-detail-info">
+                <div class="act-detail-item">
+                  <label class="act-detail-label">活動名稱 *</label>
+                  <input
+                    type="text"
+                    name="actName"
+                    th:value="${actVo.actName}"
+                    class="act-search-input"
+                    required
+                  />
+                </div>
+                <div class="act-detail-item">
+                  <label class="act-detail-label">行程編號 *</label>
+                  <input
+                    type="number"
+                    name="itnId"
+                    th:value="${actVo.itnId}"
+                    class="act-search-input"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="act-detail-item" style="grid-column: 1 / -1">
+                <label class="act-detail-label">活動說明</label>
+                <textarea
+                  name="actDesc"
+                  th:text="${actVo.actDesc}"
+                  class="act-search-input"
+                  rows="4"
+                ></textarea>
+              </div>
+
+              <div class="act-detail-item">
+                <label class="act-detail-label">團主編號</label>
+                <input
+                  type="number"
+                  name="hostId"
+                  th:value="${actVo.hostId}"
+                  class="act-search-input"
+                  readonly
+                />
+              </div>
+              <div class="act-detail-info">
+                <div class="act-detail-item">
+                  <label class="act-detail-label">報名開始 *</label>
+                  <input
+                    type="datetime-local"
+                    name="signupStart"
+                    th:value="${#temporals.format(actVo.signupStart,'yyyy-MM-dd''T''HH:mm')}"
+                    class="act-search-input"
+                    required
+                  />
+                </div>
+                <div class="act-detail-item">
+                  <label class="act-detail-label">報名截止 *</label>
+                  <input
+                    type="datetime-local"
+                    name="signupEnd"
+                    th:value="${#temporals.format(actVo.signupEnd,'yyyy-MM-dd''T''HH:mm')}"
+                    class="act-search-input"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="act-detail-info">
+                <div class="act-detail-item">
+                  <label class="act-detail-label">活動開始 *</label>
+                  <input
+                    type="datetime-local"
+                    name="actStart"
+                    th:value="${#temporals.format(actVo.actStart,'yyyy-MM-dd''T''HH:mm')}"
+                    class="act-search-input"
+                    required
+                  />
+                </div>
+                <div class="act-detail-item">
+                  <label class="act-detail-label">活動結束 *</label>
+                  <input
+                    type="datetime-local"
+                    name="actEnd"
+                    th:value="${#temporals.format(actVo.actEnd,'yyyy-MM-dd''T''HH:mm')}"
+                    class="act-search-input"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="act-detail-info">
+                <div class="act-detail-item">
+                  <label class="act-detail-label">人數需求 *</label>
+                  <input
+                    type="number"
+                    name="maxCap"
+                    th:value="${actVo.maxCap}"
+                    class="act-search-input"
+                    min="1"
+                    required
+                  />
+                </div>
+                <div class="act-detail-item">
+                  <label class="act-detail-label">已報名人數</label>
+                  <input
+                    type="number"
+                    name="signupCnt"
+                    th:value="${actVo.signupCnt}"
+                    class="act-search-input"
+                    readonly
+                  />
+                </div>
+              </div>
+
+              <div class="act-detail-info">
+                <div class="act-detail-item">
+                  <label class="act-detail-label">是否公開</label>
+                  <select name="isPublic" class="act-search-input">
+                    <option value="0" th:selected="${actVo.isPublic == 0}">
+                      私人
+                    </option>
+                    <option value="1" th:selected="${actVo.isPublic == 1}">
+                      公開
+                    </option>
+                  </select>
+                </div>
+                <div class="act-detail-item">
+                  <label class="act-detail-label">允許退出</label>
+                  <select name="allowCancel" class="act-search-input">
+                    <option value="0" th:selected="${actVo.allowCancel == 0}">
+                      不允許
+                    </option>
+                    <option value="1" th:selected="${actVo.allowCancel == 1}">
+                      允許
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="act-detail-item">
+                <label class="act-detail-label">招募狀態</label>
+                <select name="recruitStatus" class="act-search-input">
+                  <option value="0" th:selected="${actVo.recruitStatus == 0}">
+                    招募中
+                  </option>
+                  <option value="1" th:selected="${actVo.recruitStatus == 1}">
+                    成團
+                  </option>
+                  <option value="2" th:selected="${actVo.recruitStatus == 2}">
+                    未成團
+                  </option>
+                  <option value="3" th:selected="${actVo.recruitStatus == 3}">
+                    已取消
+                  </option>
+                  <option value="4" th:selected="${actVo.recruitStatus == 4}">
+                    已凍結
+                  </option>
+                  <option value="5" th:selected="${actVo.recruitStatus == 5}">
+                    已結束
+                  </option>
+                </select>
+              </div>
+
+              <div class="act-detail-item">
+                <label class="act-detail-label">活動圖片</label>
+                <input
+                  type="file"
+                  name="actImg"
+                  id="actImgInput"
+                  accept="image/*"
+                  class="act-search-input"
+                />
+                <div id="imagePreview" style="margin-top: 10px; display: none">
+                  <img
+                    id="previewImg"
+                    style="
+                      max-width: 200px;
+                      max-height: 150px;
+                      border-radius: 8px;
+                    "
+                  />
+                  <div
+                    id="compressionInfo"
+                    style="font-size: 12px; color: #666; margin-top: 5px"
+                  ></div>
+                </div>
+              </div>
+
+              <div
+                class="act-card-actions"
+                style="margin-top: 24px; justify-content: center"
+              >
+                <button type="submit" class="act-btn act-btn-primary">
+                  儲存修改
+                </button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // 圖片壓縮功能
+      function compressImage(
+        file,
+        maxWidth = 800,
+        maxHeight = 600,
+        quality = 0.8
+      ) {
+        return new Promise((resolve) => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          const img = new Image();
+
+          img.onload = () => {
+            // 計算壓縮比例
+            let { width, height } = img;
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+
+            if (ratio < 1) {
+              width *= ratio;
+              height *= ratio;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // 繪製壓縮後的圖片
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // 轉為 Blob
+            canvas.toBlob(resolve, "image/jpeg", quality);
+          };
+
+          img.src = URL.createObjectURL(file);
+        });
+      }
+
+      // 圖片預覽與壓縮
+      document
+        .getElementById("actImgInput")
+        .addEventListener("change", async function (e) {
+          const file = e.target.files[0];
+          const preview = document.getElementById("imagePreview");
+          const previewImg = document.getElementById("previewImg");
+          const compressionInfo = document.getElementById("compressionInfo");
+
+          if (!file) {
+            preview.style.display = "none";
+            return;
+          }
+
+          // 顯示原始檔案資訊
+          const originalSize = (file.size / 1024 / 1024).toFixed(2);
+          compressionInfo.textContent = `原始大小: ${originalSize}MB，壓縮中...`;
+
+          try {
+            // 壓縮圖片
+            const compressedFile = await compressImage(file);
+            const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(
+              2
+            );
+
+            // 更新預覽
+            previewImg.src = URL.createObjectURL(compressedFile);
+            compressionInfo.textContent = `原始: ${originalSize}MB → 壓縮後: ${compressedSize}MB`;
+            preview.style.display = "block";
+
+            // 將壓縮後的檔案替換原始檔案
+            const dataTransfer = new DataTransfer();
+            const compressedFileObj = new File([compressedFile], file.name, {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            });
+            dataTransfer.items.add(compressedFileObj);
+            e.target.files = dataTransfer.files;
+          } catch (error) {
+            console.error("圖片壓縮失敗:", error);
+            compressionInfo.textContent = "圖片壓縮失敗，將使用原始檔案";
+            previewImg.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+          }
+        });
+
+      // AJAX 更新活動（改用FormData）
+      document
+        .getElementById("editActForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData(this);
+
+          try {
+            const response = await fetch("/api/act/update", {
+              method: "PUT",
+              body: formData,
+            });
+
+            if (response.ok) {
+              alert("更新完成");
+              window.history.back();
+            } else {
+              throw new Error("伺服器回應錯誤");
+            }
+          } catch (error) {
+            console.error("更新活動失敗:", error);
+            alert("更新活動失敗，請檢查網路連線或稍後再試");
+          }
+        });
+    </script>
+  </body>
 </html>

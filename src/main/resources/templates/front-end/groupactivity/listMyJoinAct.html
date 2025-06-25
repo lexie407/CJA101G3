@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>我的活動 | 島遊kha</title>
+    <title>我跟的團 | 島遊kha</title>
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
@@ -70,10 +70,10 @@
       <div th:insert="~{/navTemplate :: navbar}"></div>
 
       <div class="main-content act-page">
-        <div th:insert="~{/subnavActFront :: subnav('my')}"></div>
+        <div th:insert="~{/subnavActFront :: subnav('myJoin')}"></div>
 
         <main class="content-area-main act-area">
-          <h3 class="act-front-title">我揪的團</h3>
+          <h3 class="act-front-title">我參加的活動...</h3>
 
           <!-- 篩選區域 -->
           <div class="act-search-container">
@@ -148,7 +148,7 @@
             </form>
           </div>
 
-          <div id="myActList" th:data-host-id="${hostId}" class="act-loading">
+          <div id="myJoinActList" th:data-mem-id="${memId}" class="act-loading">
             載入中...
           </div>
 
@@ -156,8 +156,8 @@
             class="act-card-actions"
             style="justify-content: center; margin-top: 24px"
           >
-            <a href="/act/member/add" class="act-btn act-btn-primary"
-              >建立新活動</a
+            <a href="/act/member/search" class="act-btn act-btn-primary"
+              >探索更多活動</a
             >
           </div>
         </main>
@@ -165,9 +165,9 @@
     </div>
 
     <script>
-      // 載入個人活動列表
-      const listEl = document.getElementById("myActList");
-      const hostId = listEl.dataset.hostId;
+      // 載入參加的活動列表
+      const listEl = document.getElementById("myJoinActList");
+      const memId = listEl.dataset.memId;
       const filterForm = document.getElementById("filterForm");
       let allActivities = []; // 存儲所有活動資料
 
@@ -196,7 +196,7 @@
         const status = getStatusText(act.recruitStatus);
         let imageHtml = '<div class="act-card-image-placeholder">無圖片</div>';
 
-        // 使用統一的圖片端點，無圖片時自動顯示預設圖片
+        // 使用統一的圖片端點
         imageHtml = `<img src="/api/act/image/${act.actId}" alt="活動圖片" class="act-card-image">`;
 
         return `
@@ -218,6 +218,12 @@
                               act.actStart
                             )}</span>
                         </div>
+                        <div class="act-info-item">
+                            <span class="act-info-label">團主</span>
+                            <span class="act-info-value">會員 ${
+                              act.hostId
+                            }</span>
+                        </div>
                     </div>
 
                     <span class="act-status ${status.class}">${
@@ -228,26 +234,94 @@
                         <a href="/act/member/view/${
                           act.actId
                         }" class="act-btn act-btn-primary">查看詳情</a>
-                        <a href="/act/member/edit/${
+                        <button onclick="cancelParticipation(${
                           act.actId
-                        }" class="act-btn act-btn-secondary">編輯</a>
+                        })" class="act-btn act-btn-danger">取消報名</button>
                     </div>
                 </div>
             `;
       }
 
-      // 載入所有活動資料
-      function loadActivities() {
-        listEl.classList.add("act-loading");
-        listEl.innerHTML = "載入中...";
+      // 篩選活動
+      function filterActivities() {
+        const formData = new FormData(filterForm);
+        const actName = formData.get("actName")?.toLowerCase();
+        const dateStart = formData.get("dateRangeStart");
+        const dateEnd = formData.get("dateRangeEnd");
+        const recruitStatus = formData.get("recruitStatus");
 
-        fetch("/api/act/my/" + hostId)
+        let filtered = allActivities;
+
+        // 按名稱篩選
+        if (actName && actName.trim()) {
+          filtered = filtered.filter((act) =>
+            act.actName.toLowerCase().includes(actName.trim())
+          );
+        }
+
+        // 按日期篩選
+        if (dateStart) {
+          filtered = filtered.filter(
+            (act) => new Date(act.actStart) >= new Date(dateStart)
+          );
+        }
+        if (dateEnd) {
+          filtered = filtered.filter(
+            (act) => new Date(act.actStart) <= new Date(dateEnd + "T23:59:59")
+          );
+        }
+
+        // 按狀態篩選
+        if (recruitStatus && recruitStatus !== "") {
+          filtered = filtered.filter(
+            (act) => act.recruitStatus == recruitStatus
+          );
+        }
+
+        displayActivities(filtered);
+      }
+
+      // 顯示活動列表
+      function displayActivities(activities) {
+        if (activities.length === 0) {
+          listEl.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--md-sys-color-on-surface-variant);">
+                <h3>沒有符合條件的活動</h3>
+                <p>請嘗試調整篩選條件</p>
+            </div>
+          `;
+        } else {
+          listEl.innerHTML = `
+            <div class="act-card-container">
+                ${activities.map(createActCard).join("")}
+            </div>
+          `;
+        }
+      }
+
+      // 清除篩選
+      function clearFilters() {
+        filterForm.reset();
+        displayActivities(allActivities);
+      }
+
+      // 篩選表單提交事件
+      filterForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        filterActivities();
+      });
+
+      // 載入活動資料
+      function loadActivities() {
+        fetch("/api/act/myJoin/" + memId)
           .then((response) => {
             if (response.status === 401) {
+              // 未登入，導向登入頁
               window.location.href = "/members/login";
               return;
             }
             if (response.status === 403) {
+              // 無權限，導向自己的頁面
               response.json().then((data) => {
                 if (data.redirectTo) {
                   window.location.href = data.redirectTo;
@@ -261,114 +335,51 @@
             return response.json();
           })
           .then((result) => {
-            if (!result) return;
+            if (!result) return; // 已處理權限問題
 
             listEl.classList.remove("act-loading");
 
-            // 儲存所有活動資料
+            // 檢查新的回傳格式並保存到全域變數
             if (result.success && result.data) {
               allActivities = result.data;
             } else {
+              // 處理錯誤格式或舊格式（向後相容）
               allActivities = Array.isArray(result) ? result : [];
             }
 
-            // 顯示活動（初始載入不做篩選）
+            // 顯示所有活動
             displayActivities(allActivities);
           })
           .catch((error) => {
             console.error("載入活動失敗:", error);
             listEl.classList.remove("act-loading");
             listEl.innerHTML = `
-              <div style="text-align: center; padding: 40px; color: var(--md-sys-color-error);">
-                  <h3>載入失敗</h3>
-                  <p>無法載入活動列表，請稍後再試</p>
-              </div>
-            `;
+                    <div style="text-align: center; padding: 40px; color: var(--md-sys-color-error);">
+                        <h3>載入失敗</h3>
+                        <p>無法載入活動列表，請稍後再試</p>
+                    </div>
+                `;
           });
       }
 
-      // 顯示活動列表
-      function displayActivities(activities) {
-        if (activities.length === 0) {
-          listEl.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: var(--md-sys-color-on-surface-variant);">
-                <h3>沒有符合條件的活動</h3>
-                <p>請嘗試調整篩選條件或建立新活動</p>
-            </div>
-          `;
-        } else {
-          listEl.innerHTML = `
-            <div class="act-card-container">
-                ${activities.map(createActCard).join("")}
-            </div>
-          `;
-        }
-      }
-
-      // 篩選活動
-      function filterActivities() {
-        const formData = new FormData(filterForm);
-        const actName = formData.get("actName")?.trim().toLowerCase() || "";
-        const dateStart = formData.get("dateRangeStart") || "";
-        const dateEnd = formData.get("dateRangeEnd") || "";
-        const status = formData.get("recruitStatus") || "";
-
-        const filtered = allActivities.filter((activity) => {
-          // 關鍵字篩選
-          if (actName && !activity.actName.toLowerCase().includes(actName)) {
-            return false;
-          }
-
-          // 狀態篩選
-          if (status !== "" && activity.recruitStatus.toString() !== status) {
-            return false;
-          }
-
-          // 日期區間篩選
-          if (dateStart || dateEnd) {
-            const actDate = new Date(activity.actStart)
-              .toISOString()
-              .split("T")[0];
-            if (dateStart && actDate < dateStart) return false;
-            if (dateEnd && actDate > dateEnd) return false;
-          }
-
-          return true;
-        });
-
-        displayActivities(filtered);
-      }
-
-      // 清除篩選
-      function clearFilters() {
-        filterForm.reset();
-        displayActivities(allActivities);
-      }
-
-      // 篩選表單事件監聽
-      filterForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        filterActivities();
-      });
-
-      // 初始載入
+      // 頁面載入時執行
       loadActivities();
 
-      function deleteAct(actId) {
-        if (confirm("確定要刪除這個活動嗎？此操作無法復原。")) {
-          fetch(`/api/act/${actId}/status/3?operatorId=${hostId}&admin=false`, {
-            method: "PUT",
+      function cancelParticipation(actId) {
+        if (confirm("確定要取消報名這個活動嗎？")) {
+          fetch(`/api/participate/${actId}/signup/${memId}`, {
+            method: "DELETE",
           })
             .then((response) => {
               if (response.ok) {
-                location.reload();
+                location.reload(); // 重新載入頁面
               } else {
-                alert("刪除失敗，請稍後再試");
+                alert("取消報名失敗，請稍後再試");
               }
             })
             .catch((error) => {
-              console.error("刪除失敗:", error);
-              alert("刪除失敗，請稍後再試");
+              console.error("取消報名失敗:", error);
+              alert("取消報名失敗，請稍後再試");
             });
         }
       }

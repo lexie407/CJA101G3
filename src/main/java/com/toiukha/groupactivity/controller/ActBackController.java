@@ -6,8 +6,6 @@ import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.groupactivity.model.DefaultImageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +15,13 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+
+/*
+ * 本頁面為學習參考用，勿再更新。
+ * [Deprecated] 本檔案內的圖片顯示API（如 /act/admin/image/{actId}）已被統一的 /api/act/image/{actId} 取代。
+ * 為相容舊版頁面暫時保留，後續可安全移除。
+ * 請前端一律改用 /api/act/image/{actId}。
+ */
 
 // 後台管理員功能
 @Controller
@@ -126,17 +131,17 @@ public class ActBackController {
         return "redirect:/act/admin/listAllAct";
     }
 
-    @GetMapping(value = "/image/{actId}", produces = MediaType.IMAGE_JPEG_VALUE)
-    @ResponseBody
-    public ResponseEntity<byte[]> getImage(@PathVariable Integer actId) {
-        ActVO actVo = actSvc.getOneAct(actId);
-        if (actVo != null && actVo.getActImg() != null && actVo.getActImg().length > 0) {
-            return ResponseEntity.ok(actVo.getActImg());
-        } else {
-            // 如果沒有圖片，回傳預設圖片
-            return ResponseEntity.ok(defaultImageService.getDefaultImage());
-        }
-    }
+//    @GetMapping(value = "/image/{actId}", produces = MediaType.IMAGE_JPEG_VALUE)
+//    @ResponseBody
+//    public ResponseEntity<byte[]> getImage(@PathVariable Integer actId) {
+//        ActVO actVo = actSvc.getOneAct(actId);
+//        if (actVo != null && actVo.getActImg() != null && actVo.getActImg().length > 0) {
+//            return ResponseEntity.ok(actVo.getActImg());
+//        } else {
+//            // 如果沒有圖片，回傳預設圖片
+//            return ResponseEntity.ok(defaultImageService.getDefaultImage());
+//        }
+//    }
 
     /** 變更狀態 */
     @PostMapping("/changeStatus")

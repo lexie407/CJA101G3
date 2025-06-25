@@ -1,10 +1,12 @@
 package com.toiukha.groupactivity.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 //import jakarta.validation.constraints.*; //驗證寫在DTO
 //import org.springframework.format.annotation.DateTimeFormat;//驗證寫在DTO
 
@@ -30,6 +32,7 @@ public class ActVO implements Serializable{
     @Column(name = "ACTDESC")
     private String actDesc;
 
+    @JsonIgnore
     @Column(name = "ACTIMG")
     @Lob
     private byte[] actImg;
@@ -70,6 +73,23 @@ public class ActVO implements Serializable{
 
     @Column(name = "RECRUITSTATUS")
     private Byte recruitStatus;
+
+    // 日期格式化輔助方法
+    public String getFormattedSignupStart() {
+        return signupStart != null ? signupStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "";
+    }
+
+    public String getFormattedSignupEnd() {
+        return signupEnd != null ? signupEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "";
+    }
+
+    public String getFormattedActStart() {
+        return actStart != null ? actStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "";
+    }
+
+    public String getFormattedActEnd() {
+        return actEnd != null ? actEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "";
+    }
 
     /** 參加者關聯(待補) */
 //    @OneToMany(mappedBy = "act", cascade = CascadeType.ALL, orphanRemoval = true)

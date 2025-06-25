@@ -15,7 +15,10 @@ import java.util.List;
 //老師的範例:public interface ActRepository extends JpaRepository<ActVO, Integer>, JpaSpecificationExecutor<ActVO>
 public interface ActRepository extends JpaRepository<ActVO, Integer>, JpaSpecificationExecutor<ActVO> { //需要繼承JpaRepository<VO物件,欄位型別>
 
-    // 查詢指定團主的所有活動
+    // 查詢指定團主的所有活動（按 actId 降序排序）
+    List<ActVO> findByHostIdOrderByActIdDesc(Integer hostId);
+    
+    // 查詢指定團主的所有活動（原方法，保持向後相容）
     List<ActVO> findByHostId(Integer hostId);
 
     // 刪除指定活動（開發階段需要）
