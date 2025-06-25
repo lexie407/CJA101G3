@@ -15,8 +15,9 @@ import java.nio.file.Paths;
  */
 @Service
 public class DefaultImageService {
-    
+    //改成全組通用的位置
     private static final String DEFAULT_IMAGE_PATH = "uploads/common/default.png";
+//    private static final String DEFAULT_IMAGE_PATH = "src/main/resources/static/act/default.png"; //目前是錯誤
     private byte[] defaultImageBytes;
     
     /**
@@ -43,7 +44,7 @@ public class DefaultImageService {
             }
             
             // 如果檔案系統沒有，嘗試從 classpath 載入
-            ClassPathResource resource = new ClassPathResource("static/images/default.png");
+            ClassPathResource resource = new ClassPathResource("static/images/act/default.png");
             if (resource.exists()) {
                 try (InputStream inputStream = resource.getInputStream()) {
                     defaultImageBytes = inputStream.readAllBytes();

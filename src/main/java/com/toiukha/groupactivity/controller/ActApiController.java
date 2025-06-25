@@ -1,10 +1,6 @@
 package com.toiukha.groupactivity.controller;
 
-import com.toiukha.groupactivity.model.ActDTO;
-import com.toiukha.groupactivity.model.ActService;
-import com.toiukha.groupactivity.model.ActSpecification;
-import com.toiukha.groupactivity.model.ActVO;
-import com.toiukha.groupactivity.model.DefaultImageService;
+import com.toiukha.groupactivity.model.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,10 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-
+// 提供前端 AJAX 呼叫(送出表單、測試用api)
 @RestController
 @RequestMapping("/api/act")
-// 提供前端 AJAX 呼叫
 public class ActApiController {
 
     @Autowired
@@ -28,30 +23,46 @@ public class ActApiController {
     @Autowired
     private DefaultImageService defaultImageService;
 
+//    新增活動
     @PostMapping("/add")
     public String addAct(@Valid @RequestBody ActDTO actDto) {
-        // 從前端收到 DTO 交由 Service 處理
         actSvc.addAct(actDto);
         return "success";
     }
+//    @PostMapping("/add")
+//    public ResponseEntity<?> addAct(@Valid @RequestBody ActDTO actDto, BindingResult bindingResult) {
+//        if (bindingResult.hasErrors()) {
+//            Map<String, String> errors = new HashMap<>();
+//            bindingResult.getFieldErrors().forEach(error ->
+//                    errors.put(error.getField(), error.getDefaultMessage())
+//            );
+//            return ResponseEntity.badRequest().body(errors); // 400, 帶所有欄位錯誤
+//        }
+//        actSvc.addAct(actDto);
+//        return ResponseEntity.ok("success");
+//    }
 
+
+    //修改活動
     @PutMapping("/update")
     public String updateAct(@Valid @RequestBody ActDTO actDto) {
-        // 更新活動資料
         actSvc.updateAct(actDto);
         return "updated";
     }
 
-    @GetMapping("/get/{id}")
-    public ActVO getOne(@PathVariable Integer id) {
-        return actSvc.getOneAct(id);
-    }
-
+    //查詢所有活動(測試用api)
     @GetMapping("/all")
-    public List<ActVO> getAll() {
+    public List<ActVO> getAllAct() {
         return actSvc.getAll();
     }
 
+    //查詢單一活動
+    @GetMapping("/get/{actId}")
+    public ActVO getOneAct(@PathVariable Integer actId) {
+        return actSvc.getOneAct(actId);
+    }
+
+    //我揪的團
     @GetMapping("/my/{hostId}")
     public List<ActVO> getMyActs(@PathVariable Integer hostId) {
         return actSvc.getByHost(hostId);

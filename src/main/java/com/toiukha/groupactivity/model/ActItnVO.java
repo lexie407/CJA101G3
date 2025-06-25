@@ -7,21 +7,31 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "actitn")
+//@IdClass(ActItn.class)
 public class ActItnVO {
-    
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(name = "ACTID", nullable = false)
+    private Integer actId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ACTID", nullable = false)
-    private ActVO act;
-
+//    @Id
     @Column(name = "ITNID", nullable = false)
     private Integer itnId;
 
-    @Column(name = "DAYORDER")
-    private Integer dayOrder;
+    /** 對應的活動 */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ACTID", insertable = false, updatable = false, nullable = false)
+    private ActVO actVO;
+
+    //待行程模組上傳後更新
+//    /** 行程實體關聯 */
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "ACTID", insertable = false, nullable = false)
+//    private ItineraryVO itnVO;
+
+    //不需要的欄位
+//    @Column(name = "DAYORDER")
+//    private Integer dayOrder;
 
     // ===== Constructor =====
 
@@ -31,45 +41,53 @@ public class ActItnVO {
 
     // ===== Getter / Setter =====
 
-    public Integer getId() {
-        return id;
+    public Integer getActId() {
+        return actId;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setActId(Integer id) {
+        this.actId = id;
     }
 
-    public ActVO getAct() {
-        return act;
+    public ActVO getActVO() {
+        return actVO;
     }
 
-    public void setAct(ActVO act) {
-        this.act = act;
+    public void setActVO(ActVO actVO) {
+        this.actVO = this.actVO;
     }
 
-    public Integer getItnId() {
-        return itnId;
-    }
+    public Integer getItnId() { return itnId;}
 
     public void setItnId(Integer itnId) {
         this.itnId = itnId;
     }
 
-    public Integer getDayOrder() {
-        return dayOrder;
-    }
+    //待行程模組上傳後更新
+//    public itineraryVO getItnVO() {
+//        return itnVO;
+//    }
+//
+//    public void setItnVO(itineraryVO itnVO) {
+//        this.itnVO = itnVO;
+//    }
 
-    public void setDayOrder(Integer dayOrder) {
-        this.dayOrder = dayOrder;
-    }
+    //不需要的欄位
+//    public Integer getDayOrder() {
+//        return dayOrder;
+//    }
+//
+//    public void setDayOrder(Integer dayOrder) {
+//        this.dayOrder = dayOrder;
+//    }
 
     // ===== toString =====
 
     @Override
     public String toString() {
         return "ActItnVO{" +
-                "id=" + id +
-                ", actId=" + (act != null ? act.getActId() : null) +
+                "id=" + actId +
+                ", actId=" + (actVO != null ? actVO.getActId() : null) +
                 ", itnId=" + itnId +
                 '}';
     }
