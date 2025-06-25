@@ -25,8 +25,8 @@ public class AdService {
 	}
 	public void deleteAd(Integer adId) {
 		if(repository.existsById(adId)) {
-			repository.deleteByAdId(adId);
-//			repository.deleteById(adId);
+//			repository.deleteByAdId(adId);
+			repository.deleteById(adId);
 		}
 	}
 	
@@ -40,17 +40,62 @@ public class AdService {
 		return repository.findAll();	// 取得所有廣告
 	}
 	
-	// 針對 AdVO 的複合查詢工具。
-	public List<AdVO> getAll(Map<String, String[]> map){
-//		return HibernateUtil_CompositeQuery_Ad.getAllC(map,sessionFactory.openSession());
-		return null;	// 暫時回傳 null，待實現複合查詢工具
-	}
+//	// 針對 AdVO 的複合查詢工具。
+//	public List<AdVO> getAll(Map<String, String[]> map){
+////		return HibernateUtil_CompositeQuery_Ad.getAllC(map,sessionFactory.openSession());
+//		return null;	// 暫時回傳 null，待實現複合查詢工具
+//	}
 
     // 根據標題和狀態查詢廣告 (對應AdRepository 的自訂方法)
     public List<AdVO> getAdsByTitleAndStatus(String adTitle, Byte adStatus) {
         return repository.findByTitleContainingAndStatus(adTitle, adStatus);
     }
+    @Autowired
+    private AdRepository adRepo;
+
+    public List<AdVO> getAllByStoreId(Integer storeId) {
+        return adRepo.findByStoreId(storeId);
+    }
+
+    // 審核相關方法
+    public List<AdVO> getPendingAds() {
+        return adRepo.findByAdStatus(AdVO.STATUS_PENDING);
+    }
+    
+    public List<AdVO> getApprovedAds() {
+        return adRepo.findByAdStatus(AdVO.STATUS_APPROVED);
+    }
+    
+    public List<AdVO> getRejectedAds() {
+        return adRepo.findByAdStatus(AdVO.STATUS_REJECTED);
+    }
+    
+    public void approveAd(Integer adId) {
+        AdVO ad = getOneAd(adId);
+        if (ad != null) {
+            ad.setAdStatus(AdVO.STATUS_APPROVED);
+            updateAd(ad);
+        }
+    }
+    
+    public void rejectAd(Integer adId) {
+        AdVO ad = getOneAd(adId);
+        if (ad != null) {
+            ad.setAdStatus(AdVO.STATUS_REJECTED);
+            updateAd(ad);
+        }
+    }
+    
+    public void deactivateAd(Integer adId) {
+        AdVO ad = getOneAd(adId);
+        if (ad != null) {
+            ad.setAdStatus(AdVO.STATUS_INACTIVE);
+            updateAd(ad);
+        }
+    }
+
 	
+
 	
 	
 	

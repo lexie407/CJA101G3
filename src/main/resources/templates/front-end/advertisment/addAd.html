@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增廣告 - 島遊Kha</title>
+    
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-color-primary);
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .current-image {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .current-image img {
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+					<li><h2>新增廣告</h2></li>
+                </ul>
+            </header>
+			<main class="content-area-main">
+                <div class="form-container">
+                    <!-- 新增廣告說明 -->
+                    <div style="background-color: #e3f2fd; padding: 12px; border-radius: 5px; margin-bottom: 20px;">
+                        <strong>說明：</strong> 新增廣告後，需等待管理員審核通過才會顯示於前台。
+                    </div>
+                    <form th:action="@{/advertisment/insert}" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label>廣告標題：</label>
+                            <input type="text" name="adTitle" required placeholder="請輸入廣告標題">
+                        </div>
+                        <div class="form-group">
+                            <label>商店：</label>
+                            <input type="text" th:value="${storeNamesMap != null ? storeNamesMap.get(1) : '目前登入商家'}" readonly style="background:#f8f9fa;">
+                        </div>
+                        <div class="form-group">
+                            <label>開始時間：</label>
+                            <input type="datetime-local" id="adStartTimeInput" required />
+                            <input type="hidden" name="adStartTime" id="adStartTime" />
+                        </div>
+                        <div class="form-group">
+                            <label>結束時間：</label>
+                            <input type="datetime-local" id="adEndTimeInput" required />
+                            <input type="hidden" name="adEndTime" id="adEndTime" />
+                        </div>
+                        <div class="form-group">
+                            <label>上傳圖片：</label>
+                            <input type="file" name="adImage" id="imageInput" accept="image/*" required>
+                            
+                            <!-- 圖片預覽區域 -->
+                            <div id="imagePreview" style="display: none; margin-top: 10px;">
+                                <label>圖片預覽：</label>
+                                <div class="current-image">
+                                    <img id="previewImage" width="150" height="100" alt="圖片預覽" style="border: 2px solid #3498db;" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-primary">新增廣告</button>
+                            <a th:href="@{/advertisment/myAds}" class="btn btn-secondary">取消</a>
+                        </div>
+                    </form>
+                </div>
+            </main>
+		</div>
+	</div>
+    
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../js/notification/websocket.js"></script>
+    <script>
+        // 改善時間處理
+        document.getElementById('adStartTimeInput').addEventListener('change', function () {
+            const datetimeValue = this.value;
+            if (datetimeValue) {
+                // 直接使用 YYYY-MM-DDTHH:mm 格式
+                document.getElementById('adStartTime').value = datetimeValue;
+                console.log('開始時間設定為:', datetimeValue);
+            }
+        });
+        
+        document.getElementById('adEndTimeInput').addEventListener('change', function () {
+            const datetimeValue = this.value;
+            if (datetimeValue) {
+                // 直接使用 YYYY-MM-DDTHH:mm 格式
+                document.getElementById('adEndTime').value = datetimeValue;
+                console.log('結束時間設定為:', datetimeValue);
+            }
+        });
+        
+        // 圖片預覽功能
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const previewDiv = document.getElementById('imagePreview');
+            const previewImage = document.getElementById('previewImage');
+            
+            if (file) {
+                // 檢查檔案類型
+                if (!file.type.startsWith('image/')) {
+                    alert('請選擇圖片檔案');
+                    this.value = '';
+                    previewDiv.style.display = 'none';
+                    return;
+                }
+                
+                // 檢查檔案大小 (限制為 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('圖片檔案大小不能超過 5MB');
+                    this.value = '';
+                    previewDiv.style.display = 'none';
+                    return;
+                }
+                
+                // 建立預覽
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewDiv.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        });
+        
+        // 表單提交前驗證
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const startTime = document.getElementById('adStartTime').value;
+            const endTime = document.getElementById('adEndTime').value;
+            
+            if (!startTime || !endTime) {
+                e.preventDefault();
+                alert('請選擇開始時間和結束時間');
+                return false;
+            }
+            
+            // 檢查結束時間是否晚於開始時間
+            const startDate = new Date(startTime);
+            const endDate = new Date(endTime);
+            
+            if (endDate <= startDate) {
+                e.preventDefault();
+                alert('結束時間必須晚於開始時間');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

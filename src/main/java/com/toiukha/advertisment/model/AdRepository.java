@@ -22,5 +22,18 @@ public interface AdRepository extends JpaRepository<AdVO, Integer>{
 	@Query(value = "from AdVO where adTitle like %?1% and adStatus =?2 order by adId desc")
 	List<AdVO> findByTitleContainingAndStatus(String adTitle, Byte adStatus);
 	
-	// 有需要自訂查詢再往下補
+	
+
+	    // JPA 會根據方法名稱自動實作 SQL：SELECT * FROM advertisment WHERE storeId = ?
+	    List<AdVO> findByStoreId(Integer storeId);
+	    
+	    // 根據狀態查詢廣告
+	    List<AdVO> findByAdStatus(Byte adStatus);
+	    
+	    // 根據狀態排序查詢廣告
+	    List<AdVO> findByAdStatusOrderByAdCreatedTimeDesc(Byte adStatus);	
+	    		
 }
+
+	
+	// 有需要自訂查詢再往下補

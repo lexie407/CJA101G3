@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>所有廣告 - 島遊Kha</title>
+    
+    <!-- 引入 Thymeleaf 模板中的 headResources 片段，包含 Material Design 相關 CSS/JS -->
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
+    <!-- 這裡可以放置此頁面特有的 CSS -->
+    <style>
+        .ad-card {
+            background-color: var(--card-background-color); /* Material Design 卡片背景色 */
+            border-radius: 8px; /* 圓角 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 輕微陰影 */
+            margin-bottom: 20px;
+            overflow: hidden; /* 確保內容不會超出圓角 */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* 確保卡片在網格中高度一致 */
+        }
+        .ad-card:hover {
+            transform: translateY(-5px); /* 鼠標懸停時輕微上移 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* 陰影加深 */
+        }
+        .ad-card-image {
+            width: 100%;
+            height: 200px; /* 固定圖片高度 */
+            object-fit: cover; /* 裁剪圖片以填充容器 */
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .ad-card-content {
+            padding: 16px;
+            flex-grow: 1; /* 讓內容區塊可以伸展 */
+            display: flex;
+            flex-direction: column;
+        }
+        .ad-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color-primary);
+        }
+        .ad-card-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-color-secondary);
+            margin-bottom: 4px;
+        }
+        .ad-card-details {
+            font-size: 0.85rem;
+            color: var(--text-color-secondary);
+            margin-top: auto; /* 將詳細資訊推到底部 */
+        }
+        .ad-status-active {
+            color: #4CAF50; /* Material Green */
+            font-weight: bold;
+        }
+        .ad-status-inactive {
+            color: #FFC107; /* Material Amber */
+            font-weight: bold;
+        }
+        .no-ads-message {
+            text-align: center;
+            padding: 50px;
+            color: var(--text-color-secondary);
+            font-size: 1.2rem;
+        }
+        .container-fluid {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        .main-content {
+            padding-top: 20px; /* 根據你的 header 高度調整 */
+            padding-bottom: 20px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 自動調整列數，最小寬度 280px */
+            gap: 20px; /* 卡片間距 */
+            padding: 20px; /* 整個網格的內邊距 */
+        }
+    </style>
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<!-- 引入 Thymeleaf 模板中的 navbar 片段 -->
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+                    <li><h2>最新廣告</h2></li>
+                </ul>
+            </header>
+			
+            <main class="content-area-main">
+                <div th:if="${#lists.isEmpty(adListData)}" class="no-ads-message">
+                    目前沒有任何廣告。
+                </div>
+                <div th:unless="${#lists.isEmpty(adListData)}" class="grid-container">
+                    <div class="ad-card" th:each="adVO : ${adListData}">
+                        <!-- 廣告圖片顯示 -->
+                        <img th:src="@{/advertisment/DBGifReader(adId=${adVO.adId})}" 
+                             class="ad-card-image" alt="廣告圖片">
+                        
+                        <div class="ad-card-content">
+                            <h3 class="ad-card-title" th:text="${adVO.adTitle}">廣告標題</h3>
+                            <p class="ad-card-subtitle">
+                                <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">store</span>
+								<span th:text="${storeNamesMap != null ? storeNamesMap.get(adVO.storeId) : '未知商店'}"></span>
+                            </p>
+                            <p class="ad-card-details">
+                                狀態: 
+                                <span class="ad-status-active" text="啟用中">啟用中</span>
+                            </p>
+                            <p class="ad-card-details">
+                                <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">event</span>
+                                開始: <span th:text="${#dates.format(adVO.adStartTime, 'yyyy-MM-dd HH:mm')}"></span>
+                            </p>
+                            <p class="ad-card-details">
+                                <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">event_busy</span>
+                                結束: <span th:text="${#dates.format(adVO.adEndTime, 'yyyy-MM-dd HH:mm')}"></span>
+                            </p>
+                            <!-- 可以添加查看詳情按鈕等互動元素 -->
+                            <div class="mt-auto pt-3 text-right">
+                                <a th:href="@{/advertisment/getOne_For_Display(adId=${adVO.adId})}" 
+                                   class="btn btn-primary" 
+                                   style="text-decoration: none; display: inline-block; padding: 8px 16px; background-color: #007bff; color: white; border-radius: 4px; transition: background-color 0.3s ease;">
+                                    查看詳情
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+		</div>
+	</div>
+    
+    <!-- 引入 Thymeleaf 模板中的腳本 -->
+    <script th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
+    <script th:src="@{/webjars/stomp-websocket/stomp.min.js}"></script>
+    <script th:src="@{/js/notification/websocket.js}"></script>
+    
+</body>
+</html>

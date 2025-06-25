@@ -16,8 +16,15 @@ import jakarta.validation.constraints.*;
 	public class AdVO implements java.io.Serializable{
 	private static final long serialVersionUID = 1L;
 	
+	// 廣告狀態常數定義
+	public static final byte STATUS_PENDING = 0;    // 待審核
+	public static final byte STATUS_APPROVED = 1;   // 已審核通過
+	public static final byte STATUS_REJECTED = 2;   // 審核拒絕
+	public static final byte STATUS_INACTIVE = 3;   // 已停用
+	
+	
 	private Integer adId;
-    private StoreVO storeVO; // <<-- 改為 StoreVO 物件
+    private Integer storeId;
 	private String adTitle;
 	private byte[] adImage;
 	private Byte adStatus;	// TINYINT 對應 Java 的 Byte
@@ -28,10 +35,10 @@ import jakarta.validation.constraints.*;
 	public AdVO() {	//必需有一個不傳參數建構子(JavaBean基本知識)
 	}
 	
-	public AdVO(Integer adId, StoreVO storeVO, String adTitle, byte[] adImage, Byte adStatus, Timestamp adCreatedTime,
+	public AdVO(Integer adId, String adTitle, byte[] adImage, Byte adStatus, Timestamp adCreatedTime,
 			Timestamp adStartTime, Timestamp adEndTime) {
 		this.adId = adId;
-        this.storeVO = storeVO;
+//        this.storeVO = storeVO;
 		this.adTitle = adTitle;
 		this.adImage = adImage;
 		this.adStatus = adStatus;
@@ -53,15 +60,15 @@ import jakarta.validation.constraints.*;
 		this.adId = adId;
 	}
 	
-    @ManyToOne
-    @JoinColumn(name = "STOREID", referencedColumnName = "STOREID") // 假設 StoreVO 的主鍵欄位也是 STOREID
+
+    @Column(name = "STOREID") 
     @NotNull(message = "商店: 請勿空白") // STORE 不可為空
-	public StoreVO getStoreVO() {
-		return storeVO;
+	public Integer getStoreId() {
+		return storeId;
 	}
 
-	public void setStoreVO(StoreVO storeVO) {
-		this.storeVO = storeVO;
+	public void setStoreId(Integer storeId) {
+		this.storeId = storeId;
 	}
 
 	@Column(name = "ADTITLE")
@@ -97,7 +104,7 @@ import jakarta.validation.constraints.*;
 	}
 
     @Column(name = "ADCREATEDTIME")
-    @NotNull(message = "廣告創建時間: 請勿空白")
+//    @NotNull(message = "廣告創建時間: 請勿空白")
     @PastOrPresent(message = "廣告創建時間: 必須是今日或之前") // 通常創建時間不能是未來
 	public Timestamp getAdCreatedTime() {
 		return adCreatedTime;
@@ -108,7 +115,7 @@ import jakarta.validation.constraints.*;
 	}
 
 	@Column(name = "ADSTARTTIME")
-    @NotNull(message = "廣告開始時間: 請勿空白") // 不可為空
+//    @NotNull(message = "廣告開始時間: 請勿空白") // 不可為空
     @FutureOrPresent(message = "廣告開始時間: 必須是今日或之後") // 廣告開始時間通常是未來或現在
 	public Timestamp getAdStartTime() {
 		return adStartTime;
@@ -119,7 +126,7 @@ import jakarta.validation.constraints.*;
 	}
 
 	@Column(name = "ADENDTIME")
-    @NotNull(message = "廣告結束時間: 請勿空白") // 不可為空
+//    @NotNull(message = "廣告結束時間: 請勿空白") // 不可為空
     @Future(message = "廣告結束時間: 必須是以後") // 廣告結束時間通常是未來
 	public Timestamp getAdEndTime() {
 		return adEndTime;
@@ -130,7 +137,3 @@ import jakarta.validation.constraints.*;
 	}	
 	
 }
-	
-	
-	
-
