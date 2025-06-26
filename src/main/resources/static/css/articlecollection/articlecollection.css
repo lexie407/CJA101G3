@@ -1,0 +1,9 @@
+.notification-item.artuse{
+	background-color: var(--md-sys-color-primary-container); 
+	font-weight: 500; 
+	color: var(--md-sys-color-on-surface);
+}
+
+.notification-item.artuse:hover {
+    background-color: var(--md-sys-color-surface-container);
+}

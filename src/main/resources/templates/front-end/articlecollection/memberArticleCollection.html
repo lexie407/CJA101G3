@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/articlecollection/articlecollection.css}">
+    
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+<!-- 					放自己需要的內容 -->
+                </ul>
+            </header>
+			<main class="content-area-main">
+			
+<!-- 				<input type="hidden" id="member" th:value=${session.member}> -->
+<!-- 加入登入功能後記得改 -->
+				<input type="hidden" id="member" value=1>
+				
+				<div class="notification-center-container">
+					<div class="notification-actions">
+						<label class="checkbox-container"> <input type="checkbox"
+							class="selectAllNotifications"> <span class="checkmark"></span>
+							全選收藏
+						</label>
+						<button class="delete-selected-btn material-button"
+							th:data-action="@{/articleCollection/deleteLine}">
+							<span class="material-icons">delete</span> 刪除所選收藏
+						</button>
+					</div>
+
+					<div class="notification-list">
+						<div th:each="articleCollectionDTO : ${list}">
+							<div class="notification-item artuse" th:data-artId="${articleCollectionDTO.artId}">
+
+								<label class="checkbox-container"
+									th:for="${'artId_' + articleCollectionDTO.artId}"> <input
+									type="checkbox" class="notification-checkbox" name="artId"
+									th:value="${articleCollectionDTO.artId}"
+									th:id="${'artId_' + articleCollectionDTO.artId}"> <span
+									class="checkmark" style="top: -10px;"></span>
+								</label>
+								<div class="notification-content">
+									<div class="notification-header">
+										<span class="notification-title"
+											th:text="${articleCollectionDTO.articleTitle}"></span> <span
+											class="notification-date"> <span
+											th:text="'#' + ${articleCollectionDTO.artId}"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>	
+			
+            </main>
+		</div>
+	</div>
+	
+	<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+	<script src="../js/articlecollection/articlecollection.js"></script>
+	<script src="../js/notification/websocket.js"></script>
+    
+</body>
+</html>
