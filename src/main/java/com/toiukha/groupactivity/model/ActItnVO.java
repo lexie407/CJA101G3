@@ -1,6 +1,9 @@
 package com.toiukha.groupactivity.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.io.Serializable;
 
 /**
  * 活動與行程關聯 VO，對應資料庫表格 actitn
@@ -8,7 +11,8 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "actitn")
 //@IdClass(ActItn.class)
-public class ActItnVO {
+public class ActItnVO implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @Column(name = "ACTID", nullable = false)
@@ -19,6 +23,7 @@ public class ActItnVO {
     private Integer itnId;
 
     /** 對應的活動 */
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ACTID", insertable = false, updatable = false, nullable = false)
     private ActVO actVO;
@@ -45,8 +50,8 @@ public class ActItnVO {
         return actId;
     }
 
-    public void setActId(Integer id) {
-        this.actId = id;
+    public void setActId(Integer actId) {
+        this.actId = actId;
     }
 
     public ActVO getActVO() {
@@ -54,10 +59,12 @@ public class ActItnVO {
     }
 
     public void setActVO(ActVO actVO) {
-        this.actVO = this.actVO;
+        this.actVO = actVO;
     }
 
-    public Integer getItnId() { return itnId;}
+    public Integer getItnId() { 
+        return itnId;
+    }
 
     public void setItnId(Integer itnId) {
         this.itnId = itnId;
@@ -86,8 +93,7 @@ public class ActItnVO {
     @Override
     public String toString() {
         return "ActItnVO{" +
-                "id=" + actId +
-                ", actId=" + (actVO != null ? actVO.getActId() : null) +
+                "actId=" + actId +
                 ", itnId=" + itnId +
                 '}';
     }

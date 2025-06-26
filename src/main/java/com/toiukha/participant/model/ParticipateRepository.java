@@ -28,4 +28,15 @@ public interface ParticipateRepository extends JpaRepository<ParticipantVO, Part
      */
     @Query("select p.memId from ParticipantVO p where p.actId = :actId")
     List<Integer> findMemIdsByActId(Integer actId);
+    
+    /**
+     * 根據會員ID查詢所有參加的活動
+     */
+    List<ParticipantVO> findByMemId(Integer memId);
+    
+    /**
+     * 根據會員ID查詢所有參加的活動ID
+     */
+    @Query("select p.actId from ParticipantVO p where p.memId = :memId")
+    List<Integer> findActIdsByMemId(Integer memId);
 }
