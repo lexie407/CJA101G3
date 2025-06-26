@@ -2,7 +2,7 @@ $(function () {
     let main_el = document.querySelector("#articleList");
     const contextPath = getFullContextPath(); // 獲取完整的上下文路徑
 
-    fetch(`${contextPath}/articles?sortBy=artCreTime&order=desc`) // 取得最新文章
+    fetch(`/articles?sortBy=artCreTime&order=desc`) // 取得最新文章
         .then(response => {
             if (!response.ok) {
                 // 開發除錯用：輸出詳細錯誤
@@ -30,7 +30,7 @@ $(function () {
             const artId = card.dataset.artid;
             console.log(artId);
             if (artId) {
-                window.location.href = `${contextPath}/forum/article?artId=${artId}`;
+                window.location.href = `/forum/article?artId=${artId}`;
             }
         }
     });
