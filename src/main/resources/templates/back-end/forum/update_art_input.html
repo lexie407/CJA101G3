@@ -9,6 +9,7 @@
     <link rel="stylesheet" th:href="@{/css/light.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link th:href="@{/vendors/quillEditor/quill.snow.css}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style>
         .input-readonly[readonly] {
@@ -104,7 +105,7 @@
         }
 
         /* 表單標題 */
-        .form-title {
+        .form-artTitle {
             font-size: 24px;
             font-weight: bold;
             color: var(--md-sys-color-on-surface);
@@ -114,7 +115,60 @@
             text-align: center;
         }
 
+        /* 留言管理區塊橫向排列 */
+        #comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .comment-block {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 6px;
+            background: #fafbfc;
+            gap: 32px;
+        }
+        .comment-block .comment-info {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+        .comment-block .comment-info > div {
+            min-width: 120px;
+            margin-bottom: 4px;
+        }
+        .comment-block .comment-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 90px;
+        }
 
+        /* 留言管理區塊表格樣式 */
+        #comments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            background: #fafbfc;
+        }
+        #comments-table th, #comments-table td {
+            border: 1px solid #ccc;
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 15px;
+        }
+        #comments-table th {
+            background: #f0f1f3;
+            font-weight: bold;
+        }
+        #comments-table td .material-button {
+            margin: 0 2px;
+        }
     </style>
 </head>
 <body class="light">
@@ -128,6 +182,11 @@
 
         <!--main 以下為頁面主要內容 -->
         <main class="content-area-main">
+            <div style="margin-bottom: 1rem;">
+                <button type="button" class="material-button" onclick="history.back()" style="display: flex; align-items: center;">
+                    <span class="material-icons" style="margin-right: 6px;">arrow_back</span>返回
+                </button>
+            </div>
 <!--            <h3><a class="navbar-brand" th:href="@{/forum/admin/selectPage}">前往文章查詢</a></h3>-->
             <h2 class="form-title">📝 編輯文章</h2>
 
@@ -171,7 +230,6 @@
                     <select id="artSta" th:field="*{artSta}" required>
                         <option value="1">上架</option>
                         <option value="2">下架</option>
-                        <option value="3">檢舉下架(待測試需不需要)</option>
                     </select>
                 </div>
 
@@ -185,8 +243,8 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="material-button secondary-btn" onclick="history.back()">取消</button>
-                    <button type="submit" class="material-button">送出</button>
+                    <button type="button" class="material-button" onclick="history.back()">取消</button>
+                    <button type="submit" class="material-button secondary-btn">送出</button>
                 </div>
 
             </form>
@@ -194,12 +252,15 @@
             <div id="editor2">
                 <!--Qill編輯器-->
             </div>
+
+            <!-- ====== 留言管理區塊 ====== -->
+            <div id="comment-manage-block" style="margin-top:40px;">
+                <h3>留言管理</h3>
+                <div id="comments-list">
+                    <!-- 這裡會用JS載入留言表格 -->
+                </div>
+            </div>
             <!-- ===================================================================== -->
-
-            <button onclick="getContent()">查看輸出內容</button>
-
-            <pre id="output"></pre>
-
 
         </main>
     </div>
@@ -222,6 +283,80 @@
         const initialContent = document.querySelector('#artCon').value;
         quill.root.innerHTML = initialContent;
     });
+
+    const contextPath = getFullContextPath(); // 獲取完整的上下文路徑
+    // 取得 host + context path
+    function getFullContextPath() {
+
+        const path = window.location.pathname;
+        const firstSlash = path.indexOf("/", 1);
+        const ctx = firstSlash === -1 ? "" : path.substring(0, firstSlash);
+        return window.location.origin + ctx;
+    }
+
+
+    // ====== 留言管理區塊AJAX載入 ======
+    document.addEventListener('DOMContentLoaded', function () {
+        const artId = document.getElementById('artId').value;
+        fetch(`/commentsAPI/getComments`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'commArt=' + encodeURIComponent(artId)
+        })
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('comments-list');
+            if (!data || data.length === 0) {
+                list.innerHTML = '<div style="color:#888;">目前沒有留言。</div>';
+                return;
+            }
+            let html = `
+                <table id="comments-table">
+                    <thead>
+                        <tr>
+<!--                            <th>留言編號</th>-->
+                            <th>會員</th>
+                            <th>留言類別</th>
+                            <th>內容</th>
+                            <th>圖片</th>
+                            <th>時間</th>
+                            <th>留言狀態</th>
+                            <th>管理</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            data.forEach(comm => {
+                html += `
+                    <tr>
+<!--                        <td>${comm.commId}</td>-->
+                        <td>${comm.commHol}</td>
+                        <td>${comm.commCat === 1 ? '文章留言' : comm.commCat === 2 ? '問題回答' : comm.commSta}</td>
+<!--                        TODO: 留言圖片顯示-->
+                        <td>${comm.commCon}</td>
+                        <td>${comm.commImg == null ? '沒有圖片' : comm.commImg}</td>
+                        <td>${comm.commCreTime ? comm.commCreTime.replace('T', ' ').substring(0, 19) : ''}</td>
+                        <td>${comm.commSta === 1 ? '上架' : comm.commSta === 2 ? '下架' : comm.commSta === 3 ? '最佳解' : comm.commSta}</td>
+                        <td>
+                            <button class="material-button" onclick="deleteComment(${comm.commId})" ${comm.commSta !== 1 ? 'disabled' : ''}>刪除</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+            list.innerHTML = html;
+        });
+    });
+
+    function deleteComment(commId) {
+        if (!confirm('確定要刪除此留言？')) return;
+        fetch(`/commentsAPI/deleteComments`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'commId=' + encodeURIComponent(commId)
+        }).then(() => location.reload());
+    }
+
 
 </script>
 

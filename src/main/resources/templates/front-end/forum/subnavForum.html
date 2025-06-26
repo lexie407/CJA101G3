@@ -1,0 +1,28 @@
+<div th:fragment="topbar">
+    <nav class="top-bar">
+        <div class="top-left">
+            <button class="icon-button">
+                <span class="material-icons">menu</span>
+            </button>
+            <div class="search-container">
+<!--                <input type="text" placeholder="搜尋文章..." />-->
+<!--                <span class="material-icons search-icon">search</span>-->
+                <!-- TODO: 標題關鍵字搜尋-->
+                <form class="subnavForum" action="/search" method="get">
+                    <input type="text" name="query" placeholder="搜尋文章標題..." required />
+                    <button type="submit" class="icon-button">
+                        <span class="material-icons search-icon">search</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="top-right">
+            <button class="icon-button"><span class="material-icons">add</span></button>
+            <button class="icon-button"><span class="material-icons">redeem</span></button>
+            <button class="icon-button"><span class="material-icons">favorite</span></button>
+            <button class="icon-button"><span class="material-icons">description</span></button>
+            <button class="icon-button"><span class="material-icons">account_circle</span></button>
+        </div>
+    </nav>
+</div>

@@ -8,8 +8,6 @@
     <!--前台CSS-->
     <link rel="stylesheet" th:href="@{/css/light.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <!--次導覽列CSS-->
-    <link rel="stylesheet" th:href="@{/css/subnav.css}">
 
     <!-- DataTables排序所需 -->
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
@@ -18,22 +16,22 @@
 
 </head>
 <body class="light">
-	<div class="app-container">
-	<!--前台:側邊攔，通用樣式，不用改-->
-	<div th:insert="~{/navBackTemplate :: navbar}"></div>
-		
-		<div class="main-content">		
-			<!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
-            <div th:insert="~{back-end/forum/subnavForum :: subnav('all')}"></div>
-			
-			<!--main 以下為頁面主要內容 -->
-			<main class="content-area-main">
-                <h3><a class="navbar-brand" th:href="@{/forum/admin/selectPage}">前往文章查詢</a></h3>
+<div class="app-container">
+    <!--前台:側邊攔，通用樣式，不用改-->
+    <div th:insert="~{/navBackTemplate :: navbar}"></div>
 
-                <div>
-                    <label>搜尋標題：<input type="text" id="searchTitle"></label>
-                    <label>搜尋編號：<input type="text" id="searchId"></label>
-                </div>
+    <div class="main-content">
+        <!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
+        <div th:insert="~{back-end/forum/subnavForum :: subnav('all')}"></div>
+
+        <!--main 以下為頁面主要內容 -->
+        <main class="content-area-main">
+            <h3><a class="navbar-brand" th:href="@{/forum/admin/selectPage}">前往文章查詢</a></h3>
+
+            <div>
+                <label>搜尋標題：<input type="text" id="searchTitle"></label>
+                <label>搜尋編號：<input type="text" id="searchId"></label>
+            </div>
 
                 <table id="articleTable" class="display" style="width: 100%">
                     <thead>
@@ -46,7 +44,7 @@
                         <th>按讚數</th>
                         <th>建立時間</th>
 <!--                        <th>內容預覽</th>-->
-                        <th>編輯文章</th>
+                        <th>編輯文章與留言</th>
 <!--                        <th>刪除</th>-->
                     </tr>
                     </thead>
@@ -84,7 +82,7 @@
 <!--                                <form method="post" th:action="@{/article/delete}" style="margin-bottom: 0px;"-->
 <!--                                      onsubmit="return confirm('確定要刪除這篇文章嗎？');">-->
 <!--                                    <input type="submit" value="刪除">-->
-<!--                                    <input type="hidden" name="artId" th:value="${article.artId}">-->
+<!--                                    <input type="hidden" name="ARTICLE_ID" th:value="${article.ARTICLE_ID}">-->
 <!--                                </form>-->
 <!--                            </td>-->
                         </tr>
@@ -92,50 +90,50 @@
                     </tbody>
                 </table>
 
-            </main>
-        </div>
-	</div>
-    
-    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
-    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-    <script src="../js/notification/websocket.js"></script>
+        </main>
+    </div>
+</div>
+
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="../js/notification/websocket.js"></script>
 
 <!--  前端使用DataTable排序  -->
-    <script>
-        $(document).ready(function () {
-            const table = $('#articleTable').DataTable({
-                "lengthMenu": [10, 20, 50, 100],
-                "searching": true,
-                "paging": true,
-                "ordering": true,
-                "language": {
-                    "lengthMenu": "顯示 _MENU_ 筆",
-                    "zeroRecords": "沒有符合的結果",
-                    "info": "第 _START_ 至 _END_ 筆，共 _TOTAL_ 筆",
-                    "infoEmpty": "目前沒有資料",
-                    "search": "快速搜尋:",
-                    "paginate": {
-                        "first": "第一頁",
-                        "last": "最後一頁",
-                        "next": "下一頁",
-                        "previous": "上一頁"
-                    }
-                },
-                "columnDefs": [
-                    { "orderable": false, "targets": [7] } // 禁用「編輯文章」那欄排序
-                ]
-            });
-
-            // 單欄搜尋綁定
-            $('#searchTitle').on('keyup change', function () {
-                table.column(1).search(this.value).draw();  // 標題是第2欄（從0開始）
-            });
-
-            $('#searchId').on('keyup change', function () {
-                table.column(0).search(this.value).draw();  // 編號是第1欄
-            });
+<script>
+    $(document).ready(function () {
+        const table = $('#articleTable').DataTable({
+            "lengthMenu": [10, 20, 50, 100],
+            "searching": true,
+            "paging": true,
+            "ordering": true,
+            "language": {
+                "lengthMenu": "顯示 _MENU_ 筆",
+                "zeroRecords": "沒有符合的結果",
+                "info": "第 _START_ 至 _END_ 筆，共 _TOTAL_ 筆",
+                "infoEmpty": "目前沒有資料",
+                "search": "快速搜尋:",
+                "paginate": {
+                    "first": "第一頁",
+                    "last": "最後一頁",
+                    "next": "下一頁",
+                    "previous": "上一頁"
+                }
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": [7] } // 禁用「編輯文章」那欄排序
+            ]
         });
-    </script>
+
+        // 單欄搜尋綁定
+        $('#searchTitle').on('keyup change', function () {
+            table.column(1).search(this.value).draw();  // 標題是第2欄（從0開始）
+        });
+
+        $('#searchId').on('keyup change', function () {
+            table.column(0).search(this.value).draw();  // 編號是第1欄
+        });
+    });
+</script>
 
     
 </body>

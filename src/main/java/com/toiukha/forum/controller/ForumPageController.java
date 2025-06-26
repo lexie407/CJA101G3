@@ -70,8 +70,6 @@ public class ForumPageController {
     public String editArticle(){
         return "front-end/forum/add-article";
 
-
-
     }
 
 }

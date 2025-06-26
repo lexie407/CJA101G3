@@ -33,6 +33,7 @@ public class ArticlePicturesController {
         return ResponseEntity.ok(pic.getPicId());
     }
 
+    // 回傳base64
     @GetMapping("/showBase64/{id}")
     public ResponseEntity<String> getBase64Image(@PathVariable Integer id) {
         Optional<ArticlePictures> opt = apService.findById(id);

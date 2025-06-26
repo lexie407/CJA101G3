@@ -1,0 +1,78 @@
+/* 上方次導覽列修改 */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.subnavForum{
+    display: flex;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: var(--md-sys-color-primary-container);
+    height: 60px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.top-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-container {
+    position: relative;
+    background-color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    width: 240px;
+}
+
+.search-container input {
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    padding: 6px 8px;
+    font-size: 14px;
+    background-color: transparent;
+    color: var(--md-sys-color-on-surface);
+}
+
+.search-container .search-icon {
+    font-size: 20px;
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.top-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-sys-color-on-primary-container);
+);
+}
+
+.icon-button .material-icons {
+    font-size: 24px;
+    transition: color 0.2s ease;
+}
+
+.icon-button:hover .material-icons {
+    color: var(--md-sys-color-primary);
+}
