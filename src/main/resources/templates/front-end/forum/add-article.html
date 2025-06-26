@@ -23,7 +23,7 @@
         <main class="content-area-main">
             <h2>新增文章</h2>
             <!-- 					放自己需要的內容 -->
-            <form style="padding: 10px" th:action="@{/forum/article/insert}" method="post" enctype="multipart/form-data">
+            <form  style="padding: 10px" th:action="@{/forum/article/insert}" method="post" enctype="multipart/form-data" id="addArticleForm" >
                 <label for="artTitle">文章標題</label>
                 <input type="text" id="artTitle" name="artTitle" required value="測試用123">
                 <br>
@@ -102,29 +102,30 @@
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function (){
-        document.querySelector('form').addEventListener('submit', async function (e) {
-            e.preventDefault(); // 暫時攔截送出，避免頁面跳轉
+        document.getElementById('addArticleForm').addEventListener('submit', async function (e) {
+            e.preventDefault(); // 一律先攔截
 
+            // 文章內容檢查
             // const content = quill.getText().trim(); 這樣是純文字內容
             const content = quill.root.innerHTML.trim();
 
             if (!content) {
                 alert('文章內容為必填！');
-                e.preventDefault();
                 return; // 不送出
             }
 
-            //將 HTML 填入隱藏的 textarea 中
+            // 將 HTML 填入隱藏的 textarea 中
             document.getElementById('artCon').value = content;
 
-            console.log("寫入到textarea:", document.getElementById('artCon').value);
+            // 確認無誤，手動送出表單
+            e.target.submit();
         });
     });
 
     // 用來查看編輯器目前內容(測試用)
     function getContent() {
-        const html = quill.root.innerHTML;
-        document.getElementById('output').textContent = html;
+        const quillhtml = quill.root.innerHTML;
+        document.getElementById('output').textContent = quillhtml;
     }
 </script>
 
