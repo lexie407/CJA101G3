@@ -1,219 +1,226 @@
 <!DOCTYPE html>
 <html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>活動詳細 | 島遊kha</title>
-  <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
-  <link rel="stylesheet" th:href="@{/css/light.css}" />
-  <link rel="stylesheet" th:href="@{/css/style.css}" />
-  <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
-</head>
-<body class="light">
-<div class="app-container">
-  <div th:insert="~{/navTemplate :: navbar}"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>活動詳細 | 島遊kha</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/light.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
+  </head>
+  <body class="light">
+    <div class="app-container">
+      <div th:insert="~{/navTemplate :: navbar}"></div>
 
-  <div class="main-content act-page">
-    <div th:insert="~{/subnavActFront :: subnav('my')}"></div>
+      <div class="main-content act-page">
+        <div th:insert="~{/subnavActFront :: subnav('my')}"></div>
 
-    <main class="content-area-main act-area">
-      <div class="content-area-main" th:object="${actVo}">
-        <div class="act-detail-container">
-          <div class="act-detail-header">
-            <h1 class="act-detail-title" th:text="*{actName}">活動名稱</h1>
-            <p
-                    class="act-detail-meta"
-                    th:text="'活動編號: ' + *{actId} + ' | 團主: ' + *{hostId}"
-            >
-              活動編號: 1 | 團主: 1
-            </p>
-            <span
-                    class="act-status"
-                    th:classappend="*{recruitStatus == 0} ? 'recruiting' : 'ended'"
-                    th:text="*{recruitStatus == 0} ? '招募中' : '已結束'"
-            >招募中</span
-            >
-          </div>
-
-          <div class="act-detail-content">
-            <div class="act-detail-image-container">
-              <img
-                      th:if="*{actImg != null && actImg.length > 0}"
-                      th:src="@{/api/act/image/{actId}(actId=*{actId})}"
-                      alt="活動圖片"
-                      class="act-detail-image"
-              />
-              <div
-                      th:unless="*{actImg != null && actImg.length > 0}"
-                      class="act-card-image-placeholder"
-                      style="height: 300px"
-              >
-                無圖片
-              </div>
-            </div>
-
-            <div class="act-detail-info">
-              <div class="act-info-section">
-                <h3>活動說明</h3>
+        <main class="content-area-main act-area">
+          <div class="content-area-main" th:object="${actVo}">
+            <div class="act-detail-container">
+              <div class="act-detail-header">
+                <h1 class="act-detail-title" th:text="*{actName}">活動名稱</h1>
                 <p
-                        th:text="(*{actDesc != null and actDesc != ''}) ? *{actDesc} : '無說明'"
+                  class="act-detail-meta"
+                  th:text="'活動編號: ' + *{actId} + ' | 團主: ' + *{hostId}"
                 >
-                  活動說明內容...
+                  活動編號: 1 | 團主: 1
                 </p>
-              </div>
+                <span
+                  class="act-status"
+                  th:classappend="*{recruitStatus == 0} ? 'recruiting' :
+                                 (*{recruitStatus == 1} ? 'full' :
+                                 (*{recruitStatus == 2} ? 'failed' :
+                                 (*{recruitStatus == 3} ? 'cancelled' :
+                                 (*{recruitStatus == 4} ? 'frozen' : 'ended'))))"
+                  th:text="*{recruitStatus == 0} ? '招募中' :
+                           (*{recruitStatus == 1} ? '成團' :
+                           (*{recruitStatus == 2} ? '未成團' :
+                           (*{recruitStatus == 3} ? '團主取消' :
+                           (*{recruitStatus == 4} ? '系統凍結' : '已結束'))))"
+                  >狀態</span>
+                </div>
 
-              <div class="act-info-section">
-                <h3>活動資訊</h3>
-                <div class="act-info-grid">
-                  <div class="act-info-item">
-                    <span class="act-info-label">報名開始</span>
-                    <span
-                            class="act-info-value"
-                            th:text="${formattedSignupStart}"
-                    ></span>
+              <div class="act-detail-content">
+                <div class="act-detail-image-container">
+                  <img
+                    th:if="*{actImg != null && actImg.length > 0}"
+                    th:src="@{/api/act/image/{actId}(actId=*{actId})}"
+                    alt="活動圖片"
+                    class="act-detail-image"
+                  />
+                  <div
+                    th:unless="*{actImg != null && actImg.length > 0}"
+                    class="act-card-image-placeholder"
+                    style="height: 300px"
+                  >
+                    無圖片
                   </div>
-                  <div class="act-info-item">
-                    <span class="act-info-label">報名截止</span>
-                    <span
-                            class="act-info-value"
-                            th:text="${formattedSignupEnd}"
-                    ></span>
+                </div>
+
+                <div class="act-detail-info">
+                  <div class="act-info-section">
+                    <h3>活動說明</h3>
+                    <p
+                      th:text="(*{actDesc != null and actDesc != ''}) ? *{actDesc} : '無說明'"
+                    >
+                      活動說明內容...
+                    </p>
                   </div>
-                  <div class="act-info-item">
-                    <span class="act-info-label">活動開始</span>
-                    <span
-                            class="act-info-value"
-                            th:text="${formattedActStart}"
-                    ></span>
-                  </div>
-                  <div class="act-info-item">
-                    <span class="act-info-label">活動結束</span>
-                    <span
-                            class="act-info-value"
-                            th:text="${formattedActEnd}"
-                    ></span>
-                  </div>
-                  <div class="act-info-item">
-                    <span class="act-info-label">人數限制</span>
-                    <span
-                            class="act-info-value"
-                            th:text="((*{signupCnt} != null) ? *{signupCnt} : 0) + '/' + *{maxCap}"
-                    ></span>
-                  </div>
-                  <div class="act-info-item">
-                    <span class="act-info-label">行程編號</span>
-                    <span class="act-info-value" th:text="*{itnId}"></span>
+
+                  <div class="act-info-section">
+                    <h3>活動資訊</h3>
+                    <div class="act-info-grid">
+                      <div class="act-info-item">
+                        <span class="act-info-label">報名開始</span>
+                        <span
+                          class="act-info-value"
+                          th:text="${formattedSignupStart}"
+                        ></span>
+                      </div>
+                      <div class="act-info-item">
+                        <span class="act-info-label">報名截止</span>
+                        <span
+                          class="act-info-value"
+                          th:text="${formattedSignupEnd}"
+                        ></span>
+                      </div>
+                      <div class="act-info-item">
+                        <span class="act-info-label">活動開始</span>
+                        <span
+                          class="act-info-value"
+                          th:text="${formattedActStart}"
+                        ></span>
+                      </div>
+                      <div class="act-info-item">
+                        <span class="act-info-label">活動結束</span>
+                        <span
+                          class="act-info-value"
+                          th:text="${formattedActEnd}"
+                        ></span>
+                      </div>
+                      <div class="act-info-item">
+                        <span class="act-info-label">人數限制</span>
+                        <span
+                          class="act-info-value"
+                          th:text="((*{signupCnt} != null) ? *{signupCnt} : 0) + '/' + *{maxCap}"
+                        ></span>
+                      </div>
+                      <div class="act-info-item">
+                        <span class="act-info-label">行程編號</span>
+                        <span class="act-info-value" th:text="*{itnId}"></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div
-                class="act-card-actions"
-                style="justify-content: center; margin-top: 24px"
-        >
-          <!-- 情況 3: 已登入且是團主 -> 不顯示任何按鈕 -->
-          <div th:if="${isHost}">
-            <a
-                    th:href="@{/act/member/edit/{id}(id=*{actId})}"
-                    class="act-btn act-btn-primary"
-            >編輯活動</a
+            <div
+              class="act-card-actions"
+              style="justify-content: center; margin-top: 24px"
             >
-          </div>
+              <!-- 情況 3: 已登入且是團主 -> 不顯示任何按鈕 -->
+              <div th:if="${isHost}">
+                <a
+                  th:href="@{/act/member/edit/{id}(id=*{actId})}"
+                  class="act-btn act-btn-primary"
+                  >編輯活動</a
+                >
+              </div>
 
-          <!-- 非團主才顯示 "加入" 或 "退出" -->
-          <div th:unless="${isHost}">
-            <!-- 情況 2: 已登入且是團員 -> 顯示 "退出" -->
-            <button
-                    th:if="${isParticipant}"
-                    id="cancelBtn"
-                    class="act-btn act-btn-danger"
-            >
-              取消報名
-            </button>
+              <!-- 非團主才顯示 "加入" 或 "退出" -->
+              <div th:unless="${isHost}">
+                <!-- 情況 2: 已登入且是團員 -> 顯示 "退出" -->
+                <button
+                  th:if="${isParticipant}"
+                  id="cancelBtn"
+                  class="act-btn act-btn-danger"
+                >
+                  取消報名
+                </button>
 
-            <!-- 情況 1: 未登入或已登入非團員 -> 顯示 "加入" (且活動需在招募中) -->
-            <button
-                    th:if="${!isParticipant and actVo.recruitStatus == 0}"
-                    id="signupBtn"
-                    class="act-btn act-btn-primary"
-            >
-              報名參加
-            </button>
+                <!-- 情況 1: 未登入或已登入非團員 -> 顯示 "加入" (且活動需在招募中) -->
+                <button
+                  th:if="${!isParticipant and actVo.recruitStatus == 0}"
+                  id="signupBtn"
+                  class="act-btn act-btn-primary"
+                >
+                  報名參加
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
-    </main>
-  </div>
-</div>
+    </div>
 
-<script th:inline="javascript">
-  /*<![CDATA[*/
-  const actId = /*[[${actVo.actId}]]*/ null;
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const actId = /*[[${actVo.actId}]]*/ null;
 
-  // 處理開發模式和正式模式的不同 session 格式
-  let memId = null;
-  const sessionMember = /*[[${session.member}]]*/ null;
+      // 處理開發模式和正式模式的不同 session 格式
+      let memId = null;
+      const sessionMember = /*[[${session.member}]]*/ null;
 
-  if (sessionMember) {
-    if (
-            typeof sessionMember === "string" &&
-            sessionMember.startsWith("DEV_USER_")
-    ) {
-      // 開發模式：從 "DEV_USER_30" 提取數字
-      memId = parseInt(sessionMember.substring(9));
-    } else if (sessionMember.memId) {
-      // 正式模式：使用 MembersVO 的 memId
-      memId = sessionMember.memId;
-    }
-  }
-
-  const isHost = /*[[${isHost}]]*/ false;
-
-  // 只有在非團主時才需要綁定事件
-  if (!isHost) {
-    const signupBtn = document.getElementById("signupBtn");
-    if (signupBtn) {
-      signupBtn.addEventListener("click", () => {
-        if (!memId) {
-          alert("請先登入再報名！");
-          window.location.href = "/members/login"; // 導向登入頁
-          return;
+      if (sessionMember) {
+        if (
+          typeof sessionMember === "string" &&
+          sessionMember.startsWith("DEV_USER_")
+        ) {
+          // 開發模式：從 "DEV_USER_30" 提取數字
+          memId = parseInt(sessionMember.substring(9));
+        } else if (sessionMember.memId) {
+          // 正式模式：使用 MembersVO 的 memId
+          memId = sessionMember.memId;
         }
-        fetch(`/api/participate/${actId}/signup/${memId}`, {
-          method: "POST",
-        }).then((response) => {
-          if (response.ok) {
-            alert("報名成功！");
-            location.reload();
-          } else {
-            alert("報名失敗，可能人數已滿或已過報名時間");
-          }
-        });
-      });
-    }
+      }
 
-    const cancelBtn = document.getElementById("cancelBtn");
-    if (cancelBtn) {
-      cancelBtn.addEventListener("click", () => {
-        if (confirm("確定要取消報名嗎？")) {
-          fetch(`/api/participate/${actId}/signup/${memId}`, {
-            method: "DELETE",
-          }).then((response) => {
-            if (response.ok) {
-              alert("取消報名成功！");
-              location.reload();
-            } else {
-              alert("取消報名失敗，請稍後再試");
+      const isHost = /*[[${isHost}]]*/ false;
+
+      // 只有在非團主時才需要綁定事件
+      if (!isHost) {
+        const signupBtn = document.getElementById("signupBtn");
+        if (signupBtn) {
+          signupBtn.addEventListener("click", () => {
+            if (!memId) {
+              alert("請先登入再報名！");
+              window.location.href = "/members/login"; // 導向登入頁
+              return;
+            }
+            fetch(`/api/participate/${actId}/signup/${memId}`, {
+              method: "POST",
+            }).then((response) => {
+              if (response.ok) {
+                alert("報名成功！");
+                location.reload();
+              } else {
+                alert("報名失敗，可能人數已滿或已過報名時間");
+              }
+            });
+          });
+        }
+
+        const cancelBtn = document.getElementById("cancelBtn");
+        if (cancelBtn) {
+          cancelBtn.addEventListener("click", () => {
+            if (confirm("確定要取消報名嗎？")) {
+              fetch(`/api/participate/${actId}/signup/${memId}`, {
+                method: "DELETE",
+              }).then((response) => {
+                if (response.ok) {
+                  alert("取消報名成功！");
+                  location.reload();
+                } else {
+                  alert("取消報名失敗，請稍後再試");
+                }
+              });
             }
           });
         }
-      });
-    }
-  }
-  /*]]>*/
-</script>
-</body>
+      }
+      /*]]>*/
+    </script>
+  </body>
 </html>

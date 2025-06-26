@@ -27,13 +27,14 @@ public class ActServiceImpl implements ActService {
     @Override
     public void addAct(ActDTO actDto) {
         ActVO actVo = actDto.toVO(); // 前台傳入 DTO，於此轉為 VO 後交由 JPA 儲存
-        
         // 如果沒有上傳圖片，使用預設圖片
         if (actVo.getActImg() == null || actVo.getActImg().length == 0) {
             actVo.setActImg(defaultImageService.getDefaultImage());
         }
-        
+        // 不要手動設 signupCnt，讓 signup 方法自動處理
         actRepo.save(actVo);
+        // 團主自動加入 participant，並自動+1人數
+        participateService.signup(actVo.getActId(), actVo.getHostId());
     }
 
     @Override
@@ -56,6 +57,12 @@ public class ActServiceImpl implements ActService {
 
     @Override
     public void deleteAct(Integer actId){
+        // 先刪除所有參加者資料，避免外鍵約束錯誤
+        participateService.getParticipants(actId).forEach(memId -> {
+            try {
+                participateService.cancel(actId, memId);
+            } catch (Exception ignored) {}
+        });
         actRepo.deleteById(actId);
     }
 
@@ -118,15 +125,21 @@ public class ActServiceImpl implements ActService {
     public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName, 
                                            Integer hostId, LocalDateTime actStart, 
                                            Integer maxCap, Pageable pageable) {
-        // 商業邏輯：強制設定 isPublic=1，確保只搜尋公開活動
-        // 這裡不允許外部控制 isPublic 參數，防止前端篡改查看私人活動
-        Byte isPublic = (byte) 1; // 強制公開活動
-        
+        // 強制公開活動
+        Byte isPublic = (byte) 1;
         Specification<ActVO> spec = ActSpecification.buildSpec(
             recruitStatus, actName, hostId, isPublic, actStart, maxCap
         );
-        
-        Page<ActVO> actPage = actRepo.findAll(spec, pageable);
+        // 依 recruitStatus（招募中優先）再依 actStart 降冪排序
+        Pageable sortedPageable = org.springframework.data.domain.PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            org.springframework.data.domain.Sort.by(
+                org.springframework.data.domain.Sort.Order.asc("recruitStatus"),
+                org.springframework.data.domain.Sort.Order.desc("actStart")
+            )
+        );
+        Page<ActVO> actPage = actRepo.findAll(spec, sortedPageable);
         return actPage.map(this::convertToCardDTO);
     }
 

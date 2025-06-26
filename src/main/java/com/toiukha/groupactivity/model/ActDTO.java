@@ -231,6 +231,16 @@ public class ActDTO implements Serializable {
         return true;
     }
 
+    /**
+     * 驗證：人數上限不可小於目前已報名人數
+     */
+    @AssertTrue(message = "人數上限不可小於目前已報名人數")
+    public boolean isMaxCapValid() {
+        if (maxCap != null && signupCnt != null) {
+            return maxCap >= signupCnt;
+        }
+        return true;
+    }
 
     /**
      * 將 DTO 內容轉為 VO 以進行資料庫操作

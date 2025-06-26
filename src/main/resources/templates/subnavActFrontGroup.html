@@ -1,0 +1,45 @@
+<!-- src/main/resources/templates/fragments/subnavActBack.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="subnav(activeItem)">
+      <header class="secondary-nav">
+        <ul>
+          <li>
+            <!--後續要動態帶入actId-->
+<!--            <a th:href="@{/act/group/{actId}/home}"-->
+            <a th:href="@{/act/group/5/home}"
+              th:classappend="${activeItem == 'home' ? 'active' : ''}"
+              >團隊主頁</a
+            >
+          </li>
+          <li>
+            <a th:href="@{/act/group/5/chat}"
+              th:classappend="${activeItem == 'chat' ? 'active' : ''}"
+              >團隊聊天</a
+            >
+          </li>
+          <li>
+            <a th:href="@{/act/group/5/expense}"
+               th:classappend="${activeItem == 'expense' ? 'active' : ''}"
+            >團隊帳本</a
+            >
+          </li>
+          <!--暫時保留，如果揪團的日常管理有複雜到需要使用，再啟用-->
+<!--          <li>-->
+<!--            <a th:href="@{/act/group/5/editgroup}"-->
+<!--               th:classappend="${activeItem == 'editgroup' ? 'active' : ''}"-->
+<!--            >管理揪團</a-->
+<!--            >-->
+<!--          </li>-->
+          <li>
+            <a th:href="@{/act/member/search}"
+               th:classappend="${activeItem == 'search' ? 'active' : ''}"
+            >尋找其他活動</a
+            >
+          </li>
+        </ul>
+      </header>
+    </div>
+  </body>
+</html>

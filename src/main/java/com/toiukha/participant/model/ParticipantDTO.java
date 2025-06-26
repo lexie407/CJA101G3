@@ -15,6 +15,7 @@ public class ParticipantDTO implements Serializable {
     private String memType;
     private LocalDateTime joinTime;
     private Byte joinStatus;
+    private String memName; // 會員姓名
 
     // ===== Constructor =====
     
@@ -73,6 +74,14 @@ public class ParticipantDTO implements Serializable {
         this.joinStatus = joinStatus;
     }
     
+    public String getMemName() {
+        return memName;
+    }
+    
+    public void setMemName(String memName) {
+        this.memName = memName;
+    }
+    
     // ===== Utility Methods =====
     
     /**
@@ -88,6 +97,12 @@ public class ParticipantDTO implements Serializable {
         );
     }
     
+    public static ParticipantDTO fromVO(ParticipantVO vo, String memName) {
+        ParticipantDTO dto = fromVO(vo);
+        dto.setMemName(memName);
+        return dto;
+    }
+    
     @Override
     public String toString() {
         return "ParticipantDTO{" +
@@ -96,6 +111,7 @@ public class ParticipantDTO implements Serializable {
                 ", memType='" + memType + '\'' +
                 ", joinTime=" + joinTime +
                 ", joinStatus=" + joinStatus +
+                ", memName='" + memName + '\'' +
                 '}';
     }
 } 

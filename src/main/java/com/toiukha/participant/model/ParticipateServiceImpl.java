@@ -3,6 +3,7 @@ package com.toiukha.participant.model;
 import com.toiukha.groupactivity.model.ActRepository;
 import com.toiukha.groupactivity.model.ActStatus;
 import com.toiukha.groupactivity.model.ActVO;
+import com.toiukha.members.model.MembersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,9 @@ public class ParticipateServiceImpl implements ParticipateService {
 
     @Autowired
     private ParticipateRepository participateRepository;
+
+    @Autowired
+    private MembersService membersService;
 
     @Override
     public void signup(Integer actId, Integer memId) {
@@ -85,7 +89,7 @@ public class ParticipateServiceImpl implements ParticipateService {
     public List<ParticipantDTO> getParticipantsAsDTO(Integer actId) {
         List<ParticipantVO> participants = participateRepository.findByActId(actId);
         return participants.stream()
-                .map(ParticipantDTO::fromVO)
+                .map(vo -> ParticipantDTO.fromVO(vo, membersService.getOneMember(vo.getMemId()) != null ? membersService.getOneMember(vo.getMemId()).getMemName() : null))
                 .collect(Collectors.toList());
     }
     
@@ -106,5 +110,16 @@ public class ParticipateServiceImpl implements ParticipateService {
         return joinedActivities.stream()
                 .map(ParticipantDTO::fromVO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateJoinStatus(Integer actId, Integer memId, Byte joinStatus) {
+        if (joinStatus == null || (joinStatus != 1 && joinStatus != 2)) {
+            throw new IllegalArgumentException("joinStatus 只能為 1(已參加) 或 2(已剔除)");
+        }
+        ParticipantVO part = participateRepository.findByActIdAndMemId(actId, memId)
+                .orElseThrow(() -> new IllegalArgumentException("找不到該成員"));
+        part.setJoinStatus(joinStatus);
+        participateRepository.save(part);
     }
 }
