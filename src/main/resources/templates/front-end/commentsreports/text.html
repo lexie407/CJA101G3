@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增留言與操作</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        input[type="file"] {
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        .comments-section {
+            margin-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 20px;
+        }
+        .comment-item {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            position: relative; /* 為了定位菜單 */
+        }
+        .comment-item strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .comment-item p {
+            margin: 5px 0;
+            color: #666;
+            line-height: 1.5;
+        }
+        .comment-item img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .comment-item .comment-time {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        /* 三點選單按鈕 */
+        .comment-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .actions-button {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #888;
+            padding: 0 5px;
+        }
+        .actions-button:hover {
+            color: #333;
+        }
+        .dropdown-menu {
+            position: absolute;
+            top: 100%; /* 位於按鈕下方 */
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+            min-width: 120px;
+            display: none; /* 預設隱藏 */
+        }
+        .dropdown-menu.show {
+            display: block; /* 顯示 */
+        }
+        .dropdown-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            color: #333;
+            font-size: 0.95em;
+        }
+        .dropdown-menu button:hover {
+            background-color: #f0f0f0;
+        }
+        .dropdown-menu button.delete {
+            color: #dc3545;
+        }
+        .dropdown-menu button.delete:hover {
+            background-color: #f8d7da;
+        }
+
+
+        /* 燈箱 (Modal) 樣式 */
+        .modal {
+            display: none; /* 預設隱藏 */
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4); /* 半透明背景 */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.show {
+            display: flex; /* 顯示燈箱 */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto; /* 垂直水平居中 */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .modal-content p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+        .modal-buttons button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .modal-buttons .confirm-btn {
+            background-color: #dc3545; /* 紅色用於刪除 */
+            color: white;
+            border: none;
+        }
+        .modal-buttons .confirm-btn.report { /* 檢舉可以用不同的顏色 */
+            background-color: #ffc107;
+            color: #333;
+        }
+        .modal-buttons .confirm-btn:hover {
+            opacity: 0.9;
+        }
+        .modal-buttons .cancel-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+        }
+        .modal-buttons .cancel-btn:hover {
+            background-color: #5a6268;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>新增留言</h1>
+
+        <form id="commentForm" enctype="multipart/form-data">
+            <label for="commentAuthor">你的名字:</label>
+            <input type="text" id="commentAuthor" name="author" required>
+
+            <label for="commentContent">留言內容:</label>
+            <textarea id="commentContent" name="content" required></textarea>
+
+            <label for="commentImage">上傳圖片 (可選):</label>
+            <input type="file" id="commentImage" name="commentImage" accept="image/*">
+
+            <button type="submit">提交留言</button>
+        </form>
+
+        <div id="statusMessage" class="message" style="display: none;"></div>
+
+        <div class="comments-section">
+            <h2>所有留言</h2>
+            <div id="commentsList">
+                <div class="comment-item" data-comment-id="default1" data-user-id="user1">
+                    <strong>匿名使用者</strong>
+                    <p>這是一條預設的留言。您可以點擊右上方三點按鈕進行操作。</p>
+                    <p class="comment-time">時間: 2023-10-26 10:00:00</p>
+                    <div class="comment-actions">
+                        <button class="actions-button" aria-expanded="false">...</button>
+                        <div class="dropdown-menu">
+                            <button class="action-report" data-action="report">檢舉</button>
+                            <button class="action-edit" data-action="edit">修改</button>
+                            <button class="action-delete" data-action="delete">刪除</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item" data-comment-id="default2" data-user-id="user2">
+                    <strong>另一位使用者</strong>
+                    <p>這是一條其他使用者的留言。</p>
+                    <p class="comment-time">時間: 2023-10-26 11:30:00</p>
+                    <div class="comment-actions">
+                        <button class="actions-button" aria-expanded="false">...</button>
+                        <div class="dropdown-menu">
+                            <button class="action-report" data-action="report">檢舉</button>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="actionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <div class="modal-buttons">
+                <button class="cancel-btn">取消</button>
+                <button id="confirmActionButton" class="confirm-btn">確認</button>
+            </div>
+        </div>
+    </div>
+
+
+	<script src="../js/comments/comments.js"></script>
+
+</body>
+</html>
