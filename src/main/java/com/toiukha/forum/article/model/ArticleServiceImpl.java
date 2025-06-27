@@ -74,7 +74,7 @@ public class ArticleServiceImpl implements ArticleService {
                 idDescComp.reversed() // 直接使用reversed()方法反轉比較器(Comparator)的順序
         );
 
-        // 使用方法參照(語法糖)建立 Comparator，根據 getArtCreTime() 進行升冪排序，等同於 Lambda 表達式：(dto1, dto2) -> dto1.getArtCreTime().compareTo(dto2.getArtCreTime())
+        // 使用方法參考(語法糖)建立 Comparator，根據 getArtCreTime() 進行升冪排序，等同於 Lambda 表達式：(dto1, dto2) -> dto1.getArtCreTime().compareTo(dto2.getArtCreTime())
         sortMap.put(new SortKey(ArticleSortField.ARTICLE_CREATINE, SortDirection.ASC), Comparator.comparing(ArticleDTO::getArtCreTime));
         sortMap.put(new SortKey(ArticleSortField.ARTICLE_CREATINE, SortDirection.DESC), Comparator.comparing(ArticleDTO::getArtCreTime).reversed());
     }

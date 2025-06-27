@@ -66,8 +66,8 @@ public class ForumPageController {
     }
 
     // 導向新增文章頁面
-    @GetMapping("/article/edit")
-    public String editArticle(){
+    @GetMapping("/article/add")
+    public String addArticle(){
         return "front-end/forum/add-article";
 
     }
