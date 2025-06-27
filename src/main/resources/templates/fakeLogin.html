@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>虛擬登入</title>
+</head>
+
+<body>
+    <h2>會員登入</h2>
+    <form method="post" th:action="@{/fakeLogin}">
+        <label>會員編號(memId)：</label>
+        <input type="text" name="memId" placeholder="請輸入會員編號" required />
+        <button type="submit">登入</button>
+    </form>
+    <hr />
+    <h2>廠商登入</h2>
+    <form method="post" th:action="@{/fakeStoreLogin}">
+        <label>廠商編號(storeId)：</label>
+        <input type="text" name="storeId" placeholder="請輸入廠商編號" required />
+        <button type="submit">登入</button>
+    </form>
+    <hr />
+    <form method="get" th:action="@{/getCurrentMemId}" target="_blank" style="display:inline;">
+        <button type="submit">查詢目前登入會員編號</button>
+    </form>
+    <form method="get" th:action="@{/getCurrentStoreId}" target="_blank" style="display:inline;">
+        <button type="submit">查詢目前登入廠商編號</button>
+    </form>
+</body>
+
+</html>

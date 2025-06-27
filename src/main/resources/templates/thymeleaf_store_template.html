@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
+    
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navStoreTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+<!-- 					放自己需要的內容 -->
+                </ul>
+            </header>
+			<main class="content-area-main">
+<!-- 					放自己需要的內容 -->
+            </main>
+		</div>
+	</div>
+    
+</body>
+</html>

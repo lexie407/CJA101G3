@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>優惠券明細</title>
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navStoreTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                    <div th:insert="~{/subnavCoupon_Store_back::subnav(${activeItem})}"></div>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <div class="mdc-coupon-info-card">
+                    <div class="mdc-coupon-info-list">
+                        <div><span class="mdc-coupon-label">名稱：</span><span th:text="${couponVO.couName}"></span></div>
+                        <div><span class="mdc-coupon-label">折扣金額：</span><span th:text="${couponVO.discValue}"></span>
+                        </div>
+                        <div><span class="mdc-coupon-label">開始時間：</span><span
+                                th:text="${#temporals.format(couponVO.startTime, 'yyyy-MM-dd HH:mm')}"></span></div>
+                        <div><span class="mdc-coupon-label">結束時間：</span><span
+                                th:text="${#temporals.format(couponVO.endTime, 'yyyy-MM-dd HH:mm')}"></span></div>
+                    </div>
+                </div>
+                <style>
+                    .mdc-coupon-info-card {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 24px;
+                        background: #f5f7fa;
+                        border-radius: 12px;
+                        box-shadow: 0 1.5px 4px rgba(25, 118, 210, 0.08);
+                        padding: 16px 24px;
+                        margin-bottom: 24px;
+                        max-width: 420px;
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+
+                    .mdc-coupon-info-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                        font-size: 1.05rem;
+                    }
+
+                    .mdc-coupon-label {
+                        color: #1976d2;
+                        font-weight: 600;
+                        min-width: 70px;
+                        display: inline-block;
+                    }
+                </style>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>所有員工資料 - listAllEmp.html</title>
+
+    <!-- 引入 jQuery 和 DataTables 的 CSS 和 JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.jqueryui.min.css" />
+
+    <!-- jQuery DataTables 設定 -->
+    <script>
+        $(document).ready(function () {
+            $('#example').DataTable({
+                "lengthMenu": [3, 5, 10, 20, 50, 100],
+                "searching": true,  // 搜尋功能
+                "paging": true,     // 分頁功能
+                "ordering": true,   // 排序功能
+                "language": {
+                    "processing": "處理中...",
+                    "loadingRecords": "載入中...",
+                    "lengthMenu": "顯示 _MENU_ 筆結果",
+                    "zeroRecords": "沒有符合的結果",
+                    "info": "顯示第 _START_ 至 _END_ 筆結果，共<font color=red> _TOTAL_ </font>筆",
+                    "infoEmpty": "顯示第 0 至 0 筆結果，共 0 筆",
+                    "infoFiltered": "(從 _MAX_ 筆結果中過濾)",
+                    "search": "搜尋:",
+                    "paginate": {
+                        "first": "第一頁",
+                        "previous": "上一頁",
+                        "next": "下一頁",
+                        "last": "最後一頁"
+                    },
+                    "aria": {
+                        "sortAscending": ": 升冪排列",
+                        "sortDescending": ": 降冪排列"
+                    }
+                }
+            });
+
+        });
+    </script>
+
+    <style>
+        body {
+            margin: 1rem 12rem 2rem 12rem;
+        }
+
+        .navbar {
+            background-color: #28a745;
+        }
+
+        .navbar h2 {
+            color: white;
+            margin-top: 10px;
+        }
+
+        .navbar .navbar-brand img {
+            width: 50px;
+            margin-right: 10px;
+        }
+
+        /* 將表格轉換為卡片式顯示 */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* 進一步縮小商品卡片的寬度和內邊距 */
+        .card {
+            width: 200px;
+            /* 調整為更小的寬度 */
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            /* 減少內邊距 */
+            text-align: center;
+            transition: transform 0.3s ease;
+            font-size: 12px;
+            /* 減小文字大小 */
+        }
+
+        /* 圖片部分進一步縮小 */
+        .card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        /* 卡片懸浮效果 */
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        /* 按鈕樣式 */
+        .card button {
+            background-color: #28a745;
+            color: white;
+            padding: 4px 8px;
+            /* 減小按鈕的內邊距 */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            /* 減小按鈕文字大小 */
+        }
+
+        .card button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top justify-content-center">
+        <div align="center">
+            <h2>所有商品 - listAllItem.html</h2>
+            <h3><a class="navbar-brand" th:href="@{/item/select_page}"><img th:src="@{/images/back1.gif}">回查詢頁<label
+                        th:text="${success}"></label></a></h3>
+        </div>
+    </nav>
+
+    <div class="container">
+        <th:block th:each="itemVO : ${itemListData_admin}">
+            <div class="card">
+                <h4 th:text="${itemVO.itemName}"></h4>
+                <p>商品編號: <span th:text="${itemVO.itemId}"></span></p>
+                <p>廠商編號: <span th:text="${itemVO.storeId}"></span></p>
+                <p>庫存量: <span th:text="${itemVO.stockQuantity}"></span></p>
+                <p>商品狀態: <span th:text="${itemVO.itemStatus}"></span></p>
+                <p>創建時間: <span th:text="${#dates.format(itemVO.creAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+                <p>更新時間: <span th:text="${#dates.format(itemVO.updAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+                <p>檢舉成立次數: <span th:text="${itemVO.repCount}"></span></p>
+                <p>商品說明: <span th:text="${itemVO.itemInfo}"></span></p>
+                <p>商品價格: <span th:text="${itemVO.itemPrice}"></span></p>
+                <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
+
+                <form method="post" th:action="@{/item/getOne_For_Update}">
+                    <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
+                    <button type="submit">修改</button>
+                </form>
+
+                <form method="post" th:action="@{/item/getOne_For_shoppCart}" class="shopping-cart-form"> <!-- 購物車 -->
+                    <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
+                    <input type="hidden" name="memId" th:value="6">
+                    <button type="button" class="add-to-cart-btn">加入購物車</button>
+                </form>
+            </div>
+        </th:block>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // 處理加入購物車按鈕點擊事件
+            $('.add-to-cart-btn').click(function (e) {
+                e.preventDefault();
+                var form = $(this).closest('form');
+                var itemId = form.find('input[name="itemId"]').val();
+                var memId = form.find('input[name="memId"]').val();
+
+                console.log('Sending request with:', { itemId: itemId, memId: memId });
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: {
+                        itemId: itemId,
+                        memId: memId
+                    },
+                    success: function (response) {
+                        console.log('Response:', response);
+                        if (response === 'success') {
+                            alert('商品已成功加入購物車！');
+                        } else {
+                            alert('加入購物車失敗：' + response);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error details:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+                        alert('加入購物車失敗，請稍後再試！\n錯誤信息：' + error);
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品明細 - 後台</title>
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navStoreTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                    <div th:insert="~{/subnavItem_Store_back:: subnav(activeItem)}"></div>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <div class="mdc-detailitem-container">
+                    <h2 class="mdc-detailitem-title">商品明細</h2>
+                    <div class="mdc-detailitem-content">
+                        <div class="mdc-detailitem-img">
+                            <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" width="120px"
+                                style="border-radius: 8px;box-shadow:0 2px 8px rgba(25,118,210,0.10);">
+                        </div>
+                        <div class="mdc-detailitem-info">
+                            <div><span>商品編號：</span><span th:text="${itemVO.itemId}"></span></div>
+                            <div><span>廠商編號：</span><span th:text="${itemVO.storeId}"></span></div>
+                            <div><span>商品名稱：</span><span th:text="${itemVO.itemName}"></span></div>
+                            <div><span>庫存量：</span><span th:text="${itemVO.stockQuantity}"></span></div>
+                            <div><span>商品狀態：</span>
+                                <span th:switch="${itemVO.itemStatus}">
+                                    <span th:case="0">未上架</span>
+                                    <span th:case="1">上架</span>
+                                    <span th:case="2">下架</span>
+                                    <span th:case="*">未知</span>
+                                </span>
+                            </div>
+                            <div><span>創建時間：</span><span
+                                    th:text="${#dates.format(itemVO.creAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+                            <div><span>更新時間：</span><span
+                                    th:text="${#dates.format(itemVO.updAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+                            <div><span>檢舉成立次數：</span><span th:text="${itemVO.repCount}"></span></div>
+                            <div><span>商品說明：</span><span th:text="${itemVO.itemInfo}"></span></div>
+                            <div><span>商品價格：</span><span th:text="${itemVO.itemPrice}"></span></div>
+                            <div><span>促銷價格：</span><span th:text="${itemVO.discPrice}"></span></div>
+                            <div><span>促銷開始時間：</span><span
+                                    th:text="${itemVO.staTime} ? ${#temporals.format(itemVO.staTime, 'yyyy-MM-dd HH:mm')} : ''"></span>
+                            </div>
+                            <div><span>促銷結束時間：</span><span
+                                    th:text="${itemVO.endTime} ? ${#temporals.format(itemVO.endTime, 'yyyy-MM-dd HH:mm')} : ''"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <style>
+                    .mdc-detailitem-container {
+                        max-width: 520px;
+                        margin: 32px auto;
+                        background: #fff;
+                        border-radius: 16px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+                        padding: 32px 32px 24px 32px;
+                    }
+
+                    .mdc-detailitem-title {
+                        text-align: center;
+                        color: #1976d2;
+                        font-weight: 700;
+                        margin-bottom: 24px;
+                    }
+
+                    .mdc-detailitem-content {
+                        display: flex;
+                        gap: 32px;
+                        align-items: flex-start;
+                    }
+
+                    .mdc-detailitem-img {
+                        flex-shrink: 0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+                    .mdc-detailitem-info {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        font-size: 1.05rem;
+                    }
+
+                    .mdc-detailitem-info span:first-child {
+                        color: #1976d2;
+                        font-weight: 600;
+                        min-width: 100px;
+                        display: inline-block;
+                    }
+                </style>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

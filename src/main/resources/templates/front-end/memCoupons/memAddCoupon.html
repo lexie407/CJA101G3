@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>會員領取優惠券</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <style>
+        .coupon-claim-list {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            padding: 24px 0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .coupon-claim-card {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.2s;
+            min-height: 120px;
+        }
+
+        .coupon-claim-card:hover {
+            box-shadow: 0 8px 24px rgba(25, 118, 210, 0.18), 0 3px 8px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px) scale(1.01);
+        }
+
+        .coupon-claim-card__media {
+            flex: 0 0 100px;
+            height: 100px;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .coupon-claim-card__media .material-icons {
+            font-size: 60px;
+            color: #1976d2;
+        }
+
+        .coupon-claim-card__content {
+            flex: 1 1 auto;
+            padding: 16px 24px 16px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .coupon-claim-card__title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+            color: #1976d2;
+        }
+
+        .coupon-claim-card__subtitle {
+            font-size: 0.98rem;
+            color: #666;
+            margin-bottom: 1px;
+        }
+
+        .coupon-claim-card__actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .mdc-button {
+            font-size: 0.98rem;
+            border-radius: 6px;
+            padding: 6px 18px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        .mdc-button--raised {
+            background: #1976d2;
+            color: #fff;
+            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.10);
+        }
+
+        .mdc-button--raised:hover {
+            background: #1565c0;
+        }
+
+        .mdc-button--outlined {
+            background: #fff;
+            color: #1976d2;
+            border: 1.5px solid #1976d2;
+        }
+
+        .mdc-button--outlined:hover {
+            background: #e3f2fd;
+        }
+    </style>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <div th:insert="~{/subnavStore_front::subnav(${activeItem})}"></div>
+            </header>
+            <main class="content-area-main">
+                <h2 style="text-align:center;color:#1976d2;font-weight:700;margin-bottom:24px;">可領取優惠券</h2>
+                <div class="coupon-claim-list">
+                    <th:block th:each="couponVO : ${listAddCoupons}">
+                        <div class="coupon-claim-card">
+                            <div class="coupon-claim-card__media">
+                                <span class="material-icons">confirmation_number</span>
+                            </div>
+                            <div class="coupon-claim-card__content">
+                                <div class="coupon-claim-card__title" th:text="${couponVO.couName}"></div>
+                                <div class="coupon-claim-card__subtitle">折扣金額: <span
+                                        th:text="${couponVO.discValue}"></span></div>
+                                <div class="coupon-claim-card__subtitle">有效期間: <span
+                                        th:text="${#temporals.format(couponVO.startTime, 'yyyy-MM-dd')}" /> ~ <span
+                                        th:text="${#temporals.format(couponVO.endTime, 'yyyy-MM-dd')}" /></div>
+                                <div class="coupon-claim-card__actions">
+                                    <form th:action="@{/memcoupons/memaddcoupons}" method="post"
+                                        style="display:inline;">
+                                        <input type="hidden" name="couId" th:value="${couponVO.couId}">
+                                        <input type="hidden" name="discValue" th:value="${couponVO.discValue}">
+
+                                        <button type="submit" class="mdc-button mdc-button--raised">領取</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../js/notification/websocket.js"></script>
+</body>
+
+</html>

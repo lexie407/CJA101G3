@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訂單管理</title>
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navStoreTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <div th:insert="~{/subnavOrderitem_Store_back:: subnav(${activeItem})}"></div>
+            </header>
+            <main class="content-area-main" style="padding:32px 0;max-width:1100px;margin:0 auto;">
+                <div
+                    style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(25,118,210,0.10);padding:32px 36px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+                        <div class="mdc-search-bar">
+                            <span class="material-icons mdc-search-icon">search</span>
+                            <input type="text" id="orderSearchInput" placeholder="搜尋訂單編號或商品名稱"
+                                class="mdc-input mdc-search-input">
+                            <input type="date" id="dateStart" class="mdc-date-input" style="margin-left:12px;">
+                            <span style="margin:0 4px;">~</span>
+                            <input type="date" id="dateEnd" class="mdc-date-input">
+                        </div>
+                    </div>
+                    <table style="width:100%;border-collapse:separate;border-spacing:0 8px;background:#fafbfc;">
+                        <thead>
+                            <tr style="background:#e3f2fd;">
+                                <th style="padding:12px 16px;border-radius:8px 0 0 8px;">訂單編號</th>
+                                <th style="padding:12px 16px;">商品名稱</th>
+                                <th style="padding:12px 16px;">數量</th>
+                                <th style="padding:12px 16px;">單價</th>
+                                <th style="padding:12px 16px;">小計</th>
+                                <th style="padding:12px 16px;">訂單狀態</th>
+                                <th style="padding:12px 16px;">會員評價</th>
+                                <th style="padding:12px 16px;border-radius:0 8px 8px 0;">下單時間</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${orderItems}"
+                                style="background:#fff;box-shadow:0 2px 8px rgba(25,118,210,0.08);border-radius:8px;transition:box-shadow 0.2s;">
+                                <td style="padding:12px 16px;font-weight:500;">[[${item.ordId}]]</td>
+                                <td style="padding:12px 16px;">[[${item.itemName}]]</td>
+                                <td style="padding:12px 16px;">[[${item.ordTotal}]]</td>
+                                <td style="padding:12px 16px;">[[${item.discPrice}]]</td>
+                                <td style="padding:12px 16px;">
+                                    [[${(item.ordTotal != null ? item.ordTotal : 0) * (item.discPrice != null ?
+                                    item.discPrice : 0)}]]
+                                </td>
+                                <td style="padding:12px 16px;">
+                                    <span th:if="${item.orderVO.ordSta == 1}"
+                                        style="color:#1976d2;font-weight:600;background:#e3f2fd;padding:4px 12px;border-radius:16px;">待付款</span>
+                                    <span th:if="${item.orderVO.ordSta == 2}"
+                                        style="color:#388e3c;font-weight:600;background:#e8f5e9;padding:4px 12px;border-radius:16px;">已付款</span>
+                                    <span th:if="${item.orderVO.ordSta == 3}"
+                                        style="color:#fbc02d;font-weight:600;background:#fffde7;padding:4px 12px;border-radius:16px;">已出貨</span>
+                                    <span th:if="${item.orderVO.ordSta == 4}"
+                                        style="color:#757575;font-weight:600;background:#f5f5f5;padding:4px 12px;border-radius:16px;">已完成</span>
+                                    <span th:if="${item.orderVO.ordSta == 5}"
+                                        style="color:#d32f2f;font-weight:600;background:#ffebee;padding:4px 12px;border-radius:16px;">已取消</span>
+                                </td>
+                                <td style="padding:12px 16px;">
+                                    <div th:if="${item.score != null or item.content != null}">
+                                        <div th:if="${item.score != null}" style="margin-bottom:4px;">
+                                            <span style="color:#fbc02d;font-size:1.1rem;">
+                                                <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                                    <span th:if="${i <= item.score}">★</span>
+                                                    <span th:unless="${i <= item.score}">☆</span>
+                                                </span>
+                                            </span>
+                                            <span
+                                                style="color:#1976d2;font-weight:600;margin-left:4px;">[[${item.score}]]/5</span>
+                                        </div>
+                                        <div th:if="${item.content != null and item.content != ''}"
+                                            style="font-size:0.9rem;color:#666;max-width:200px;word-wrap:break-word;">
+                                            [[${item.content}]]
+                                        </div>
+                                    </div>
+                                    <div th:if="${item.score == null and item.content == null}"
+                                        style="color:#999;font-style:italic;">
+                                        尚未評論
+                                    </div>
+                                </td>
+                                <td style="padding:12px 16px;">[[${#dates.format(item.orderVO.creDate, 'yyyy-MM-dd
+                                    HH:mm')}]]</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+    <style>
+        .mdc-search-bar {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+            padding: 4px 16px;
+            width: 520px;
+            margin: 0 auto 24px auto;
+            border: 1.5px solid #bdbdbd;
+            transition: border 0.2s;
+        }
+
+        .mdc-search-bar:focus-within {
+            border: 1.5px solid #1976d2;
+        }
+
+        .mdc-search-icon {
+            color: #1976d2;
+            font-size: 1.5rem;
+            margin-right: 8px;
+        }
+
+        .mdc-search-input {
+            border: none;
+            outline: none;
+            font-size: 1.08rem;
+            background: transparent;
+            width: 100%;
+            padding: 8px 0;
+        }
+
+        .mdc-date-input {
+            border: none;
+            outline: none;
+            font-size: 1.08rem;
+            background: transparent;
+            padding: 8px 0;
+            color: #1976d2;
+            width: 130px;
+        }
+
+        .mdc-date-input::-webkit-input-placeholder {
+            color: #bdbdbd;
+        }
+
+        .mdc-date-input:focus {
+            background: #e3f2fd;
+        }
+    </style>
+    <script>
+        document.querySelectorAll('#orderSearchInput, #dateStart, #dateEnd').forEach(function (input) {
+            input.addEventListener('input', filterOrders);
+        });
+        function filterOrders() {
+            const keyword = document.getElementById('orderSearchInput').value.trim().toLowerCase();
+            const dateStart = document.getElementById('dateStart').value;
+            const dateEnd = document.getElementById('dateEnd').value;
+            document.querySelectorAll('tbody tr').forEach(function (row) {
+                const ordId = row.querySelector('td:nth-child(1)')?.textContent.trim().toLowerCase() || '';
+                const itemName = row.querySelector('td:nth-child(2)')?.textContent.trim().toLowerCase() || '';
+                const orderDate = row.querySelector('td:last-child')?.textContent.trim().substring(0, 10) || '';
+                let matchKeyword = !keyword || ordId.includes(keyword) || itemName.includes(keyword);
+                let matchDate = true;
+                if (dateStart && orderDate < dateStart) matchDate = false;
+                if (dateEnd && orderDate > dateEnd) matchDate = false;
+                if (matchKeyword && matchDate) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

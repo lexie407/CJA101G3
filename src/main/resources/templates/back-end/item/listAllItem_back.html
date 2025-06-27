@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品管理</title>
+
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
+
+</head>
+
+<body class="light">
+
+    <div class="app-container">
+        <div th:insert="~{/navStoreTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                    <div th:insert="~{/subnavItem_Store_back:: subnav(${activeItem})}"></div>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <div class="mdc-horizontal-list">
+                    <th:block th:each="itemVO : ${itemListData_store}">
+                        <div class="mdc-horizontal-card">
+                            <div class="mdc-horizontal-card__media">
+                                <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
+                            </div>
+                            <div class="mdc-horizontal-card__content">
+                                <h3 class="mdc-horizontal-card__title" th:text="${itemVO.itemName}"></h3>
+                                <div class="mdc-horizontal-card__subtitle">商品編號: <span
+                                        th:text="${itemVO.itemId}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">廠商編號: <span
+                                        th:text="${itemVO.storeId}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">庫存量: <span
+                                        th:text="${itemVO.stockQuantity}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">狀態:
+                                    <span th:switch="${itemVO.itemStatus}">
+                                        <span th:case="0">未上架</span>
+                                        <span th:case="1">上架</span>
+                                        <span th:case="2">下架</span>
+                                        <span th:case="*">未知</span>
+                                    </span>
+                                </div>
+                                <div class="mdc-horizontal-card__subtitle">創建: <span
+                                        th:text="${#dates.format(itemVO.creAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">更新: <span
+                                        th:text="${#dates.format(itemVO.updAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">檢舉成立次數: <span
+                                        th:text="${itemVO.repCount}"></span></div>
+                                <div class="mdc-horizontal-card__desc">說明: <span th:text="${itemVO.itemInfo}"></span>
+                                </div>
+                                <div class="mdc-horizontal-card__price">價格: <span th:text="${itemVO.itemPrice}"></span>
+                                </div>
+                                <div class="mdc-horizontal-card__promo" th:if="${itemVO.discPrice != null}">
+                                    促銷價: <span th:text="${itemVO.discPrice}"></span>
+                                    <span th:if="${itemVO.staTime != null}">
+                                        | 開始: <span
+                                            th:text="${#temporals.format(itemVO.staTime, 'yyyy-MM-dd HH:mm')}"></span>
+                                    </span>
+                                    <span th:if="${itemVO.endTime != null}">
+                                        | 結束: <span
+                                            th:text="${#temporals.format(itemVO.endTime, 'yyyy-MM-dd HH:mm')}"></span>
+                                    </span>
+                                </div>
+                                <div class="mdc-horizontal-card__actions">
+                                    <form method="post" th:action="@{/item/getOne_For_Update}" style="display:inline;">
+                                        <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
+                                        <button type="submit" class="mdc-button mdc-button--outlined">修改</button>
+                                    </form>
+                                    <!-- 新增促銷 -->
+                                    <form method="post" th:action="@{/item/getOne_For_Update_promo}"
+                                        style="display:inline;">
+                                        <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
+                                        <button type="submit" class="mdc-button mdc-button--outlined">新增促銷</button>
+                                    </form>
+
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+                <style>
+                    .mdc-horizontal-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 28px;
+                        padding: 24px 0;
+                    }
+
+                    .mdc-horizontal-card {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: flex-start;
+                        background: #fff;
+                        border-radius: 16px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+                        overflow: hidden;
+                        transition: box-shadow 0.2s, transform 0.2s;
+                        min-height: 180px;
+                    }
+
+                    .mdc-horizontal-card:hover {
+                        box-shadow: 0 8px 24px rgba(25, 118, 210, 0.18), 0 3px 8px rgba(0, 0, 0, 0.12);
+                        transform: translateY(-2px) scale(1.01);
+                    }
+
+                    .mdc-horizontal-card__media {
+                        flex: 0 0 180px;
+                        height: 180px;
+                        background: #f5f5f5;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+                    .mdc-horizontal-card__media img {
+                        width: 180px;
+                        height: 180px;
+                        object-fit: cover;
+                        border-radius: 0;
+                    }
+
+                    .mdc-horizontal-card__content {
+                        flex: 1 1 auto;
+                        padding: 18px 24px 18px 24px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                    }
+
+                    .mdc-horizontal-card__title {
+                        font-size: 1.25rem;
+                        font-weight: 600;
+                        margin: 0 0 4px 0;
+                        color: #1976d2;
+                    }
+
+                    .mdc-horizontal-card__subtitle {
+                        font-size: 0.98rem;
+                        color: #666;
+                        margin-bottom: 1px;
+                    }
+
+                    .mdc-horizontal-card__desc {
+                        font-size: 0.98rem;
+                        color: #444;
+                        margin: 8px 0 2px 0;
+                    }
+
+                    .mdc-horizontal-card__price {
+                        font-size: 1.1rem;
+                        color: #d32f2f;
+                        font-weight: 600;
+                        margin: 8px 0 0 0;
+                    }
+
+                    .mdc-horizontal-card__promo {
+                        font-size: 1.05rem;
+                        color: #388e3c;
+                        font-weight: 600;
+                        margin: 2px 0 0 0;
+                    }
+
+                    .mdc-horizontal-card__actions {
+                        display: flex;
+                        gap: 12px;
+                        margin-top: 12px;
+                    }
+
+                    .mdc-button {
+                        font-size: 0.98rem;
+                        border-radius: 6px;
+                        padding: 6px 18px;
+                        border: none;
+                        cursor: pointer;
+                        transition: background 0.2s, box-shadow 0.2s;
+                    }
+
+                    .mdc-button--raised {
+                        background: #1976d2;
+                        color: #fff;
+                        box-shadow: 0 2px 4px rgba(25, 118, 210, 0.10);
+                    }
+
+                    .mdc-button--raised:hover {
+                        background: #1565c0;
+                    }
+
+                    .mdc-button--outlined {
+                        background: #fff;
+                        color: #1976d2;
+                        border: 1.5px solid #1976d2;
+                    }
+
+                    .mdc-button--outlined:hover {
+                        background: #e3f2fd;
+                    }
+                </style>
+                <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+                <script>
+                    $(document).ready(function () {
+                    });
+                </script>
+            </main>
+        </div>
+    </div>
+
+</body>
+
+</html>
