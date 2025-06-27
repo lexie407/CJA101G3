@@ -4,63 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新增留言與操作</title>
+    <!-- Materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
             background-color: #f4f4f4;
         }
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
         h1, h2 {
             color: #333;
         }
-        form {
+
+        /* --- Comment Box Styles --- */
+        .comment-box-form {
             margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 5px;
-            background-color: #f9f9f9;
         }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="text"], textarea {
-            width: calc(100% - 22px);
+        .comment-box {
+            display: flex;
+            flex-direction: column;
             padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
         }
-        textarea {
-            resize: vertical;
-            min-height: 80px;
+        .comment-input-area {
+            display: flex;
+            align-items: center;
         }
-        input[type="file"] {
-            margin-bottom: 15px;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
+        .comment-textarea {
+            flex-grow: 1;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            background: transparent;
+            resize: none;
+            padding: 8px;
             font-size: 1em;
+            outline: none;
+            min-height: 24px; /* Single line height */
+            max-height: 120px; /* Limit expansion */
+            overflow-y: auto;
         }
-        button:hover {
-            background-color: #0056b3;
+        .comment-input-actions {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
         }
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #606770;
+            padding: 5px;
+        }
+        .icon-button:hover {
+            color: #007bff;
+        }
+        #image-preview {
+            margin-top: 10px;
+            text-align: left;
+            /* Removed display: block here, as the wrapper will handle it */
+        }
+        .image-preview-wrapper { /* New class for the wrapper */
+            position: relative;
+            display: block; /* Make the wrapper a block element to ensure it takes its own line */
+            width: fit-content; /* Make wrapper fit content to prevent it from taking full width */
+            /* margin-right: 10px; Removed as we only expect one image */
+        }
+        #image-preview img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+            display: block; /* Ensure image doesn't have extra space below it */
+        }
+        .remove-preview {
+            position: absolute;
+            top: -8px; /* Adjusted for better positioning */
+            right: -8px; /* Adjusted for better positioning */
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            text-align: center;
+            line-height: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            color: #555; /* Make it a bit darker */
+        }
+
         .message {
             margin-top: 15px;
             padding: 10px;
@@ -84,12 +122,11 @@
         }
         .comment-item {
             background-color: #fff;
-            border: 1px solid #e0e0e0;
             border-radius: 5px;
             padding: 15px;
             margin-bottom: 15px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            position: relative; /* 為了定位菜單 */
+            position: relative;
         }
         .comment-item strong {
             color: #333;
@@ -113,7 +150,6 @@
             margin-top: 10px;
         }
 
-        /* 三點選單按鈕 */
         .comment-actions {
             position: absolute;
             top: 10px;
@@ -132,7 +168,7 @@
         }
         .dropdown-menu {
             position: absolute;
-            top: 100%; /* 位於按鈕下方 */
+            top: 100%;
             right: 0;
             background-color: #fff;
             border: 1px solid #ddd;
@@ -140,10 +176,10 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             z-index: 10;
             min-width: 120px;
-            display: none; /* 預設隱藏 */
+            display: none;
         }
         .dropdown-menu.show {
-            display: block; /* 顯示 */
+            display: block;
         }
         .dropdown-menu button {
             display: block;
@@ -166,150 +202,103 @@
             background-color: #f8d7da;
         }
 
+        /* Removed .modal styles as the modal is no longer used */
 
-        /* 燈箱 (Modal) 樣式 */
-        .modal {
-            display: none; /* 預設隱藏 */
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4); /* 半透明背景 */
-            justify-content: center;
+        /* New styles for like button and count */
+        .comment-footer {
+            display: flex;
             align-items: center;
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
         }
-        .modal.show {
-            display: flex; /* 顯示燈箱 */
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto; /* 垂直水平居中 */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        .modal-content h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        .modal-content p {
-            margin-bottom: 20px;
-            color: #666;
-        }
-        .modal-buttons button {
-            margin: 0 10px;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        .modal-buttons .confirm-btn {
-            background-color: #dc3545; /* 紅色用於刪除 */
-            color: white;
+        .like-button {
+            background: none;
             border: none;
-        }
-        .modal-buttons .confirm-btn.report { /* 檢舉可以用不同的顏色 */
-            background-color: #ffc107;
-            color: #333;
-        }
-        .modal-buttons .confirm-btn:hover {
-            opacity: 0.9;
-        }
-        .modal-buttons .cancel-btn {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-        }
-        .modal-buttons .cancel-btn:hover {
-            background-color: #5a6268;
-        }
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
             cursor: pointer;
+            color: #606770;
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
         }
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
+        .like-button:hover {
+            color: #2196F3; /* Materialize blue */
+        }
+        .like-button i {
+            margin-right: 5px;
+        }
+        .like-count {
+            font-size: 0.9em;
+            color: #777;
+            margin-left: 5px;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>新增留言</h1>
+        <h1 class="center-align">新增留言</h1>
 
-        <form id="commentForm" enctype="multipart/form-data">
-            <label for="commentAuthor">你的名字:</label>
-            <input type="text" id="commentAuthor" name="author" required>
-
-            <label for="commentContent">留言內容:</label>
-            <textarea id="commentContent" name="content" required></textarea>
-
-            <label for="commentImage">上傳圖片 (可選):</label>
-            <input type="file" id="commentImage" name="commentImage" accept="image/*">
-
-            <button type="submit">提交留言</button>
+        <form id="commentForm" class="comment-box-form" enctype="multipart/form-data">
+            <div class="comment-box">
+                <div class="comment-input-area">
+                    <div class="input-field col s12" style="flex-grow: 1; margin-bottom: 0;">
+                        <textarea id="commentContent" name="content" class="materialize-textarea" placeholder="留言..." required></textarea>
+                    </div>
+                    <div class="comment-input-actions">
+                        <label for="commentImage" class="icon-button" style="cursor: pointer;"><i class="material-icons">photo_camera</i></label>
+                        <input type="file" id="commentImage" name="commentImage" accept="image/*" style="display: none;">
+                        <button type="submit" class="btn-flat waves-effect waves-light"><i class="material-icons">send</i></button>
+                    </div>
+                </div>
+                <div id="image-preview" style="display: none;"></div>
+            </div>
         </form>
 
-        <div id="statusMessage" class="message" style="display: none;"></div>
+        <div id="statusMessage" class="card-panel" style="display: none;"></div>
 
         <div class="comments-section">
-            <h2>所有留言</h2>
+            <h2 class="center-align">所有留言</h2>
             <div id="commentsList">
-                <div class="comment-item" data-comment-id="default1" data-user-id="user1">
+                <div class="comment-item card" data-comment-id="default1" data-user-id="user1">
                     <strong>匿名使用者</strong>
-                    <p>這是一條預設的留言。您可以點擊右上方三點按鈕進行操作。</p>
+                    <p class="comment-content-display">這是一條預設的留言。您可以點擊右上方三點按鈕進行操作。</p>
                     <p class="comment-time">時間: 2023-10-26 10:00:00</p>
                     <div class="comment-actions">
-                        <button class="actions-button" aria-expanded="false">...</button>
-                        <div class="dropdown-menu">
-                            <button class="action-report" data-action="report">檢舉</button>
-                            <button class="action-edit" data-action="edit">修改</button>
-                            <button class="action-delete" data-action="delete">刪除</button>
-                        </div>
+                        <button class="actions-button btn-flat dropdown-trigger" data-target="dropdown1" aria-expanded="false"><i class="material-icons">more_vert</i></button>
+                        <ul id="dropdown1" class="dropdown-content">
+                            <li><a href="#!" class="action-report" data-action="report">檢舉</a></li>
+                            <li><a href="#!" class="action-edit" data-action="edit">修改</a></li>
+                            <li><a href="#!" class="action-delete" data-action="delete">刪除</a></li>
+                        </ul>
+                    </div>
+                    <div class="comment-footer">
+                        <button class="like-button" data-comment-id="default1"><i class="material-icons">thumb_up</i></button>
+                        <span class="like-count" data-comment-id="default1">0</span>
                     </div>
                 </div>
-                <div class="comment-item" data-comment-id="default2" data-user-id="user2">
+                <div class="comment-item card" data-comment-id="default2" data-user-id="user2">
                     <strong>另一位使用者</strong>
-                    <p>這是一條其他使用者的留言。</p>
+                    <p class="comment-content-display">這是一條其他使用者的留言。</p>
                     <p class="comment-time">時間: 2023-10-26 11:30:00</p>
                     <div class="comment-actions">
-                        <button class="actions-button" aria-expanded="false">...</button>
-                        <div class="dropdown-menu">
-                            <button class="action-report" data-action="report">檢舉</button>
-                            </div>
+                        <button class="actions-button btn-flat dropdown-trigger" data-target="dropdown2" aria-expanded="false"><i class="material-icons">more_vert</i></button>
+                        <ul id="dropdown2" class="dropdown-content">
+                            <li><a href="#!" class="action-report" data-action="report">檢舉</a></li>
+                        </ul>
+                    </div>
+                    <div class="comment-footer">
+                        <button class="like-button" data-comment-id="default2"><i class="material-icons">thumb_up</i></button>
+                        <span class="like-count" data-comment-id="default2">0</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="actionModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h3 id="modalTitle"></h3>
-            <p id="modalMessage"></p>
-            <div class="modal-buttons">
-                <button class="cancel-btn">取消</button>
-                <button id="confirmActionButton" class="confirm-btn">確認</button>
-            </div>
-        </div>
-    </div>
-
-
-	<script src="../js/comments/comments.js"></script>
+    <!-- Materialize JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../js/comments/comments.js"></script>
 
 </body>
 </html>

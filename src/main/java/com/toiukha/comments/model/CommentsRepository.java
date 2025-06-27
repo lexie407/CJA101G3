@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface CommentsRepository extends JpaRepository<CommentsVO, Integer> {
 
-	@Query(value = "FROM CommentsVO WHERE commArt = :commArt")
+	@Query(value = "FROM CommentsVO WHERE commArt = :commArt AND commSta != 2")
 	public List<CommentsVO> getbyArt(Integer commArt);
 	
 	@Transactional

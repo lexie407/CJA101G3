@@ -19,4 +19,12 @@ public interface LikeRepository extends JpaRepository<LikeVO, Integer> {
 	
 	@Query(value = "FROM LikeVO WHERE parDocId IS NULL AND docId = :docId")
 	public LikeVO searchOne(Integer docId);
+	
+	//查文件的按讚數
+	@Query(value = "SELECT count(*) FROM LikeVO WHERE docId = :docId AND parDocId IS NULL AND likeSta = 1")
+	public Integer searchLikeNum(Integer docId);
+	
+	@Query(value = "SELECT count(*) FROM LikeVO WHERE docId = :docId AND parDocId = :parDocId AND likeSta = 1")
+	public Integer searchLikeNum(Integer parDocId, Integer docId);
+	
 }

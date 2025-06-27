@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.toiukha.like.model.LikeService;
+
 import jakarta.persistence.EntityManager;
 
 @Service
@@ -16,6 +18,8 @@ public class CommentsService {
 	private CommentsRepository commentsRepository;
 	@Autowired
     private EntityManager entityManager;
+	@Autowired
+	private LikeService likeService;
 	
 	//新增、修改、刪除
 	@Transactional
@@ -34,7 +38,12 @@ public class CommentsService {
 	
 	//查文章所屬留言
 	public List<CommentsVO> getArtComm(Integer commArt){
-		return commentsRepository.getbyArt(commArt);
+		List<CommentsVO> list = commentsRepository.getbyArt(commArt);
+		for(CommentsVO cVO : list) {
+			Integer likeNum = likeService.getLikeNum(cVO.getCommArt(), cVO.getCommId());
+			cVO.setCommLike(likeNum);
+		}
+		return list;
 	}
 	
 	//改狀態

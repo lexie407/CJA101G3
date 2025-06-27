@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.toiukha.comments.model.CommentsService;
 import com.toiukha.comments.model.CommentsVO;
+import com.toiukha.forum.article.model.ArticleServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +26,8 @@ public class CommentsAPIController {
 
 	@Autowired
 	CommentsService commentsService;
+	@Autowired
+	ArticleServiceImpl articleServiceImpl;
 	
 	//========== 前台後台通用 ==========// 
 	//查文章的留言
@@ -41,7 +44,6 @@ public class CommentsAPIController {
 	
 	@PostMapping("/addComments")
 	public CommentsVO addComments(
-	        @RequestParam("commCat") Byte commCat,
 	        @RequestParam("commHol") Integer commHol,
 	        @RequestParam("commArt") Integer commArt,
 	        @RequestParam("commCon") String commCon,
@@ -49,6 +51,8 @@ public class CommentsAPIController {
 
 	    try {
 	        byte[] commImg = commImgFile.getBytes();
+	        
+	        Byte commCat = articleServiceImpl.getArticleById(commArt).getArtCat();
 
 	        // 手動建立 CommentsVO 物件
 	        CommentsVO commentsVO = new CommentsVO(commCat, commHol, commArt, commCon, commImg);
