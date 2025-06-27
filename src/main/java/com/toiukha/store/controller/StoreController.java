@@ -123,6 +123,7 @@ public class StoreController {
 	    public String showSelectPage(Model model) {
 	        // 如果你想一開始就載入所有商家用於下拉，這裡呼叫 findAll()
 	        model.addAttribute("storeList", storeService.findAllStores());
+	        model.addAttribute("currentPage", "partner");
 	        return "back-end/store/selectPage";
 	    }
 	    
@@ -132,6 +133,7 @@ public class StoreController {
 	        // 拿待審核
 	        List<StoreVO> pending = storeService.findPendingStores();
 	        model.addAttribute("pendingStores", pending);
+	        model.addAttribute("currentPage", "partner");
 	        return "back-end/store/reviewStore";
 	    }
 	    
@@ -153,6 +155,7 @@ public class StoreController {
 	    @GetMapping("/listAll")
 	    public String listAllStores(Model model) {
 	        model.addAttribute("stores", storeService.findAllStores());
+	        model.addAttribute("currentPage", "partner");
 	        return "back-end/store/listAll";
 	    }
 	    
@@ -160,6 +163,7 @@ public class StoreController {
 	    @GetMapping("/editStore")
 	    public String showEditForm(@RequestParam("storeId") Integer storeId, Model model) {
 	        StoreVO store = storeService.getById(storeId);
+	        model.addAttribute("currentPage", "partner");
 	        model.addAttribute("storeVO", store);
 	        return "back-end/store/editStore";
 	    }

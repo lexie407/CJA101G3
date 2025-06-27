@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org" th:with="currentPage='storePage'">
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -50,7 +50,7 @@
             <main class="content-area-main">
                 <section class="md-card" style="max-width:700px; margin:2rem auto; padding:1rem;">
                     <h2 class="md-headline">商家查詢</h2>
-                    <a th:href="@{/store/backend/listAll}" class="show-all-link">顯示全部商家</a>
+                    <a th:href="@{/store/listAll}" class="show-all-link">顯示全部商家</a>
                     <form th:action="@{/store/searchResults}" method="get" class="form-group">
                         <!-- 商家狀態 -->
                         <div class="form-field">

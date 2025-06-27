@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org"
-	th:with="currentPage='storeEdit'">
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -124,18 +123,16 @@
 	height: 100%;
 	object-fit: cover;
 }
+
+
+
 </style>
 </head>
 <body class="light">
 	<div class="app-container">
 		<div th:insert="~{/navBackTemplate :: navbar}" />
 		<div class="main-content">
-			<header class="secondary-nav">
-				<ul>
-					<li><a th:href="@{/store/listAll}">商家列表</a></li>
-					<li><a class="active">編輯商家</a></li>
-				</ul>
-			</header>
+			
 			<main class="content-area-main">
 				<div class="md-card">
 					<h2 class="md-headline">編輯商家</h2>

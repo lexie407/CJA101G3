@@ -176,6 +176,7 @@ public class MembersController {
 
 		// 2. 加入模型供 Thymeleaf 使用
 		model.addAttribute("membersVO", member);
+		model.addAttribute("currentPage", "account");
 
 		// 3. 回傳「會員資料檢視」的模板名稱（與檔名一致）
 		return "front-end/members/membersProfile";
@@ -185,6 +186,7 @@ public class MembersController {
 	@GetMapping("/update")
 	public String showUpdatePage(HttpSession session, Model model) {
 		MembersVO sessionMember = (MembersVO) session.getAttribute("member");
+		model.addAttribute("currentPage", "account");
 		model.addAttribute("membersVO", sessionMember);
 		return "front-end/members/update";
 	}
@@ -253,6 +255,7 @@ public class MembersController {
 	@GetMapping("/selectPage")
 	public String showSelectPage(Model model) {
 		model.addAttribute("membersList", membersService.findAllMembers());
+		model.addAttribute("currentPage", "accounts");
 		return "back-end/members/selectPage";
 	}
 
@@ -290,6 +293,7 @@ public class MembersController {
 	    model.addAttribute("memAcc",      memAcc);
 	    model.addAttribute("memId",       memId);
 	    model.addAttribute("memName",     memName);
+	    model.addAttribute("currentPage", "accounts");
 
 	    return "back-end/members/searchResults";
 	}
@@ -299,6 +303,7 @@ public class MembersController {
         // 一次拿所有會員，交給前端 DataTables 處理
         List<MembersVO> all = membersService.findAllMembers();
         model.addAttribute("membersList", all);
+        model.addAttribute("currentPage", "accounts");
         return "back-end/members/listAll";
     }
 	
@@ -306,6 +311,7 @@ public class MembersController {
     public String showEditForm(@RequestParam("memId") Integer memId, Model model) {
         MembersVO member = membersService.getOneMember(memId);
         model.addAttribute("membersVO", member);
+        model.addAttribute("currentPage", "accounts");
         return "back-end/members/editMembers";
     }
 	

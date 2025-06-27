@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org"
-	th:with="currentPage='accounts'">
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -134,12 +133,7 @@
 	<div class="app-container">
 		<div th:insert="~{/navBackTemplate :: navbar}"></div>
 		<div class="main-content">
-			<header class="secondary-nav">
-				<ul>
-					<li><a th:href="@{/members/listAll}">會員列表</a></li>
-					<li><a class="active">編輯會員</a></li>
-				</ul>
-			</header>
+			
 			<main class="content-area-main">
 				<div class="md-card">
 					<h2 class="md-headline">編輯會員</h2>
