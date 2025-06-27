@@ -31,8 +31,8 @@ public class ArticleController {
 //        this.apService = apService;
     }
 
-// 新增：取得單篇文章 DTO
-    @GetMapping("/article/{artId}")
+// 取得單篇文章 DTO
+    @GetMapping("/article/{artId:\\d+}")
     public ArticleDTO getArticleDTO(@PathVariable Integer artId) {
         Debug.log();
         return articleService.getDTOById(artId);

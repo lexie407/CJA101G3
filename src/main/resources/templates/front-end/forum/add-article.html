@@ -6,7 +6,7 @@
     <title>新增文章 | 前台 | 島遊kha</title>
     <link th:href="@{/vendors/quillEditor/quill.snow.css}" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
-<!--    <link rel="stylesheet" th:href="@{/css/forum/add-article.css}">-->
+   <link rel="stylesheet" th:href="@{/css/forum/add-article.css}">
 
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
 
@@ -21,43 +21,48 @@
         </header>
 
         <main class="content-area-main">
-            <h2>新增文章</h2>
+            <div class="app-bar">
+                <h2><span class="material-icons">edit</span>新增文章</h2>
+            </div>
             <!-- 					放自己需要的內容 -->
-            <form  style="padding: 10px" th:action="@{/forum/article/insert}" method="post" enctype="multipart/form-data" id="addArticleForm" >
-                <label for="artTitle">文章標題</label>
-                <input type="text" id="artTitle" name="artTitle" required value="測試用123">
-                <br>
-                <label for="artHol">會員編號</label>
-                <input type="number" id="artHol" name="artHol" required min="1" value="1">
-                <br>
-                <label for="artCat">分類</label>
-                <select id="artCat" name="artCat" required>
-                    <!--                <option value="">請選擇分類</option>-->
-                    <option value="1">文章</option>
-                    <option value="2">問題</option>
-                    <!--            <option value="3">已解決</option>-->
-                </select>
-                <br>
-                <label for="artSta">分類</label>
-                <select id="artSta" name="artSta" required>
-                    <option value="1">上架</option>
-                    <option value="2">下架</option>
-                </select>
-                <br>
-                <label for="editor">內容</label>
-                <!--        <textarea id="artCon" name="artCon" rows="8" required></textarea>-->
+            <form  th:action="@{/forum/article/insert}" method="post" enctype="multipart/form-data" id="addArticleForm" >
+                <div class="form-container">
 
-                <textarea id="artCon" name="artCon" style="display:none;"></textarea>
-                <div id="editor">
-                    <p>測試用456</p>
-                    <!--Qill編輯器-->
-                </div>
-                <!--        <label for="image">圖片上傳</label>-->
-                <!--        <input type="file" id="image" name="image">-->
+                    <label for="artTitle">文章標題</label>
+                    <input type="text" id="artTitle" name="artTitle" required value="測試用123">
+                    <br>
+                    <label for="artHol">會員編號</label>
+                    <input type="number" id="artHol" name="artHol" required min="1" value="1">
+                    <br>
+                    <label for="artCat">分類</label>
+                    <select id="artCat" name="artCat" required>
+                        <!--                <option value="">請選擇分類</option>-->
+                        <option value="1">文章</option>
+                        <option value="2">問題</option>
+                        <!--            <option value="3">已解決</option>-->
+                    </select>
+                    <br>
+                    <label for="artSta">分類</label>
+                    <select id="artSta" name="artSta" required>
+                        <option value="1">上架</option>
+                        <option value="2">下架</option>
+                    </select>
+                    <br>
+                    <label for="editor">內容</label>
+                    <!--        <textarea id="artCon" name="artCon" rows="8" required></textarea>-->
 
-                <div class="button-group">
-                    <button type="submit">送出</button>
-                    <button type="reset">清除</button>
+                    <textarea id="artCon" name="artCon" style="display:none;"></textarea>
+                    <div id="editor">
+                        <p>測試用456</p>
+                        <!--Qill編輯器-->
+                    </div>
+                    <!--        <label for="image">圖片上傳</label>-->
+                    <!--        <input type="file" id="image" name="image">-->
+
+                    <div class="button-group">
+                        <button type="submit">送出</button>
+                        <button type="reset">清除</button>
+                    </div>
                 </div>
             </form>
             <!-- ===================================================================== -->
