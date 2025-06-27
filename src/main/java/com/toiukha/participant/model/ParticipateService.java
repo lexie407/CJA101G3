@@ -56,4 +56,9 @@ public interface ParticipateService {
      * @return 參加記錄 DTO 列表
      */
     List<ParticipantDTO> getJoinedActivitiesAsDTO(Integer memId);
+
+    /**
+     * 團主更新成員狀態
+     */
+    void updateJoinStatus(Integer actId, Integer memId, Byte joinStatus);
 }

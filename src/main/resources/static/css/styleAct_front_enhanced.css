@@ -191,6 +191,17 @@
   color: var(--md-sys-color-on-error);
 }
 
+.act-btn-success {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+}
+
+.act-btn-success:hover {
+  background-color: #218838;
+  color: #fff;
+}
+
 .act-btn:hover {
   opacity: 0.9;
   transform: translateY(-1px);

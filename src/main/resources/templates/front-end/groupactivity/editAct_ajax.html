@@ -321,7 +321,12 @@
 
             if (response.ok) {
               alert("更新完成");
-              window.history.back();
+              // 自動刷新上一頁（groupHome）
+              if (document.referrer) {
+                window.location.href = document.referrer;
+              } else {
+                window.history.back();
+              }
             } else {
               throw new Error("伺服器回應錯誤");
             }

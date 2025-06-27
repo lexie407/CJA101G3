@@ -123,4 +123,23 @@ public class ParticipantVO implements Serializable {
                 ", joinStatus=" + joinStatus +
                 '}';
     }
+
+    /**
+     * 團員參加狀態
+     * 1 = 已參加(報名成功)
+     * 2 = 已剔除(團主剔除)
+     * 3 = 已退出(自己退出)
+     */
+    public enum JoinStatus {
+        JOINED((byte)1),
+        REMOVED((byte)2),
+        QUIT((byte)3);
+        private final byte value;
+        JoinStatus(byte value) { this.value = value; }
+        public byte getValue() { return value; }
+        public static JoinStatus fromValue(byte value) {
+            for (JoinStatus s : values()) if (s.value == value) return s;
+            return null;
+        }
+    }
 }

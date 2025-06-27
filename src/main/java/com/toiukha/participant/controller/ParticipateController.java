@@ -1,9 +1,12 @@
 package com.toiukha.participant.controller;
 
+import com.toiukha.groupactivity.model.ActRepository;
+import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.participant.model.ParticipateService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +20,9 @@ public class ParticipateController {
 
     @Autowired
     private ParticipateService participateSvc;
+
+    @Autowired
+    private ActRepository actRepository;
 
     /**
      * 報名活動
@@ -74,5 +80,33 @@ public class ParticipateController {
     @GetMapping("/{actId}/members")
     public List<Integer> members(@PathVariable Integer actId) {
         return participateSvc.getParticipants(actId);
+    }
+
+    /**
+     * 團主更新成員狀態
+     */
+    @PutMapping("/{actId}/status/{memId}")
+    public ResponseEntity<?> updateJoinStatus(@PathVariable Integer actId,
+                                              @PathVariable Integer memId,
+                                              @RequestParam Byte joinStatus,
+                                              HttpServletRequest request) {
+        // 權限驗證：僅團主可用
+        Object memberObj = request.getSession().getAttribute("member");
+        Integer currentUserId = null;
+        if (memberObj instanceof String && ((String) memberObj).startsWith("DEV_USER_")) {
+            currentUserId = Integer.parseInt(((String) memberObj).substring(9));
+        } else if (memberObj instanceof com.toiukha.members.model.MembersVO) {
+            currentUserId = ((com.toiukha.members.model.MembersVO) memberObj).getMemId();
+        }
+        ActVO act = actRepository.findById(actId).orElse(null);
+        if (act == null || !act.getHostId().equals(currentUserId)) {
+            return ResponseEntity.status(403).body("只有團主可以操作");
+        }
+        try {
+            participateSvc.updateJoinStatus(actId, memId, joinStatus);
+            return ResponseEntity.ok().body("狀態已更新");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

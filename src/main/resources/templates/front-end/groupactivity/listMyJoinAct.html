@@ -231,12 +231,9 @@
         }</span>
 
                     <div class="act-card-actions">
-                        <a href="/act/member/view/${
-                          act.actId
-                        }" class="act-btn act-btn-primary">查看詳情</a>
-                        <button onclick="cancelParticipation(${
-                          act.actId
-                        })" class="act-btn act-btn-danger">取消報名</button>
+                        <a href="/act/member/view/${act.actId}" class="act-btn act-btn-primary">查看詳情</a>
+                        <a href="/act/group/${act.actId}/home" class="act-btn act-btn-success">進入揪團主頁</a>
+                        <button onclick="cancelParticipation(${act.actId})" class="act-btn act-btn-danger">取消報名</button>
                     </div>
                 </div>
             `;
@@ -354,34 +351,12 @@
             console.error("載入活動失敗:", error);
             listEl.classList.remove("act-loading");
             listEl.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: var(--md-sys-color-error);">
-                        <h3>載入失敗</h3>
-                        <p>無法載入活動列表，請稍後再試</p>
-                    </div>
-                `;
+                <div style="text-align: center; padding: 40px; color: var(--md-sys-color-error);">
+                    <h3>載入失敗</h3>
+                    <p>無法載入活動列表，請稍後再試</p>
+                </div>
+            `;
           });
-      }
-
-      // 頁面載入時執行
-      loadActivities();
-
-      function cancelParticipation(actId) {
-        if (confirm("確定要取消報名這個活動嗎？")) {
-          fetch(`/api/participate/${actId}/signup/${memId}`, {
-            method: "DELETE",
-          })
-            .then((response) => {
-              if (response.ok) {
-                location.reload(); // 重新載入頁面
-              } else {
-                alert("取消報名失敗，請稍後再試");
-              }
-            })
-            .catch((error) => {
-              console.error("取消報名失敗:", error);
-              alert("取消報名失敗，請稍後再試");
-            });
-        }
       }
     </script>
   </body>
