@@ -39,7 +39,7 @@ public class ItemController {
 	public String addItem_store(ModelMap model,HttpSession session) {
 		Object storeIdObj = session.getAttribute("storeId");
 		if (storeIdObj == null) {
-	        return "fakeLogin"; // 或回傳 null，看你需求
+	        return ""; // 或回傳 null，看你需求
 	    }
 	    int storeId = Integer.parseInt(storeIdObj.toString());
 		ItemVO itemVO = new ItemVO();

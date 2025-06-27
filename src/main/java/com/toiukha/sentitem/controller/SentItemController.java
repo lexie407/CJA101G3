@@ -28,7 +28,7 @@ public class SentItemController {
     public String memberTicketList(Model model, HttpSession session) {
         Object memIdObj = session.getAttribute("memId");
         if (memIdObj == null) {
-            return "fakeLogin";
+            return "";
         }
         int memId = Integer.parseInt(memIdObj.toString());
         List<SentItemVO> ticketList = senitemsvc.findByMemId(memId);

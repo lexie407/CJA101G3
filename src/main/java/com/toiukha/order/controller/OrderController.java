@@ -100,7 +100,7 @@ public class OrderController {
 	    // 1. 查出該廠商所有商品
 		Object storeIdObj = session.getAttribute("storeId");
 		if (storeIdObj == null) {
-	        return "fakeLogin"; // 或回傳 null，看你需求
+	        return ""; // 或回傳 null，看你需求
 	    }
 		
 	    int storeId = Integer.parseInt(storeIdObj.toString());
@@ -162,7 +162,7 @@ public class OrderController {
 		Object memIdObj = session.getAttribute("memId");
 		if (memIdObj == null) {
 			// 如果沒有登入，重導向到登入頁面
-			return "fakeLogin";
+			return "";
 		}
 		model.addAttribute("currentPage", "store");
 		model.addAttribute("activeItem", "orderList");

@@ -33,7 +33,7 @@ public class CouponController {
 		Object storeIdObj = session.getAttribute("storeId");
 		
 		if (storeIdObj == null) {
-	        return "fakeLogin"; // 或回傳 null，看你需求
+	        return ""; // 或回傳 null，看你需求
 	    }
 		
 		int storeId=Integer.parseInt(storeIdObj.toString());

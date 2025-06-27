@@ -25,7 +25,7 @@ public class SentItemStoreController {
     public String listAllSentItem(Model model, HttpSession session) {
         Object storeIdObj = session.getAttribute("storeId");
         if (storeIdObj == null) {
-            return "fakeLogin";
+            return "";
         }
         int storeId = Integer.parseInt(storeIdObj.toString());
         List<SentItemVO> sentItemList = sentItemService.findByStoreId(storeId);
