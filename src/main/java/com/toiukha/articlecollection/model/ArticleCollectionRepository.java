@@ -1,5 +1,11 @@
 package com.toiukha.articlecollection.model;
 
-public interface ArticleCollectionRepository {
+import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ArticleCollectionRepository extends JpaRepository<ArticleCollectionVO, ArticleCollectionCompositePrimaryKey> {
+
+	public List<ArticleCollectionVO> findById_MemId(Integer memId);
+	
 }
