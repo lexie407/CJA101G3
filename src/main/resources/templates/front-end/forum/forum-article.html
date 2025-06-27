@@ -197,7 +197,7 @@ console.log(contextPath);
         $('#articleDetail').html('缺少文章編號');
         return;
     }
-    fetch(`${contextPath}/article/${artId}`)
+    fetch(`/article/${artId}`)
         .then(response => {
             if (!response.ok) {
                 console.error(`Fetch error: ${response.status} ${response.statusText}`);
