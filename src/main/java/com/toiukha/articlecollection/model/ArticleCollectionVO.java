@@ -17,7 +17,15 @@ public class ArticleCollectionVO {
 	@Column(name = "COLTIME", insertable = false, updatable = false)
 	private Timestamp colTime;
 	
+	public ArticleCollectionVO() {
+		super();
+	}
 	
+	public ArticleCollectionVO(ArticleCollectionCompositePrimaryKey id) {
+		super();
+		this.id = id;
+	}
+
 	public ArticleCollectionCompositePrimaryKey getId() {
 		return id;
 	}

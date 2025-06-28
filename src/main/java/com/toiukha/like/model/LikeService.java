@@ -30,4 +30,13 @@ public class LikeService {
 		return likeRepository.searchOne(docId);
 	}
 	
+	//查讚數
+	public Integer getLikeNum(Integer docId) {
+		return likeRepository.searchLikeNum(docId);
+	}
+	
+	public Integer getLikeNum(Integer parDocId, Integer docId) {
+		return likeRepository.searchLikeNum(parDocId, docId);
+	}
+	
 }

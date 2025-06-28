@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toiukha.like.model.LikeService;
@@ -21,7 +23,7 @@ public class LikeController {
 	private LikeService likeService;
 	
 	@PostMapping("/dolike")
-	public void dolike(
+	public Integer dolike(
 	        @ModelAttribute LikeVO likeVO) {
 
 	    Integer Id = null; // 初始化為 null
@@ -69,8 +71,29 @@ public class LikeController {
 	        // likeVO.setLikeSta(Byte.valueOf((byte)1));
 	        // likeService.eidtOne(likeVO);
 	    }
+	    
+	    if (likeVO.getParDocId() == null) {
+            return likeService.getLikeNum(likeVO.getDocId());
+        } else {
+        	return likeService.getLikeNum(likeVO.getParDocId(), likeVO.getDocId());
+        }
+	    
 	}
 	
+	//取得文章按讚數
+	@PostMapping("/artLikeNum")
+	public Integer artLikeNum(
+			@RequestParam("artId") Integer parDocId) {
+		return likeService.getLikeNum(parDocId);
+	}
+	
+	//取得留言按讚數
+	@PostMapping("/commLikeNum")
+	public Integer commLikeNum(
+			@RequestParam("artId") Integer parDocId,
+			@RequestParam("commId") Integer docId) {
+		return likeService.getLikeNum(parDocId, docId);
+	}
 	
 	Timestamp getNowTime() {
 		Date date = new Date();

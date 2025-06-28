@@ -1,0 +1,258 @@
+body {
+	font-family: Arial, sans-serif;
+	background-color: #f4f4f4;
+}
+
+.container {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+h1, h2 {
+	color: #333;
+}
+
+/* --- Comment Box Styles --- */
+.comment-box-form {
+	margin-bottom: 20px;
+}
+
+.comment-box {
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	border-radius: 8px;
+	background-color: #fff;
+	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px
+		rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+}
+
+.comment-input-area {
+	display: flex;
+	align-items: center;
+}
+
+.comment-textarea {
+	flex-grow: 1;
+	border: none;
+	background: transparent;
+	resize: none;
+	padding: 8px;
+	font-size: 1em;
+	outline: none;
+	min-height: 24px; /* Single line height */
+	max-height: 120px; /* Limit expansion */
+	overflow-y: auto;
+}
+
+.comment-input-actions {
+	display: flex;
+	align-items: center;
+	margin-left: 10px;
+}
+
+.icon-button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #606770;
+	padding: 5px;
+}
+
+.icon-button:hover {
+	color: #007bff;
+}
+
+#image-preview {
+	margin-top: 10px;
+	text-align: left;
+	/* Removed display: block here, as the wrapper will handle it */
+}
+
+.image-preview-wrapper { /* New class for the wrapper */
+	position: relative;
+	display: block;
+	/* Make the wrapper a block element to ensure it takes its own line */
+	width: fit-content;
+	/* Make wrapper fit content to prevent it from taking full width */
+	/* margin-right: 10px; Removed as we only expect one image */
+}
+
+#image-preview img {
+	max-width: 100px;
+	max-height: 100px;
+	border-radius: 8px;
+	display: block; /* Ensure image doesn't have extra space below it */
+}
+
+.remove-preview {
+	position: absolute;
+	top: -8px; /* Adjusted for better positioning */
+	right: -8px; /* Adjusted for better positioning */
+	background: rgba(255, 255, 255, 0.8);
+	border-radius: 50%;
+	width: 22px;
+	height: 22px;
+	text-align: center;
+	line-height: 20px;
+	cursor: pointer;
+	font-weight: bold;
+	font-size: 16px;
+	border: 1px solid #ccc;
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+	color: #555; /* Make it a bit darker */
+}
+
+.message {
+	margin-top: 15px;
+	padding: 10px;
+	border-radius: 4px;
+	font-weight: bold;
+}
+
+.message.success {
+	background-color: #d4edda;
+	color: #155724;
+	border-color: #c3e6cb;
+}
+
+.message.error {
+	background-color: #f8d7da;
+	color: #721c24;
+	border-color: #f5c6cb;
+}
+
+.comments-section {
+	margin-top: 30px;
+	border-top: 1px solid #e0e0e0;
+	padding-top: 20px;
+}
+
+.comment-item {
+	background-color: #fff;
+	border-radius: 5px;
+	padding: 15px;
+	margin-bottom: 15px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	position: relative;
+}
+
+.comment-item strong {
+	color: #333;
+	display: block;
+	margin-bottom: 5px;
+}
+
+.comment-item p {
+	margin: 5px 0;
+	color: #666;
+	line-height: 1.5;
+}
+
+.comment-item img {
+	max-width: 100%;
+	height: auto;
+	margin-top: 10px;
+	border-radius: 4px;
+}
+
+.comment-item .comment-time {
+	font-size: 0.85em;
+	color: #999;
+	margin-top: 10px;
+}
+
+.comment-actions {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+}
+
+.actions-button {
+	background: none;
+	border: none;
+	font-size: 1.5em;
+	cursor: pointer;
+	color: #888;
+	padding: 0 5px;
+}
+
+.actions-button:hover {
+	color: #333;
+}
+
+.dropdown-menu {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+	z-index: 10;
+	min-width: 120px;
+	display: none;
+}
+
+.dropdown-menu.show {
+	display: block;
+}
+
+.dropdown-menu button {
+	display: block;
+	width: 100%;
+	padding: 10px;
+	background: none;
+	border: none;
+	text-align: left;
+	cursor: pointer;
+	color: #333;
+	font-size: 0.95em;
+}
+
+.dropdown-menu button:hover {
+	background-color: #f0f0f0;
+}
+
+.dropdown-menu button.delete {
+	color: #dc3545;
+}
+
+.dropdown-menu button.delete:hover {
+	background-color: #f8d7da;
+}
+
+/* Removed .modal styles as the modal is no longer used */
+
+/* New styles for like button and count */
+.comment-footer {
+	display: flex;
+	align-items: center;
+	margin-top: 10px;
+	border-top: 1px solid #eee;
+	padding-top: 8px;
+}
+
+.like-button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #606770;
+	display: flex;
+	align-items: center;
+	padding: 0 5px;
+}
+
+.like-button:hover {
+	color: #2196F3; /* Materialize blue */
+}
+
+.like-button i {
+	margin-right: 5px;
+}
+
+.like-count {
+	font-size: 0.9em;
+	color: #777;
+	margin-left: 5px;
+}

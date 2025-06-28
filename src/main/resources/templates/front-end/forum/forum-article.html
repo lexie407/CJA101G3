@@ -6,7 +6,14 @@
     <title>文章 | 前台 | 島遊kha</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
-    <link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
+	<link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
+	<!-- 留言用 -->
+		<link rel="stylesheet" th:href=@{/css/comments/comments.css}>
+		<!-- Materialize CSS -->
+	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+	    <!-- Material Icons -->
+	    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	
 </head>
 <style>
     .article-card {
@@ -100,6 +107,8 @@
     }
 
 </style>
+
+
 <body class="light">
 
 <div class="app-container">
@@ -112,6 +121,34 @@
             <!-- 					放自己需要的內容 -->
 <!--            這裡之後會顯示一篇文章跟它底下的留言-->
             <div id="articleDetail">載入中...</div>
+<!--             以下留言區塊 -->
+            <div id="commentsBlock">
+		        <form id="commentForm" class="comment-box-form" enctype="multipart/form-data">
+		            <div class="comment-box">
+		                <div class="comment-input-area">
+		                    <div class="input-field col s12" style="flex-grow: 1; margin-bottom: 0; margin-top: 0;">
+		                        <textarea id="commentContent" name="commCon" class="materialize-textarea" placeholder="留言..." required></textarea>
+		                    </div>
+		                    <div class="comment-input-actions">
+		                        <label for="commentImage" class="icon-button" style="cursor: pointer;"><i class="material-icons">photo_camera</i></label>
+		                        <input type="file" id="commentImage" name="commImg" accept="image/*" style="display: none;">
+		                        <button type="submit" class="btn-flat waves-effect waves-light"><i class="material-icons">send</i></button>
+		                    </div>
+		                </div>
+		                <div id="image-preview" style="display: none;"></div>
+		            </div>
+		        </form>
+		
+		        <div id="statusMessage" class="card-panel" style="display: none;"></div>
+		
+		        <div class="comments-section">
+		            <div id="commentsList">
+		                
+		            </div>
+		        </div>
+            </div>
+
+<!--             以上留言區塊 -->
         </main>
     </div>
 </div>
@@ -120,7 +157,12 @@
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 <script src="../js/notification/websocket.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- 以下留言使用 -->
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="../js/comments/comments.js"></script>
+
+<!-- 以上留言使用 -->
 <script>
     function getArtIdFromUrl() {
         const params = new URLSearchParams(window.location.search);
