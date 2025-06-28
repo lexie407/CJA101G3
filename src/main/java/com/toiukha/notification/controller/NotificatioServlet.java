@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.toiukha.members.model.MembersVO;
 import com.toiukha.notification.model.NotificationService;
 import com.toiukha.notification.model.NotificationVO;
 
@@ -41,10 +42,11 @@ public class NotificatioServlet {
 		ModelMap model) {
 		
 //		登入功能放入要改!
-		Integer memId = ((Integer)req.getSession().getAttribute(null));
+		Integer memId = ((MembersVO)req.getSession().getAttribute("member")).getMemId();
+		System.out.println(memId);
 		
 		//查詢資料
-		List<NotificationVO> list = notificationService.getMemNoti(1);
+		List<NotificationVO> list = notificationService.getMemNoti(memId);
 		
 		//轉交資料
 		model.addAttribute("currentPage", "account");
