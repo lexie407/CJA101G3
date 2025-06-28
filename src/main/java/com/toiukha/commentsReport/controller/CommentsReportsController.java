@@ -1,6 +1,7 @@
 package com.toiukha.commentsReport.controller;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -18,6 +19,8 @@ import com.toiukha.comments.model.CommentsService;
 import com.toiukha.comments.model.CommentsVO;
 import com.toiukha.commentsReport.model.CommentsReportService;
 import com.toiukha.commentsReport.model.CommentsReportVO;
+import com.toiukha.notification.model.NotificationService;
+import com.toiukha.notification.model.NotificationVO;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -29,16 +32,11 @@ public class CommentsReportsController {
 	CommentsReportService commentsReportService;
 	@Autowired
 	CommentsService commentsService;
+	@Autowired
+	NotificationService notificationService;
 
-	//========== 前台 ==========//
-	//新增檢舉
-	@PostMapping("/addCommentsReports")
-	public String addCommentsReports(
-			@ModelAttribute CommentsReportVO commentsReportVO) {
-		commentsReportService.addOne(commentsReportVO);
-		return "";
-	}
-	
+
+	//========== 前台 ==========//	
 	//查看檢舉
 	@GetMapping("/memberReportList")
 	public String memberReportList(HttpServletRequest req, ModelMap model) {
@@ -105,6 +103,21 @@ public class CommentsReportsController {
 		commentsReportVO.setRevTime(now);
 		commentsReportService.changeSta(commentsReportVO);
 		
+		//發通知
+		NotificationVO notificationVO = new NotificationVO(
+				"[系統]留言檢舉成立通知", 
+				"你好，你所提出"+commRepId+"號留言檢舉案件通過，詳情可至會員中心查看。",
+				commentsReportService.getOne(commRepId).getMemId(),
+				getNowTime());
+		notificationService.addOneNoti(notificationVO);
+		
+		
+		NotificationVO notificationVO2 = new NotificationVO(
+				"[系統]留言下架通知", 
+				"你好，你有一則留言因違反平台規範遭下架處理，特此通知。",
+				commentsService.getOne(commentsReportService.getOne(commRepId).getCommId()).getCommHol(),
+				getNowTime());
+		
 		redirectAttributes.addFlashAttribute("successMsg", "檢舉案件處理已完成!");
 		
 		return "redirect:/CommentsReports/allReportList";
@@ -125,12 +138,29 @@ public class CommentsReportsController {
 		commentsReportVO.setRemarks(remarks);
 		commentsReportVO.setRptSta((byte)2);
 		commentsReportVO.setRevTime(now);
-		System.out.println(commRepId+1);
 		commentsReportService.changeSta(commentsReportVO);
-		System.out.println(commRepId+2);
+		
+		//發通知
+		NotificationVO notificationVO = new NotificationVO(
+				"[系統]留言檢舉不成立通知", 
+				"你好，你所提出"+commRepId+"號留言檢舉案件不通過，詳情可至會員中心查看。",
+				commentsReportService.getOne(commRepId).getMemId(),
+				getNowTime());
+		notificationService.addOneNoti(notificationVO);
+		
 		redirectAttributes.addFlashAttribute("successMsg", "檢舉案件處理已完成!");
 		
 		return "redirect:/CommentsReports/allReportList";
 	}
+	
+	//現在時間
+//	public Timestamp getNowTime() {
+//		Date date = new Date();
+//		return new Timestamp(date.getTime());
+//	}
+	
+	 public Timestamp getNowTime() {
+	        return Timestamp.from(Instant.now());
+	    }
 			
 }

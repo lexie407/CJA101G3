@@ -40,6 +40,7 @@ public class NotificationVO implements java.io.Serializable {
 		super();
 	}
 
+	//修改用
 	public NotificationVO(Integer notiId, String notiTitle, String notiCont, Integer memId, Byte notiStatus,
 			Integer adminId, Timestamp notiUpdatedAt, Timestamp notiSendAt) {
 		this.notiId = notiId;
@@ -52,8 +53,7 @@ public class NotificationVO implements java.io.Serializable {
 		this.notiSendAt = notiSendAt;
 	}
 	
-	
-
+	//管理員新增用
 	public NotificationVO(String notiTitle, String notiCont, Integer memId, Integer adminId, Timestamp notiSendAt) {
 		this.notiTitle = notiTitle;
 		this.notiCont = notiCont;
@@ -61,6 +61,14 @@ public class NotificationVO implements java.io.Serializable {
 		this.adminId = adminId;
 		this.notiSendAt = notiSendAt;
 	}
+	
+	//系統自動新增用
+		public NotificationVO(String notiTitle, String notiCont, Integer memId, Timestamp notiSendAt) {
+			this.notiTitle = notiTitle;
+			this.notiCont = notiCont;
+			this.memId = memId;
+			this.notiSendAt = notiSendAt;
+		}
 
 	public Integer getNotiId() {
 		return notiId;
