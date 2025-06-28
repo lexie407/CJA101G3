@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商家查詢頁 | 管理後台 | 島遊Kha</title>
+    <!-- 載入共用資源 -->
+    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+    <!-- 自訂表單樣式 -->
+    <style>
+        body { font-size: 1.1rem; }
+        .form-field { display: flex; align-items: center; margin-bottom: 1.5rem; }
+        .form-field label { width: 120px; flex-shrink: 0; font-size: 1.1rem; }
+        input, select {
+            flex: 1; max-width: 360px; height: 2.2rem; font-size: 1rem;
+            padding: 0 0.5rem; background: var(--md-sys-color-surface-container);
+            color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline);
+            border-radius: 4px; box-shadow: 0 1px 2px var(--md-sys-color-shadow);
+            box-sizing: border-box;
+        }
+        .show-all-link {
+            display: inline-block;
+            font-size: 1.2rem;
+            color: var(--md-sys-color-primary);
+            text-decoration: underline;
+            cursor: pointer;
+            margin: 1rem 0 2rem 120px;
+        }
+        .form-actions { text-align: center; margin-top: 2rem; }
+        .form-actions button {
+            font-size: 1.2rem; padding: 0.8rem 1.5rem;
+            background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);
+            border: none; border-radius: 4px; box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+            cursor: pointer;
+        }
+        .form-actions button:hover { background: var(--md-sys-color-primary-container); }
+    </style>
+</head>
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navBackTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                    <li><a th:href="@{/store/selectPage}" class="active">查詢主頁</a></li>
+                    <li><a th:href="@{/store/listAll}">列出所有商家</a></li>
+                    <li><a th:href="@{/store/reviewStore}">審核商家</a></li>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <section class="md-card" style="max-width:700px; margin:2rem auto; padding:1rem;">
+                    <h2 class="md-headline">商家查詢</h2>
+                    <a th:href="@{/store/listAll}" class="show-all-link">顯示全部商家</a>
+                    <form th:action="@{/store/searchResults}" method="get" class="form-group">
+                        <!-- 商家狀態 -->
+                        <div class="form-field">
+                            <label for="storeStatus">狀態</label>
+                            <select id="storeStatus" name="storeStatus" th:value="${storeStatus}">
+                                <option value="">── 全部狀態 ──</option>
+                                <option value="0">待審核</option>
+                                <option value="1">已通過</option>
+                                <option value="2">已駁回</option>
+                            </select>
+                        </div>
+                        <!-- 商家帳號 -->
+                        <div class="form-field">
+                            <label for="storeAcc">帳號</label>
+                            <input id="storeAcc" type="text" name="storeAcc" placeholder="商家帳號"
+                                   th:value="${storeAcc}" />
+                        </div>
+                        <!-- 商家 ID -->
+                        <div class="form-field">
+                            <label for="storeId">商家 ID</label>
+                            <input id="storeId" type="text" name="storeId" placeholder="商家 ID"
+                                   th:value="${storeId}" />
+                        </div>
+                        <!-- 商家名稱 -->
+                        <div class="form-field">
+                            <label for="storeName">名稱</label>
+                            <input id="storeName" type="text" name="storeName" placeholder="商家名稱"
+                                   th:value="${storeName}" />
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit">查詢</button>
+                        </div>
+                    </form>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

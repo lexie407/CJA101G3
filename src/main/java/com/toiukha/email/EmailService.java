@@ -106,9 +106,8 @@ public class EmailService {
             message.setText("您好，請點擊下方連結重設您的密碼（15分鐘內有效）：\n\n" + resetLink);
 
             Transport.send(message);
-            System.out.println("✅ 重設密碼信已寄出至：" + email);
         } catch (MessagingException e) {
-            System.out.println("❌ 重設密碼信寄送失敗！");
+            System.out.println(" 重設密碼信寄送失敗！");
             e.printStackTrace();
         }
     }
@@ -118,6 +117,52 @@ public class EmailService {
     public Integer verifyResetToken(String token) {
         String memIdStr = redisTemplate.opsForValue().get("reset:" + token);
         return (memIdStr != null) ? Integer.parseInt(memIdStr) : null;
+    }
+    
+    
+    //寄送「商家重設密碼」信
+    
+    public void sendStoreResetPasswordEmail(String email, Integer storeId) {
+        String token = UUID.randomUUID().toString();
+        // 存 Redis，15 分鐘有效
+        redisTemplate.opsForValue()
+            .set("store:reset:" + token, storeId.toString(), 15, TimeUnit.MINUTES);
+
+        // 重設連結
+        String resetLink = "http://localhost:8080/store/resetPassword?token=" + token;
+
+        try {
+            Properties props = new Properties();
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", "smtp.gmail.com");
+            props.put("mail.smtp.port", "587");
+
+            Session session = Session.getInstance(props, new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication("ixlogic.wu3@gmail.com", "yziextispxbdvtbo");
+                }
+            });
+
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress("ixlogic.wu3@gmail.com"));
+            message.setRecipients(
+                Message.RecipientType.TO,
+                InternetAddress.parse(email)
+            );
+            message.setSubject("商家重設密碼通知");
+            message.setText("您好，請點擊以下連結重設您的商家密碼（15 分鐘內有效）：\n\n" + resetLink);
+
+            Transport.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+     // 驗證「商家重設密碼」token
+    public Integer verifyStoreResetToken(String token) {
+        String storeIdStr = redisTemplate.opsForValue().get("store:reset:" + token);
+        return (storeIdStr != null) ? Integer.valueOf(storeIdStr) : null;
     }
     
     

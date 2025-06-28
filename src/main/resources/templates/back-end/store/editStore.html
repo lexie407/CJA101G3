@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>更改商家資料 | 管理後台 | 島遊Kha</title>
+<!-- 載入共用資源 -->
+<th:block th:replace="~{/navBackTemplate :: headResources}" />
+
+<style>
+/* Material Design 卡片樣式 */
+.md-card {
+	max-width: 800px;
+	margin: 40px auto;
+	padding: 30px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	border-radius: 12px;
+	background-color: var(--md-sys-color-surface-container-low);
+}
+
+.md-headline {
+	text-align: center;
+	margin-bottom: 24px;
+	color: var(--md-sys-color-primary);
+	font-size: 1.8rem;
+}
+
+.form-group {
+	margin-bottom: 16px;
+	text-align: left;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 6px;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-text-field {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface-container-high);
+	color: var(--md-sys-color-on-surface);
+	box-sizing: border-box;
+	transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.md-text-field:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary);
+	box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+}
+
+.readonly-field {
+	border: none;
+	background: transparent;
+	padding: 0;
+	color: var(--md-sys-color-on-surface);
+	cursor: default;
+}
+
+.form-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+.material-button {
+	padding: 10px 24px;
+	border: none;
+	border-radius: 24px;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.md-primary-button {
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+}
+
+.md-primary-button:hover {
+	background-color: var(--md-sys-color-primary-container);
+}
+
+.md-secondary-button {
+	background-color: var(--md-sys-color-secondary-container);
+	color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-secondary-button:hover {
+	background-color: var(--md-sys-color-secondary);
+}
+
+.alert-danger {
+	margin-top: 4px;
+	color: var(--md-sys-color-error);
+	font-size: 0.9rem;
+}
+
+.avatar-preview {
+	width: 120px;
+	height: 120px;
+	border: 1px dashed var(--md-sys-color-outline);
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	margin-top: 10px;
+	background-color: var(--md-sys-color-surface-variant);
+}
+
+.avatar-preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+
+
+</style>
+</head>
+<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}" />
+		<div class="main-content">
+			
+			<main class="content-area-main">
+				<div class="md-card">
+					<h2 class="md-headline">編輯商家</h2>
+					<form th:action="@{/store/editStore}" th:object="${storeVO}"
+						method="post" enctype="multipart/form-data">
+
+						<div th:if="${errorMsgs}" class="alert-danger">
+							<ul>
+								<li th:each="err : ${errorMsgs}" th:text="${err}"></li>
+							</ul>
+						</div>
+
+						<!-- storeId -->
+						<div class="form-group">
+							<label>商家編號</label> <input type="text" th:field="*{storeId}"
+								readonly class="readonly-field" />
+						</div>
+
+						<!-- storeAcc -->
+						<div class="form-group">
+							<label>商家帳號</label> <input type="text" th:field="*{storeAcc}"
+								readonly class="readonly-field" />
+						</div>
+
+						<!-- storePwd -->
+						<div class="form-group">
+							<label for="storePwd">商家密碼</label> <input type="text"
+								id="storePwd" name="storePwd" th:value="${storeVO.storePwd}"
+								placeholder="如需修改請輸入新密碼" class="md-text-field" />
+						</div>
+
+						<!-- storeName -->
+						<div class="form-group">
+							<label>商家名稱</label> <input type="text" th:field="*{storeName}"
+								required class="md-text-field" />
+						</div>
+
+						<!-- storeGui -->
+						<div class="form-group">
+							<label>統一編號</label> <input type="text" th:field="*{storeGui}"
+								required class="md-text-field" />
+						</div>
+
+						<!-- storeRep -->
+						<div class="form-group">
+							<label>負責人</label> <input type="text" th:field="*{storeRep}"
+								required class="md-text-field" />
+						</div>
+
+						<!-- storeTel -->
+						<div class="form-group">
+							<label>連絡電話</label> <input type="text" th:field="*{storeTel}"
+								required class="md-text-field" />
+						</div>
+
+						<!-- storeAddr -->
+						<div class="form-group md-address-group">
+							<label class="address-label">公司地址:</label>
+							<div class="address-sub-group">
+								<div class="form-group md-select-field">
+									<label for="citySelect">縣市：</label> <select id="citySelect"
+										name="city" required class="md-text-field"></select>
+								</div>
+								<div class="form-group md-select-field">
+									<label for="districtSelect">鄉鎮市區：</label> <select
+										id="districtSelect" name="district" required
+										class="md-text-field"></select>
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="addrDetailInput">街道地址：</label> <input type="text"
+								id="addrDetailInput" placeholder="請輸入詳細地址" required
+								class="md-text-field" /> <input type="hidden"
+								th:field="*{storeAddr}" id="storeAddr" />
+						</div>
+
+						<!-- storeFax -->
+						<div class="form-group">
+							<label>傳真號碼</label> <input type="text" th:field="*{storeFax}"
+								required class="md-text-field" />
+						</div>
+
+						<!-- storeEmail -->
+						<div class="form-group">
+							<label>電子郵件</label> <input type="email" th:field="*{storeEmail}"
+								required class="md-text-field" />
+						</div>
+
+						<!-- storeRegDate -->
+						<div class="form-group">
+							<label>註冊時間</label> <input type="text"
+								th:value="${#dates.format(storeVO.storeRegDate,'yyyy-MM-dd HH:mm:ss')}"
+								readonly class="readonly-field" />
+						</div>
+
+						<div class="form-group">
+							<label>更新時間</label> <input type="text"
+								th:value="${#dates.format(storeVO.storeUpdatedAt,'yyyy-MM-dd HH:mm:ss')}"
+								readonly class="readonly-field" />
+						</div>
+
+						<!-- storeStatus -->
+						<div class="form-group">
+							<label>商家狀態</label> <select th:field="*{storeStatus}"
+								class="md-text-field">
+								<option value="0">待審核</option>
+								<option value="1">已通過</option>
+								<option value="2">已駁回</option>
+								<option value="3">停權</option>
+							</select>
+						</div>
+
+						<!-- storeImg -->
+						<div class="form-group">
+							<label>商家圖示</label> <input type="file" name="storeImgFile"
+								accept="image/*" />
+							<div class="avatar-preview">
+								<img th:if="${storeVO.storeImg != null}"
+									th:src="@{/store/DBGifReader(storeId=${storeVO.storeId})}"
+									alt="圖示預覽" /> <img th:if="${storeVO.storeImg == null}"
+									th:src="@{/images/user.png}" alt="預設圖示" />
+							</div>
+						</div>
+
+						<div class="form-actions">
+							<button type="button" onclick="history.back()"
+								class="material-button md-secondary-button">取消</button>
+							<button type="submit" class="material-button md-primary-button">儲存</button>
+						</div>
+					</form>
+				</div>
+			</main>
+		</div>
+	</div>
+
+	<script th:src="@{/js/store/storeEdit.js}"></script>
+	<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const currentPath = window.location.pathname;
+      document.querySelectorAll(".secondary-nav ul li a").forEach(link => {
+        if (link.getAttribute("href") === currentPath) {
+          link.classList.add("active");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

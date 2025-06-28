@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>廠商註冊</title>
+  <!-- 前台 共用 head Resources -->
+  <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+  <!-- 預載入註冊專屬樣式 -->
+  <style>
+  .app-container { display: flex; min-height: 100vh; background-color: var(--md-sys-color-background); color: var(--md-sys-color-on-background); }
+  .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; }
+  .content-area-main { flex-grow: 1; padding: 20px; background-color: var(--md-sys-color-background); border-radius: 12px; box-shadow: 0px 1px 3px rgba(var(--md-sys-color-shadow-rgb), 0.2), 0px 1px 2px rgba(var(--md-sys-color-shadow-rgb), 0.1); }
+  .md-card { max-width: 600px; margin: 40px auto; padding: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 12px; background-color: var(--md-sys-color-surface-container-low); }
+  .md-headline { font-size: 1.8rem; font-weight: 500; color: var(--md-sys-color-primary); margin-bottom: 24px; text-align: center; }
+  .form-group { margin-bottom: 20px; position: relative; }
+  .form-group label { display: block; margin-bottom: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 0.9rem; font-weight: 500; }
+  .md-text-field input[type="text"], .md-text-field input[type="password"], .md-text-field input[type="email"], .md-text-field input[type="tel"] { width: 100%; padding: 12px; border: 1px solid var(--md-sys-color-outline); border-radius: 8px; background-color: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface); font-size: 1rem; box-sizing: border-box; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+  .md-text-field input:focus { outline: none; border-color: var(--md-sys-color-primary); box-shadow: 0 0 0 3px rgba(var(--md-sys-color-primary-rgb), 0.2); }
+  .md-select-field select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill="%234A4A4A" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 24px; width: 100%; padding: 12px; border: 1px solid var(--md-sys-color-outline); border-radius: 8px; background-color: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface); font-size: 1rem; box-sizing: border-box; transition: border-color 0.3s ease, box-shadow 0.3s ease; cursor: pointer; }
+  .md-select-field select:focus { outline: none; border-color: var(--md-sys-color-primary); box-shadow: 0 0 0 3px rgba(var(--md-sys-color-primary-rgb), 0.2); }
+  .md-address-group .address-sub-group { display: flex; gap: 16px; margin-bottom: 16px; }
+  .md-address-group .address-sub-group .form-group { flex: 1; margin-bottom: 0; }
+  .md-file-input { display: flex; flex-direction: column; align-items: flex-start; }
+  .md-file-input label { margin-bottom: 8px; }
+  .md-file-input input[type="file"] { width: 100%; padding: 10px 0; border: 1px solid var(--md-sys-color-outline); border-radius: 8px; background-color: var(--md-sys-color-surface); cursor: pointer; }
+  .avatar-preview { width: 120px; height: 120px; border: 1px dashed var(--md-sys-color-outline); border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; margin-top: 10px; background-color: var(--md-sys-color-surface-variant); }
+  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar-placeholder { font-size: 80px; color: var(--md-sys-color-outline); }
+  .form-actions { margin-top: 30px; display: flex; justify-content: flex-end; gap: 12px; }
+  .material-button { display: inline-flex; align-items: center; padding: 10px 20px; border-radius: 20px; border: none; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background-color 0.3s ease, box-shadow 0.3s ease; }
+  .material-button .material-icons { margin-right: 8px; font-size: 1.2em; }
+  .md-primary-button { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .md-secondary-button { background-color: transparent; color: var(--md-sys-color-primary); border: 1px solid var(--md-sys-color-outline); }
+  .error-messages-container { background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); border-left: 5px solid var(--md-sys-color-error); padding: 15px; margin-bottom: 20px; border-radius: 4px; font-size: 0.9rem; }
+  </style>
+  
+</head>
+<body class="light">
+  <div class="app-container">
+    <!-- 前台 側邊欄 -->
+    <div th:insert="~{/navTemplate :: navbar}"></div>
+
+    <div class="main-content">
+      <main class="content-area-main">
+        <!-- 將註冊表單置於容器中，以套用統一寬度和置中樣式 -->
+        <div class="md-card register-container">
+          <h2 class="md-headline">廠商註冊</h2>
+
+          <!-- 統一錯誤訊息顯示 -->
+          <div th:if="${not #lists.isEmpty(errorMsgs)}" class="error-messages-container">
+            <div th:each="message : ${errorMsgs}"
+                 class="error-message"
+                 th:text="${message}">
+            </div>
+          </div>
+          <form th:action="@{/store/register}"
+                th:object="${storeVO}"
+                method="post"
+                enctype="multipart/form-data">
+
+            <div class="form-group md-text-field">
+              <label for="storeAcc">廠商帳號:</label>
+              <input type="text"
+                     id="storeAcc"
+                     th:field="*{storeAcc}"
+                     placeholder="6~10 字母、數字或 _"
+                     required>
+            </div>
+
+            <div class="form-group md-text-field">
+              <label for="storePwd">廠商密碼:</label>
+              <input type="password"
+                     id="storePwd"
+                     th:field="*{storePwd}"
+                     placeholder="4~10 字母、數字或 _"
+                     required>
+            </div>
+
+            <div class="form-group md-text-field">
+              <label for="storeName">廠商名稱:</label>
+              <input type="text"
+                     id="storeName"
+                     th:field="*{storeName}"
+                     placeholder="2~10 中英文或數字"
+                     required>
+            </div>
+
+            <div class="form-group md-text-field">
+              <label for="storeGui">統一編號:</label>
+              <input type="text"
+                     id="storeGui"
+                     th:field="*{storeGui}"
+                     placeholder="8 位數字"
+                     required>
+            </div>
+
+            <div class="form-group md-text-field">
+              <label for="storeRep">負責人姓名:</label>
+              <input type="text"
+                     id="storeRep"
+                     th:field="*{storeRep}"
+                     placeholder="2~20 中英文"
+                     required>
+            </div>
+
+            <div class="form-group md-text-field">
+              <label for="storeTel">連絡電話:</label>
+              <input type="tel"
+                     id="storeTel"
+                     th:field="*{storeTel}"
+                     placeholder="電話號碼"
+                     required>
+            </div>
+
+            <div class="form-group md-text-field">
+              <label for="storeFax">傳真號碼:</label>
+              <input type="tel"
+                     id="storeFax"
+                     th:field="*{storeFax}"
+                     placeholder="傳真號碼"
+                     required>
+            </div>
+
+            <div class="form-group md-address-group">
+              <label class="address-label">公司地址:</label>
+              <div class="address-sub-group">
+                <div class="form-group md-select-field">
+                  <label for="citySelect">縣市：</label>
+                  <select id="citySelect"
+                          name="city"
+                          required>
+                  </select>
+                </div>
+                <div class="form-group md-select-field">
+                  <label for="districtSelect">鄉鎮市區：</label>
+                  <select id="districtSelect"
+                          name="district"
+                          required>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group md-text-field">
+                <label for="addrDetailInput">街道地址：</label>
+                <input type="text"
+                       id="addrDetailInput"
+                       placeholder="請輸入詳細地址"
+                       required>
+                <input type="hidden"
+                       th:field="*{storeAddr}" 
+                       id="storeAddr"/>
+              </div>
+            </div>
+
+            <div class="form-group md-text-field">
+              <label for="storeEmail">電子郵件:</label>
+              <input type="email"
+                     id="storeEmail"
+                     th:field="*{storeEmail}"
+                     placeholder="請輸入 Email"
+                     required>
+            </div>
+
+            <div class="form-group md-file-input">
+              <label for="storeImg">商家圖片:</label>
+              <input type="file"
+                     id="storeImg"
+                     th:field="*{storeImg}"
+                     accept="image/*" />
+              <div class="avatar-preview">
+                <img id="storeImgPreview"
+                     th:if="${storeVO.storeImg != null}"
+                     th:src="@{'/store/image/' + ${storeVO.storeId}}"
+                     alt="商家圖片預覽" />
+                <span th:unless="${storeVO.storeImg != null}"
+                      class="material-icons avatar-placeholder">
+                  image
+                </span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <a href="javascript:history.back()"
+                 class="material-button md-secondary-button">
+                <span class="material-icons">arrow_back</span>
+                返回
+              </a>
+              <button type="submit"
+                      class="material-button md-primary-button">
+                <span class="material-icons">how_to_reg</span>
+                立即註冊
+              </button>
+            </div>
+
+          </form>
+           <script th:src="@{/js/store/storeRegister.js}"></script>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
