@@ -221,122 +221,121 @@
     <div th:insert="~{/navBackTemplate :: navbar}"></div>
     
     <div class="main-content">
-        <div class="admin-container">
-            <div class="page-header">
-                <h1 class="page-title">檢舉詳情</h1>
-                <a th:href="@{/admin/reports/list}" class="back-btn">返回列表</a>
-            </div>
-            
-            <!-- 成功/錯誤訊息顯示 -->
-            <div th:if="${successMessage}" class="alert alert-success">
-                <span th:text="${successMessage}"></span>
-            </div>
-            <div th:if="${errorMessage}" class="alert alert-danger">
-                <span th:text="${errorMessage}"></span>
-            </div>
-            
-            <div class="detail-card">
-                <!-- 基本資訊 -->
-                <div class="detail-section">
-                    <h3 class="section-title">基本資訊</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">檢舉編號</span>
-                            <span class="info-value" th:text="${report.repId}">檢舉編號</span>
+        <header class="secondary-nav">
+            <ul>
+                <li><a th:href="@{/admin/reports/list}">返回檢舉列表</a></li>
+            </ul>
+        </header>
+        
+        <main class="content-area-main">
+            <div class="admin-container">
+                <div class="page-header">
+                    <h1 class="page-title">檢舉詳情</h1>
+                    <a th:href="@{/admin/reports/list}" class="back-btn">返回列表</a>
+                </div>
+                
+                <!-- 成功/錯誤訊息顯示 -->
+                <div th:if="${successMessage}" class="alert alert-success">
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger">
+                    <span th:text="${errorMessage}"></span>
+                </div>
+                
+                <div class="detail-card">
+                    <!-- 基本資訊 -->
+                    <div class="detail-section">
+                        <h3 class="section-title">基本資訊</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">檢舉編號</span>
+                                <span class="info-value" th:text="${report.repId}">檢舉編號</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">檢舉狀態</span>
+                                <span class="info-value">
+                                    <span th:if="${report.repStatus == 0}" class="status-badge status-pending">待處理</span>
+                                    <span th:if="${report.repStatus == 1}" class="status-badge status-approved">檢舉通過</span>
+                                    <span th:if="${report.repStatus == 2}" class="status-badge status-rejected">檢舉未通過</span>
+                                    <span th:if="${report.repStatus == null}" class="status-badge status-pending">未知</span>
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">會員編號</span>
+                                <span class="info-value" th:text="${report.memId}">會員編號</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">檢舉時間</span>
+                                <span class="info-value" th:text="${#temporals.format(report.repAt, 'yyyy-MM-dd HH:mm:ss')}">檢舉時間</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">訂單編號</span>
+                                <span class="info-value" th:text="${report.ordId != null ? report.ordId : '無'}">訂單編號</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">商品編號</span>
+                                <span class="info-value" th:text="${report.itemId != null ? report.itemId : '無'}">商品編號</span>
+                            </div>
+                            <div class="info-item" th:if="${report.adminId != null}">
+                                <span class="info-label">處理管理員</span>
+                                <span class="info-value" th:text="${report.adminId}">處理管理員</span>
+                            </div>
+                            <div class="info-item" th:if="${report.rptProcTime != null}">
+                                <span class="info-label">處理時間</span>
+                                <span class="info-value" th:text="${#temporals.format(report.rptProcTime, 'yyyy-MM-dd HH:mm:ss')}">處理時間</span>
+                            </div>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">檢舉狀態</span>
-                            <span class="info-value">
-                                <span th:if="${report.repStatus == 0}" class="status-badge status-pending">待處理</span>
-                                <span th:if="${report.repStatus == 1}" class="status-badge status-approved">檢舉通過</span>
-                                <span th:if="${report.repStatus == 2}" class="status-badge status-rejected">檢舉未通過</span>
-                                <span th:if="${report.repStatus == null}" class="status-badge status-pending">未知</span>
-                            </span>
+                    </div>
+                    
+                    <!-- 檢舉理由 -->
+                    <div class="detail-section reason-section">
+                        <h3 class="section-title">檢舉理由</h3>
+                        <div class="reason-content" th:text="${report.repReason}">檢舉理由內容</div>
+                    </div>
+                    
+                    <!-- 檢舉圖片 -->
+                    <div class="detail-section image-section" th:if="${report.repImg != null && report.repImg.length > 0}">
+                        <h3 class="section-title">檢舉圖片</h3>
+                        <img th:src="@{/admin/reports/image/{repId}(repId=${report.repId})}" 
+                             class="report-image" alt="檢舉圖片">
+                    </div>
+                    
+                    <div class="detail-section image-section" th:unless="${report.repImg != null && report.repImg.length > 0}">
+                        <h3 class="section-title">檢舉圖片</h3>
+                        <div class="no-image">
+                            <p>此檢舉沒有附帶圖片</p>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">會員編號</span>
-                            <span class="info-value" th:text="${report.memId}">會員編號</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">檢舉時間</span>
-                            <span class="info-value" th:text="${#temporals.format(report.repAt, 'yyyy-MM-dd HH:mm:ss')}">檢舉時間</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">訂單編號</span>
-                            <span class="info-value" th:text="${report.ordId != null ? report.ordId : '無'}">訂單編號</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">商品編號</span>
-                            <span class="info-value" th:text="${report.itemId != null ? report.itemId : '無'}">商品編號</span>
-                        </div>
-                        <div class="info-item" th:if="${report.adminId != null}">
-                            <span class="info-label">處理管理員</span>
-                            <span class="info-value" th:text="${report.adminId}">處理管理員</span>
-                        </div>
-                        <div class="info-item" th:if="${report.rptProcTime != null}">
-                            <span class="info-label">處理時間</span>
-                            <span class="info-value" th:text="${#temporals.format(report.rptProcTime, 'yyyy-MM-dd HH:mm:ss')}">處理時間</span>
+                    </div>
+                    
+                    <!-- 處理檢舉表單 (僅在待處理狀態顯示) -->
+                    <div class="detail-section" th:if="${report.repStatus == 0}">
+                        <h3 class="section-title">處理檢舉</h3>
+                        <div class="process-form">
+                            <div class="form-group">
+                                <label class="form-label">處理管理員編號</label>
+                                <input type="number" id="adminId" class="form-input" placeholder="請輸入管理員編號" required>
+                            </div>
+                            <div class="action-buttons">
+                                <form th:action="@{/admin/reports/approve}" method="post" style="display: inline;">
+                                    <input type="hidden" name="repId" th:value="${report.repId}">
+                                    <input type="hidden" name="adminId" id="approveAdminId">
+                                    <button type="submit" class="btn btn-success" onclick="setAdminId('approveAdminId')">
+                                        <span class="material-icons">check_circle</span> 檢舉通過
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/reports/reject}" method="post" style="display: inline;">
+                                    <input type="hidden" name="repId" th:value="${report.repId}">
+                                    <input type="hidden" name="adminId" id="rejectAdminId">
+                                    <button type="submit" class="btn btn-danger" onclick="setAdminId('rejectAdminId')">
+                                        <span class="material-icons">cancel</span> 檢舉駁回
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- 檢舉理由 -->
-                <div class="detail-section reason-section">
-                    <h3 class="section-title">檢舉理由</h3>
-                    <div class="reason-content" th:text="${report.repReason}">檢舉理由內容</div>
-                </div>
-                
-                <!-- 檢舉圖片 -->
-                <div class="detail-section image-section" th:if="${report.repImg != null && report.repImg.length > 0}">
-                    <h3 class="section-title">檢舉圖片</h3>
-                    <img th:src="@{/admin/reports/image/{repId}(repId=${report.repId})}" 
-                         class="report-image" alt="檢舉圖片">
-                </div>
-                
-                <div class="detail-section image-section" th:unless="${report.repImg != null && report.repImg.length > 0}">
-                    <h3 class="section-title">檢舉圖片</h3>
-                    <div class="no-image">
-                        <p>此檢舉沒有附帶圖片</p>
-                    </div>
-                </div>
-                
-                <!-- 處理檢舉表單 (僅在待處理狀態顯示) -->
-                <div class="detail-section" th:if="${report.repStatus == 0}">
-                    <h3 class="section-title">處理檢舉</h3>
-                    <div class="process-form">
-                        <div class="form-group">
-                            <label class="form-label">處理管理員編號</label>
-                            <input type="number" id="adminId" class="form-input" placeholder="請輸入管理員編號" required>
-                        </div>
-                        <div class="action-buttons">
-                            <form th:action="@{/admin/reports/approve}" method="post" style="display: inline;">
-                                <input type="hidden" name="repId" th:value="${report.repId}">
-                                <input type="hidden" name="adminId" id="approveAdminId">
-                                <button type="submit" class="btn btn-success" onclick="setAdminId('approveAdminId')">檢舉通過</button>
-                            </form>
-                            <form th:action="@{/admin/reports/reject}" method="post" style="display: inline;">
-                                <input type="hidden" name="repId" th:value="${report.repId}">
-                                <input type="hidden" name="adminId" id="rejectAdminId">
-                                <button type="submit" class="btn btn-danger" onclick="setAdminId('rejectAdminId')">檢舉駁回</button>
-                            </form>
-                            <a th:href="@{/admin/reports/list}" class="btn btn-secondary">返回列表</a>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 操作按鈕 (已處理狀態) -->
-                <div class="action-buttons" th:if="${report.repStatus == 1}">
-                    <a th:href="@{/admin/reports/list}" class="btn btn-secondary">返回列表</a>
-                    <span class="btn btn-success" style="cursor: default;">檢舉已通過</span>
-                </div>
-                
-                <!-- 操作按鈕 (已駁回狀態) -->
-                <div class="action-buttons" th:if="${report.repStatus == 2}">
-                    <a th:href="@{/admin/reports/list}" class="btn btn-secondary">返回列表</a>
-                    <span class="btn btn-danger" style="cursor: default;">檢舉已駁回</span>
-                </div>
             </div>
-        </div>
+        </main>
     </div>
 </div>
 
