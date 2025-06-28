@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>島遊Kha - 我的優惠券</title>
+
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/header_style.css}">
+
+</head>
+
+<body class="light">
+
+    <div class="app-container">
+        <div th:insert="~{/navTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <div th:insert="~{/subnavStore_front::subnav(${activeItem})}"></div>
+            </header>
+            <main class="content-area-main">
+                <div class="page-title-container">
+                    <h2 class="page-title">我的優惠券</h2>
+                    <div class="filter-container">
+                        <label for="status-filter" class="filter-label">篩選狀態：</label>
+                        <select id="status-filter" class="filter-select">
+                            <option value="all">全部</option>
+                            <option value="0">可使用</option>
+                            <option value="1">已使用</option>
+                            <option value="2">已過期</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="coupon-container">
+                    <!--/* 假設後端傳來的 model attribute 是 memCouponList, 裡面是 MemCouponsVO */-->
+                    <th:block th:each="memCouponVO : ${memCouponList}">
+                        <div class="coupon-card" th:attr="data-status=${memCouponVO.coupSta}">
+                            <div class="coupon-card-header">
+                                <h4 class="coupon-name">
+                                    <span th:if="${memCouponVO.coupon != null}"
+                                        style="font-weight:600;font-size:1.1rem;color:#1976d2;"
+                                        th:text="${memCouponVO.coupon.couName}"></span>
+                                </h4>
+                                <div th:switch="${memCouponVO.coupSta}" class="coupon-status">
+                                    <span th:case="0" class="status-badge status-usable">可使用</span>
+                                    <span th:case="1" class="status-badge status-used">已使用</span>
+                                    <span th:case="2" class="status-badge status-expired">已過期</span>
+                                    <span th:case="3" class="status-badge status-invalid">已作廢</span>
+                                </div>
+                            </div>
+                            <div class="coupon-card-body">
+                                <div class="coupon-value">
+                                    <span class="currency-symbol">$</span>
+                                    <span class="discount-amount" th:text="${memCouponVO.disctVal}">100</span>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+
+                <style>
+                    .page-title-container {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 24px;
+                        padding: 0 16px;
+                    }
+
+                    .page-title {
+                        color: #1976d2;
+                        font-weight: 700;
+                    }
+
+                    .filter-container {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+
+                    .filter-label {
+                        font-size: 1rem;
+                        color: #555;
+                    }
+
+                    .filter-select {
+                        padding: 6px 12px;
+                        border: 1.5px solid #bdbdbd;
+                        border-radius: 6px;
+                        font-size: 1rem;
+                    }
+
+                    .coupon-container {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                        gap: 24px;
+                        padding: 16px;
+                    }
+
+                    .coupon-card {
+                        background-color: #fff;
+                        border-radius: 12px;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+                        display: flex;
+                        flex-direction: column;
+                        transition: transform 0.2s, box-shadow 0.2s;
+                    }
+
+                    .coupon-card:hover {
+                        transform: translateY(-4px);
+                        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+                    }
+
+                    .coupon-card-header {
+                        padding: 16px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-start;
+                        border-bottom: 2px dashed #e0e0e0;
+                    }
+
+                    .coupon-name {
+                        font-size: 1.1rem;
+                        font-weight: 600;
+                        color: #333;
+                        margin: 0;
+                    }
+
+                    .status-badge {
+                        padding: 4px 10px;
+                        border-radius: 16px;
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        color: #fff;
+                    }
+
+                    .status-usable {
+                        background: #4caf50;
+                    }
+
+                    .status-used {
+                        background: #9e9e9e;
+                    }
+
+                    .status-expired {
+                        background: #f44336;
+                    }
+
+                    .status-invalid {
+                        background: #757575;
+                    }
+
+                    .coupon-card-body {
+                        padding: 20px 16px;
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
+                    }
+
+                    .coupon-value {
+                        color: #1976d2;
+                        display: flex;
+                        align-items: baseline;
+                    }
+
+                    .currency-symbol {
+                        font-size: 1.4rem;
+                        font-weight: 500;
+                        margin-right: 4px;
+                    }
+
+                    .discount-amount {
+                        font-size: 2.4rem;
+                        font-weight: 700;
+                    }
+
+                    .coupon-details {
+                        font-size: 0.9rem;
+                        color: #666;
+                    }
+
+                    .expiry-date,
+                    .store-name {
+                        margin: 2px 0;
+                    }
+
+                    .coupon-card-footer {
+                        padding: 12px 16px;
+                        margin-top: auto;
+                        text-align: right;
+                    }
+
+                    .use-button {
+                        background-color: #1976d2;
+                        color: white;
+                        padding: 8px 20px;
+                        border-radius: 6px;
+                        text-decoration: none;
+                        font-weight: 600;
+                        transition: background-color 0.2s;
+                    }
+
+                    .use-button:hover {
+                        background-color: #1565c0;
+                    }
+                </style>
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../js/notification/websocket.js"></script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const filterSelect = document.getElementById('status-filter');
+                        if (filterSelect) {
+                            filterSelect.addEventListener('change', function () {
+                                const selectedStatus = this.value;
+                                document.querySelectorAll('.coupon-card').forEach(function (card) {
+                                    const cardStatus = card.getAttribute('data-status');
+                                    if (selectedStatus === 'all' || selectedStatus === cardStatus) {
+                                        card.style.display = '';
+                                    } else {
+                                        card.style.display = 'none';
+                                    }
+                                });
+                            });
+                        }
+                    });
+                </script>
+            </main>
+        </div>
+    </div>
+
+</body>
+
+</html>

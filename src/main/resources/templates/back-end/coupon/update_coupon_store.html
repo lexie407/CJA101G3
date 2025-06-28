@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修改優惠券</title>
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navStoreTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                    <div th:insert="~{/subnavCoupon_Store_back::subnav(${activeItem})}"></div>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <div class="mdc-updatecoupon-container">
+                    <div class="mdc-coupon-info-card">
+                        <div class="mdc-coupon-info-list">
+                            <div><span class="mdc-coupon-label">名稱：</span><span th:text="${couponVO.couName}"></span>
+                            </div>
+                            <div><span class="mdc-coupon-label">折扣金額：</span><span
+                                    th:text="${couponVO.discValue}"></span></div>
+                            <div><span class="mdc-coupon-label">開始時間：</span><span
+                                    th:text="${#temporals.format(couponVO.startTime, 'yyyy-MM-dd HH:mm')}"></span></div>
+                            <div><span class="mdc-coupon-label">結束時間：</span><span
+                                    th:text="${#temporals.format(couponVO.endTime, 'yyyy-MM-dd HH:mm')}"></span></div>
+                        </div>
+                    </div>
+                    <h2 class="mdc-updatecoupon-title">修改優惠券</h2>
+                    <form th:action="@{/coupon/update}" method="post" th:object="${couponVO}" class="mdc-form">
+                        <div class="mdc-form-row">
+                            <label>優惠券ID</label>
+                            <input type="text" th:field="*{couId}" class="mdc-input" readonly />
+                        </div>
+                        <div class="mdc-form-row">
+                            <label>廠商ID</label>
+                            <input type="text" th:field="*{storeId}" class="mdc-input" readonly />
+                            <input type="hidden" th:field="*{storeId}" />
+                        </div>
+                        <div class="mdc-form-row">
+                            <label>名稱</label>
+                            <input type="text" th:field="*{couName}" class="mdc-input" required />
+                            <span th:if="${#fields.hasErrors('couName')}" th:errors="*{couName}"
+                                class="mdc-error"></span>
+                        </div>
+                        <div class="mdc-form-row">
+                            <label>折扣金額</label>
+                            <input type="number" th:field="*{discValue}" class="mdc-input" min="1" max="99999"
+                                required />
+                            <span th:if="${#fields.hasErrors('discValue')}" th:errors="*{discValue}"
+                                class="mdc-error"></span>
+                        </div>
+                        <div class="mdc-form-row">
+                            <label>開始時間</label>
+                            <input type="datetime-local" th:field="*{startTime}" class="mdc-input" required />
+                            <span th:if="${#fields.hasErrors('startTime')}" th:errors="*{startTime}"
+                                class="mdc-error"></span>
+                        </div>
+                        <div class="mdc-form-row">
+                            <label>結束時間</label>
+                            <input type="datetime-local" th:field="*{endTime}" class="mdc-input" required />
+                            <span th:if="${#fields.hasErrors('endTime')}" th:errors="*{endTime}"
+                                class="mdc-error"></span>
+                        </div>
+
+                        <div class="mdc-form-actions">
+                            <button type="submit" class="mdc-button mdc-button--raised">送出修改</button>
+                        </div>
+                    </form>
+                </div>
+                <style>
+                    .mdc-updatecoupon-container {
+                        max-width: 480px;
+                        margin: 32px auto;
+                        background: #fff;
+                        border-radius: 16px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+                        padding: 32px 32px 24px 32px;
+                    }
+
+                    .mdc-updatecoupon-title {
+                        text-align: center;
+                        color: #1976d2;
+                        font-weight: 700;
+                        margin-bottom: 24px;
+                    }
+
+                    .mdc-form {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 18px;
+                    }
+
+                    .mdc-form-row {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 4px;
+                    }
+
+                    .mdc-input {
+                        border: 1.5px solid #bdbdbd;
+                        border-radius: 6px;
+                        padding: 8px 12px;
+                        font-size: 1rem;
+                        transition: border 0.2s;
+                    }
+
+                    .mdc-input:focus {
+                        border: 1.5px solid #1976d2;
+                        outline: none;
+                    }
+
+                    .mdc-error {
+                        color: #d32f2f;
+                        font-size: 0.95rem;
+                    }
+
+                    .mdc-form-actions {
+                        display: flex;
+                        justify-content: center;
+                        margin-top: 12px;
+                    }
+
+                    .mdc-button {
+                        font-size: 1rem;
+                        border-radius: 6px;
+                        padding: 8px 28px;
+                        border: none;
+                        cursor: pointer;
+                        transition: background 0.2s, box-shadow 0.2s;
+                    }
+
+                    .mdc-button--raised {
+                        background: #1976d2;
+                        color: #fff;
+                        box-shadow: 0 2px 4px rgba(25, 118, 210, 0.10);
+                    }
+
+                    .mdc-button--raised:hover {
+                        background: #1565c0;
+                    }
+
+                    .mdc-coupon-info-card {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 24px;
+                        background: #f5f7fa;
+                        border-radius: 12px;
+                        box-shadow: 0 1.5px 4px rgba(25, 118, 210, 0.08);
+                        padding: 16px 24px;
+                        margin-bottom: 24px;
+                        max-width: 420px;
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+
+                    .mdc-coupon-info-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                        font-size: 1.05rem;
+                    }
+
+                    .mdc-coupon-label {
+                        color: #1976d2;
+                        font-weight: 600;
+                        min-width: 70px;
+                        display: inline-block;
+                    }
+                </style>
+                <script th:inline="javascript">
+                    document.querySelector('form.mdc-form').addEventListener('submit', function (e) {
+                        const sta = this.querySelector('input[name="startTime"]');
+                        const end = this.querySelector('input[name="endTime"]');
+                        const disc = this.querySelector('input[name="discValue"]');
+                        const now = new Date();
+                        let valid = true;
+                        let msg = '';
+                        if (sta && sta.value && end && end.value) {
+                            const staDate = new Date(sta.value);
+                            const endDate = new Date(end.value);
+                            if (staDate < now) {
+                                valid = false;
+                                msg += '優惠券開始時間不能早於現在時間！\n';
+                            }
+                            if (endDate < now) {
+                                valid = false;
+                                msg += '優惠券結束時間不能早於現在時間！\n';
+                            }
+                            if (endDate < staDate) {
+                                valid = false;
+                                msg += '結束時間不能早於開始時間！\n';
+                            }
+                        }
+                        if (disc && disc.value) {
+                            const discValue = parseInt(disc.value, 10);
+                            if (discValue < 1 || discValue > 99999) {
+                                valid = false;
+                                msg += '折扣金額必須介於1到99999之間！';
+                            }
+                        }
+                        if (!valid) {
+                            e.preventDefault();
+                            alert(msg);
+                            return false;
+                        }
+                        // 時間格式轉換
+                        if (sta && sta.value) sta.value = sta.value.replace('T', ' ') + ':00';
+                        if (end && end.value) end.value = end.value.replace('T', ' ') + ':00';
+                    });
+                </script>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

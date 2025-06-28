@@ -1,0 +1,23 @@
+<!-- src/main/resources/templates/fragments/subnavXxx.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" th:href="@{/css/subnav.css}">
+</head>
+<body>
+<div th:fragment="subnav(activeItem)">
+    <header class="secondary-nav-ul">
+        <ul>
+            <li>
+            	<!-- th:href=頁面的url mapping，記得要改 -->
+                <a th:href="@{/store/listAllSentItem}"
+                   th:classappend="${activeItem == 'sentItem' ? 'active' : ''}">已發送電子票券</a>
+            </li>
+
+           
+
+        </ul>
+    </header>
+</div>
+</body>
+</html>

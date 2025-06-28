@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>優惠券管理 - 廠商後台</title>
+
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
+
+</head>
+
+<body class="light">
+
+    <div class="app-container">
+        <div th:insert="~{/navStoreTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                     <div th:insert="~{/subnavCoupon_Store_back::subnav(${activeItem})}"></div>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <!-- Material Design 搜尋框 + 日期區間 -->
+                <div class="mdc-search-bar">
+                    <span class="material-icons mdc-search-icon">search</span>
+                    <input type="text" id="couponSearchInput" placeholder="搜尋優惠券名稱或ID"
+                        class="mdc-input mdc-search-input">
+                    <input type="date" id="dateStart" class="mdc-date-input" style="margin-left:12px;">
+                    <span style="margin:0 4px;">~</span>
+                    <input type="date" id="dateEnd" class="mdc-date-input">
+                </div>
+                <div class="mdc-horizontal-list">
+                    <th:block th:each="couponVO : ${couponListData}">
+                        <div class="mdc-horizontal-card"
+                            th:attr="data-name=${couponVO.couName},data-id=${couponVO.couId},data-start=${#temporals.format(couponVO.startTime, 'yyyy-MM-dd')},data-end=${#temporals.format(couponVO.endTime, 'yyyy-MM-dd')}">
+                            <div class="mdc-horizontal-card__media">
+                                <span class="material-icons"
+                                    style="font-size: 80px; color: #1976d2; margin: auto;">confirmation_number</span>
+                            </div>
+                            <div class="mdc-horizontal-card__content">
+                                <h3 class="mdc-horizontal-card__title" th:text="${couponVO.couName}"></h3>
+                                <div class="mdc-horizontal-card__subtitle">優惠券ID: <span
+                                        th:text="${couponVO.couId}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">廠商ID: <span
+                                        th:text="${couponVO.storeId}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">折扣金額: <span
+                                        th:text="${couponVO.discValue}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">開始時間: <span
+                                        th:text="${#temporals.format(couponVO.startTime, 'yyyy-MM-dd HH:mm')}"></span>
+                                </div>
+                                <div class="mdc-horizontal-card__subtitle">結束時間: <span
+                                        th:text="${#temporals.format(couponVO.endTime, 'yyyy-MM-dd HH:mm')}"></span>
+                                </div>
+                                <div class="mdc-horizontal-card__actions">
+                                    <form method="post" th:action="@{/coupon/getOne_For_Update_Coupon}"
+                                        style="display:inline;">
+                                        <input type="hidden" name="couId" th:value="${couponVO.couId}">
+                                        <button type="submit" class="mdc-button mdc-button--outlined">修改</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+                <style>
+                    .mdc-search-bar {
+                        display: flex;
+                        align-items: center;
+                        background: #fff;
+                        border-radius: 24px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+                        padding: 4px 16px;
+                        width: 520px;
+                        margin: 0 auto 24px auto;
+                        border: 1.5px solid #bdbdbd;
+                        transition: border 0.2s;
+                    }
+
+                    .mdc-search-bar:focus-within {
+                        border: 1.5px solid #1976d2;
+                    }
+
+                    .mdc-search-icon {
+                        color: #1976d2;
+                        font-size: 1.5rem;
+                        margin-right: 8px;
+                    }
+
+                    .mdc-search-input {
+                        border: none;
+                        outline: none;
+                        font-size: 1.08rem;
+                        background: transparent;
+                        width: 100%;
+                        padding: 8px 0;
+                    }
+
+                    .mdc-date-input {
+                        border: none;
+                        outline: none;
+                        font-size: 1.08rem;
+                        background: transparent;
+                        padding: 8px 0;
+                        color: #1976d2;
+                        width: 130px;
+                    }
+
+                    .mdc-date-input::-webkit-input-placeholder {
+                        color: #bdbdbd;
+                    }
+
+                    .mdc-date-input:focus {
+                        background: #e3f2fd;
+                    }
+
+                    .mdc-horizontal-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 28px;
+                        padding: 24px 0;
+                    }
+
+                    .mdc-horizontal-card {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: flex-start;
+                        background: #fff;
+                        border-radius: 16px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+                        overflow: hidden;
+                        transition: box-shadow 0.2s, transform 0.2s;
+                        min-height: 140px;
+                    }
+
+                    .mdc-horizontal-card:hover {
+                        box-shadow: 0 8px 24px rgba(25, 118, 210, 0.18), 0 3px 8px rgba(0, 0, 0, 0.12);
+                        transform: translateY(-2px) scale(1.01);
+                    }
+
+                    .mdc-horizontal-card__media {
+                        flex: 0 0 120px;
+                        height: 120px;
+                        background: #f5f5f5;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+                    .mdc-horizontal-card__content {
+                        flex: 1 1 auto;
+                        padding: 18px 24px 18px 24px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                    }
+
+                    .mdc-horizontal-card__title {
+                        font-size: 1.25rem;
+                        font-weight: 600;
+                        margin: 0 0 4px 0;
+                        color: #1976d2;
+                    }
+
+                    .mdc-horizontal-card__subtitle {
+                        font-size: 0.98rem;
+                        color: #666;
+                        margin-bottom: 1px;
+                    }
+
+                    .mdc-horizontal-card__actions {
+                        display: flex;
+                        gap: 12px;
+                        margin-top: 12px;
+                    }
+
+                    .mdc-button {
+                        font-size: 0.98rem;
+                        border-radius: 6px;
+                        padding: 6px 18px;
+                        border: none;
+                        cursor: pointer;
+                        transition: background 0.2s, box-shadow 0.2s;
+                    }
+
+                    .mdc-button--outlined {
+                        background: #fff;
+                        color: #1976d2;
+                        border: 1.5px solid #1976d2;
+                    }
+
+                    .mdc-button--outlined:hover {
+                        background: #e3f2fd;
+                    }
+                </style>
+                <script>
+                    document.querySelectorAll('#couponSearchInput, #dateStart, #dateEnd').forEach(function (input) {
+                        input.addEventListener('input', filterCoupons);
+                    });
+                    function filterCoupons() {
+                        const keyword = document.getElementById('couponSearchInput').value.trim().toLowerCase();
+                        const dateStart = document.getElementById('dateStart').value;
+                        const dateEnd = document.getElementById('dateEnd').value;
+                        document.querySelectorAll('.mdc-horizontal-card').forEach(function (card) {
+                            const name = card.getAttribute('data-name').toLowerCase();
+                            const id = card.getAttribute('data-id').toLowerCase();
+                            const start = card.getAttribute('data-start');
+                            const end = card.getAttribute('data-end');
+                            let matchKeyword = !keyword || name.includes(keyword) || id.includes(keyword);
+                            let matchDate = true;
+                            if (dateStart && start < dateStart) matchDate = false;
+                            if (dateEnd && end > dateEnd) matchDate = false;
+                            if (matchKeyword && matchDate) {
+                                card.style.display = '';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    }
+                </script>
+            </main>
+        </div>
+    </div>
+
+</body>
+
+</html>

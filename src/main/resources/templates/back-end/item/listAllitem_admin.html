@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品管理 - 後台管理</title>
+
+    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+
+</head>
+
+<body class="light">
+
+    <div class="app-container">
+        <div th:insert="~{/navBackTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                    <div th:insert="~{/subnavItem_Admin_back:: subnav(${activeItem})}"></div>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <!-- Material Design 搜尋框 -->
+                <div class="mdc-search-bar">
+                    <span class="material-icons mdc-search-icon">search</span>
+                    <select id="searchType" class="mdc-search-select">
+                        <option value="name">商品名稱</option>
+                        <option value="id">商品ID</option>
+                        <option value="store">廠商ID</option>
+                    </select>
+                    <input type="text" id="itemSearchInput" placeholder="請輸入查詢內容" class="mdc-input mdc-search-input">
+                    <span class="status-label">狀態</span>
+                    <select id="statusFilter" class="mdc-search-select status-select">
+                        <option value="all">全部</option>
+                        <option value="0">未上架</option>
+                        <option value="1">上架</option>
+                        <option value="2">下架</option>
+                    </select>
+                </div>
+
+                <div class="mdc-horizontal-list">
+                    <th:block th:each="itemVO : ${itemListData_admin}">
+                        <div class="mdc-horizontal-card"
+                            th:attr="data-name=${itemVO.itemName},data-id=${itemVO.itemId}">
+                            <div class="mdc-horizontal-card__media">
+                                <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
+                            </div>
+                            <div class="mdc-horizontal-card__content">
+                                <h3 class="mdc-horizontal-card__title" th:text="${itemVO.itemName}"></h3>
+                                <div class="mdc-horizontal-card__subtitle">商品編號: <span
+                                        th:text="${itemVO.itemId}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">廠商編號: <span
+                                        th:text="${itemVO.storeId}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">庫存量: <span
+                                        th:text="${itemVO.stockQuantity}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">狀態:
+                                    <span th:switch="${itemVO.itemStatus}">
+                                        <span th:case="0">未上架</span>
+                                        <span th:case="1">上架</span>
+                                        <span th:case="2">下架</span>
+                                        <span th:case="*">未知</span>
+                                    </span>
+                                </div>
+                                <div class="mdc-horizontal-card__subtitle">創建: <span
+                                        th:text="${#dates.format(itemVO.creAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">更新: <span
+                                        th:text="${#dates.format(itemVO.updAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+                                <div class="mdc-horizontal-card__subtitle">檢舉成立次數: <span
+                                        th:text="${itemVO.repCount}"></span></div>
+                                <div class="mdc-horizontal-card__desc">說明: <span th:text="${itemVO.itemInfo}"></span>
+                                </div>
+                                <div class="mdc-horizontal-card__price">價格: <span th:text="${itemVO.itemPrice}"></span>
+                                </div>
+                                <div class="mdc-horizontal-card__promo" th:if="${itemVO.discPrice != null}">
+                                    促銷價: <span th:text="${itemVO.discPrice}"></span>
+                                    <span th:if="${itemVO.staTime != null}">
+                                        | 開始: <span
+                                            th:text="${#temporals.format(itemVO.staTime, 'yyyy-MM-dd HH:mm')}"></span>
+                                    </span>
+                                    <span th:if="${itemVO.endTime != null}">
+                                        | 結束: <span
+                                            th:text="${#temporals.format(itemVO.endTime, 'yyyy-MM-dd HH:mm')}"></span>
+                                    </span>
+                                </div>
+                                <div class="mdc-horizontal-card__actions">
+                                    <button type="button" class="mdc-button mdc-button--outlined btn-puton"
+                                        th:data-id="${itemVO.itemId}">上架</button>
+                                    <button type="button"
+                                        class="mdc-button mdc-button--outlined btn-putoff btn-putoff-red"
+                                        th:data-id="${itemVO.itemId}">下架</button>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+
+                <style>
+                    .mdc-search-bar {
+                        display: flex;
+                        align-items: center;
+                        background: #fff;
+                        border-radius: 24px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+                        padding: 4px 16px;
+                        width: 520px;
+                        margin: 0 auto 24px auto;
+                        border: 1.5px solid #bdbdbd;
+                        transition: border 0.2s;
+                    }
+
+                    .mdc-search-bar:focus-within {
+                        border: 1.5px solid #1976d2;
+                    }
+
+                    .mdc-search-icon {
+                        color: #1976d2;
+                        font-size: 1.5rem;
+                        margin-right: 8px;
+                    }
+
+                    .mdc-search-input {
+                        border: none;
+                        outline: none;
+                        font-size: 1.08rem;
+                        background: transparent;
+                        width: 100%;
+                        padding: 8px 0;
+                    }
+
+                    .mdc-horizontal-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 28px;
+                        padding: 24px 0;
+                    }
+
+                    .mdc-horizontal-card {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: flex-start;
+                        background: #fff;
+                        border-radius: 16px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+                        overflow: hidden;
+                        transition: box-shadow 0.2s, transform 0.2s;
+                        min-height: 180px;
+                    }
+
+                    .mdc-horizontal-card:hover {
+                        box-shadow: 0 8px 24px rgba(25, 118, 210, 0.18), 0 3px 8px rgba(0, 0, 0, 0.12);
+                        transform: translateY(-2px) scale(1.01);
+                    }
+
+                    .mdc-horizontal-card__media {
+                        flex: 0 0 180px;
+                        height: 180px;
+                        background: #f5f5f5;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+                    .mdc-horizontal-card__media img {
+                        width: 180px;
+                        height: 180px;
+                        object-fit: cover;
+                        border-radius: 0;
+                    }
+
+                    .mdc-horizontal-card__content {
+                        flex: 1 1 auto;
+                        padding: 18px 24px 18px 24px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                    }
+
+                    .mdc-horizontal-card__title {
+                        font-size: 1.25rem;
+                        font-weight: 600;
+                        margin: 0 0 4px 0;
+                        color: #1976d2;
+                    }
+
+                    .mdc-horizontal-card__subtitle {
+                        font-size: 0.98rem;
+                        color: #666;
+                        margin-bottom: 1px;
+                    }
+
+                    .mdc-horizontal-card__desc {
+                        font-size: 0.98rem;
+                        color: #444;
+                        margin: 8px 0 2px 0;
+                    }
+
+                    .mdc-horizontal-card__price {
+                        font-size: 1.1rem;
+                        color: #d32f2f;
+                        font-weight: 600;
+                        margin: 8px 0 0 0;
+                    }
+
+                    .mdc-horizontal-card__promo {
+                        font-size: 1.05rem;
+                        color: #388e3c;
+                        font-weight: 600;
+                        margin: 2px 0 0 0;
+                    }
+
+                    .mdc-horizontal-card__actions {
+                        display: flex;
+                        gap: 12px;
+                        margin-top: 12px;
+                    }
+
+                    .mdc-button {
+                        font-size: 0.98rem;
+                        border-radius: 6px;
+                        padding: 6px 18px;
+                        border: none;
+                        cursor: pointer;
+                        transition: background 0.2s, box-shadow 0.2s;
+                    }
+
+                    .mdc-button--outlined {
+                        background: #fff;
+                        color: #1976d2;
+                        border: 1.5px solid #1976d2;
+                    }
+
+                    .mdc-button--outlined:hover {
+                        background: #e3f2fd;
+                    }
+
+                    .mdc-search-select {
+                        border: none;
+                        background: transparent;
+                        font-size: 1.08rem;
+                        color: #1976d2;
+                        margin-right: 8px;
+                        outline: none;
+                        padding: 4px 8px;
+                    }
+
+                    .mdc-button.btn-putoff-red {
+                        border-color: #d32f2f;
+                        color: #fff;
+                        background: #d32f2f;
+                    }
+
+                    .mdc-button.btn-putoff-red:hover {
+                        background: #b71c1c;
+                        border-color: #b71c1c;
+                        color: #fff;
+                    }
+
+                    .status-label {
+                        display: inline-block;
+                        font-weight: 600;
+                        color: #1976d2;
+                        margin-left: 24px;
+                        margin-right: 2px;
+                        font-size: 1.05rem;
+                        line-height: 1.1;
+                        letter-spacing: 2px;
+                        text-align: center;
+                        min-width: 20px;
+                        vertical-align: middle;
+                    }
+
+                    .status-select {
+                        margin-left: 10px;
+                        min-width: 90px;
+                    }
+                </style>
+
+                <script>
+                    // 多欄位搜尋功能
+                    document.getElementById('itemSearchInput').addEventListener('input', filterCards);
+                    document.getElementById('searchType').addEventListener('change', filterCards);
+                    document.getElementById('statusFilter').addEventListener('change', filterCards);
+
+                    function filterCards() {
+                        const keyword = document.getElementById('itemSearchInput').value.trim().toLowerCase();
+                        const type = document.getElementById('searchType').value;
+                        const status = document.getElementById('statusFilter').value;
+                        document.querySelectorAll('.mdc-horizontal-card').forEach(function (card) {
+                            const name = card.getAttribute('data-name').toLowerCase();
+                            const id = card.getAttribute('data-id').toLowerCase();
+                            const store = card.querySelector('.mdc-horizontal-card__subtitle:nth-child(3) span').textContent.trim().toLowerCase();
+                            const statusText = card.querySelector('.mdc-horizontal-card__subtitle:nth-child(5) span').textContent.trim();
+                            let match = false;
+                            if (type === 'name') {
+                                match = name.includes(keyword);
+                            } else if (type === 'id') {
+                                match = id.includes(keyword);
+                            } else if (type === 'store') {
+                                match = store.includes(keyword);
+                            }
+                            // 狀態過濾
+                            let statusMatch = (status === 'all');
+                            if (!statusMatch) {
+                                if (status === '0') statusMatch = statusText === '未上架';
+                                if (status === '1') statusMatch = statusText === '上架';
+                                if (status === '2') statusMatch = statusText === '下架';
+                            }
+                            card.style.display = (match && statusMatch) ? '' : 'none';
+                        });
+                    }
+
+                    // AJAX 上下架功能
+                    document.querySelectorAll('.btn-puton').forEach(btn => {
+                        btn.addEventListener('click', function () {
+                            const itemId = this.getAttribute('data-id');
+                            fetch('/item/putOn', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: 'itemId=' + encodeURIComponent(itemId)
+                            })
+                                .then(res => res.ok ? res.text() : Promise.reject(res))
+                                .then(msg => {
+                                    alert('上架成功');
+                                    location.reload();
+                                })
+                                .catch(() => alert('上架失敗'));
+                        });
+                    });
+                    document.querySelectorAll('.btn-putoff').forEach(btn => {
+                        btn.addEventListener('click', function () {
+                            const itemId = this.getAttribute('data-id');
+                            fetch('/item/putOff', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: 'itemId=' + encodeURIComponent(itemId)
+                            })
+                                .then(res => res.ok ? res.text() : Promise.reject(res))
+                                .then(msg => {
+                                    alert('下架成功');
+                                    location.reload();
+                                })
+                                .catch(() => alert('下架失敗'));
+                        });
+                    });
+                </script>
+            </main>
+        </div>
+    </div>
+
+</body>
+
+</html>

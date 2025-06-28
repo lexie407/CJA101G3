@@ -1,0 +1,24 @@
+<!-- src/main/resources/templates/fragments/subnavXxx.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" th:href="@{/css/subnav.css}">
+</head>
+<body>
+<div th:fragment="subnav(activeItem)">
+    <header class="secondary-nav-ul">
+        <ul>
+            <li>
+            	<!-- th:href=頁面的url mapping，記得要改 -->
+                <a th:href="@{/coupon/listAllCoupon_back}"
+                   th:classappend="${activeItem == 'listAllCoupon' ? 'active' : ''}">優惠券列表</a>
+            </li>
+            <li>
+                <a th:href="@{/coupon/addCoupon}"
+                   th:classappend="${activeItem == 'addCoupon' ? 'active' : ''}">新增優惠券</a>
+            </li>
+        </ul>
+    </header>
+</div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>島遊Kha後台管理</title>
+	<th:block th:fragment="headResources">
+		<link rel="stylesheet" th:href="@{/css/back_light.css}">
+		<link rel="stylesheet" th:href="@{/css/back_style.css}">
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	</th:block>
+</head>
+
+<body class="light">
+	<div class="app-container">
+		<aside th:fragment="navbar" class="left-nav">
+			<div class="logo-area">
+				<p class="site-name">島遊<span class="site-name2">Kha</span></p>
+				<p>廠商後台</p>
+			</div>
+			<ul>
+				<li th:classappend="${currentPage == 'product' ? 'active' : ''}"><a href="/item/listAllItem_back"><span
+							class="material-icons">inventory_2</span>商品管理</a></li>
+				<li th:classappend="${currentPage == 'coupon' ? 'active' : ''}"><a href="/coupon/listAllCoupon_back"><span
+							class="material-icons">local_offer</span>優惠券管理</a></li>
+				<li th:classappend="${currentPage == 'order' ? 'active' : ''}"><a href="/order/store_listAllOrder"><span
+							class="material-icons">receipt_long</span>訂單管理</a></li>
+				<li th:classappend="${currentPage == 'sentItem' ? 'active' : ''}"><a href="/store/listAllSentItem"><span
+							class="material-icons">confirmation_number</span>電子票券管理</a></li>
+
+				<hr>
+
+				<li>
+					<div class="member-info-area">
+						<img th:src="@{/images/user.png}" alt="User Avatar" class="member-avatar"> <span
+							class="member-name">廠商名稱</span>
+					</div>
+				</li>
+				<li>
+					<div class="logout-area">
+						<button class="logout-btn material-button">
+							<span class="material-icons">logout</span> 登出
+						</button>
+					</div>
+				</li>
+			</ul>
+		</aside>
+
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<!--              放自己的內容 -->
+				</ul>
+			</header>
+
+			<main class="content-area-main">
+				<!--              放自己的內容                 -->
+			</main>
+		</div>
+
+	</div>
+
+	<script src="#"></script>
+
+</body>
+
+</html>

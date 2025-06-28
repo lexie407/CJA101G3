@@ -1,0 +1,45 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>員工資料 - listOneEmp.html</title>
+
+
+<style type="text/css">
+	
+    span {
+		display: inline-block;
+		width: 150px;
+		text-align: left;
+		font-weight: bold;
+	}
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
+		 <div align="center"> <h2>員工個人資料 - listOneEmp.html</h2>
+		 <h3><a class="navbar-brand" th:href="@{/order/select_page}"><img th:src="@{/images/back1.gif}">回查詢頁<label th:text="${success}"></label></a></h3></div>
+</nav>
+
+	<div align="center" th:fragment="listOneEmp-div"> 此div被select_page.html第158行insert用
+		<h3><span>查詢結果 :</span></h3>
+		<span>訂單編號:</span><span th:text="${orderVO.ordId}"></span><br/>
+		<span>會員編號:</span><span th:text="${orderVO.memId}"></span><br/>
+		<span>訂單狀態:</span><span th:text="${orderVO.ordSta}"></span><br/>
+		<span>訂單日期:</span><span th:text="${orderVO.creDate}"></span><br/>
+	</div>
+
+
+</body>
+</html>

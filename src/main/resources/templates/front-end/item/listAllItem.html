@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>島遊Kha - 商品列表</title>
+
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/header_style.css}"> <!-- header css -->
+
+</head>
+
+<body class="light">
+
+    <div class="app-container">
+        <div th:insert="~{/navTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <div th:insert="~{/subnavStore_front::subnav(${activeItem})}"></div>
+            </header>
+            <main class="content-area-main">
+                <input type="hidden" name="memId" th:value="${session.memId}">
+                <div class="container">
+                    <th:block th:each="itemVO : ${itemListData_front}">
+                        <div class="card">
+                            <h4 th:text="${itemVO.itemName}"></h4>
+                            <p>商品說明: <span th:text="${itemVO.itemInfo}"></span></p>
+                            <p>
+                                <span
+                                    th:if="${itemVO.discPrice != null} and ${itemVO.staTime != null} and ${itemVO.endTime != null} and ${#temporals.createNow().isAfter(itemVO.staTime)} and ${#temporals.createNow().isBefore(itemVO.endTime)}">
+                                    <span style="text-decoration: line-through; color: #888;">原價: <span
+                                            th:text="${itemVO.itemPrice}"></span></span>
+                                    <span style="color: #d32f2f; font-weight: bold; margin-left: 6px;">促銷價: <span
+                                            th:text="${itemVO.discPrice}"></span></span>
+                                </span>
+                                <span
+                                    th:if="${itemVO.discPrice == null} or ${itemVO.staTime == null} or ${itemVO.endTime == null} or ${#temporals.createNow().isBefore(itemVO.staTime)} or ${#temporals.createNow().isAfter(itemVO.endTime)}">
+                                    商品價格: <span th:text="${itemVO.itemPrice}"></span>
+                                </span>
+                            </p>
+                            <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
+
+                            <form method="post" th:action="@{/item/add_to_shopCart}" class="shopping-cart-form"
+                                style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
+                                <input type="hidden" name="memId" th:value="${session.memId}">
+                                <input type="number" name="quantity" class="quantity-input" min="1" max="99" value="1"
+                                    style="width: 50px; height: 28px; border-radius: 4px; border: 1px solid #ccc; text-align: center; margin-right: 4px;" />
+                                <button type="button" class="add-to-cart-btn" style="height: 32px;">加入購物車</button>
+                            </form>
+                        </div>
+                    </th:block>
+                </div>
+
+                <style>
+                    .container {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 20px;
+                        justify-content: center;
+                    }
+
+                    .card {
+                        width: 200px;
+                        background-color: #f9f9f9;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                        padding: 8px;
+                        text-align: center;
+                        transition: transform 0.3s ease;
+                        font-size: 12px;
+                    }
+
+                    .card img {
+                        width: 100%;
+                        height: auto;
+                        border-radius: 8px;
+                    }
+
+                    .card:hover {
+                        transform: scale(1.05);
+                    }
+
+                    .card button {
+                        background-color: #1976d2;
+                        color: white;
+                        padding: 4px 8px;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 12px;
+                        margin: 2px 0;
+                        transition: background 0.2s;
+                    }
+
+                    .card button:hover {
+                        background-color: #1565c0;
+                    }
+                </style>
+
+                <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+                <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+                <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+                <script src="../js/notification/websocket.js"></script>
+                <script>
+                    $(document).ready(function () {
+                        // 處理加入購物車按鈕點擊事件
+                        $('.add-to-cart-btn').click(function (e) {
+                            e.preventDefault();
+                            var form = $(this).closest('form');
+                            var itemId = form.find('input[name="itemId"]').val();
+                            var memId = form.find('input[name="memId"]').val();
+                            var quantity = form.find('input[name="quantity"]').val();
+
+                            if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
+                                window.location.href = window.location.origin + '/fakeLogin';
+                                return;
+                            }
+
+                            console.log('Sending request with:', { itemId: itemId, memId: memId, quantity: quantity });
+
+                            $.ajax({
+                                url: form.attr('action'),
+                                type: 'POST',
+                                data: {
+                                    itemId: itemId,
+                                    memId: memId,
+                                    quantity: quantity
+                                },
+                                success: function (response) {
+                                    console.log('Response:', response);
+                                    if (response === 'success') {
+                                        alert('商品已成功加入購物車！');
+                                    } else {
+                                        alert('加入購物車失敗：' + response);
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    console.error('Error details:', {
+                                        status: status,
+                                        error: error,
+                                        response: xhr.responseText
+                                    });
+                                    alert('加入購物車失敗，請稍後再試！\n錯誤信息：' + error);
+                                }
+                            });
+                        });
+
+                        $('#cart-fab').click(function () {
+                            var memId = $('input[name="memId"]').val();
+                            if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
+                                window.location.href = window.location.origin + '/fakeLogin';
+                                return;
+                            }
+
+                            // 先獲取購物車內容
+                            $.ajax({
+                                url: '/item/get_cart_detail',
+                                type: 'POST',
+                                data: { memId: memId },
+                                success: function (cartList) {
+                                    // 再獲取會員優惠券
+                                    $.ajax({
+                                        url: '/item/get_member_coupons',
+                                        type: 'POST',
+                                        data: { memId: memId },
+                                        success: function (memberCoupons) {
+                                            displayCartModal(cartList, memberCoupons, memId);
+                                        },
+                                        error: function () {
+                                            displayCartModal(cartList, [], memId);
+                                        }
+                                    });
+                                },
+                                error: function () {
+                                    alert('取得購物車失敗，請稍後再試！');
+                                }
+                            });
+                        });
+
+                        function displayCartModal(cartList, memberCoupons, memId) {
+                            var html = '<div id="cart-modal" style="position:fixed;top:10%;left:50%;transform:translateX(-50%);background:#fff;padding:24px 32px;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.18);z-index:2000;max-height:80vh;overflow-y:auto;">';
+                            html += '<h3 style="color:#1976d2;">購物車內容</h3>';
+
+                            if (cartList.length === 0) {
+                                html += '<p>購物車是空的</p>';
+                            } else {
+                                // 計算購物車中商品的商店ID
+                                var storeIds = new Set();
+                                cartList.forEach(function (item) {
+                                    if (item.storeId) {
+                                        storeIds.add(item.storeId);
+                                    }
+                                });
+
+                                html += '<table style="width:100%;font-size:15px;"><tr><th>商品名稱</th><th>單價</th><th>數量</th></tr>';
+                                var total = 0;
+                                cartList.forEach(function (item) {
+                                    var price = item.price;
+                                    html += '<tr data-itemid="' + item.itemId + '">';
+                                    html += '<td>' + item.itemName + '</td>';
+                                    html += '<td>' + price + '</td>';
+                                    html += '<td><input type="number" class="cart-qty-input" value="' + item.quantity + '" min="1" style="width:48px;text-align:center;border-radius:4px;border:1px solid #ccc;"></td>';
+                                    html += '<td><button class="remove-cart-btn" style="color:#fff;background:#d32f2f;border:none;border-radius:4px;padding:2px 10px;">移除</button></td>';
+                                    html += '</tr>';
+                                    total += price * item.quantity;
+                                });
+                                html += '</table>';
+
+                                // 優惠券選擇區域：檢查會員是否有優惠券
+                                if (memberCoupons.length > 0) {
+                                    html += '<div style="margin-top:20px;border-top:1px solid #eee;padding-top:20px;">';
+                                    html += '<h4 style="color:#1976d2;margin-bottom:10px;">選擇優惠券</h4>';
+                                    html += '<select id="coupon-select" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;margin-bottom:10px;">';
+                                    html += '<option value="">不使用優惠券</option>';
+
+                                    // 遍歷所有會員優惠券
+                                    memberCoupons.forEach(function (coupon) {
+                                        // 檢查此優惠券的商家是否與購物車中的任一商品商家匹配
+                                        var isApplicable = false;
+                                        storeIds.forEach(function (storeId) {
+                                            if (coupon.storeId === storeId) {
+                                                isApplicable = true; // 若匹配，標記為適用
+                                            }
+                                        });
+
+                                        // 如果優惠券適用，則將其添加到下拉選單中
+                                        if (isApplicable) {
+                                            html += '<option value="' + coupon.couId + '" data-discount="' + coupon.discValue + '">';
+                                            html += coupon.couName + ' (折抵 ' + coupon.discValue + ' 元)';
+                                            html += '</option>';
+                                        }
+                                    });
+
+                                    html += '</select>';
+                                    html += '</div>';
+                                } else {
+                                    // 若會員沒有任何優惠券，顯示提示訊息
+                                    html += '<div style="margin-top:20px;border-top:1px solid #eee;padding-top:20px;">';
+                                    html += '<p style="color:#666;">您目前沒有可用的優惠券</p>';
+                                    html += '</div>';
+                                }
+
+                                // 總金額顯示區域
+                                html += '<div style="text-align:right;font-size:16px;margin:10px 0;color:#d32f2f;">';
+                                html += '原價：<span id="cart-original-total">' + total + '</span> 元<br>';
+                                html += '優惠券折抵：<span id="coupon-discount">0</span> 元<br>';
+                                html += '總金額：<span id="cart-total-amount">' + total + '</span> 元';
+                                html += '</div>';
+
+                                // 結帳表單
+                                html += '<form id="checkout-form" method="post" action="/order/checkout">';
+                                html += '<input type="hidden" name="memId" value="' + memId + '"/>';
+                                html += '<input type="hidden" name="selectedCouponId" id="selected-coupon-id" value=""/>';
+                                cartList.forEach(function (item, idx) {
+                                    html += '<input type="hidden" name="items[' + idx + '].itemId" value="' + item.itemId + '"/>';
+                                    html += '<input type="hidden" name="items[' + idx + '].price" value="' + item.price + '"/>';
+                                    html += '<input type="hidden" name="items[' + idx + '].quantity" value="' + item.quantity + '"/>';
+                                });
+                                html += '<button type="submit" style="margin-top:18px;padding:6px 18px;border-radius:6px;background:#43a047;color:#fff;border:none;">結帳</button>';
+                                html += '</form>';
+                            }
+
+                            html += '<button onclick="$(\'#cart-modal\').remove();" style="margin-top:18px;padding:6px 18px;border-radius:6px;background:#1976d2;color:#fff;border:none;">關閉</button>';
+                            html += '</div>';
+                            $('#cart-modal').remove();
+                            $('body').append(html);
+
+                            // 綁定購物車內的各種事件
+                            bindCartEvents(memId);
+                        }
+
+                        /**
+                         * 更新購物車總金額顯示
+                         * 此函數會重新計算商品總價，並減去已選擇的優惠券折扣
+                         */
+                        function updateCartTotal() {
+                            var total = 0;
+                            // 遍歷購物車中的每一項商品以計算原始總價
+                            $('#cart-modal table tr[data-itemid]').each(function () {
+                                var tr = $(this);
+                                var price = parseFloat(tr.find('td:nth-child(2)').text());
+                                var quantity = parseInt(tr.find('.cart-qty-input').val());
+                                if (!isNaN(price) && !isNaN(quantity)) {
+                                    total += price * quantity;
+                                }
+                            });
+
+                            // 獲取當前優惠券的折扣金額
+                            var couponDiscount = parseInt($('#coupon-discount').text()) || 0;
+                            // 計算最終總金額（原始總價 - 折扣），確保不為負數
+                            var finalTotal = Math.max(0, total - couponDiscount);
+
+                            // 更新頁面上的金額顯示
+                            $('#cart-original-total').text(total);
+                            $('#cart-total-amount').text(finalTotal);
+
+                            // 更新結帳表單中的隱藏欄位，以確保提交的是最新的購物車內容
+                            var checkoutForm = $('#checkout-form');
+                            checkoutForm.find('input[name^="items"]').remove();
+                            var newFormItemsHtml = '';
+                            $('#cart-modal table tr[data-itemid]').each(function (idx) {
+                                var tr = $(this);
+                                var itemId = tr.data('itemid');
+                                var price = parseFloat(tr.find('td:nth-child(2)').text());
+                                var quantity = parseInt(tr.find('.cart-qty-input').val());
+                                newFormItemsHtml += '<input type="hidden" name="items[' + idx + '].itemId" value="' + itemId + '"/>';
+                                newFormItemsHtml += '<input type="hidden" name="items[' + idx + '].price" value="' + price + '"/>';
+                                newFormItemsHtml += '<input type="hidden" name="items[' + idx + '].quantity" value="' + quantity + '"/>';
+                            });
+                            checkoutForm.find('button[type="submit"]').before(newFormItemsHtml);
+                        }
+
+                        /**
+                         * 當購物車內容變更時（如移除商品），重新檢查並更新優惠券選項
+                         * 此函數會重新從後端獲取購物車與優惠券資料
+                         */
+                        function updateCouponOptions() {
+                            // 如果購物車已空，則隱藏優惠券區塊並重置相關數值
+                            if ($('#cart-modal table tr[data-itemid]').length === 0) {
+                                $('#coupon-select').closest('div').hide(); // 隱藏下拉選單的容器
+                                $('#coupon-select').val(''); // 清空選擇
+                                $('#coupon-discount').text('0'); // 折扣歸零
+                                $('#selected-coupon-id').val(''); // 清除已選優惠券ID
+                                updateCartTotal(); // 更新總金額
+                                return; // 中斷執行
+                            }
+
+                            // 如果購物車中還有商品，則重新獲取購物車和優惠券資料
+                            var memId = $('input[name="memId"]').val();
+                            $.ajax({
+                                url: '/item/get_cart_detail', // 獲取最新購物車詳情
+                                type: 'POST',
+                                data: { memId: memId },
+                                success: function (cartList) {
+                                    // 成功獲取購物車後，再獲取會員的優惠券
+                                    $.ajax({
+                                        url: '/item/get_member_coupons',
+                                        type: 'POST',
+                                        data: { memId: memId },
+                                        success: function (memberCoupons) {
+                                            // 使用最新的購物車和優惠券資料來更新下拉選單
+                                            updateCouponSelect(cartList, memberCoupons);
+                                        },
+                                        error: function () {
+                                            // 若獲取優惠券失敗，也嘗試用現有購物車資料更新
+                                            updateCouponSelect(cartList, []);
+                                        }
+                                    });
+                                },
+                                error: function () {
+                                    console.log('重新獲取購物車資料失敗');
+                                }
+                            });
+                        }
+
+                        /**
+                         * 根據最新的購物車內容和會員優惠券，更新優惠券下拉選單
+                         * @param {Array} cartList - 最新的購物車商品列表
+                         * @param {Array} memberCoupons - 最新的會員優惠券列表
+                         */
+                        function updateCouponSelect(cartList, memberCoupons) {
+                            // 重新計算當前購物車中所有商品的商家ID
+                            var storeIds = new Set();
+                            cartList.forEach(function (item) {
+                                if (item.storeId) {
+                                    storeIds.add(item.storeId);
+                                }
+                            });
+
+                            var couponSelect = $('#coupon-select');
+                            var currentSelectedCoupon = couponSelect.val(); // 記錄當前選擇的優惠券
+
+                            // 清空現有選項，並加入預設選項
+                            couponSelect.empty();
+                            couponSelect.append('<option value="">不使用優惠券</option>');
+
+                            // 遍歷優惠券，只顯示適用於當前購物車商家的選項
+                            var hasApplicableCoupons = false;
+                            memberCoupons.forEach(function (coupon) {
+                                var isApplicable = false;
+                                storeIds.forEach(function (storeId) {
+                                    if (coupon.storeId === storeId) {
+                                        isApplicable = true;
+                                    }
+                                });
+
+                                if (isApplicable) {
+                                    hasApplicableCoupons = true; // 標記有適用的優惠券
+                                    var option = $('<option></option>')
+                                        .val(coupon.couId)
+                                        .attr('data-discount', coupon.discValue)
+                                        .text(coupon.couName + ' (折抵 ' + coupon.discValue + ' 元)');
+                                    couponSelect.append(option);
+                                }
+                            });
+
+                            // 檢查先前選擇的優惠券是否仍然適用，若不適用則重置
+                            if (currentSelectedCoupon && !couponSelect.find('option[value="' + currentSelectedCoupon + '"]').length) {
+                                couponSelect.val(''); // 清空選擇
+                                $('#coupon-discount').text('0'); // 折扣歸零
+                                $('#selected-coupon-id').val(''); // 清除ID
+                            }
+
+                            // 根據是否有適用優惠券，決定顯示或隱藏優惠券區塊
+                            var couponSection = couponSelect.closest('div');
+                            if (hasApplicableCoupons) {
+                                couponSection.show();
+                            } else {
+                                couponSection.hide();
+                                couponSelect.val('');
+                                $('#coupon-discount').text('0');
+                                $('#selected-coupon-id').val('');
+                            }
+
+                            // 最後，更新一次總金額顯示
+                            updateCartTotal();
+                        }
+
+                        /**
+                         * 綁定購物車彈窗內的所有事件
+                         * @param {string} memId - 會員ID
+                         */
+                        function bindCartEvents(memId) {
+                            // 綁定優惠券下拉選單的變更事件
+                            $('#coupon-select').on('change', function () {
+                                var selectedOption = $(this).find('option:selected');
+                                var discount = selectedOption.data('discount') || 0; // 獲取折扣金額
+                                var couponId = $(this).val(); // 獲取優惠券ID
+
+                                // 更新折扣顯示和隱藏的表單欄位
+                                $('#coupon-discount').text(discount);
+                                $('#selected-coupon-id').val(couponId);
+                                updateCartTotal(); // 更新總金額
+                            });
+
+                            // 綁定移除商品按鈕的點擊事件
+                            $('.remove-cart-btn').click(function () {
+                                var tr = $(this).closest('tr');
+                                var itemId = tr.data('itemid');
+                                $.ajax({
+                                    url: '/item/remove_from_cart',
+                                    type: 'POST',
+                                    data: { memId: memId, itemId: itemId },
+                                    success: function (res) {
+                                        if (res === 'success') {
+                                            tr.remove(); // 從畫面上移除該商品
+                                            updateCartTotal(); // 更新總金額
+                                            // 因商品已變更，需重新檢查優惠券的適用性
+                                            updateCouponOptions();
+                                        } else {
+                                            alert('移除失敗');
+                                        }
+                                    },
+                                    error: function () { alert('移除失敗'); }
+                                });
+                            });
+
+                            // 綁定商品數量輸入框的變更事件
+                            $('.cart-qty-input').on('change', function () {
+                                var tr = $(this).closest('tr');
+                                var itemId = tr.data('itemid');
+                                var qty = $(this).val();
+                                $.ajax({
+                                    url: '/item/update_cart_qty',
+                                    type: 'POST',
+                                    data: { memId: memId, itemId: itemId, quantity: qty },
+                                    success: function (res) {
+                                        if (res === 'success') {
+                                            // 數量變更只影響總金額，不影響優惠券適用性
+                                            updateCartTotal();
+                                        } else {
+                                            alert('更新失敗');
+                                        }
+                                    },
+                                    error: function () { alert('更新失敗'); }
+                                });
+                            });
+                        }
+                    });
+                </script>
+            </main>
+        </div>
+    </div>
+
+    <!-- 右下角購物車浮動按鈕 -->
+    <button id="cart-fab" title="查看購物車">
+        <span class="material-icons">shopping_cart</span>
+    </button>
+
+    <style>
+        #cart-fab {
+            position: fixed;
+            right: 32px;
+            bottom: 32px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        #cart-fab:hover {
+            background: #1565c0;
+            box-shadow: 0 8px 24px rgba(25, 118, 210, 0.35);
+        }
+
+        #cart-fab .material-icons {
+            font-size: 32px;
+        }
+    </style>
+
+</body>
+
+</html>
