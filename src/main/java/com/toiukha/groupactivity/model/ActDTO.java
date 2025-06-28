@@ -201,6 +201,44 @@ public class ActDTO implements Serializable {
     }
 
     /**
+     * 取得RecruitStatus Enum（如果recruitStatus為null則回傳null）
+     */
+    public ActStatus getRecruitStatusEnum() {
+        return ActStatus.fromValueOrNull(recruitStatus);
+    }
+
+    /**
+     * 設定RecruitStatus Enum
+     */
+    public void setRecruitStatusEnum(ActStatus status) {
+        this.recruitStatus = status != null ? status.getValue() : null;
+    }
+
+    /**
+     * 檢查是否為招募中狀態
+     */
+    public boolean isRecruiting() {
+        ActStatus status = getRecruitStatusEnum();
+        return status != null && status.isOpen();
+    }
+
+    /**
+     * 檢查是否為成團狀態
+     */
+    public boolean isFull() {
+        ActStatus status = getRecruitStatusEnum();
+        return status != null && status.isFull();
+    }
+
+    /**
+     * 檢查是否可以報名
+     */
+    public boolean canSignUp() {
+        ActStatus status = getRecruitStatusEnum();
+        return status != null && status.canSignUp();
+    }
+
+    /**
      * 前端特別驗證欄位
      */
     // 招募時間邏輯
@@ -224,7 +262,7 @@ public class ActDTO implements Serializable {
     //開放招募時需填寫必要欄位
     @AssertTrue(message = "開放招募時需填寫名稱、開始/結束時間與名額")
     public boolean isOpenFieldsValid() {
-        if (recruitStatus != null && recruitStatus == 0) {
+        if (recruitStatus != null && recruitStatus == ActStatus.OPEN.getValue()) {
             return actName != null && !actName.isBlank()
                 && actStart != null && actEnd != null && maxCap != null;
         }

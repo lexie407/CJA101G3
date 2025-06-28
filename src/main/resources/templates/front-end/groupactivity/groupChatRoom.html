@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="'團隊聊天室 - ' + ${act.actName}">團隊聊天室</title>
+
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/light.css}" type="text/css" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" type="text/css" />
+    <!--    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}">-->
+
+    <style>
+      /* 聊天室樣式 - 使用 light.css 配色 */
+      .chat-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: var(--md-sys-color-surface-container-lowest);
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--md-sys-color-outline-variant);
+      }
+      .chat-status {
+        margin: 10px 0;
+        padding: 12px 16px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 500;
+        font-size: 14px;
+      }
+      .error {
+        background: var(--md-sys-color-error-container);
+        color: var(--md-sys-color-on-error-container);
+      }
+      .success {
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+      }
+      .info {
+        background: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-on-secondary-container);
+      }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: var(--md-sys-color-primary);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: background-color 0.2s ease;
+      }
+      .back-link:hover {
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        text-decoration: none;
+      }
+
+      /* 聊天室標題樣式 */
+      .chat-title {
+        color: var(--md-sys-color-on-surface);
+        margin-bottom: 16px;
+        font-weight: 600;
+      }
+
+      /* 聊天訊息區域樣式 */
+      .messages-area {
+        height: 400px;
+        border: 2px solid var(--md-sys-color-outline-variant);
+        border-radius: 12px;
+        padding: 16px;
+        overflow-y: auto;
+        margin: 20px 0;
+        background: var(--md-sys-color-surface);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      /* 輸入區域樣式 */
+      .input-area {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .message-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid var(--md-sys-color-outline);
+        border-radius: 24px;
+        font-size: 14px;
+        background: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        transition: border-color 0.2s ease;
+      }
+
+      .message-input:focus {
+        outline: none;
+        border-color: var(--md-sys-color-primary);
+        box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+      }
+
+      .message-input:disabled {
+        background: var(--md-sys-color-surface-variant);
+        color: var(--md-sys-color-on-surface-variant);
+        border-color: var(--md-sys-color-outline-variant);
+      }
+
+      .send-btn {
+        padding: 12px 20px;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border: none;
+        border-radius: 20px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+      }
+
+      .send-btn:hover:not(:disabled) {
+        background: var(--md-sys-color-primary);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(41, 171, 194, 0.3);
+      }
+
+      .send-btn:disabled {
+        background: var(--md-sys-color-surface-variant);
+        color: var(--md-sys-color-on-surface-variant);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .disconnect-btn {
+        padding: 12px 20px;
+        background: var(--md-sys-color-error);
+        color: var(--md-sys-color-on-error);
+        border: none;
+        border-radius: 20px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+      }
+
+      .disconnect-btn:hover {
+        background: var(--md-sys-color-error);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(186, 26, 26, 0.3);
+      }
+    </style>
+  </head>
+
+  <body class="light">
+    <div class="app-container">
+      <div th:insert="~{/navTemplate :: navbar}"></div>
+      <div class="main-content act-page">
+        <div
+          th:insert="~{/subnavActFrontGroup :: subnav('chat', ${act.actId})}"
+        ></div>
+        <main class="content-area-main act-area">
+          <div class="chat-container">
+<!--            <a-->
+<!--              th:href="@{'/act/group/' + ${act.actId} + '/home'}"-->
+<!--              class="back-link"-->
+<!--            >-->
+<!--              ← 返回團隊主頁-->
+<!--            </a>-->
+
+            <!-- 聊天室標題 -->
+            <h1 class="chat-title" th:text="${act.actName} + ' 聊天室'">
+              團隊聊天室
+            </h1>
+
+            <!-- 狀態顯示 -->
+            <div class="chat-status info" id="statusOutput">
+              正在連接聊天室...
+            </div>
+
+            <!-- 聊天訊息區域 -->
+            <div id="messagesArea" class="messages-area"></div>
+
+            <!-- 輸入區域 -->
+            <div class="input-area">
+              <input
+                id="messageInput"
+                type="text"
+                placeholder="輸入您的訊息..."
+                class="message-input"
+                disabled
+              />
+              <button
+                id="sendBtn"
+                onclick="sendMessage();"
+                class="send-btn"
+                disabled
+              >
+                發送
+              </button>
+              <button onclick="disconnect();" class="disconnect-btn">
+                離開
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script th:inline="javascript">
+      // 從 Thymeleaf 獲取資料
+      const actNo = /*[[${act.actId}]]*/ 1;
+      const actName = /*[[${act.actName}]]*/ "團隊活動";
+      const currentMemberId = /*[[${currentMemberId}]]*/ 0;
+      const currentMemberName = /*[[${currentMemberName}]]*/ "當前用戶";
+
+      // 構造 WebSocket URL
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const host = window.location.host;
+      const endPointURL = `${protocol}//${host}/groupchat/${actNo}`;
+
+      let webSocket;
+      let isConnected = false;
+
+      // 界面元素
+      const statusOutput = document.getElementById("statusOutput");
+      const messagesArea = document.getElementById("messagesArea");
+      const messageInput = document.getElementById("messageInput");
+      const sendBtn = document.getElementById("sendBtn");
+
+      // 頁面載入時自動連接
+      window.onload = function () {
+        connect();
+      };
+
+      function connect() {
+        updateStatus("正在連接...", "info");
+
+        try {
+          webSocket = new WebSocket(endPointURL);
+
+          webSocket.onopen = function (event) {
+            isConnected = true;
+            updateStatus("✅ 已連接到聊天室", "success");
+            enableInputs(true);
+            loadChatHistory();
+          };
+
+          webSocket.onmessage = function (event) {
+            try {
+              const messageData = JSON.parse(event.data);
+              displayMessage(messageData);
+            } catch (e) {
+              addSystemMessage("收到無效格式的訊息");
+            }
+          };
+
+          webSocket.onclose = function (event) {
+            isConnected = false;
+            enableInputs(false);
+
+            let message = `❌ 連接已關閉 (${event.code})`;
+            if (event.reason) message += ` - ${event.reason}`;
+
+            updateStatus(message, "error");
+            addSystemMessage(
+              `連接關閉: ${event.code} - ${event.reason || "未知原因"}`
+            );
+          };
+
+          webSocket.onerror = function (error) {
+            updateStatus("❌ 連接錯誤", "error");
+            addSystemMessage("WebSocket 連接發生錯誤");
+          };
+        } catch (e) {
+          updateStatus("❌ 無法建立連接", "error");
+          addSystemMessage("無法建立 WebSocket 連接: " + e.message);
+        }
+      }
+
+      function sendMessage() {
+        if (!isConnected) {
+          alert("尚未連接到聊天室");
+          return false;
+        }
+
+        const message = messageInput.value.trim();
+        if (message === "") {
+          alert("請輸入訊息內容");
+          return false;
+        }
+
+        try {
+          const messageObj = { message: message };
+          webSocket.send(JSON.stringify(messageObj));
+
+          // 確保輸入框被清空
+          messageInput.value = "";
+          messageInput.blur();
+          setTimeout(() => {
+            messageInput.focus();
+          }, 50);
+
+          return true;
+        } catch (e) {
+          alert("發送訊息失敗: " + e.message);
+          return false;
+        }
+      }
+
+      function disconnect() {
+        if (webSocket && isConnected) {
+          webSocket.close();
+        }
+      }
+
+      function updateStatus(message, type) {
+        statusOutput.textContent = message;
+        statusOutput.className = `chat-status ${type}`;
+      }
+
+      function enableInputs(enabled) {
+        messageInput.disabled = !enabled;
+        sendBtn.disabled = !enabled;
+      }
+
+      function displayMessage(messageData) {
+        const messageContainer = document.createElement("div");
+        messageContainer.style.marginBottom = "15px";
+        messageContainer.style.display = "flex";
+        messageContainer.style.width = "100%";
+
+        const messageDiv = document.createElement("div");
+        messageDiv.style.maxWidth = "70%";
+        messageDiv.style.padding = "10px 15px";
+        messageDiv.style.borderRadius = "18px";
+        messageDiv.style.wordWrap = "break-word";
+        messageDiv.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+
+        if (messageData.type === "system") {
+          // 系統訊息置中 - 使用 light.css 配色
+          messageContainer.style.justifyContent = "center";
+          messageDiv.style.background =
+            "var(--md-sys-color-tertiary-container)";
+          messageDiv.style.color = "var(--md-sys-color-on-tertiary-container)";
+          messageDiv.style.fontStyle = "italic";
+          messageDiv.style.textAlign = "center";
+          messageDiv.style.borderRadius = "12px";
+          messageDiv.style.maxWidth = "80%";
+          messageDiv.style.border =
+            "1px solid var(--md-sys-color-outline-variant)";
+          messageDiv.innerHTML = `<strong>🤖 系統:</strong> ${
+            messageData.message
+          } <small style="color: var(--md-sys-color-on-tertiary-container); opacity: 0.7;">(${formatTime(
+            messageData.timestamp
+          )})</small>`;
+        } else {
+          // 檢查是否為當前用戶的訊息
+          const isMyMessage = messageData.userName === currentMemberName;
+
+          if (isMyMessage) {
+            // 自己的訊息：靠右，使用主色系
+            messageContainer.style.justifyContent = "flex-end";
+            messageDiv.style.background = "var(--md-sys-color-primary)";
+            messageDiv.style.color = "var(--md-sys-color-on-primary)";
+            messageDiv.style.border = "1px solid var(--md-sys-color-primary)";
+            messageDiv.innerHTML = `
+              <div style="margin-bottom: 3px; text-align: right;">
+                <small style="color: var(--md-sys-color-on-primary); opacity: 0.8;">${formatTime(
+                  messageData.timestamp
+                )}</small>
+              </div>
+              <div>${messageData.message}</div>
+            `;
+          } else {
+            // 別人的訊息：靠左，使用次色系
+            messageContainer.style.justifyContent = "flex-start";
+            messageDiv.style.background = "var(--md-sys-color-secondary)";
+            messageDiv.style.color = "var(--md-sys-color-on-secondary)";
+            messageDiv.style.border = "1px solid var(--md-sys-color-secondary)";
+            messageDiv.innerHTML = `
+              <div style="margin-bottom: 3px;">
+                <strong style="color: var(--md-sys-color-on-secondary); opacity: 0.9;">${
+                  messageData.userName
+                }</strong>
+                <small style="color: var(--md-sys-color-on-secondary); opacity: 0.8; margin-left: 8px;">${formatTime(
+                  messageData.timestamp
+                )}</small>
+              </div>
+              <div>${messageData.message}</div>
+            `;
+          }
+        }
+
+        messageContainer.appendChild(messageDiv);
+        messagesArea.appendChild(messageContainer);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+      }
+
+      function addSystemMessage(message) {
+        const messageData = {
+          type: "system",
+          userName: "系統",
+          message: message,
+          timestamp: Date.now(),
+        };
+        displayMessage(messageData);
+      }
+
+      function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString();
+      }
+
+      // 載入歷史聊天記錄
+      function loadChatHistory() {
+        fetch(`/act/group/${actNo}/chat/history`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(
+                `HTTP ${response.status}: ${response.statusText}`
+              );
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (data.messages && data.messages.length > 0) {
+              // 清空現有訊息區域
+              messagesArea.innerHTML = "";
+
+              // 顯示載入的歷史記錄
+              data.messages.forEach((messageJson) => {
+                try {
+                  const messageData = JSON.parse(messageJson);
+                  displayMessage(messageData);
+                } catch (e) {
+                  // 靜默處理解析錯誤
+                }
+              });
+
+              addSystemMessage(`📋 已載入 ${data.count} 條歷史訊息`);
+            } else {
+              addSystemMessage(
+                "📝 這是一個全新的聊天室，開始您的第一段對話吧！"
+              );
+            }
+          })
+          .catch((error) => {
+            addSystemMessage("⚠️ 載入歷史記錄失敗，但您仍可以正常聊天");
+          });
+      }
+
+      // Enter 鍵發送訊息
+      messageInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          setTimeout(() => {
+            sendMessage();
+          }, 10);
+        }
+      });
+    </script>
+  </body>
+</html>

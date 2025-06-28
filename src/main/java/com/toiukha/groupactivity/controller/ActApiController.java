@@ -418,14 +418,15 @@ public class ActApiController {
                                HttpServletRequest request) {
         // 取得session並檢查登入狀態
         HttpSession session = request.getSession();
-        Object member = session.getAttribute("member");
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
         // TODO: 若未登入可回傳未授權訊息
-        // if (member == null) { return "unauthorized"; }
+        // if (!memberInfo.isLoggedIn()) { return "unauthorized"; }
         
         // 測試用：印出session中的會員ID
         System.out.println("=== Test: Current Session Member ID ===");
         System.out.println("URI: /api/act/" + actId + "/status/" + status);
-        System.out.println("Member: " + (member != null ? member : "Not logged in"));
+        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
+        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
         System.out.println("=====================================");
         
         actSvc.changeStatus(actId, status, operatorId, admin);

@@ -22,7 +22,17 @@ public class DevAuthServiceImpl implements AuthService {
         Object member = session.getAttribute("member");
         
         if (member != null) {
-            // === 開發模式：處理假用戶字串格式 ===
+            // === 優先處理真實 MembersVO 物件 ===
+            if (member instanceof MembersVO) {
+                MembersVO memberVO = (MembersVO) member;
+                return new MemberInfo(
+                    memberVO.getMemId(),
+                    memberVO.getMemName(),
+                    true
+                );
+            }
+            
+            // === 開發模式：處理假用戶字串格式（相容性） ===
             if (member instanceof String) {
                 String devUser = (String) member;
                 if (devUser.startsWith("DEV_USER_")) {
@@ -34,19 +44,9 @@ public class DevAuthServiceImpl implements AuthService {
                     }
                 }
             }
-            
-            // === 生產模式：處理真實MembersVO ===
-            if (member instanceof MembersVO) {
-                MembersVO memberVO = (MembersVO) member;
-                return new MemberInfo(
-                    memberVO.getMemId(),
-                    memberVO.getMemName(),
-                    true
-                );
-            }
         }
         
-        // === 開發階段：使用假用戶 ===
+        // === 開發階段：使用假用戶（當沒有任何 session 時） ===
         if (DEV_MODE) {
             return new MemberInfo(DEV_USER_ID, "開發用戶" + DEV_USER_ID, true);
         }
