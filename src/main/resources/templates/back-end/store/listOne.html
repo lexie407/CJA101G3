@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>查詢結果 | 管理後台 | 島遊Kha</title>
+<!-- 共用資源 -->
+<th:block th:replace="~{/navBackTemplate :: headResources}" />
+<!-- DataTables CSS -->
+<link
+	th:href="@{https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css}"
+	rel="stylesheet" />
+<!-- 以下 CSS 與 listAll.html 完全相同 -->
+<style>
+.app-container {
+	display: flex;
+	min-height: 100vh;
+	background-color: var(--md-sys-color-background);
+	color: var(--md-sys-color-on-background);
+}
+
+/* 主要內容區域：負責卡片/內容的居中與基礎留白 */
+.main-content {
+	flex-grow: 1; /* 佔滿剩餘寬度 */
+	margin-left: 200px; /* 為左側導覽列騰出空間 */
+	padding: 24px; /* 頁面內容區基礎內邊距 */
+	display: flex;
+	flex-direction: column; /* 讓內容垂直排列 (例如 secondary-nav 和 main 內容) */
+	align-items: center; /* 水平居中其內部的主要內容塊（如 md-card）*/
+	/* justify-content: center; */ /* 對於長內容頁面，通常不需要垂直居中，會讓內容被擠到中間 */
+	overflow-y: auto; /* 確保內容超出時可滾動 */
+	overflow-x: hidden; /* 防止橫向滾動 */
+}
+
+/* --- Material Design 卡片樣式 --- */
+.md-card {
+	/* 這裡設定通用卡片的寬度，以容納表格內容 */
+	max-width: 100%; /* 讓卡片可以盡可能寬，但不要超出 main-content */
+	width: 100%; /* 確保在小螢幕下能夠撐滿視窗寬度 */
+	padding: 40px; /* 卡片內部填充，上下左右均勻 */
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); /* Material Design 陰影 */
+	border-radius: 16px;
+	background-color: var(--md-sys-color-surface-container);
+	/* Material Design 表面容器色 */
+	text-align: center; /* 內容居中，如標題 */
+	box-sizing: border-box;
+}
+
+/* --- Material Design 標題樣式 --- */
+.md-headline {
+	font-size: 2rem;
+	font-weight: 500;
+	color: var(--md-sys-color-primary);
+	margin-bottom: 24px;
+	text-align: center;
+}
+
+/* --- 表單組件基礎樣式（如果頁面有表單元素）--- */
+.form-group {
+	margin-bottom: 20px;
+	text-align: left;
+}
+
+label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface-variant);
+	font-size: 0.9rem;
+}
+
+.md-text-field { /* 應用於 input, textarea, select */
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface-container-high);
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+	box-sizing: border-box;
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.md-text-field:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary);
+	box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+}
+
+.md-text-field::placeholder {
+	color: var(--md-sys-color-on-surface-variant);
+	opacity: 0.7;
+}
+
+/* --- Material Design 按鈕樣式 --- */
+.material-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px 24px;
+	border-radius: 24px; /* 膠囊狀 */
+	border: none;
+	font-size: 1rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s
+		ease;
+	text-decoration: none;
+	white-space: nowrap;
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+}
+
+.material-button .material-icons {
+	margin-right: 8px;
+	font-size: 1.2em;
+}
+
+.md-primary-button {
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+}
+
+.md-primary-button:hover {
+	background-color: var(--md-sys-color-primary-fixed-dim);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.md-secondary-button { /* 新增次要按鈕樣式 */
+	background-color: var(--md-sys-color-secondary-container);
+	color: var(--md-sys-color-on-secondary-container);
+	box-shadow: none;
+}
+
+.md-secondary-button:hover {
+	background-color: var(--md-sys-color-secondary);
+	color: var(--md-sys-color-on-secondary);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* --- 錯誤訊息容器樣式 --- */
+.error-messages-container {
+	background-color: var(--md-sys-color-error-container);
+	color: var(--md-sys-color-on-error-container);
+	border-left: 5px solid var(--md-sys-color-error);
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	text-align: left;
+}
+
+.error-message {
+	margin-bottom: 5px;
+}
+
+.error-message:last-child {
+	margin-bottom: 0;
+}
+
+.content-area-main {
+	width: 100%; /* 讓內容區塊佔滿其父容器（main-content）的寬度 */
+	/* max-width: 1200px; */ /* 如果需要限制整個內容區塊的最大寬度，可以在這裡設置 */
+}
+
+/* 表格容器：負責水平滾動和外觀 */
+.table-container {
+	/* 這裡的 padding-bottom 是為了滾動條，保持原樣 */
+	padding-bottom: 0.5rem;
+	margin: 2rem 0; /* 與上下內容間距 */
+	/* 移除 width: 100%; 和 overflow-x: auto; 從這裡，改到 table 上，或者讓 table-container 更智能地管理 */
+	/* 讓 table-container 負責卡片內的滾動 */
+	overflow-x: auto; /* 確保表格在窄螢幕下可以水平滾動 */
+	border-radius: 8px; /* 為表格容器添加圓角 */
+	/* box-shadow: 0 2px 4px var(--md-sys-color-shadow); */
+	/* 可選：為整個表格容器添加陰影 */
+	background-color: var(--md-sys-color-surface-container-low);
+	/* 表格背景色 */
+	box-sizing: border-box; /* 確保 padding 不影響寬度 */
+}
+
+/* 自定義滾動條樣式 (針對 Webkit 瀏覽器) */
+.table-container::-webkit-scrollbar {
+	height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+	background: var(--md-sys-color-surface-container);
+	border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+	background: var(--md-sys-color-outline);
+	border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+	background: var(--md-sys-color-on-surface-variant);
+}
+
+/* 表格本體樣式 */
+table {
+	width: max-content; /* 讓表格根據內容自動擴展寬度，確保所有列都顯示 */
+	min-width: 100%; /* 確保表格在內容少時也能撐滿 table-container 的寬度 */
+	border-collapse: collapse; /* 合併單元格邊框 */
+	font-size: 0.9rem;
+	white-space: nowrap; /* 防止表格內容換行 */
+	/* 移除 table 上的 border 屬性，改由 th/td 控制 */
+	/* background-color: var(--md-sys-color-surface-container-lowest); */
+	/* 表格背景色 */
+}
+
+/* 表格頭部和單元格樣式 */
+th, td {
+	padding: 0.75rem 1rem; /* 增加內邊距，提供更多留白 */
+	border: 1px solid var(--md-sys-color-outline-variant);
+	/* 使用 Material Design 邊框色 */
+	text-align: left;
+	white-space: nowrap;
+	/* overflow: hidden; */ /* 除非必要，否則盡量不隱藏，以便看到完整內容 */
+	/* text-overflow: ellipsis; */
+	/* max-width: 200px; */ /* 如果某些列內容真的很多，才考慮加，否則會強制截斷 */
+}
+
+/* 表格頭部背景色 */
+thead th {
+	background-color: var(--md-sys-color-surface-container-high);
+	/* Material Design 顏色，比 surface-tint 更通用 */
+	color: var(--md-sys-color-on-surface-variant);
+	font-weight: 600;
+	text-transform: capitalize; /* 首字母大寫，更自然 */
+}
+
+/* 表格行條紋和 hover 效果 */
+tbody tr:nth-child(even) {
+	background-color: var(--md-sys-color-surface-container-low);
+	/* 偶數行背景色 */
+}
+
+tbody tr:hover {
+	background-color: var(--md-sys-color-surface-container); /* 懸停背景色 */
+}
+
+/* 圖片頭像樣式 */
+img.store-img {
+	max-width: 50px; /* 調整為更適合表格的大小 */
+	max-height: 50px;
+	border-radius: 50%; /* 圓形頭像 */
+	object-fit: cover; /* 確保圖片不變形 */
+	border: 2px solid var(--md-sys-color-outline); /* Material Design 邊框 */
+}
+
+/* 修改按鈕樣式 */
+.edit-btn {
+	/* 將其改造為 Material Design 的次要按鈕風格 */
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.5rem 0.8rem; /* 適度調整 padding */
+	font-size: 0.9rem; /* 保持字體大小 */
+	border-radius: 18px; /* 膠囊狀或圓角 */
+	text-decoration: none;
+	background-color: var(--md-sys-color-secondary-container);
+	/* 次要按鈕背景色 */
+	color: var(--md-sys-color-on-secondary-container); /* 次要按鈕文字色 */
+	border: none; /* 移除邊框，Material Design 按鈕通常無邊框 */
+	box-shadow: 0 1px 2px var(--md-sys-color-shadow); /* 添加輕微陰影 */
+	transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-btn:hover {
+	background-color: var(--md-sys-color-secondary); /* 懸停時次要色 */
+	color: var(--md-sys-color-on-secondary); /* 懸停時文字色 */
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow); /* 懸停時陰影 */
+}
+
+/* 查無資料的單元格樣式 */
+td[colspan="23"] {
+	padding: 20px; /* 增加內邊距 */
+	color: var(--md-sys-color-on-surface-variant); /* 提示文字顏色 */
+	font-style: italic; /* 斜體 */
+}
+
+/* 左側導覽列的樣式調整（從 BACK_STYLE.CSS 複製以確保覆蓋）*/
+.left-nav {
+	width: 200px;
+	background-color: var(--md-sys-color-surface-container);
+	box-shadow: 1px 0 0 0 rgba(0, 0, 0, 0.2);
+	padding: 7px;
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100vh;
+	overflow-y: auto;
+	z-index: 1000;
+}
+/* 其他 left-nav 子元素的樣式... 這裡應該包含您 BACK_STYLE.CSS 中所有 left-nav 的相關樣式 */
+
+/* 次導覽列的樣式調整（從 BACK_STYLE.CSS 複製以確保覆蓋）*/
+.secondary-nav {
+	background-color: var(--md-sys-color-surface);
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+	padding: 0 20px;
+	position: sticky;
+	top: 0;
+	z-index: 999;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	height: 60px;
+}
+/* 其他 secondary-nav 子元素的樣式... 這裡應該包含您 BACK_STYLE.CSS 中所有 secondary-nav 的相關樣式 */
+.dataTables_wrapper {
+	width: 100%;
+	padding: 0;
+}
+
+.dataTables_wrapper .dataTables_length {
+	float: left;
+	margin-bottom: .5rem;
+}
+
+.dataTables_wrapper .dataTables_filter {
+	float: right;
+	margin-bottom: .5rem;
+}
+
+.dataTables_wrapper .dataTables_info {
+	text-align: left;
+	margin-top: .5rem;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+	text-align: right;
+	margin-top: 1rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	margin: 0 4px !important;
+	padding: 12px 24px !important;
+	border-radius: 24px !important;
+	border: none !important;
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow) !important;
+	background-color: var(--md-sys-color-secondary-container) !important;
+	color: var(--md-sys-color-on-secondary-container) !important;
+	cursor: pointer !important;
+	transition: background-color .3s, box-shadow .3s, color .3s;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+	.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+	background-color: var(--md-sys-color-primary) !important;
+	color: var(--md-sys-color-on-primary) !important;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+	opacity: .4 !important;
+	cursor: default !important;
+}
+</style>
+</head>
+<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}" />
+		<div class="main-content">
+			<!-- 次導覽列：跟 listAll 一樣，只把「審核商家」設 active -->
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/store/selectPage}">查詢主頁</a></li>
+					<li><a th:href="@{/store/listAll}">列出所有商家</a></li>
+					<li><a th:href="@{/store/reviewStore}">審核商家</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<section class="md-card">
+					<h2 class="md-headline">查詢結果</h2>
+					<div class="table-container">
+						<table id="storeListTable" class="manual-datatable">
+							<thead>
+								<tr>
+									<th>廠商編號</th>
+									<th>帳號</th>
+									<th>密碼</th>
+									<th>廠商名稱</th>
+									<th>統編</th>
+									<th>負責人</th>
+									<th>連絡電話</th>
+									<th>公司地址</th>
+									<th>傳真</th>
+									<th>信箱</th>
+									<th>加入時間</th>
+									<th>修改時間</th>
+									<th>帳號狀態</th>
+									<th>廠商圖片</th>
+									<th>編輯</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="s : ${stores}">
+									<td th:text="${s.storeId}"></td>
+									<td th:text="${s.storeAcc}"></td>
+									<td th:text="${s.storePwd}"></td>
+									<td th:text="${s.storeName}"></td>
+									<td th:text="${s.storeGui}"></td>
+									<td th:text="${s.storeRep}"></td>
+									<td th:text="${s.storeTel}"></td>
+									<td th:text="${s.storeAddr}"></td>
+									<td th:text="${s.storeFax}"></td>
+									<td th:text="${s.storeEmail}"></td>
+									<td
+										th:text="${#dates.format(s.storeRegDate,'yyyy-MM-dd HH:mm')}"></td>
+									<td
+										th:text="${#dates.format(s.storeUpdatedAt,'yyyy-MM-dd HH:mm')}"></td>
+									<td th:text="${s.storeStatus}"></td>
+									<td><img th:if="${s.storeImg!=null}"
+										th:src="@{/store/DBGifReader(storeId=${s.storeId})}"
+										class="store-img" /> <img th:if="${s.storeImg==null}"
+										th:src="@{/images/user.png}" class="store-img" alt="預設圖示" /></td>
+									<td><a th:href="@{/store/editStore(storeId=${s.storeId})}"
+										class="material-button md-secondary-button">編輯</a></td>
+							</tbody>
+						</table>
+					</div>
+				</section>
+			</main>
+		</div>
+	</div>
+
+	<!-- jQuery + DataTables JS -->
+	<script th:src="@{https://code.jquery.com/jquery-3.6.0.min.js}"></script>
+	<script
+		th:src="@{https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js}"></script>
+
+
+	<script>
+		$(function() {
+			$('#storeListTable')
+					.DataTable(
+							{
+								destroy : true, // 先销毁已有实例，避免和通用 datatable.js 冲突
+								lengthMenu : [ 5, 10 ],
+								searching : true,
+								paging : true,
+								ordering : true,
+								scrollX : true,
+								language : {
+									lengthMenu : "顯示 _MENU_ 筆結果",
+									zeroRecords : "沒有符合的結果",
+									info : "顯示第 _START_ 至 _END_ 筆結果，共 <font color='red'>_TOTAL_</font> 筆",
+									infoEmpty: "顯示第 0 至 0 筆結果，共 0 筆",
+									search : "搜尋：",
+									paginate : {
+										previous : "上一頁",
+										next : "下一頁"
+									}
+								}
+							});
+		});
+	</script>
+
+</body>
+</html>
