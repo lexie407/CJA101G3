@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>所有文章 | 後台 | 島遊kha</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <!--前台CSS-->
+    <link rel="stylesheet" th:href="@{/css/light.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <!-- DataTables排序所需 -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script	src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.jqueryui.min.css" />
+
+</head>
+<body class="light">
+<div class="app-container">
+    <!--前台:側邊攔，通用樣式，不用改-->
+    <div th:insert="~{/navBackTemplate :: navbar}"></div>
+
+    <div class="main-content">
+        <!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
+        <div th:insert="~{back-end/forum/subnavForum :: subnav('all')}"></div>
+
+        <!--main 以下為頁面主要內容 -->
+        <main class="content-area-main">
+            <h3><a class="navbar-brand" th:href="@{/forum/admin/selectPage}">前往文章查詢</a></h3>
+
+            <div>
+                <label>搜尋標題：<input type="text" id="searchTitle"></label>
+                <label>搜尋編號：<input type="text" id="searchId"></label>
+            </div>
+
+                <table id="articleTable" class="display" style="width: 100%">
+                    <thead>
+                    <tr >
+                        <th>編號</th>
+                        <th>標題</th>
+                        <th>類別</th>
+                        <th>狀態</th>
+                        <th>會員編號</th>
+                        <th>按讚數</th>
+                        <th>建立時間</th>
+<!--                        <th>內容預覽</th>-->
+                        <th>編輯文章與留言</th>
+<!--                        <th>刪除</th>-->
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <th:block th:each="article, stat : ${articleList}">
+                        <tr>
+                            <td th:text="${article.artId}"></td>
+                            <td th:text="${article.artTitle}"></td>
+                            <td th:switch="${article.artCat}">
+                                <span th:case="1">文章</span>
+                                <span th:case="2">發問中</span>
+                                <span th:case="3">已解決</span>
+                                <span th:case="*">文章*</span> <!-- 預設值 -->
+                            </td>
+                            <td th:switch="${article.artSta}">
+                                <span th:case="1">上架</span>
+                                <span th:case="2">下架</span>
+                                <span th:case="3">檢舉下架</span>
+                                <span th:case="*">未知狀態</span> <!-- 預設值 -->
+                            </td>
+                            <td th:text="${article.artHol}"></td>
+                            <td th:text="${article.artLike}"></td>
+                            <td th:text="${#dates.format(article.artCreTime, 'yyyy-MM-dd HH:mm')}"></td>
+<!--                            <td>-->
+<!--                                <span th:text="${#strings.abbreviate(#strings.replaceAll(article.artCon, '<[^>]*>', ''), 30)}">預覽</span>-->
+<!--                            </td>-->
+                            <td>
+                                <form method="post" th:action="@{/forum/admin/getOne_For_Update}" style="margin-bottom: 0px;">
+                                    <input type="submit" value="編輯">
+                                    <input type="hidden" name="artId" th:value="${article.artId}">
+                                </form>
+                            </td>
+<!--                            <td>-->
+<!--                                <form method="post" th:action="@{/article/delete}" style="margin-bottom: 0px;"-->
+<!--                                      onsubmit="return confirm('確定要刪除這篇文章嗎？');">-->
+<!--                                    <input type="submit" value="刪除">-->
+<!--                                    <input type="hidden" name="ARTICLE_ID" th:value="${article.ARTICLE_ID}">-->
+<!--                                </form>-->
+<!--                            </td>-->
+                        </tr>
+                    </th:block>
+                    </tbody>
+                </table>
+
+        </main>
+    </div>
+</div>
+
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="../js/notification/websocket.js"></script>
+
+<!--  前端使用DataTable排序  -->
+<script>
+    $(document).ready(function () {
+        const table = $('#articleTable').DataTable({
+            "lengthMenu": [10, 20, 50, 100],
+            "searching": true,
+            "paging": true,
+            "ordering": true,
+            "language": {
+                "lengthMenu": "顯示 _MENU_ 筆",
+                "zeroRecords": "沒有符合的結果",
+                "info": "第 _START_ 至 _END_ 筆，共 _TOTAL_ 筆",
+                "infoEmpty": "目前沒有資料",
+                "search": "快速搜尋:",
+                "paginate": {
+                    "first": "第一頁",
+                    "last": "最後一頁",
+                    "next": "下一頁",
+                    "previous": "上一頁"
+                }
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": [7] } // 禁用「編輯文章」那欄排序
+            ]
+        });
+
+        // 單欄搜尋綁定
+        $('#searchTitle').on('keyup change', function () {
+            table.column(1).search(this.value).draw();  // 標題是第2欄（從0開始）
+        });
+
+        $('#searchId').on('keyup change', function () {
+            table.column(0).search(this.value).draw();  // 編號是第1欄
+        });
+    });
+</script>
+
+    
+</body>
+</html>

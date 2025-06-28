@@ -48,7 +48,9 @@ public class MembersService {
 		MembersVO savedMember = membersRepository.save(membersVO);
 
 		// 發送驗證信
-		emailService.sendVerificationEmail(savedMember.getMemEmail(), savedMember.getMemId());
+		new Thread(() -> {
+		    emailService.sendVerificationEmail(savedMember.getMemEmail(), savedMember.getMemId());
+		}).start();
 
 		return savedMember;
 	}
@@ -76,10 +78,13 @@ public class MembersService {
 //    處理忘記密碼流程：找會員、寄出重設連結（不告知是否存在）
 
 	 public void processForgotPassword(String email) {
-	        membersRepository.findByMemEmail(email)
-	            .ifPresent(member -> 
-	                emailService.sendResetPasswordEmail(email, member.getMemId())
-	            );
+		 Optional<MembersVO> opt = membersRepository.findByMemEmail(email);
+		    if (opt.isPresent()) {
+		        MembersVO member = opt.get();
+		        new Thread(() -> {
+		            emailService.sendResetPasswordEmail(email, member.getMemId());
+		        }).start();
+		    }
 	    }
 
 	// 3. 登入流程

@@ -1,0 +1,72 @@
+
+
+
+body {
+    font-family: "Noto Sans TC", sans-serif;
+    background-color: #f2f2f2;
+    margin: 0;
+    padding: 40px;
+}
+.content-area-main .form-container {
+    background-color: #fff;
+    max-width: 600px;
+    margin: auto;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.content-area-main h2 {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.content-area-main label {
+    display: block;
+    margin-top: 16px;
+    font-weight: bold;
+}
+.content-area-main input[type="text"],
+.content-area-main select,
+.content-area-main textarea,
+.content-area-main input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.content-area-main textarea {
+    resize: vertical;
+}
+.content-area-main .button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+}
+.content-area-main button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.content-area-main button[type="reset"] {
+    background-color: #6c757d;
+}
+.content-area-main button:hover {
+    opacity: 0.9;
+}
+.content-area-main #output {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-all;
+    white-space: pre-wrap;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: #333;
+}

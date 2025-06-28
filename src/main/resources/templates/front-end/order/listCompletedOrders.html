@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的訂單</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <div th:insert="~{/subnavStore_front::subnav(${activeItem})}"></div>
+            </header>
+            <main class="content-area-main">
+                <style>
+                    .order-card {
+                        background: #fff;
+                        border-radius: 7px;
+                        box-shadow: 0 1px 2px rgba(33, 150, 243, 0.05);
+                        margin: 6px auto;
+                        transition: box-shadow 0.2s;
+                        border: none;
+                        overflow: hidden;
+                        max-width: 600px;
+                    }
+
+                    .order-card:hover {
+                        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.10);
+                    }
+
+                    .order-header {
+                        background: linear-gradient(90deg, #1976d2 0%, #64b5f6 100%);
+                        color: #fff;
+                        padding: 4px 18px 2px 18px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-start;
+                        flex-wrap: wrap;
+                    }
+
+                    .order-header .left-info {
+                        flex: 1 1 60%;
+                        min-width: 120px;
+                    }
+
+                    .order-header .right-info {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-end;
+                        gap: 2px;
+                        min-width: 90px;
+                    }
+
+                    .order-header h5 {
+                        font-size: 1.05rem;
+                        font-weight: 600;
+                        margin-bottom: 1px;
+                    }
+
+                    .order-header p {
+                        font-size: 0.95rem;
+                        margin-bottom: 0;
+                    }
+
+                    .order-header .status-completed {
+                        background: #fff;
+                        color: #388e3c;
+                        border-radius: 10px;
+                        padding: 1px 10px;
+                        font-size: 0.98rem;
+                        font-weight: 600;
+                        margin-bottom: 1px;
+                        box-shadow: 0 1px 2px rgba(56, 142, 60, 0.06);
+                        display: inline-block;
+                    }
+
+                    .order-items {
+                        padding: 3px 18px 2px 18px;
+                        background: #fafbfc;
+                    }
+
+                    .item-card {
+                        background: #fff;
+                        border-radius: 5px;
+                        box-shadow: 0 1px 1px rgba(33, 150, 243, 0.03);
+                        margin-bottom: 4px;
+                        padding: 4px 8px;
+                        border: none;
+                        transition: box-shadow 0.15s;
+                    }
+
+                    .item-card>.row,
+                    .item-card .row {
+                        margin-bottom: 0 !important;
+                    }
+
+                    .item-card h6,
+                    .item-card p,
+                    .item-card small,
+                    .item-card del,
+                    .item-card strong {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        line-height: 1.3 !important;
+                    }
+
+                    .item-card br {
+                        display: none;
+                    }
+
+                    .item-card .mb-1,
+                    .item-card .mb-0,
+                    .item-card .mt-1,
+                    .item-card .mt-2,
+                    .item-card .mb-3 {
+                        margin-top: 0 !important;
+                        margin-bottom: 0 !important;
+                    }
+
+                    .item-card .text-muted {
+                        color: #90a4ae !important;
+                        font-size: 0.95rem;
+                        margin-bottom: 0 !important;
+                    }
+
+                    .item-card .text-danger {
+                        color: #d32f2f !important;
+                        font-size: 1rem;
+                        margin-bottom: 0 !important;
+                    }
+
+                    .item-card .text-warning {
+                        color: #fbc02d !important;
+                    }
+
+                    .item-card .text-success {
+                        color: #388e3c !important;
+                    }
+
+                    .order-items h6 {
+                        color: #1976d2;
+                        font-weight: 600;
+                        margin-bottom: 4px;
+                        font-size: 1rem;
+                    }
+
+                    .border-top {
+                        border-top: 1px solid #e3e6ea !important;
+                        margin-top: 4px !important;
+                    }
+
+                    .btn-material {
+                        border-radius: 4px;
+                        text-transform: uppercase;
+                        font-weight: 500;
+                        letter-spacing: 0.5px;
+                        transition: all 0.2s;
+                        box-shadow: 0 1px 2px rgba(33, 150, 243, 0.05);
+                        background: #1976d2;
+                        color: #fff;
+                        border: none;
+                        padding: 3px 10px;
+                        font-size: 0.98rem;
+                    }
+
+                    .btn-material:hover {
+                        background: #1565c0;
+                        box-shadow: 0 2px 6px rgba(33, 150, 243, 0.12);
+                        color: #fff;
+                        transform: translateY(-1px) scale(1.03);
+                    }
+
+                    .page-title {
+                        margin: 8px 0 6px 0;
+                        color: #1976d2;
+                        font-weight: 700;
+                        font-size: 1.25rem;
+                        letter-spacing: 1px;
+                        text-align: left;
+                    }
+
+                    .no-orders {
+                        text-align: center;
+                        padding: 10px 6px;
+                        color: #90a4ae;
+                        background: #fff;
+                        border-radius: 7px;
+                        box-shadow: 0 1px 2px rgba(33, 150, 243, 0.05);
+                        margin: 6px 0;
+                        font-size: 1rem;
+                        max-width: 600px;
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+
+                    @media (max-width: 768px) {
+
+                        .order-card,
+                        .no-orders {
+                            max-width: 98vw;
+                        }
+
+                        .order-header,
+                        .order-items {
+                            padding: 2px 1vw;
+                        }
+
+                        .item-card {
+                            padding: 3px 2px;
+                        }
+
+                        .page-title {
+                            font-size: 1rem;
+                        }
+
+                        .order-header {
+                            flex-direction: column;
+                            align-items: flex-start;
+                        }
+
+                        .order-header .right-info {
+                            align-items: flex-start;
+                            margin-top: 2px;
+                        }
+                    }
+
+                    .order-search-bar input,
+                    .order-search-bar button {
+                        font-size: 1rem;
+                    }
+
+                    .order-search-bar input:focus,
+                    .order-search-bar button:focus {
+                        outline: 2px solid #1976d2;
+                    }
+
+                    .star {
+                        font-size: 1.6rem;
+                        cursor: pointer;
+                        color: #bdbdbd;
+                        transition: color 0.2s;
+                    }
+
+                    .star.selected,
+                    .star:hover,
+                    .star.selected~.star {
+                        color: #ffd600;
+                    }
+                </style>
+
+
+                <!-- Material Design 搜尋框 -->
+                <div class="order-search-bar"
+                    style="max-width:900px;margin:0 auto 12px auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#fff;border-radius:28px;box-shadow:0 2px 8px rgba(25,118,210,0.10);padding:6px 24px;">
+                    <span class="material-icons" style="color:#1976d2;font-size:1.5rem;margin-right:4px;">search</span>
+                    <input type="text" id="searchName" placeholder="搜尋"
+                        style="flex:2 1 180px;padding:6px 12px;border:none;outline:none;background:transparent;font-size:1.08rem;">
+                    <input type="date" id="searchStart"
+                        style="flex:1 1 120px;padding:6px 12px;border:none;outline:none;background:transparent;font-size:1.08rem;color:#1976d2;">
+                    <span style="color:#1976d2;font-size:1.2rem;margin:0 4px;">~</span>
+                    <input type="date" id="searchEnd"
+                        style="flex:1 1 120px;padding:6px 12px;border:none;outline:none;background:transparent;font-size:1.08rem;color:#1976d2;">
+                </div>
+
+                <div th:if="${#lists.isEmpty(completedOrdersWithItems)}" class="no-orders">
+                    <h4>目前沒有已完成的訂單</h4>
+                    <p>您還沒有任何已完成的訂單記錄。</p>
+                </div>
+
+                <div th:each="order : ${completedOrdersWithItems}" class="order-card">
+                    <div class="order-header">
+                        <div class="left-info">
+                            <h5>訂單編號: <span th:text="${order.ordId}"></span></h5>
+                            <p class="mb-1">訂單日期: <span
+                                    th:text="${#dates.format(order.creDate, 'yyyy-MM-dd HH:mm:ss')}"></span></p>
+                        </div>
+                        <div class="right-info">
+                            <span class="status-completed">✓ 已完成</span>
+                        </div>
+                    </div>
+
+                    <div class="order-items">
+                        <h6 class="mb-3">訂單項目:</h6>
+                        <div th:each="orderItem : ${order.orderItems}" class="item-card">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 th:text="${orderItem.item.itemName}">商品名稱</h6>
+                                    <small class="text-muted">購買數量: <span
+                                            th:text="${orderItem.ordTotal}"></span></small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <p class="mb-1">
+                                        <strong class="text-primary">價格: $<span
+                                                th:text="${orderItem.discPrice != null and orderItem.discPrice > 0 ? orderItem.discPrice : orderItem.oriPrice}"></span></strong>
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>小計: $<span th:text="${orderItem.itemSubtotal}"></span></strong>
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- 評價區塊 -->
+                            <div th:if="${orderItem.score != null or orderItem.content != null}"
+                                class="mt-2 pt-2 border-top">
+                                <small class="text-muted">您的評價:</small>
+                                <div th:if="${orderItem.score != null}">
+                                    <span class="text-warning">
+                                        <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                            <span th:if="${i <= orderItem.score}">★</span>
+                                            <span th:unless="${i <= orderItem.score}">☆</span>
+                                        </span>
+                                        (<span th:text="${orderItem.score}"></span>/5)
+                                    </span>
+                                </div>
+                                <div th:if="${orderItem.content != null and orderItem.content != ''}">
+                                    <p class="mb-0 mt-1" th:text="${orderItem.content}"></p>
+                                </div>
+                            </div>
+                            <!-- 評論按鈕（未評論才顯示） -->
+                            <div th:if="${orderItem.score == null}">
+                                <button class="btn-material mt-2 comment-btn" type="button"
+                                    th:data-ordid="${orderItem.ordId}" th:data-itemid="${orderItem.itemId}"
+                                    th:data-name="${orderItem.item.itemName}">
+                                    我要評論
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 訂單總計 -->
+                        <div class="row mt-3 pt-3 border-top">
+                            <div class="col-md-8"></div>
+                            <div class="col-md-4 text-end">
+                                <h6>訂單總計: $<span th:text="${order.orderTotal}"></span></h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+                <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+                <script src="../js/notification/websocket.js"></script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const nameInput = document.getElementById('searchName');
+                        const startInput = document.getElementById('searchStart');
+                        const endInput = document.getElementById('searchEnd');
+                        const orderCards = document.querySelectorAll('.order-card');
+
+                        function filterOrders() {
+                            const nameVal = nameInput.value.trim().toLowerCase();
+                            const startVal = startInput.value;
+                            const endVal = endInput.value;
+
+                            orderCards.forEach(card => {
+                                // 取得訂單日期
+                                const dateText = card.querySelector('.order-header p span').textContent.trim();
+                                // 取得所有商品名稱
+                                const itemNames = Array.from(card.querySelectorAll('.item-card h6')).map(e => e.textContent.trim().toLowerCase());
+                                // 解析日期
+                                let show = true;
+                                if (startVal) {
+                                    show = show && (dateText >= startVal);
+                                }
+                                if (endVal) {
+                                    show = show && (dateText <= endVal + ' 23:59:59');
+                                }
+                                if (nameVal) {
+                                    show = show && itemNames.some(n => n.includes(nameVal));
+                                }
+                                card.style.display = show ? '' : 'none';
+                            });
+                        }
+
+                        nameInput.addEventListener('input', filterOrders);
+                        startInput.addEventListener('change', filterOrders);
+                        endInput.addEventListener('change', filterOrders);
+
+                        // 新增評論按鈕事件綁定
+                        document.querySelectorAll('.comment-btn').forEach(function (btn) {
+                            btn.addEventListener('click', function () {
+                                openCommentModal(this.dataset.ordid, this.dataset.itemid, this.dataset.name);
+                            });
+                        });
+                    });
+                </script>
+                <!-- 評論 Modal -->
+                <div id="commentModal"
+                    style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);align-items:center;justify-content:center;">
+                    <div
+                        style="background:#fff;padding:28px 20px;border-radius:10px;min-width:320px;max-width:90vw;box-shadow:0 8px 32px rgba(25,118,210,0.18);position:relative;">
+                        <span id="closeCommentModal"
+                            style="position:absolute;right:12px;top:8px;cursor:pointer;font-size:1.5rem;color:#888;">&times;</span>
+                        <h5 id="commentItemName" style="color:#1976d2;margin-bottom:12px;"></h5>
+                        <div style="margin-bottom:10px;">
+                            <span id="starContainer">
+                                <span class="star" data-value="1">☆</span>
+                                <span class="star" data-value="2">☆</span>
+                                <span class="star" data-value="3">☆</span>
+                                <span class="star" data-value="4">☆</span>
+                                <span class="star" data-value="5">☆</span>
+                            </span>
+                            <span id="starScore" style="margin-left:8px;color:#1976d2;font-weight:600;">1/5</span>
+                        </div>
+                        <textarea id="commentContent" rows="3"
+                            style="width:100%;border-radius:6px;border:1.2px solid #bdbdbd;padding:8px;resize:none;"
+                            placeholder="請輸入評論內容..."></textarea>
+                        <div style="margin-top:14px;text-align:right;">
+                            <button class="btn-material" id="submitCommentBtn">送出評論</button>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    let commentOrderItemId = null;
+                    let commentScore = 1;
+                    function openCommentModal(ordId, itemId, itemName) {
+                        commentOrderItemId = ordId + '-' + itemId;
+                        commentScore = 1;
+                        document.getElementById('commentItemName').textContent = '評論：' + itemName;
+                        document.getElementById('commentContent').value = '';
+                        document.getElementById('starScore').textContent = '1/5';
+                        document.querySelectorAll('#starContainer .star').forEach((star, idx) => {
+                            star.textContent = '☆';
+                            star.classList.remove('selected');
+                            star.onclick = function () {
+                                commentScore = idx + 1;
+                                document.getElementById('starScore').textContent = commentScore + '/5';
+                                document.querySelectorAll('#starContainer .star').forEach((s, i) => {
+                                    s.textContent = i < commentScore ? '★' : '☆';
+                                    if (i < commentScore) s.classList.add('selected'); else s.classList.remove('selected');
+                                });
+                            }
+                        });
+                        document.getElementById('commentModal').style.display = 'flex';
+                    }
+                    document.getElementById('closeCommentModal').onclick = function () { document.getElementById('commentModal').style.display = 'none'; };
+                    document.getElementById('submitCommentBtn').onclick = function () {
+                        const content = document.getElementById('commentContent').value.trim();
+                        if (commentScore < 1 || commentScore > 5) { alert('請選擇1~5顆星'); return; }
+                        if (content.length === 0) { alert('請輸入評論內容'); return; }
+                        // commentOrderItemId 格式為 ordId-itemId
+                        const [ordId, itemId] = commentOrderItemId.split('-');
+                        fetch('/order/commentOrderItem', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: 'ordId=' + encodeURIComponent(ordId) +
+                                '&itemId=' + encodeURIComponent(itemId) +
+                                '&score=' + encodeURIComponent(commentScore) +
+                                '&content=' + encodeURIComponent(content)
+                        }).then(res => res.json()).then(data => {
+                            if (data.success) {
+                                alert('評論成功！');
+                                location.reload();
+                            } else {
+                                alert('評論失敗：' + (data.message || ''));
+                            }
+                        }).catch(() => alert('連線失敗'));
+                    };
+                </script>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

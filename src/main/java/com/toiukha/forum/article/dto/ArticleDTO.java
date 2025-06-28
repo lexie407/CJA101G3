@@ -1,5 +1,7 @@
 package com.toiukha.forum.article.dto;
 
+// 給使用者「讀取」用的資料格式，使用Spring Data JPA 的 Interface-based Projections
+// https://docs.spring.io/spring-data/jpa/reference/repositories/projections.html
 public interface ArticleDTO {
     Integer getArtId();  //文章編號
     Byte getArtCat();	//文章類別

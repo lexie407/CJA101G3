@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>發送電子票券管理</title>
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navStoreTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                    <div th:insert="~{/subnavSentItem_Store_back::subnav(${activeItem})}"></div>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <!-- Material Design 搜尋與日期區間 -->
+                <div class="mdc-search-bar">
+                    <span class="material-icons mdc-search-icon">search</span>
+                    <input type="text" id="sentItemSearchInput" placeholder="搜尋商品名稱或票券ID"
+                        class="mdc-input mdc-search-input">
+                    <input type="date" id="dateStart" class="mdc-date-input" style="margin-left:12px;">
+                    <span style="margin:0 4px;">~</span>
+                    <input type="date" id="dateEnd" class="mdc-date-input">
+                </div>
+                <div id="stats-list" class="mdc-horizontal-list"></div>
+                <div id="detail-list" class="mdc-horizontal-list" style="margin-top:32px;"></div>
+                <div id="nodata" style="display:none;text-align:center;color:#bdbdbd;font-size:1.2rem;margin-top:32px;">
+                    <span class="material-icons" style="font-size:48px;">sentiment_dissatisfied</span><br>
+                    查無資料
+                </div>
+                <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    const sentItemListJson = /*[[${sentItemListJson}]]*/ '[]';
+                    const sentItemList = JSON.parse(sentItemListJson);
+                    /*]]>*/
+                </script>
+                <script>
+                    function renderStats() {
+                        const statsMap = {};
+                        sentItemList.forEach(item => {
+                            if (!statsMap[item.itemId]) {
+                                statsMap[item.itemId] = {
+                                    ticketName: item.ticketName,
+                                    itemId: item.itemId,
+                                    total: 0,
+                                    unused: 0,
+                                    used: 0,
+                                    expired: 0,
+                                    details: []
+                                };
+                            }
+                            statsMap[item.itemId].total++;
+                            if (item.itemStatus === 0) statsMap[item.itemId].unused++;
+                            if (item.itemStatus === 1) statsMap[item.itemId].used++;
+                            if (item.itemStatus === 2) statsMap[item.itemId].expired++;
+                            statsMap[item.itemId].details.push(item);
+                        });
+                        const statsContainer = document.getElementById('stats-list');
+                        const nodata = document.getElementById('nodata');
+                        statsContainer.innerHTML = '';
+                        let hasData = false;
+                        Object.values(statsMap).forEach(stat => {
+                            hasData = true;
+                            const cleanName = stat.ticketName ? stat.ticketName.replace(/^\"|\"$/g, '') : '';
+                            const card = document.createElement('div');
+                            card.className = 'mdc-horizontal-card mdc-card-hover';
+                            card.innerHTML = `
+                                <div class="mdc-horizontal-card__media mdc-card-color">
+                                    <span class="material-icons" style="font-size: 48px;">confirmation_number</span>
+                                </div>
+                                <div class="mdc-horizontal-card__content">
+                                    <h3 class="mdc-horizontal-card__title">${cleanName}</h3>
+                                    <div class="mdc-horizontal-card__subtitle">商品ID: ${stat.itemId}</div>
+                                    <div class="mdc-horizontal-card__subtitle">總發送: <b>${stat.total}</b></div>
+                                    <div class="mdc-horizontal-card__subtitle">未使用: <span style='color:#388e3c;font-weight:600;'>${stat.unused}</span>　已使用: <span style='color:#1976d2;font-weight:600;'>${stat.used}</span>　已過期: <span style='color:#bdbdbd;font-weight:600;'>${stat.expired}</span></div>
+                                    <button class="mdc-button mdc-button--outlined" onclick="showDetail(${stat.itemId})">查看明細</button>
+                                </div>
+                            `;
+                            statsContainer.appendChild(card);
+                        });
+                        nodata.style.display = hasData ? 'none' : '';
+                    }
+                    function showDetail(itemId) {
+                        const stat = sentItemList.filter(i => i.itemId === itemId);
+                        const detailContainer = document.getElementById('detail-list');
+                        const cleanName = stat[0]?.ticketName ? stat[0].ticketName.replace(/^\"|\"$/g, '') : '';
+                        let html = `<button class="mdc-button mdc-button--outlined" onclick="closeDetail()" style="margin-bottom:16px;"><span class="material-icons" style="vertical-align:middle;">arrow_back</span>返回</button>`;
+                        html += `<h3 style="color:#1976d2;margin-bottom:16px;">${cleanName} - 明細</h3>`;
+                        stat.forEach(d => {
+                            let status = d.itemStatus === 0 ? '<span style="color:#388e3c;">未使用</span>' : (d.itemStatus === 1 ? '<span style="color:#1976d2;">已使用</span>' : '<span style="color:#bdbdbd;">已過期</span>');
+                            html += `
+                                <div class="mdc-horizontal-card mdc-card-detail">
+                                    <div class="mdc-horizontal-card__content">
+                                        <div class="mdc-horizontal-card__subtitle">電子票券ID: <b>${d.sentItemId}</b></div>
+                                        <div class="mdc-horizontal-card__subtitle">會員ID: ${d.memId}</div>
+                                        <div class="mdc-horizontal-card__subtitle">狀態: ${status}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        detailContainer.innerHTML = html;
+                        detailContainer.style.display = '';
+                        detailContainer.scrollIntoView({ behavior: 'smooth' });
+                        document.getElementById('stats-list').style.display = 'none';
+                    }
+                    function closeDetail() {
+                        document.getElementById('detail-list').innerHTML = '';
+                        document.getElementById('detail-list').style.display = 'none';
+                        document.getElementById('stats-list').style.display = '';
+                    }
+                    document.querySelectorAll('#sentItemSearchInput, #dateStart, #dateEnd').forEach(function (input) {
+                        input.addEventListener('input', filterSentItems);
+                    });
+                    function filterSentItems() {
+                        const keyword = document.getElementById('sentItemSearchInput').value.trim().toLowerCase();
+                        sentItemList.forEach(item => {
+                            item._visible = !keyword || item.ticketName.toLowerCase().includes(keyword) || (item.sentItemId + '').includes(keyword);
+                        });
+                        renderStats();
+                    }
+                    window.onload = function () {
+                        renderStats();
+                        document.getElementById('detail-list').style.display = 'none';
+                    }
+                </script>
+                <style>
+                    .mdc-search-bar {
+                        display: flex;
+                        align-items: center;
+                        background: #fff;
+                        border-radius: 24px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+                        padding: 4px 16px;
+                        width: 100%;
+                        max-width: 520px;
+                        margin: 0 auto 24px auto;
+                        border: 1.5px solid #bdbdbd;
+                        transition: border 0.2s;
+                    }
+
+                    .mdc-search-bar:focus-within {
+                        border: 1.5px solid #1976d2;
+                    }
+
+                    .mdc-search-icon {
+                        color: #1976d2;
+                        font-size: 1.5rem;
+                        margin-right: 8px;
+                    }
+
+                    .mdc-search-input,
+                    .mdc-date-input {
+                        border: none;
+                        outline: none;
+                        font-size: 1.08rem;
+                        background: transparent;
+                        padding: 8px 0;
+                    }
+
+                    .mdc-date-input {
+                        color: #1976d2;
+                        width: 130px;
+                    }
+
+                    .mdc-date-input:focus {
+                        background: #e3f2fd;
+                    }
+
+                    .mdc-horizontal-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 28px;
+                        padding: 24px 0;
+                    }
+
+                    .mdc-horizontal-card {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: flex-start;
+                        background: #fff;
+                        border-radius: 16px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+                        overflow: hidden;
+                        transition: box-shadow 0.2s, transform 0.2s;
+                        min-height: 120px;
+                    }
+
+                    .mdc-card-hover:hover {
+                        box-shadow: 0 8px 24px rgba(25, 118, 210, 0.18), 0 3px 8px rgba(0, 0, 0, 0.12);
+                        transform: translateY(-2px) scale(1.01);
+                    }
+
+                    .mdc-horizontal-card__media {
+                        flex: 0 0 100px;
+                        height: 100px;
+                        background: #e3f2fd;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+                    .mdc-card-color {
+                        background: linear-gradient(135deg, #e3f2fd 60%, #fff 100%);
+                    }
+
+                    .mdc-horizontal-card__content {
+                        flex: 1 1 auto;
+                        padding: 18px 24px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                    }
+
+                    .mdc-horizontal-card__title {
+                        font-size: 1.18rem;
+                        font-weight: 600;
+                        margin: 0 0 4px 0;
+                        color: #1976d2;
+                    }
+
+                    .mdc-horizontal-card__subtitle {
+                        font-size: 0.98rem;
+                        color: #666;
+                        margin-bottom: 1px;
+                    }
+
+                    .mdc-horizontal-card__actions {
+                        display: flex;
+                        gap: 12px;
+                        margin-top: 12px;
+                    }
+
+                    .mdc-button {
+                        font-size: 0.98rem;
+                        border-radius: 6px;
+                        padding: 6px 18px;
+                        border: none;
+                        cursor: pointer;
+                        transition: background 0.2s, box-shadow 0.2s;
+                    }
+
+                    .mdc-button--outlined {
+                        background: #fff;
+                        color: #1976d2;
+                        border: 1.5px solid #1976d2;
+                    }
+
+                    .mdc-button--outlined:hover {
+                        background: #e3f2fd;
+                    }
+
+                    .mdc-card-detail {
+                        box-shadow: 0 1.5px 8px rgba(25, 118, 210, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+                    }
+
+                    @media (max-width: 700px) {
+
+                        .mdc-horizontal-card,
+                        .mdc-horizontal-list {
+                            flex-direction: column;
+                        }
+
+                        .mdc-horizontal-card__media {
+                            width: 100%;
+                            height: 80px;
+                        }
+
+                        .mdc-horizontal-card__content {
+                            padding: 12px 10px;
+                        }
+                    }
+                </style>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

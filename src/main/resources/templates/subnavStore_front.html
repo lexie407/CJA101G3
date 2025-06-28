@@ -1,0 +1,44 @@
+<!-- src/main/resources/templates/fragments/subnavXxx.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" th:href="@{/css/subnav.css}">
+</head>
+
+<body>
+    <div th:fragment="subnav(activeItem)">
+        <header class="secondary-nav-ul">
+            <!-- This is the sub-navigation fragment, it should be the list itself -->
+            <ul>
+                <li>
+                    <!-- TODO: 請將此連結更新為商品列表頁面的正確 URL -->
+                    <a th:href="@{/item/listAllItem}" th:classappend="${activeItem == 'items' ? 'active' : ''}">商品列表</a>
+                </li>
+                <li>
+                    <!-- TODO: 請將此連結更新為領取優惠券頁面的正確 URL -->
+                    <a th:href="@{/coupon/memAddCoupon}"
+                        th:classappend="${activeItem == 'addcoupon' ? 'active' : ''}">領取優惠券</a>
+                </li>
+                <li>
+                    <!-- TODO: 請將此連結更新為領取優惠券頁面的正確 URL -->
+                    <a th:href="@{/memcoupons/listAllMemCoupons}"
+                        th:classappend="${activeItem == 'allcoupons' ? 'active' : ''}">我的優惠券</a>
+                </li>
+                <li>
+                    <!-- TODO: 請將此連結更新為我的訂單頁面的正確 URL -->
+                    <a th:href="@{/member/itemList}"
+                        th:classappend="${activeItem == 'itemList' ? 'active' : ''}">我的票券</a>
+                </li>
+                <li>
+                    <!-- TODO: 請將此連結更新為我的訂單頁面的正確 URL -->
+                    <a th:href="@{/order/listCompletedOrders}"
+                        th:classappend="${activeItem == 'orderList' ? 'active' : ''}">我的訂單</a>
+                </li>
+            </ul>
+
+        </header>
+    </div>
+</body>
+
+</html>

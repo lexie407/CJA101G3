@@ -2,28 +2,49 @@ $(function () {
     let main_el = document.querySelector("#articleList");
     const contextPath = getFullContextPath(); // 獲取完整的上下文路徑
 
-    fetch(`/articles?sortBy=artCreTime&order=desc`) // 取得最新文章
-        .then(response => {
-            if (!response.ok) {
-                // 開發除錯用：輸出詳細錯誤
-                console.error(`Fetch error: ${response.status} ${response.statusText}`);
-                throw new Error("載入文章失敗");
-            }
-            return response.json();
-        })
-        .then(data => {
-            data.forEach(article => {
-                let card_el = createArticleCard(article);
-                main_el.append(card_el);
-            });
-        })
-        .catch(error => {
-            console.error("文章載入錯誤：", error); // 開發除錯用
-            main_el.html(`<p>${error.message}</p>`);
-        });
+    const loadMoreBtn = document.querySelector("#loadMoreBtn");
 
-    // 點擊整張卡片跳轉到文章詳情頁
-    // FIXME: 單一文章瀏覽與顯示留言功能施工中
+    let currentPage = 0;
+    const pageSize = 10;
+    const sortBy = "artCreTime"; // 可改成 "artLike"
+    const order = "DESC";        // 你自訂的 SortDirection：ASC / DESC
+
+    // 初始載入第一頁
+    loadArticles();
+
+    // 點擊載入更多
+    loadMoreBtn.addEventListener("click", loadArticles);
+
+    function loadArticles() {
+        // console.log("載入文章請求網址：", `${contextPath}/articles/paged?page=${currentPage}&size=${pageSize}&sortBy=${sortBy}&order=${order}`);
+
+        fetch(`/articles/paged?page=${currentPage}&size=${pageSize}&sortBy=${sortBy}&order=${order}`)
+            .then(response => {
+                if (!response.ok) throw new Error("載入失敗");
+                return response.json();
+            })
+            .then(result => {
+                const data = result.articles;
+                data.forEach(article => {
+                    const card_el = createArticleCard(article);
+                    main_el.append(card_el);
+                });
+
+                currentPage++;
+
+                if (!result.hasNext) {
+                    loadMoreBtn.style.display = "none";
+                }
+            })
+            .catch(error => {
+                console.error("文章載入錯誤：", error);
+                loadMoreBtn.textContent = "載入失敗";
+                loadMoreBtn.disabled = true;
+            });
+    }
+
+
+    // 點擊整張卡片跳轉到單一文章瀏覽
     main_el.addEventListener("click", event => {
         const card = event.target.closest(".article-card");
         if (card) {

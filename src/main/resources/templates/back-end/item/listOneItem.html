@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>員工資料 - listOneEmp.html</title>
+
+	<!-- <head th:insert="~{/back-end/emp/included-fragment}"></head> -->
+	<style type="text/css">
+		span {
+			display: inline-block;
+			width: 180px;
+			text-align: left;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+
+	<nav class="navbar navbar-expand-md navbar-dark bg-success fixed-top justify-content-center">
+		<div align="center">
+			<h2>員工個人資料 - listOneEmp.html</h2>
+			<h3><a class="navbar-brand" th:href="@{/item/select_page}"><img th:src="@{/images/back1.gif}">回查詢頁<label
+						th:text="${success}"></label></a></h3>
+		</div>
+	</nav>
+
+	<div align="center" th:fragment="listOneEmp-div"> <!-- 此div被select_page.html第158行insert用 -->
+		<h3><span>查詢結果 :</span></h3>
+		<span>商品編號:</span><span th:text="${itemVO.itemId}"></span><br />
+		<span>廠商編號:</span><span th:text="${itemVO.storeId}"></span><br />
+		<span>商品名稱:</span><span th:text="${itemVO.itemName}"></span><br />
+		<span>庫存量:</span><span th:text="${itemVO.stockQuantity}"></span><br />
+		<span>商品狀態:</span><span th:text="${itemVO.itemStatus}"></span><br />
+		<span>創建時間:</span><span th:text="${itemVO.creAt}"></span><br />
+		<span>更新時間:</span><span th:text="${itemVO.updAt}"></span><br />
+		<span>檢舉成立次數:</span><span th:text="${itemVO.repCount}"></span><br />
+		<span>商品說明:</span><span th:text="${itemVO.itemInfo}"></span><br />
+		<span>商品價格:</span><span th:text="${itemVO.itemPrice}"></span><br />
+		<span>商品圖片:</span><span><img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}"
+				width="100px"></span><br />
+	</div>
+
+
+</body>
+
+</html>

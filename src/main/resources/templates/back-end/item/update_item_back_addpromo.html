@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>促銷資訊設定 - 後台</title>
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navStoreTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                    <div th:insert="~{/subnavItem_Store_back:: subnav(${activeItem})}"></div>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <div class="mdc-promo-info-card">
+                    <div class="mdc-promo-info-img">
+                        <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" width="100px"
+                            style="border-radius:8px;box-shadow:0 2px 8px rgba(25,118,210,0.10);">
+                    </div>
+                    <div class="mdc-promo-info-list">
+                        <div><span class="mdc-promo-label">商品名稱：</span><span th:text="${itemVO.itemName}"></span></div>
+                        <div><span class="mdc-promo-label">原價：</span><span th:text="${itemVO.itemPrice}"></span></div>
+                        <div><span class="mdc-promo-label">庫存：</span><span th:text="${itemVO.stockQuantity}"></span>
+                        </div>
+                        <div><span class="mdc-promo-label">商品說明：</span><span th:text="${itemVO.itemInfo}"></span></div>
+                    </div>
+                </div>
+                <style>
+                    .mdc-promo-info-card {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 24px;
+                        background: #f5f7fa;
+                        border-radius: 12px;
+                        box-shadow: 0 1.5px 4px rgba(25, 118, 210, 0.08);
+                        padding: 20px 24px;
+                        margin-bottom: 28px;
+                        max-width: 420px;
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+
+                    .mdc-promo-info-img {
+                        flex-shrink: 0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+                    .mdc-promo-info-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                        font-size: 1.05rem;
+                    }
+
+                    .mdc-promo-label {
+                        color: #1976d2;
+                        font-weight: 600;
+                        min-width: 70px;
+                        display: inline-block;
+                    }
+                </style>
+                <div class="mdc-promo-card">
+                    <h2 class="mdc-promo-title">促銷資訊設定</h2>
+                    <form th:action="@{/item/update_promo}" method="post" th:object="${itemVO}" id="promoForm"
+                        class="mdc-form" enctype="multipart/form-data">
+                        <input type="hidden" th:field="*{itemId}" />
+                        <div class="mdc-form-row">
+                            <label>促銷價格</label>
+                            <input type="number" th:field="*{discPrice}" class="mdc-input" min="1" required />
+                            <span th:if="${#fields.hasErrors('discPrice')}" th:errors="*{discPrice}"
+                                class="mdc-error"></span>
+                        </div>
+                        <div class="mdc-form-row">
+                            <label>促銷開始時間</label>
+                            <input type="datetime-local" th:field="*{staTime}" class="mdc-input" required />
+                            <span th:if="${#fields.hasErrors('staTime')}" th:errors="*{staTime}"
+                                class="mdc-error"></span>
+                        </div>
+                        <div class="mdc-form-row">
+                            <label>促銷結束時間</label>
+                            <input type="datetime-local" th:field="*{endTime}" class="mdc-input" required />
+                            <span th:if="${#fields.hasErrors('endTime')}" th:errors="*{endTime}"
+                                class="mdc-error"></span>
+                        </div>
+                        <div class="mdc-form-actions">
+                            <button type="submit" class="mdc-button mdc-button--raised">送出</button>
+                        </div>
+                    </form>
+                </div>
+                <style>
+                    .mdc-promo-card {
+                        max-width: 400px;
+                        margin: 40px auto;
+                        background: #fff;
+                        border-radius: 16px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10), 0 1.5px 4px rgba(0, 0, 0, 0.08);
+                        padding: 32px 32px 24px 32px;
+                    }
+
+                    .mdc-promo-title {
+                        text-align: center;
+                        color: #1976d2;
+                        font-weight: 700;
+                        margin-bottom: 24px;
+                    }
+
+                    .mdc-form-row {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 4px;
+                        margin-bottom: 16px;
+                    }
+
+                    .mdc-input {
+                        border: 1.5px solid #bdbdbd;
+                        border-radius: 6px;
+                        padding: 8px 12px;
+                        font-size: 1rem;
+                        transition: border 0.2s;
+                    }
+
+                    .mdc-input:focus {
+                        border: 1.5px solid #1976d2;
+                        outline: none;
+                    }
+
+                    .mdc-error {
+                        color: #d32f2f;
+                        font-size: 0.95rem;
+                    }
+
+                    .mdc-form-actions {
+                        display: flex;
+                        justify-content: center;
+                        margin-top: 12px;
+                    }
+
+                    .mdc-button {
+                        font-size: 1rem;
+                        border-radius: 6px;
+                        padding: 8px 28px;
+                        border: none;
+                        cursor: pointer;
+                        transition: background 0.2s, box-shadow 0.2s;
+                    }
+
+                    .mdc-button--raised {
+                        background: #1976d2;
+                        color: #fff;
+                        box-shadow: 0 2px 4px rgba(25, 118, 210, 0.10);
+                    }
+
+                    .mdc-button--raised:hover {
+                        background: #1565c0;
+                    }
+                </style>
+                <script th:inline="javascript">
+                    document.getElementById('promoForm').addEventListener('submit', function (e) {
+                        const sta = this.querySelector('input[name="staTime"]');
+                        const end = this.querySelector('input[name="endTime"]');
+                        const disc = this.querySelector('input[name="discPrice"]');
+                        // 取得原本金額（itemPrice）
+                        const itemPrice = /*[[${itemVO.itemPrice}]]*/ 0;
+                        const now = new Date();
+                        let valid = true;
+                        let msg = '';
+                        if (sta && sta.value && end && end.value) {
+                            const staDate = new Date(sta.value);
+                            const endDate = new Date(end.value);
+                            if (staDate < now) {
+                                valid = false;
+                                msg += '促銷開始時間不能早於現在時間！\n';
+                            }
+                            if (endDate < now) {
+                                valid = false;
+                                msg += '促銷結束時間不能早於現在時間！\n';
+                            }
+                            if (endDate < staDate) {
+                                valid = false;
+                                msg += '結束時間不能早於開始時間！\n';
+                            }
+                        }
+                        if (disc && disc.value) {
+                            if (parseInt(disc.value, 10) > parseInt(itemPrice, 10)) {
+                                valid = false;
+                                msg += '促銷金額不能大於原本金額！';
+                            }
+                        }
+                        if (!valid) {
+                            e.preventDefault();
+                            alert(msg);
+                            return false;
+                        }
+                        // 時間格式轉換
+                        if (sta && sta.value) sta.value = sta.value.replace('T', ' ') + ':00';
+                        if (end && end.value) end.value = end.value.replace('T', ' ') + ':00';
+                    });
+                </script>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

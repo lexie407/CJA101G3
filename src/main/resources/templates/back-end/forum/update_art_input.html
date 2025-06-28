@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章資料修改 | 後台 | 島遊kha</title>
+    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+    <!--後台CSS-->
+    <link rel="stylesheet" th:href="@{/css/light.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link th:href="@{/vendors/quillEditor/quill.snow.css}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        .input-readonly[readonly] {
+            background-color: var(--md-sys-color-surface-container); /* 背景微灰 */
+            color: var(--md-sys-color-outline); /* 字色淡灰 */
+            cursor: not-allowed; /* 滑鼠禁止 */
+            border: 1px solid var(--md-sys-color-outline-variant); /* 邊框淡灰 */
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .article-edit-form {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--md-sys-color-surface-container-lowest);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .article-edit-form .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .article-edit-form .form-group label {
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface-variant);
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .article-edit-form .form-group input,
+        .article-edit-form .form-group select {
+            padding: 12px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 6px;
+            font-size: 16px;
+            /*background-color: var(--md-sys-color-surface-container-highest);*/
+            color: var(--md-sys-color-on-surface);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .article-edit-form .form-group input:focus,
+        .article-edit-form .form-group select:focus {
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+            outline: none;
+        }
+
+        .article-edit-form .form-group .error {
+            color: var(--md-sys-color-error);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Quill 編輯器包裝區塊 */
+        .quill-editor {
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 6px;
+            background-color: var(--md-sys-color-surface);
+            padding: 0; /* 外層不要額外 padding，交給 .ql-editor */
+            box-sizing: border-box;
+        }
+
+        .article-edit-form .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+            gap: 12px;
+        }
+
+        .material-button.secondary-btn {
+            background-color: var(--md-sys-color-secondary);
+            color: var(--md-sys-color-on-secondary);
+        }
+
+        .material-button.secondary-btn:hover {
+            background-color: var(--md-sys-color-secondary-fixed-dim);
+        }
+
+
+        /* 真正的編輯區 */
+        .quill-editor .ql-editor {
+            min-height: 200px;
+            padding: 12px;
+            background-color: transparent;
+            box-sizing: border-box;
+        }
+
+        /* 表單標題 */
+        .form-artTitle {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--md-sys-color-on-surface);
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        /* 留言管理區塊橫向排列 */
+        #comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .comment-block {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 6px;
+            background: #fafbfc;
+            gap: 32px;
+        }
+        .comment-block .comment-info {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+        .comment-block .comment-info > div {
+            min-width: 120px;
+            margin-bottom: 4px;
+        }
+        .comment-block .comment-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 90px;
+        }
+
+        /* 留言管理區塊表格樣式 */
+        #comments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            background: #fafbfc;
+        }
+        #comments-table th, #comments-table td {
+            border: 1px solid #ccc;
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 15px;
+        }
+        #comments-table th {
+            background: #f0f1f3;
+            font-weight: bold;
+        }
+        #comments-table td .material-button {
+            margin: 0 2px;
+        }
+    </style>
+</head>
+<body class="light">
+<div class="app-container">
+    <!--後台:側邊攔，通用樣式，不用改-->
+    <div th:insert="~{/navBackTemplate :: navbar}"></div>
+
+    <div class="main-content">
+        <!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
+        <div th:insert="~{back-end/forum/subnavForum :: subnav('all')}"></div>
+
+        <!--main 以下為頁面主要內容 -->
+        <main class="content-area-main">
+            <div style="margin-bottom: 1rem;">
+                <button type="button" class="material-button" onclick="history.back()" style="display: flex; align-items: center;">
+                    <span class="material-icons" style="margin-right: 6px;">arrow_back</span>返回
+                </button>
+            </div>
+<!--            <h3><a class="navbar-brand" th:href="@{/forum/admin/selectPage}">前往文章查詢</a></h3>-->
+            <h2 class="form-title">📝 編輯文章</h2>
+
+            <!--    文章編輯表單      -->
+            <form class="article-edit-form" th:action="@{/forum/admin/update}" method="post" th:object="${articleForm}" enctype="multipart/form-data">
+                <!-- 文章編號 -->
+                <div class="form-group half">
+                    <label for="artId">文章編號</label>
+                    <input id="artId" type="text" th:field="*{artId}" class="input-readonly" readonly />
+                </div>
+
+                <!-- 文章標題 -->
+                <div class="form-group half">
+                    <label for="artTitle">文章標題</label>
+                    <input type="text" id="artTitle" th:field="*{artTitle}" required />
+                    <span th:if="${#fields.hasErrors('artTitle')}" th:errors="*{artTitle}" class="error"
+                          id="artTitle.errors"></span>
+                </div>
+                
+
+                <!-- 文章類別 -->
+                <div class="form-group">
+                    <label for="artCat">文章類別</label>
+                    <select id="artCat" th:field="*{artCat}" required>
+                        <option value="1">文章</option>
+                        <option value="2">問題</option>
+                        <option value="3">已解決</option>
+                    </select>
+                </div>
+
+                <!-- 會員編號（唯讀） -->
+                <div class="form-group">
+                    <label for="artHol">會員編號</label>
+                    <input type="number" id="artHol" th:field="*{artHol}" class="input-readonly" readonly />
+                    <span th:if="${#fields.hasErrors('artHol')}" th:errors="*{artHol}" class="error" id="artHol.errors"></span>
+                </div>
+
+                <!-- 上下架狀態 -->
+                <div class="form-group">
+                    <label for="artSta">狀態</label>
+                    <select id="artSta" th:field="*{artSta}" required>
+                        <option value="1">上架</option>
+                        <option value="2">下架</option>
+                    </select>
+                </div>
+
+                <!-- 文章內容 -->
+                <div class="form-group full-width">
+                    <label for="editor">文章內容</label>
+                    <textarea id="artCon" th:field="*{artCon}" style="display:none;"></textarea>
+                    <div id="editor" class="quill-editor">
+                        <div th:utext="*{artCon}"></div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="material-button" onclick="history.back()">取消</button>
+                    <button type="submit" class="material-button secondary-btn">送出</button>
+                </div>
+
+            </form>
+
+            <div id="editor2">
+                <!--Qill編輯器-->
+            </div>
+
+            <!-- ====== 留言管理區塊 ====== -->
+            <div id="comment-manage-block" style="margin-top:40px;">
+                <h3>留言管理</h3>
+                <div id="comments-list">
+                    <!-- 這裡會用JS載入留言表格 -->
+                </div>
+            </div>
+            <!-- ===================================================================== -->
+
+        </main>
+    </div>
+</div>
+
+<script>
+    // 隱藏錯誤訊息用
+    function hideContent(d) {
+        document.getElementById(d).style.display = "none";
+    }
+
+    // 表單送出時，把 Quill 的 HTML 內容填到隱藏的 textarea
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const html = quill.root.innerHTML;
+        document.querySelector('#artCon').value = html;
+    });
+
+    // 避免第一次載入時 Quill 是空的
+    window.addEventListener('DOMContentLoaded', () => {
+        const initialContent = document.querySelector('#artCon').value;
+        quill.root.innerHTML = initialContent;
+    });
+
+    const contextPath = getFullContextPath(); // 獲取完整的上下文路徑
+    // 取得 host + context path
+    function getFullContextPath() {
+
+        const path = window.location.pathname;
+        const firstSlash = path.indexOf("/", 1);
+        const ctx = firstSlash === -1 ? "" : path.substring(0, firstSlash);
+        return window.location.origin + ctx;
+    }
+
+
+    // ====== 留言管理區塊AJAX載入 ======
+    document.addEventListener('DOMContentLoaded', function () {
+        const artId = document.getElementById('artId').value;
+        fetch(`/commentsAPI/getComments`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'commArt=' + encodeURIComponent(artId)
+        })
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('comments-list');
+            if (!data || data.length === 0) {
+                list.innerHTML = '<div style="color:#888;">目前沒有留言。</div>';
+                return;
+            }
+            let html = `
+                <table id="comments-table">
+                    <thead>
+                        <tr>
+<!--                            <th>留言編號</th>-->
+                            <th>會員</th>
+                            <th>留言類別</th>
+                            <th>內容</th>
+                            <th>圖片</th>
+                            <th>時間</th>
+                            <th>留言狀態</th>
+                            <th>管理</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            data.forEach(comm => {
+                html += `
+                    <tr>
+<!--                        <td>${comm.commId}</td>-->
+                        <td>${comm.commHol}</td>
+                        <td>${comm.commCat === 1 ? '文章留言' : comm.commCat === 2 ? '問題回答' : comm.commSta}</td>
+<!--                        TODO: 留言圖片顯示-->
+                        <td>${comm.commCon}</td>
+                        <td>${comm.commImg == null ? '沒有圖片' : comm.commImg}</td>
+                        <td>${comm.commCreTime ? comm.commCreTime.replace('T', ' ').substring(0, 19) : ''}</td>
+                        <td>${comm.commSta === 1 ? '上架' : comm.commSta === 2 ? '下架' : comm.commSta === 3 ? '最佳解' : comm.commSta}</td>
+                        <td>
+                            <button class="material-button" onclick="deleteComment(${comm.commId})" ${comm.commSta !== 1 ? 'disabled' : ''}>刪除</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+            list.innerHTML = html;
+        });
+    });
+
+    function deleteComment(commId) {
+        if (!confirm('確定要刪除此留言？')) return;
+        fetch(`/commentsAPI/deleteComments`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'commId=' + encodeURIComponent(commId)
+        }).then(() => location.reload());
+    }
+
+
+</script>
+
+<!-- 引用Quill編輯器-->
+<script th:src="@{/vendors/quillEditor/quilljs.js}"></script>
+<script>
+    const quill = new Quill('#editor', {
+        modules: {
+            toolbar: [
+                [{'size': ['small', false, 'large', 'huge']}, 'bold', 'italic', 'underline', 'strike', 'blockquote'],        // toggled buttons
+                ['link', 'image', 'video'],
+
+                [{'list': 'ordered'}, {'list': 'bullet'}, {'list': 'check'}],
+                [{'direction': 'rtl'}],                         // text direction
+
+                [{'header': [1, 2, 3, 4, 5, 6, false]}],
+
+                [{'color': []}, {'background': []}],          // dropdown with defaults from theme
+                [{'align': []}],
+
+                ['clean']                                         // remove formatting button
+            ],
+        },
+        placeholder: '來寫點什麼吧……',
+        theme: 'snow', // or 'bubble'
+    });
+
+
+</script>
+
+</body>
+</html>

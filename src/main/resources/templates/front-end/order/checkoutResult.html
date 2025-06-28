@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>付款結果測試頁</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                 <div th:insert="~{/subnavStore_front::subnav(${activeItem})}"></div>
+            </header>
+            <main class="content-area-main" style="display:flex;align-items:center;justify-content:center;height:60vh;">
+                <div
+                    style="background:#fff;box-shadow:0 2px 12px rgba(25,118,210,0.10);border-radius:18px;padding:36px 48px;min-width:420px;">
+                    <h2 style="color:#1976d2;font-weight:700;margin-bottom:18px;">
+                        <span class="material-icons" style="vertical-align:middle;font-size:2rem;">check_circle</span>
+                        付款成功！
+                    </h2>
+                    <div th:if="${order != null}">
+                        <div style="margin-bottom:18px;">
+                            <span style="font-weight:600;">訂單編號：</span>
+                            <span th:text="${order.ordId}"></span>
+                            <span style="margin-left:24px;font-weight:600;">訂單日期：</span>
+                            <span th:text="${#dates.format(order.creDate, 'yyyy-MM-dd HH:mm')}"></span>
+                        </div>
+                        <h4 style="margin:18px 0 8px 0;font-weight:600;">訂單明細</h4>
+                        <table style="width:100%;border-collapse:collapse;background:#fafbfc;">
+                            <thead>
+                                <tr style="background:#e3f2fd;">
+                                    <th style="padding:8px 12px;">商品名稱</th>
+                                    <th style="padding:8px 12px;">數量</th>
+                                    <th style="padding:8px 12px;">單價</th>
+                                    <th style="padding:8px 12px;">小計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item : ${order.orderItems}" style="border-bottom:1px solid #e0e0e0;">
+                                    <td style="padding:8px 12px;" th:text="${item.itemName}"></td>
+                                    <td style="padding:8px 12px;" th:text="${item.ordTotal}"></td>
+                                    <td style="padding:8px 12px;" th:text="${item.discPrice}"></td>
+                                    <td style="padding:8px 12px;" th:text="${item.ordTotal * item.discPrice}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="text-align:right;margin-top:18px;">
+                            <span style="font-size:1.1rem;font-weight:600;color:#1976d2;">原始總金額：</span>
+                            <span style="font-size:1.1rem;font-weight:700;"
+                                th:text="${#numbers.formatInteger(totalAmount, 1, 'COMMA')}"></span> 元
+                            <br th:if="${couponDiscount != null && couponDiscount > 0}" />
+                            <span th:if="${couponDiscount != null && couponDiscount > 0}"
+                                style="font-size:1.1rem;font-weight:600;color:#388e3c;">優惠券折抵：</span>
+                            <span th:if="${couponDiscount != null && couponDiscount > 0}"
+                                style="font-size:1.1rem;font-weight:700;color:#388e3c;"
+                                th:text="|-${#numbers.formatInteger(couponDiscount, 1, 'COMMA')}|"></span>
+                            <span th:if="${couponDiscount != null && couponDiscount > 0}">元</span>
+                            <br th:if="${couponDiscount != null && couponDiscount > 0}" />
+                            <span style="font-size:1.2rem;font-weight:700;color:#1976d2;">應付金額：</span>
+                            <span style="font-size:1.2rem;font-weight:700;"
+                                th:text="${#numbers.formatInteger(finalAmount, 1, 'COMMA')}"></span> 元
+                        </div>
+
+                    </div>
+                    <div th:if="${order == null}">
+                        <p>查無訂單資料。</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

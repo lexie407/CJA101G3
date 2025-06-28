@@ -1,0 +1,165 @@
+<!-- templates/front-end/store/view.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org"
+	th:with="currentPage='storeProfile'">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>商家 | 資料檢視 | 島遊kha</title>
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+<style>
+.md-card {
+	max-width: 600px;
+	margin: 40px auto;
+	padding: 30px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	border-radius: 12px;
+	background-color: var(--md-sys-color-surface-container-low);
+	box-sizing: border-box;
+}
+
+.md-headline {
+	text-align: center;
+	margin-bottom: 30px;
+	color: var(--md-sys-color-primary);
+	font-size: 2rem;
+	font-weight: 500;
+}
+
+.form-group {
+	margin-bottom: 20px;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface);
+}
+
+.readonly-field {
+	padding: 12px;
+	background-color: transparent;
+	color: var(--md-sys-color-on-surface);
+	font-size: 1rem;
+}
+
+.avatar-preview {
+	width: 160px;
+	height: 160px;
+	border: 1px dashed var(--md-sys-color-outline);
+	border-radius: 8px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	margin-top: 10px;
+	background-color: var(--md-sys-color-surface-variant);
+}
+
+.avatar-preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+</style>
+</head>
+<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<!--       <div th:replace="~{subnavStore :: subnav(activeItem='profile')}"></div> 還沒有模板-->
+			<main class="content-area-main">
+				<div class="md-card">
+					<h2 class="md-headline">商家資料檢視</h2>
+
+					<div class="form-group">
+						<label for="storeId">廠商編號</label>
+						<div id="storeId" class="readonly-field"
+							th:text="${store.storeId}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storeAcc">帳號</label>
+						<div id="storeAcc" class="readonly-field"
+							th:text="${store.storeAcc}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storePwd">密碼</label>
+						<div id="storePwd" class="readonly-field"
+							th:text="${store.storePwd}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storeName">廠商名稱</label>
+						<div id="storeName" class="readonly-field"
+							th:text="${store.storeName}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storeGui">統一編號</label>
+						<div id="storeGui" class="readonly-field"
+							th:text="${store.storeGui}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storeRep">負責人</label>
+						<div id="storeRep" class="readonly-field"
+							th:text="${store.storeRep}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storeTel">連絡電話</label>
+						<div id="storeTel" class="readonly-field"
+							th:text="${store.storeTel}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storeAddr">公司地址</label>
+						<div id="storeAddr" class="readonly-field"
+							th:text="${store.storeAddr}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storeFax">傳真</label>
+						<div id="storeFax" class="readonly-field"
+							th:text="${store.storeFax}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storeEmail">信箱</label>
+						<div id="storeEmail" class="readonly-field"
+							th:text="${store.storeEmail}"></div>
+					</div>
+
+					<div class="form-group">
+						<label for="storeRegDate">加入時間</label>
+						<div id="storeRegDate" class="readonly-field"
+							th:text="${#dates.format(store.storeRegDate,'yyyy-MM-dd HH:mm:ss')}"></div>
+					</div>
+
+
+
+
+
+					<div class="form-group">
+						<label>廠商圖片</label>
+						<div class="avatar-preview">
+							<!-- 有上傳過圖片就呼叫 DBGifReader 取回 -->
+							<img th:if="${store.storeImg != null}"
+								th:src="@{/store/DBGifReader(storeId=${store.storeId})}"
+								alt="廠商圖片" />
+							<!-- 沒圖片就顯示預設圖 -->
+							<img th:if="${store.storeImg == null}"
+								th:src="@{/images/user.png}" alt="預設商家圖片" />
+						</div>
+					</div>
+
+					<!-- 暫不提供編輯按鈕 -->
+				</div>
+			</main>
+		</div>
+	</div>
+</body>
+</html>

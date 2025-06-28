@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org"
-	th:with="currentPage='accounts'">
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -329,13 +328,14 @@ td[colspan="23"] {
 	<div class="app-container">
 		<div th:insert="~{/navBackTemplate :: navbar}"></div>
 		<div class="main-content">
-			<header class="secondary-nav">
-				<ul>
-					<li><a th:href="@{/members/selectPage}">查詢主頁</a></li>
-					<li><a th:href="@{/members/listAll}">列出所有會員</a></li>
-					<li><a class="active">搜尋結果</a></li>
-				</ul>
-			</header>
+
+			<a th:href="@{/members/selectPage}"
+				class="material-button md-secondary-button"
+				style="align-self: flex-start; margin-bottom: 1rem;"> <i
+				class="material-icons">arrow_back</i> 回查詢主頁
+			</a>
+
+
 			<main class="content-area-main">
 				<section class="md-card">
 					<h2 class="md-headline">搜尋結果</h2>
@@ -413,8 +413,8 @@ td[colspan="23"] {
 					</div>
 
 					<!-- 後端分頁片段，不用修改 pagination.html -->
-					 <th:block
-   th:replace="~{back-end/members/pagination :: paginationBottom(
+					<th:block
+						th:replace="~{back-end/members/pagination :: paginationBottom(
       ${page}, ${page.size}, ${memStatus}, ${memAcc}, ${memId}, ${memName}
  )}" />
 				</section>
@@ -424,20 +424,21 @@ td[colspan="23"] {
 
 	<!-- === 3. 載入 JS 並調整初始化設定 === -->
 	<script th:src="@{https://code.jquery.com/jquery-3.6.0.min.js}"></script>
-<script th:src="@{https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js}"></script>
-<script th:inline="javascript">
-  $(document).ready(function() {
-    $('.datatable-class').DataTable({
-      lengthMenu: [5, 10],
-      searching: true,
-      paging:    false,    // 關閉 DataTables 原生分頁
-      info:      false,    // 關閉 DataTables 原生 info
-      dom:       'lfrt',   // 只留下 length + filter + table + 排序
-      ordering:  true,
-      language:  { /* 你的中文設定 */ }
-    });
-  });
-</script>
+	<script
+		th:src="@{https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js}"></script>
+	<script th:inline="javascript">
+		$(document).ready(function() {
+			$('.datatable-class').DataTable({
+				lengthMenu : [ 5, 10 ],
+				searching : true,
+				paging : false, // 關閉 DataTables 原生分頁
+				info : false, // 關閉 DataTables 原生 info
+				dom : 'lfrt', // 只留下 length + filter + table + 排序
+				ordering : true,
+				language : { /* 你的中文設定 */}
+			});
+		});
+	</script>
 </body>
 </html>
 

@@ -6,7 +6,7 @@
     <title>文章 | 前台 | 島遊kha</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
-	
+	<link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
 	<!-- 留言用 -->
 		<link rel="stylesheet" th:href=@{/css/comments/comments.css}>
 		<!-- Materialize CSS -->
@@ -114,10 +114,8 @@
 <div class="app-container">
     <div th:insert="~{/navTemplate :: navbar}"></div>
     <div class="main-content">
-        <header class="secondary-nav">
-            <ul>
-                <!-- 					放自己需要的內容 -->
-            </ul>
+        <header>
+            <div th:insert="~{front-end/forum/subnavForum :: topbar}"></div>
         </header>
         <main class="content-area-main">
             <!-- 					放自己需要的內容 -->
@@ -166,27 +164,27 @@
 
 <!-- 以上留言使用 -->
 <script>
-function getArtIdFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('artId');
-}
+    function getArtIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('artId');
+    }
 
-function renderArticle(article) {
-    if (!article) {
-        $('#articleDetail').html('找不到文章');
-        return;
-    }
-    // 文章類別對應
-    const artCatMap = {
-        1: "文章",
-        2: "發問中",
-        3: "已解決"
-    }
-    const artCat = artCatMap[article.artCat] || "文章*";  //若文章類別沒有被適當的歸類，顯示成文章*類別
-    // 把日期轉換用台灣常用的日期
-    const createDate = new Date(article.artCreTime).toLocaleDateString("zh-TW");
-    console.log(createDate);
-    $('#articleDetail').html(`
+    function renderArticle(article) {
+        if (!article) {
+            $('#articleDetail').html('找不到文章');
+            return;
+        }
+        // 文章類別對應
+        const artCatMap = {
+            1: "文章",
+            2: "發問中",
+            3: "已解決"
+        }
+        const artCat = artCatMap[article.artCat] || "文章*";  //若文章類別沒有被適當的歸類，顯示成文章*類別
+        // 把日期轉換用台灣常用的日期
+        const createDate = new Date(article.artCreTime).toLocaleDateString("zh-TW");
+        console.log(createDate);
+        $('#articleDetail').html(`
       <div class="article-card">
         <div class="article-header">
           <span class="article-category">${artCat}</span>
@@ -219,42 +217,44 @@ function renderArticle(article) {
         </div>
       </div>
     `);
-}
+    }
 
-$(function() {
+    $(function() {
 // 取得 host + context path
-    function getFullContextPath() {
-        const path = window.location.pathname;
-        const firstSlash = path.indexOf("/", 1);
-        const ctx = firstSlash === -1 ? "" : path.substring(0, firstSlash);
-        return window.location.origin + ctx;
-    }
-    const contextPath = getFullContextPath(); // 拿到contextPath
-    // const pathname = window.location.pathname;
-    // const contextPath = window.location.origin + pathname.substring(0, pathname.lastIndexOf('/') + 1);
+        function getFullContextPath() {
+            const path = window.location.pathname;
+            const firstSlash = path.indexOf("/", 1);
+            const ctx = firstSlash === -1 ? "" : path.substring(0, firstSlash);
+            return window.location.origin + ctx;
+        }
+        const contextPath = getFullContextPath(); // 拿到contextPath
+        // const pathname = window.location.pathname;
+        // const contextPath = window.location.origin + pathname.substring(0, pathname.lastIndexOf('/') + 1);
 // console.log(pathname);
-console.log(contextPath);
-    const artId = getArtIdFromUrl();
-    if (!artId) {
-        $('#articleDetail').html('缺少文章編號');
-        return;
-    }
-    fetch(`/article/${artId}`)
-        .then(response => {
-            if (!response.ok) {
-                console.error(`Fetch error: ${response.status} ${response.statusText}`);
-                throw new Error('網路錯誤或文章不存在');
-            }
-            return response.json();
-        })
-        .then(article => {
-            renderArticle(article);
-        })
-        .catch(error => {
-            console.error('載入文章失敗:', error);
-            $('#articleDetail').html('載入文章失敗，請稍後再試。');
-        });
-});
+
+        const artId = getArtIdFromUrl();
+        if (!artId) {
+            $('#articleDetail').html('缺少文章編號');
+            return;
+        }
+        // console.log(`${contextPath}/article/${artId}`);
+
+        fetch(`/article/${artId}`)
+            .then(response => {
+                if (!response.ok) {
+                    console.error(`Fetch error: ${response.status} ${response.statusText}`);
+                    throw new Error('網路錯誤或文章不存在');
+                }
+                return response.json();
+            })
+            .then(article => {
+                renderArticle(article);
+            })
+            .catch(error => {
+                console.error('載入文章失敗:', error);
+                $('#articleDetail').html('載入文章失敗，請稍後再試。');
+            });
+    });
 </script>
 </body>
 </html>
