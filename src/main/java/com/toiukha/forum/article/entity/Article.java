@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.sql.Date;
+import java.sql.Timestamp;
 
 // 對應到資料表，代表是資料表中的某個欄位
 @Entity
@@ -39,7 +40,7 @@ public class Article implements Serializable{
 
 	
 	@Column(name = "ARTCRETIME" , updatable = false, insertable = false)
-	private Date artCreTime;	//文章建立時間
+	private Timestamp artCreTime;	//文章建立時間
 
 	//只有部分資料填入，給Insert語法用(因為部分欄位由資料庫生成)
 	public Article(Byte artCat, Byte artSta, Integer artHol
@@ -54,7 +55,7 @@ public class Article implements Serializable{
 	}
 
 	public Article(Integer artId, Byte artCat, Byte artSta, Integer artHol, Integer artLike
-			, String artTitle, String artCon, Date artCreTime) {
+			, String artTitle, String artCon, Timestamp artCreTime) {
 		super();
 		this.artId = artId;
 		this.artCat = artCat;
@@ -126,11 +127,11 @@ public class Article implements Serializable{
 		this.artCon = artCon;
 	}
 
-	public Date getArtCreTime() {
+	public Timestamp getArtCreTime() {
 		return artCreTime;
 	}
 
-	public void setArtCreTime(Date artCreTime) {
+	public void setArtCreTime(Timestamp artCreTime) {
 		this.artCreTime = artCreTime;
 	}
 

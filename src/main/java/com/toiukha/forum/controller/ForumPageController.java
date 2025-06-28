@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+// 文章相關的頁面Controller
 @Controller
 @RequestMapping("/forum")
 public class ForumPageController {
@@ -65,11 +66,9 @@ public class ForumPageController {
     }
 
     // 導向新增文章頁面
-    @GetMapping("/article/edit")
-    public String editArticle(){
+    @GetMapping("/article/add")
+    public String addArticle(){
         return "front-end/forum/add-article";
-
-
 
     }
 

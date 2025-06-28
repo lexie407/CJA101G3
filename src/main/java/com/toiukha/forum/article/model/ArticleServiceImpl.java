@@ -1,11 +1,17 @@
 package com.toiukha.forum.article.model;
 
 import com.toiukha.forum.article.dto.ArticleDTO;
+import com.toiukha.forum.article.dto.ArticleSearchCriteria;
 import com.toiukha.forum.article.entity.Article;
+import com.toiukha.forum.util.ArticleSpecifications;
 import com.toiukha.forum.util.Debug;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Service("articleService")
@@ -13,7 +19,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleRepository articleRepository;
 
-    /*
+    /**
      * 用於排序的Key，包含排序欄位和方向。
      * 這個類別可以用於在查詢中指定排序條件。
      */
@@ -24,10 +30,10 @@ public class ArticleServiceImpl implements ArticleService {
      * 以後會包含文章ID、建立時間、按讚數分類。
      */
     public enum ArticleSortField {
-        artId,
-        artCreTime,
-        artLike,
-        artCat
+        ARTICLE_ID,
+        ARTICLE_CREATINE,
+        ARTICLE_LIKES,
+        ARTICLE_STATUS,
     }
 
     // 定義排序方向，升冪或降冪
@@ -35,25 +41,42 @@ public class ArticleServiceImpl implements ArticleService {
         ASC, DESC
     }
 
+    // 內部類別產生排序邏輯，根據文章按讚數排序
+    private class LikesCompASC implements Comparator<ArticleDTO> {
+        @Override
+        public int compare(ArticleDTO o1, ArticleDTO o2) {
+            return o1.getArtLike().compareTo(o2.getArtLike());
+        }
+    }
+
     // 用一個HashMap去存每個Key代表的排序邏輯(Comparator)。
+    // Comparator是SAM (又稱為Functional Interface(函式介面))
     private final Map<SortKey, Comparator<ArticleDTO>> sortMap = new HashMap<SortKey, Comparator<ArticleDTO>>();
     {
-        sortMap.put(new SortKey(ArticleSortField.artId, SortDirection.ASC),
+        // 內部類別
+        sortMap.put(new SortKey(ArticleSortField.ARTICLE_LIKES, SortDirection.ASC), new LikesCompASC());
+
+        // 用匿名類別 new出Comparator，override compare方法，使他根據getArtId的值排列
+        sortMap.put(new SortKey(ArticleSortField.ARTICLE_ID, SortDirection.ASC),
+                /* 因為重點是實作的介面，所以我們new一個匿名類別
+                 * 告訴java這個匿名類別實作 Comparator<ArticleDTO>介面  */
                 new Comparator<ArticleDTO>() {
                     @Override
                     public int compare(ArticleDTO o1, ArticleDTO o2) {
                         return o1.getArtId().compareTo(o2.getArtId());
                     }
-                });   // 用匿名類別 new出Comparator，override compare方法，使他根據getArtId排列
+                });
+
         // 也可以用 lambda 表達式 new Comparator<IArticleDTO>出來，再放進sortMap
         Comparator<ArticleDTO> idDescComp = (dto1, dto2) -> dto1.getArtId().compareTo(dto2.getArtId());
         sortMap.put(
-                new SortKey(ArticleSortField.artId, SortDirection.DESC),
+                new SortKey(ArticleSortField.ARTICLE_ID, SortDirection.DESC),
                 idDescComp.reversed() // 直接使用reversed()方法反轉比較器(Comparator)的順序
         );
-        // 使用方法參照(語法糖)建立 Comparator，根據 getArtCreTime() 進行升冪排序，等同於 Lambda 表達式：(dto1, dto2) -> dto1.getArtCreTime().compareTo(dto2.getArtCreTime())
-        sortMap.put(new SortKey(ArticleSortField.artCreTime, SortDirection.ASC), Comparator.comparing(ArticleDTO::getArtCreTime));
-        sortMap.put(new SortKey(ArticleSortField.artCreTime, SortDirection.DESC), Comparator.comparing(ArticleDTO::getArtCreTime).reversed());
+
+        // 使用方法參考(語法糖)建立 Comparator，根據 getArtCreTime() 進行升冪排序，等同於 Lambda 表達式：(dto1, dto2) -> dto1.getArtCreTime().compareTo(dto2.getArtCreTime())
+        sortMap.put(new SortKey(ArticleSortField.ARTICLE_CREATINE, SortDirection.ASC), Comparator.comparing(ArticleDTO::getArtCreTime));
+        sortMap.put(new SortKey(ArticleSortField.ARTICLE_CREATINE, SortDirection.DESC), Comparator.comparing(ArticleDTO::getArtCreTime).reversed());
     }
 
     @Autowired
@@ -105,7 +128,7 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public Article update(Integer artId, Byte artCat, Byte artSta, Integer artHol, Integer artLike,
-                          String artTitle, String artCon, Date artCreTime) {
+                          String artTitle, String artCon, Timestamp artCreTime) {
         Article artVO = new Article();
         artVO.setArtId(artId);
         artVO.setArtCat(artCat);
@@ -126,7 +149,7 @@ public class ArticleServiceImpl implements ArticleService {
     public Article updateBasic(Integer artId, Byte artCat, Byte artSta, String artTitle, String artCon) {
         Article artVO = articleRepository.findById(artId).orElse(null);
         if (artVO == null) {
-            artVO = new Article();
+            artVO = new Article(); // FIXME: 這裡應該拋出一個例外，表示找不到文章
         }
         artVO.setArtId(artId);
         artVO.setArtCat(artCat);
@@ -144,15 +167,58 @@ public class ArticleServiceImpl implements ArticleService {
     //===================  查詢  ===================
 
     @Override
-    public Article getArticleById(Integer id) {
+    public Article getArticleById (Integer id) {
         return articleRepository.findById(id).orElse(null);
     }
+
+    //根據artCat文章類別找資料
+    @Override
+    public List<Article> getByCategory(Byte artCat) {
+        return articleRepository.findByArtCat(artCat);
+    }
+
+    //根據artTitle找文章
+    @Override
+    public List<Article> getByTitle(String artTitle) {
+        return articleRepository.findByArtTitleContaining(artTitle);
+    }
+
+    //根據文章上下架找文章
+    @Override
+    public List<Article> getByStatus(Byte artSta) {
+        return articleRepository.findByArtSta(artSta);
+    }
+
+    //根據會員編號找文章
+    public List<Article> getByAuthorId(Integer artHol) {
+        return articleRepository.findByArtHol(artHol);
+    }
+
+    //進階查詢
+    // memo: 這是要在articleRepository繼承JpaSpecificationExecutor 才能使用的進階查詢
+    @Override
+    public List<Article> searchArticlesByCriteria(ArticleSearchCriteria criteria) {
+
+        return articleRepository.findAll(ArticleSpecifications.withCriteria(criteria));
+    }
+
 
     @Override
     public List<Article> getAll() {
         return articleRepository.findAll();
     }
 
+    //===================  DTO查詢  ===================
+
+    // 取得所有文章的DTO列表(支援分頁功能)
+    @Override
+    public Page<ArticleDTO> getAllPagedDTO(int page, int size, String sortBy, SortDirection sortDirection) {
+        Sort.Direction direction = Sort.Direction.valueOf(sortDirection.name());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        return articleRepository.getAllPagedDTO(pageable);
+    }
+
+    // 取得所有文章的DTO列表
     public List<ArticleDTO> getAllDTO(String sortBy, String sortDirection) {
         // 取得所有文章的DTO列表
         List<ArticleDTO> articles = articleRepository.getAllDTO();
@@ -176,7 +242,7 @@ public class ArticleServiceImpl implements ArticleService {
             sortField = ArticleSortField.valueOf(sortBy);
         } catch (IllegalArgumentException e) {
             Debug.errorLog("排序欄位錯誤" + e.getMessage());
-            sortField = ArticleSortField.artId;
+            sortField = ArticleSortField.ARTICLE_ID;
         }
         // 升冪或降冪排序
         SortDirection direction;
