@@ -23,7 +23,6 @@
 					class="single-notification-container notification-center-container">
 					<div class="single-notification-actions">
 						<button id="backToAdminNotificationsBtn" class="material-button"
-							th:attr="data-originalUri=${originalUri}"
 							style="margin-bottom: 10px;">
 							<span class="material-icons">arrow_back</span> 返回
 						</button>
@@ -31,22 +30,22 @@
 
 					<div class="admin-notification-form">
 						<h2
-							th:if="${commentsReportVO.rptSta == 0}">編輯案件</h2>
+							th:if="${articlereportVO.repSta == 0}">編輯案件</h2>
 						<h2
-							th:if="${commentsReportVO.rptSta >= 1}">案件詳情</h2>
+							th:if="${articlereportVO.repSta >= 1}">案件詳情</h2>
 
 						<form id="notificationEditForm" method="post"
-							th:action="@{/CommentsReports/established}">
-							<input type="hidden" name="commId" th:value="${commentsReportVO.commId}">
+							th:action="@{/Articlereport/established}">
+							<input type="hidden" name="artId" th:value="${articlereportVO.artId}">
 							<div class="form-group">
 								<label for="notificationMemberId">案件編號:</label> <input
-									type="text" id="commRepId" name="commRepId"
-									th:value="${commentsReportVO.commRepId}" readonly>
+									type="text" id="artRepId" name="artRepId"
+									th:value="${articlereportVO.artRepId}" readonly>
 							</div>
 							<div class="form-group">
 								<label for="notificationMemberId">回報會員 ID:</label> <input
 									type="text" id="notificationMemberId" name="memId"
-									th:value="${commentsReportVO.memId}" readonly>
+									th:value="${articlereportVO.memId}" readonly>
 							</div>
 							<div class="form-group">
 <!-- 							記得放會員 -->
@@ -56,71 +55,57 @@
 							
 							<div class="form-group">
 								<label for="notificationStatus">案件進度:</label> <input
-									type="hidden" name="rptSta"
-									th:value="${commentsReportVO.rptSta}"> <input
-									type="text" id="rptSta" readonly
-									th:if="${commentsReportVO.rptSta == 2}" value="檢舉未成立">
-								<input type="text" id="rptSta" readonly
-									th:if="${commentsReportVO.rptSta == 1}" value="檢舉成立">
-								<input type="text" id="rptSta" readonly
-									th:if="${commentsReportVO.rptSta == 0}" value="處理中">
+									type="hidden" name="repSta"
+									th:value="${articlereportVO.repSta}"> <input
+									type="text" id="repSta" readonly
+									th:if="${articlereportVO.repSta == 2}" value="檢舉未成立">
+								<input type="text" id="repSta" readonly
+									th:if="${articlereportVO.repSta == 1}" value="檢舉成立">
+								<input type="text" id="repSta" readonly
+									th:if="${articlereportVO.repSta == 0}" value="處理中">
 							</div>
 							<div class="form-group">
 								<label for="notificationCreatedAt">案件建立時間:</label> <input
 									type="text" id="notificationCreatedAt"
-									th:value="${#dates.format(commentsReportVO.repTime, 'yyyy-MM-dd HH:mm')}" readonly>
+									th:value="${#dates.format(articlereportVO.repTime, 'yyyy-MM-dd HH:mm')}" readonly>
 							</div>
 							<div class="form-group full-width">
 									<label for="commCon">被檢舉內容:</label>
-									<textarea id="commCon" name="commCon" rows="8"
-										th:text="${commentsVO.commCon}" readonly></textarea>
-									<div th:if="${commentsVO.commImg != null}">
-										<img th:alt="${commentsVO.commId}" th:src="@{/commentsReport/read.do(commId=${commentsVO.commId})}" style="max-width: 200px;">
-									</div>	
-								</div>
+									<button id="articleBtn" type="button" class="material-button" style="margin-bottom: 10px;">點我看文章內容</button>
+							</div>
 							<div
-								th:if="${commentsReportVO.rptSta == 0}">
-								<div class="form-group">
-									<label for="notificationTitle">案件簡述:</label> <input type="text"
-										id="notificationTitle" name="repCat"
-										th:value="${commentsReportVO.repCat}" readonly>
-								</div>
+								th:if="${articlereportVO.repSta == 0}">
 								<div class="form-group full-width">
 									<label for="repDes">案件說明:</label>
 									<textarea id="repDes" name="repDes" rows="8"
-										required th:text="${commentsReportVO.repDes}" readonly></textarea>
+										required th:text="${articlereportVO.repDes}" readonly></textarea>
 								</div>
 								<div class="form-group full-width">
 									<label for="notificationContent">結案說明:</label>
-									<textarea id="notificationContent" name="remarks" rows="8"
+									<textarea id="notificationContent" name="remark" rows="8"
 										required></textarea>
 								</div>
 							</div>
 							<div
-								th:if="${commentsReportVO.rptSta >= 1}">
+								th:if="${articlereportVO.repSta >= 1}">
 								<div class="form-group">
 									<label for="notificationSentAt">案件結案時間:</label> <input
-										type="datetime-local" th:value="${commentsReportVO.revTime}"
+										type="datetime-local" th:value="${articlereportVO.revTime}"
 										id="notificationSentAt" readonly>
-								</div>
-								<div class="form-group">
-									<label for="notificationTitle">案件簡述:</label> <input type="text"
-										id="notificationTitle" th:value="${commentsReportVO.repCat}"
-										readonly>
 								</div>
 								<div class="form-group full-width">
 									<label for="repDes">案件說明:</label>
 									<textarea id="repDes" rows="8" readonly
-										th:text="${commentsReportVO.repDes}"></textarea>
+										th:text="${articlereportVO.repDes}"></textarea>
 								</div>
 								<div class="form-group full-width">
 									<label for="notificationContent">結案說明:</label>
-									<textarea id="notificationContent" name="remarks" rows="8"
-										readonly th:text="${commentsReportVO.remarks}"></textarea>
+									<textarea id="notificationContent" name="remark" rows="8"
+										readonly th:text="${articlereportVO.remark}"></textarea>
 								</div>
 							</div>
 
-							<div class="form-actions" th:if="${commentsReportVO.rptSta < 1}">
+							<div class="form-actions" th:if="${articlereportVO.repSta < 1}">
 								<button type="submit" class="material-button">
 									<span class="material-icons">check</span> 檢舉成立
 								</button>
@@ -135,7 +120,57 @@
 		</div>
 	</div>
     
-    <script src="../js/commentsreports/editCommentsReport.js"></script>
+    <!-- Lightbox Overlay -->
+    <div id="lightboxOverlay" class="lightbox-overlay"></div>
+
+    <!-- Article Lightbox -->
+    <div id="articleLightBox" class="article-lightbox">
+        <button id="closeLightboxBtn" class="close-button">&times;</button>
+        <h3 th:text="${article.artTitle}"></h3>
+        <p th:text="${article.artCon}"></p>
+    </div>
+
+    <style>
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+
+        .article-lightbox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .article-lightbox .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+        }
+    </style>
+
+    <script src="../js/articlereports/editArticleReport.js"></script>
     
 </body>
 </html>

@@ -36,7 +36,7 @@ public class ArticlereportVO {
 	@Column(name = "REPTIME", insertable=false, updatable=false)
     private Timestamp repTime;  // 檢舉時間, NOT NULL, 預設為目前時間
 	
-	@Column(name = "REPTIME", insertable=false)
+	@Column(name = "REVTIME", insertable=false)
     private Timestamp revTime;  // 審核時間
 	
 	@Column(name = "REMARK")
