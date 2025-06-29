@@ -20,6 +20,9 @@ import com.toiukha.like.model.LikeService;
 import com.toiukha.like.model.LikeVO;
 import com.toiukha.forum.article.entity.Article;
 import java.sql.Timestamp;
+import com.toiukha.articlecollection.model.ArticleCollectionService;
+import com.toiukha.articlecollection.model.ArticleCollectionVO;
+import com.toiukha.articlecollection.model.ArticleCollectionCompositePrimaryKey;
 
 // 文章相關的 RESTful API Controller
 @RestController
@@ -37,6 +40,9 @@ public class ArticleController {
 
     @Autowired
     private LikeService likeService;
+    
+    @Autowired
+    private ArticleCollectionService articleCollectionService;
 
 // 取得單篇文章 DTO
     @GetMapping("/article/{artId:\\d+}")
@@ -178,6 +184,68 @@ public class ArticleController {
             response.put("success", false);
             response.put("message", "按讚失敗: " + e.getMessage());
             System.err.println("文章按讚時發生錯誤: " + e.getMessage());
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    // 查詢某會員是否收藏了某篇文章
+    @PostMapping("/article/isCollected")
+    public ResponseEntity<Map<String, Object>> isCollected(
+            @RequestParam("artId") Integer artId,
+            @RequestParam("memId") Integer memId) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            ArticleCollectionCompositePrimaryKey key = new ArticleCollectionCompositePrimaryKey(memId, artId);
+            ArticleCollectionVO collection = articleCollectionService.getOne(key);
+            
+            boolean isCollected = collection != null;
+            
+            response.put("success", true);
+            response.put("isCollected", isCollected);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "檢查收藏狀態失敗: " + e.getMessage());
+            System.err.println("檢查收藏狀態時發生錯誤: " + e.getMessage());
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    // 處理文章收藏/取消收藏功能
+    @PostMapping("/article/collect")
+    public ResponseEntity<Map<String, Object>> collectArticle(
+            @RequestParam("artId") Integer artId,
+            @RequestParam("memId") Integer memId) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            ArticleCollectionCompositePrimaryKey key = new ArticleCollectionCompositePrimaryKey(memId, artId);
+            ArticleCollectionVO existingCollection = articleCollectionService.getOne(key);
+            
+            if (existingCollection != null) {
+                // 如果已經收藏，則取消收藏
+                articleCollectionService.deleteOne(key);
+                response.put("success", true);
+                response.put("isCollected", false);
+                response.put("message", "取消收藏成功");
+            } else {
+                // 如果未收藏，則新增收藏
+                ArticleCollectionVO newCollection = new ArticleCollectionVO(key);
+                articleCollectionService.addOne(newCollection);
+                response.put("success", true);
+                response.put("isCollected", true);
+                response.put("message", "收藏成功");
+            }
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "收藏操作失敗: " + e.getMessage());
+            System.err.println("文章收藏時發生錯誤: " + e.getMessage());
         }
         
         return ResponseEntity.ok(response);

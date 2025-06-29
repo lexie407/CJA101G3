@@ -164,6 +164,27 @@
     .like-btn:not(.liked) .material-icons {
         color: var(--md-sys-color-on-surface-variant);
     }
+
+    /* 收藏按鈕樣式 */
+    .favorite-btn {
+        transition: all 0.2s ease;
+    }
+
+    .favorite-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .favorite-btn.collected {
+        color: var(--md-sys-color-error);
+    }
+
+    .favorite-btn.collected .material-icons {
+        color: var(--md-sys-color-error);
+    }
+
+    .favorite-btn:not(.collected) .material-icons {
+        color: var(--md-sys-color-on-surface-variant);
+    }
 </style>
 
 
@@ -274,6 +295,7 @@
                 </button>
                 <button class="icon-button favorite-btn" title="收藏">
                     <span class="material-icons">favorite_border</span>
+                    收藏
                 </button>
                 <button class="icon-button share-btn" title="分享">
                     <span class="material-icons">share</span>
@@ -315,8 +337,16 @@
             handleArticleLike(article.artId);
         });
 
+        // 綁定收藏按鈕點擊事件
+        $('#articleDetail .favorite-btn').off('click').on('click', function() {
+            handleArticleCollect(article.artId);
+        });
+
         // 檢查用戶是否已按讚
         checkArticleLikeStatus(article.artId);
+        
+        // 檢查用戶是否已收藏
+        checkArticleCollectStatus(article.artId);
     }
 
     // 全域變數儲存當前用戶ID
@@ -435,6 +465,100 @@
             }
         } catch (error) {
             console.error('檢查按讚狀態失敗:', error);
+        }
+    }
+
+    // 處理文章收藏功能
+    async function handleArticleCollect(artId) {
+        const favoriteBtn = $('#articleDetail .favorite-btn');
+        
+        try {
+            // 取得當前用戶ID
+            const userId = await getCurrentUserId();
+            
+            if (!userId) {
+                alert('請先登入才能收藏');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('artId', artId);
+            formData.append('memId', userId);
+
+            const response = await fetch('/article/collect', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    // 切換收藏按鈕的視覺狀態
+                    const icon = favoriteBtn.find('.material-icons');
+                    if (result.isCollected) {
+                        // 已收藏
+                        icon.text('favorite');
+                        favoriteBtn.addClass('collected');
+                    } else {
+                        // 未收藏
+                        icon.text('favorite_border');
+                        favoriteBtn.removeClass('collected');
+                    }
+                } else {
+                    alert(`收藏失敗: ${result.message}`);
+                }
+            } else {
+                const errorText = await response.text();
+                try {
+                    const errorData = JSON.parse(errorText);
+                    alert(`收藏失敗: ${errorData.message || response.statusText}`);
+                } catch (e) {
+                    alert(`收藏失敗: ${response.statusText}`);
+                }
+            }
+        } catch (error) {
+            console.error('收藏請求錯誤:', error);
+            alert('收藏請求失敗，請檢查網路。');
+        }
+    }
+
+    // 檢查文章收藏狀態
+    async function checkArticleCollectStatus(artId) {
+        try {
+            const userId = await getCurrentUserId();
+            
+            if (!userId) {
+                return; // 未登入用戶不檢查收藏狀態
+            }
+
+            const formData = new FormData();
+            formData.append('artId', artId);
+            formData.append('memId', userId);
+
+            const response = await fetch('/article/isCollected', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    const favoriteBtn = $('#articleDetail .favorite-btn');
+                    const icon = favoriteBtn.find('.material-icons');
+                    
+                    if (result.isCollected) {
+                        // 已收藏
+                        icon.text('favorite');
+                        favoriteBtn.addClass('collected');
+                    } else {
+                        // 未收藏
+                        icon.text('favorite_border');
+                        favoriteBtn.removeClass('collected');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('檢查收藏狀態失敗:', error);
         }
     }
 
