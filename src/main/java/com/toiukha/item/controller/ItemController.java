@@ -18,11 +18,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.toiukha.item.model.ItemService;
 import com.toiukha.item.model.ItemVO;
+import com.toiukha.store.model.StoreVO;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -37,11 +38,12 @@ public class ItemController {
 	//廠商新增商品
 	@GetMapping("addItem_back")
 	public String addItem_store(ModelMap model,HttpSession session) {
-		Object storeIdObj = session.getAttribute("storeId");
-		if (storeIdObj == null) {
-	        return ""; // 或回傳 null，看你需求
-	    }
-	    int storeId = Integer.parseInt(storeIdObj.toString());
+		Object storeObj = session.getAttribute("store");
+	
+		StoreVO store = (StoreVO) storeObj;
+		int storeId = store.getStoreId();
+		session.setAttribute("storeId", storeId);
+		
 		ItemVO itemVO = new ItemVO();
 		itemVO.setStoreId(storeId);  // 在這裡就設定 storeId
 		model.addAttribute("itemVO", itemVO);
@@ -72,8 +74,11 @@ public class ItemController {
 		/*************************** 2.開始新增資料 *****************************************/
 		// EmpService empSvc = new EmpService();
 		
-		Object storeIdObj = session.getAttribute("storeId");
-		itemVO.setStoreId(Integer.parseInt(storeIdObj.toString()));
+		Object storeObj = session.getAttribute("store");
+
+		StoreVO store = (StoreVO) storeObj;
+		int storeId = store.getStoreId();
+		session.setAttribute("storeId", storeId);
 		
 		itemVO.setItemStatus(0);
 		itemVO.setRepCount(0);
@@ -305,11 +310,10 @@ public class ItemController {
 	//廠商登入後台 全部商品
 	@ModelAttribute("itemListData_store")
 	protected List<ItemVO> referenceListData_byStoreId(Model model, HttpSession session) {
-		Object storeIdObj = session.getAttribute("storeId");
-		if (storeIdObj == null) {
-			return new ArrayList<>(); // 或回傳 null，看你需求
-		}
-		int storeId = Integer.parseInt(storeIdObj.toString());
+		Object storeObj = session.getAttribute("store");
+		StoreVO store = (StoreVO) storeObj;
+		int storeId = store.getStoreId();
+		session.setAttribute("storeId", storeId);
 		List<ItemVO> list = itemSvc.findByStoreId(storeId);
 		return list;
 	}

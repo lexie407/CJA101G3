@@ -2,6 +2,8 @@ package com.toiukha.sentitem.controller;
 
 import com.toiukha.sentitem.model.SentItemService;
 import com.toiukha.sentitem.model.SentItemVO;
+import com.toiukha.store.model.StoreVO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,11 +25,11 @@ public class SentItemStoreController {
 
     @GetMapping("/listAllSentItem")
     public String listAllSentItem(Model model, HttpSession session) {
-        Object storeIdObj = session.getAttribute("storeId");
-        if (storeIdObj == null) {
-            return "";
-        }
-        int storeId = Integer.parseInt(storeIdObj.toString());
+    	Object storeObj = session.getAttribute("store");
+		StoreVO store = (StoreVO) storeObj;
+		int storeId = store.getStoreId();
+		session.setAttribute("storeId", storeId);
+		
         List<SentItemVO> sentItemList = sentItemService.findByStoreId(storeId);
         model.addAttribute("sentItemList", sentItemList);
 

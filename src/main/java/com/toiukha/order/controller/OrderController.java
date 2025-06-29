@@ -22,6 +22,7 @@ import com.toiukha.order.model.OrderVO;
 import com.toiukha.order.model.OrderWithItemsDTO;
 import com.toiukha.orderitems.model.OrderItemsService;
 import com.toiukha.orderitems.model.OrderItemsVO;
+import com.toiukha.store.model.StoreVO;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -98,12 +99,11 @@ public class OrderController {
 	@GetMapping("/store_listAllOrder")
 	public String storeOrderManage(Model model,HttpSession session) {
 	    // 1. 查出該廠商所有商品
-		Object storeIdObj = session.getAttribute("storeId");
-		if (storeIdObj == null) {
-	        return ""; // 或回傳 null，看你需求
-	    }
+		Object storeObj = session.getAttribute("store");
+		StoreVO store = (StoreVO) storeObj;
+		int storeId = store.getStoreId();
+		session.setAttribute("storeId", storeId);
 		
-	    int storeId = Integer.parseInt(storeIdObj.toString());
 	    List<ItemVO> items = itemSvc.findByStoreId(storeId);
 	    List<OrderItemsVO> allOrderItems = new ArrayList<>();
 	    for (ItemVO item : items) {

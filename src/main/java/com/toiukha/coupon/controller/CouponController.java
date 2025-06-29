@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.toiukha.coupon.model.CouponService;
 import com.toiukha.coupon.model.CouponVO;
+import com.toiukha.members.model.MembersVO;
+import com.toiukha.store.model.StoreVO;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -30,13 +32,11 @@ public class CouponController {
 	@GetMapping("addCoupon")
 	public String addcoupon(ModelMap model,HttpSession session) {
 		
-		Object storeIdObj = session.getAttribute("storeId");
+		Object storeObj = session.getAttribute("store");
+		StoreVO store = (StoreVO) storeObj;
+		int storeId = store.getStoreId();
+		session.setAttribute("storeId", storeId);
 		
-		if (storeIdObj == null) {
-	        return ""; // 或回傳 null，看你需求
-	    }
-		
-		int storeId=Integer.parseInt(storeIdObj.toString());
 		CouponVO couponVO = new CouponVO();
 		couponVO.setStoreId(storeId);
 		model.addAttribute("couponVO",couponVO);
@@ -51,8 +51,12 @@ public class CouponController {
 		if(result.hasErrors()) {
 			return "back-end/coupon/addCoupon_back";
 		}
-		Object storeIdObj = session.getAttribute("storeId");
-		couponVO.setStoreId(Integer.parseInt(storeIdObj.toString()));
+		
+		Object storeObj = session.getAttribute("store");
+		StoreVO store = (StoreVO) storeObj;
+		int storeId = store.getStoreId();
+		session.setAttribute("storeId", storeId);
+		
 		couponSvc.addCoupon(couponVO);
 		List<CouponVO> list = couponSvc.getAll();
 		model.addAttribute("couponListData",list);
@@ -87,11 +91,12 @@ public class CouponController {
 	//查詢單一上商店的優惠券
 	@ModelAttribute("couponListData")
 	protected List<CouponVO> referenceListData_byStoreId(Model model, HttpSession session) {
-		Object storeIdObj = session.getAttribute("storeId");
-		if (storeIdObj == null) {
-			return new ArrayList<>(); // 或回傳 null，看你需求
-		}
-		int storeId = Integer.parseInt(storeIdObj.toString());
+		
+		Object storeObj = session.getAttribute("store");
+		StoreVO store = (StoreVO) storeObj;
+		int storeId = store.getStoreId();
+		session.setAttribute("storeId", storeId);
+		
 		List<CouponVO> list = couponSvc.findByStoreId(storeId);
 		return list;
 	}
@@ -105,11 +110,9 @@ public class CouponController {
 	}
 	@ModelAttribute("listAddCoupons")
 	protected List<CouponVO>referenceListData_member(Model model,HttpSession session){
-		Object memIdObj = session.getAttribute("memId");
-		if (memIdObj == null) {
-			return new ArrayList<>(); // 或回傳 null，看你需求
-		}
-		int memId = Integer.parseInt(memIdObj.toString());
+		MembersVO member = (MembersVO) session.getAttribute("member");
+		int memId = member.getMemId();
+		session.setAttribute("memId", memId);
 		List<CouponVO> list = couponSvc.getCouponsForMember(memId);
 		return list;
 	}

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.toiukha.item.model.ItemVO;
+import com.toiukha.members.model.MembersVO;
 import com.toiukha.memcoupons.model.MemCouponsService;
 import com.toiukha.memcoupons.model.MemCouponsVO;
 
@@ -40,11 +40,12 @@ public class MemCouponsController {
 								@RequestParam("discValue") String sdiscValue) {
 		
 		// 從 session 中獲取會員ID，如果不存在則要求登入
-		Object memIdObj = session.getAttribute("memId");
-		if (memIdObj == null) {
-			return "fakeLogin"; // 未登入，重定向到假登入頁面
-		}
-		int memId = Integer.parseInt(memIdObj.toString());
+		MembersVO member = (MembersVO) session.getAttribute("member");
+		 if (member == null) {
+		        return "redirect:/login"; // 如果沒有登入，重定向到登入頁
+		    }
+		int memId = member.getMemId();
+		session.setAttribute("memId", memId);	
 		int couId = Integer.parseInt(scouId);
 		int discValue = Integer.parseInt(sdiscValue);
 
