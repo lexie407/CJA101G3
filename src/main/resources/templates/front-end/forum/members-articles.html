@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的發表 | 前台 | 島遊kha</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <!--前台CSS-->
+    <link rel="stylesheet" th:href="@{/css/light.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/forum/frontEnd/members-articles.css}">
+    <link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
+
+</head>
+<body class="light">
+<div class="app-container">
+    <!--前台:側邊攔，通用樣式，不用改-->
+    <div th:insert="~{/navTemplate :: navbar}"></div>
+
+    <div class="main-content">
+        <!--        頂部次導覽，使用討論區前台樣式-->
+        <header>
+            <div th:insert="~{front-end/forum/subnavForum :: topbar}"></div>
+        </header>
+        <!--        main 以下為頁面主要內容 -->
+        <main class="content-area-main">
+            <div class="container">
+                <!-- Header Section -->
+<!--                <div class="header-card">-->
+<!--                    <h1>會員專屬內容 - 會員ID: <span class="member-id" th:text="${artHol}">123456</span></h1>-->
+<!--                </div>-->
+                 <!-- 顯示目前會員編號 -->
+                <div style="margin-bottom: 1em;">
+                    <span>目前會員編號：</span>
+                    <span th:text="${artHol}">會員編號</span>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-card" th:if="${errorMessage}">
+                    <p>
+                        <span class="material-icons">error</span>
+                        <span th:text="${errorMessage}">發生錯誤</span>
+                    </p>
+                </div>
+
+                <!-- Articles Section -->
+                <div class="section-card">
+                    <h2>
+                        <span class="emoji">📄</span>
+                        我的文章
+                    </h2>
+                    <ul class="item-list" >
+                        <li th:each="article : ${articles}" class="ripple"
+                            th:attr="data-artid=${article.artId}"
+                            style="cursor:pointer;">
+                            <div class="item-title" th:text="${article.artTitle}">文章標題範例</div>
+                            <span>
+                                <span class="material-icons" style="font-size: 14px;">schedule</span>
+                                <span th:text="${#dates.format(article.artCreTime, 'yyyy年MM月dd日')}">2025年5月55日</span>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Questions Section -->
+                <div class="section-card">
+                    <h2>
+                        <span class="emoji">❓</span>
+                        我的發問
+                    </h2>
+                    <ul class="item-list">
+                        <li th:each="question : ${questions}" class="ripple"
+                            th:attr="data-artid=${question.artId}"
+                            style="cursor:pointer;">
+                            <div class="item-title" th:text="${question.artTitle}">問題標題範例</div>
+                            <div class="item-id" th:text="${question.artId}">002</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="../js/notification/websocket.js"></script>
+<!--<script th:src="@{/js/forum/frontEnd/search_Page.js}" ></script>-->
+<script>
+    // 點擊 li 跳轉到單篇文章頁面
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.item-list li[data-artid]').forEach(function (li) {
+            li.addEventListener('click', function () {
+                const artId = li.getAttribute('data-artid');
+                if (artId) {
+                    window.location.href = '/forum/article?artId=' + artId;
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -44,5 +44,9 @@ public interface ArticleRepository extends JpaRepository<Article, Integer>, JpaS
     // 方法命名查詢：模糊比對 LIKE %keyword%
     List<Article> findByArtTitleContaining(String keyword);
 
+    // 給標題查詢用
+    List<Article> findByArtHolAndArtCatAndArtStaIn(Integer artHol, Byte artCat, List<Byte> artStaList);
+
+    List<Article> findByArtHolAndArtCatInAndArtStaIn(Integer artHol, List<Byte> artCatList, List<Byte> artStaList);
 
 }
