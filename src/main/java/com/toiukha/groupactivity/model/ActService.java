@@ -49,6 +49,42 @@ public interface ActService {
     //變更活動狀態
     void changeStatus(Integer actId, Byte status, Integer operatorId, boolean admin);
 
+    //===========狀態相關業務邏輯===========
+    
+    /**
+     * 檢查活動是否為招募中狀態
+     */
+    boolean isRecruiting(ActVO actVo);
+    
+    /**
+     * 檢查活動是否為成團狀態
+     */
+    boolean isFull(ActVO actVo);
+    
+    /**
+     * 檢查活動是否可以報名
+     */
+    boolean canSignUp(ActVO actVo);
+    
+    /**
+     * 取得活動狀態顯示名稱
+     */
+    String getRecruitStatusDisplayName(ActVO actVo);
+    
+    /**
+     * 取得活動狀態CSS類別
+     */
+    String getRecruitStatusCssClass(ActVO actVo);
+    
+    /**
+     * 檢查活動是否為公開狀態
+     */
+    boolean isPublic(ActVO actVo);
+    
+    /**
+     * 檢查活動是否允許退出
+     */
+    boolean allowCancel(ActVO actVo);
 
     //===========測試寫入DB===========
     ActVO saveTestAct();

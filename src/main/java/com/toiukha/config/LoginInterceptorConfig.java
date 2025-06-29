@@ -1,5 +1,6 @@
 package com.toiukha.config;
 
+import com.toiukha.administrant.interceptor.AdministrantInterceptor;
 import com.toiukha.members.interceptor.MembersInterceptor;
 import com.toiukha.store.interceptor.StoreInterceptor;
 
@@ -16,6 +17,9 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 
 	@Autowired
 	private StoreInterceptor storeInterceptor;
+	
+	@Autowired
+    private AdministrantInterceptor administrantInterceptor;
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
@@ -113,6 +117,42 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 				.excludePathPatterns("/css/**",
 						"/js/**",
 						"/images/**");
+		
+		
+		
+		
+		// 管理員攔截
+		registry.addInterceptor(administrantInterceptor)
+        .addPathPatterns("/admins/",
+        		//景點模組
+
+
+
+
+        		//揪團模組
+        		"/act/admin/*",             // 管理員功能
+
+
+        		//商城模組
+        		"/item/listAllItem_admin" //商品列表審核
+
+        		//文章模組
+
+        		
+        		
+        		
+        		
+        		
+        		
+        		)
+        .excludePathPatterns(
+            "/css/**", 
+            "/js/**", 
+            "/images/**"
+        );
+		
+		
+		
 
 	}
 }

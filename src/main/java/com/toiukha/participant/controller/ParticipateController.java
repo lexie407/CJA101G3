@@ -2,7 +2,8 @@ package com.toiukha.participant.controller;
 
 import com.toiukha.groupactivity.model.ActRepository;
 import com.toiukha.groupactivity.model.ActVO;
-import com.toiukha.participant.model.ParticipateService;
+import com.toiukha.groupactivity.security.AuthService;
+import com.toiukha.participant.model.PartService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,13 @@ import java.util.List;
 public class ParticipateController {
 
     @Autowired
-    private ParticipateService participateSvc;
+    private PartService partSvc;
 
     @Autowired
     private ActRepository actRepository;
+
+    @Autowired
+    private AuthService authService;
 
     /**
      * 報名活動
@@ -32,20 +36,21 @@ public class ParticipateController {
      */
     @PostMapping("/{actId}/signup/{memId}")
     public String signup(@PathVariable Integer actId, @PathVariable Integer memId, HttpServletRequest request) {
-        // 取得session並檢查登入狀態，未來可配合Filter或AOP統一處理
+        // 取得session並檢查登入狀態
         HttpSession session = request.getSession();
-        Object member = session.getAttribute("member");
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
         // TODO: 若未登入可回傳未授權訊息
-        // if (member == null) { return "unauthorized"; }
+        // if (!memberInfo.isLoggedIn()) { return "unauthorized"; }
         
         // 測試用：印出session中的會員ID
         System.out.println("=== Test: Current Session Member ID ===");
         System.out.println("URI: /api/participate/" + actId + "/signup/" + memId);
-        System.out.println("Member: " + (member != null ? member : "Not logged in"));
+        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
+        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
         System.out.println("=====================================");
         
-        participateSvc.signup(actId, memId);
-        return "ok";
+        partSvc.signup(actId, memId);
+        return "signed up";
     }
 
     /**
@@ -58,17 +63,18 @@ public class ParticipateController {
     public String cancel(@PathVariable Integer actId, @PathVariable Integer memId, HttpServletRequest request) {
         // 取得session並檢查登入狀態
         HttpSession session = request.getSession();
-        Object member = session.getAttribute("member");
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
         // TODO: 若未登入可回傳未授權訊息
-        // if (member == null) { return "unauthorized"; }
+        // if (!memberInfo.isLoggedIn()) { return "unauthorized"; }
         
         // 測試用：印出session中的會員ID
         System.out.println("=== Test: Current Session Member ID ===");
         System.out.println("URI: /api/participate/" + actId + "/signup/" + memId);
-        System.out.println("Member: " + (member != null ? member : "Not logged in"));
+        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
+        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
         System.out.println("=====================================");
         
-        participateSvc.cancel(actId, memId);
+        partSvc.cancel(actId, memId);
         return "canceled";
     }
 
@@ -79,34 +85,30 @@ public class ParticipateController {
      */
     @GetMapping("/{actId}/members")
     public List<Integer> members(@PathVariable Integer actId) {
-        return participateSvc.getParticipants(actId);
+        return partSvc.getParticipants(actId);
     }
 
     /**
      * 團主更新成員狀態
      */
-    @PutMapping("/{actId}/status/{memId}")
-    public ResponseEntity<?> updateJoinStatus(@PathVariable Integer actId,
-                                              @PathVariable Integer memId,
-                                              @RequestParam Byte joinStatus,
-                                              HttpServletRequest request) {
-        // 權限驗證：僅團主可用
-        Object memberObj = request.getSession().getAttribute("member");
-        Integer currentUserId = null;
-        if (memberObj instanceof String && ((String) memberObj).startsWith("DEV_USER_")) {
-            currentUserId = Integer.parseInt(((String) memberObj).substring(9));
-        } else if (memberObj instanceof com.toiukha.members.model.MembersVO) {
-            currentUserId = ((com.toiukha.members.model.MembersVO) memberObj).getMemId();
-        }
+    @PutMapping("/{actId}/members/{memId}/status")
+    public ResponseEntity<String> updateMemberStatus(
+            @PathVariable Integer actId,
+            @PathVariable Integer memId,
+            @RequestParam Byte joinStatus,
+            HttpServletRequest request) {
+        
+        // 檢查權限：只有團主可以更新成員狀態
         ActVO act = actRepository.findById(actId).orElse(null);
-        if (act == null || !act.getHostId().equals(currentUserId)) {
-            return ResponseEntity.status(403).body("只有團主可以操作");
+        HttpSession session = request.getSession();
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+        
+        if (act == null || !memberInfo.isLoggedIn() || !act.getHostId().equals(memberInfo.getMemId())) {
+            return ResponseEntity.badRequest().body("無權限執行此操作");
         }
-        try {
-            participateSvc.updateJoinStatus(actId, memId, joinStatus);
-            return ResponseEntity.ok().body("狀態已更新");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        
+        partSvc.updateJoinStatus(actId, memId, joinStatus);
+        return ResponseEntity.ok("成員狀態更新成功");
     }
+
 }

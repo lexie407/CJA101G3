@@ -78,4 +78,58 @@ public class ActCardDTO implements Serializable {
     public void setHostId(Integer hostId) {
         this.hostId = hostId;
     }
+
+    /**
+     * 取得RecruitStatus Enum（如果recruitStatus為null則回傳null）
+     */
+    public ActStatus getRecruitStatusEnum() {
+        return ActStatus.fromValueOrNull(recruitStatus);
+    }
+
+    /**
+     * 設定RecruitStatus Enum
+     */
+    public void setRecruitStatusEnum(ActStatus status) {
+        this.recruitStatus = status != null ? status.getValue() : null;
+    }
+
+    /**
+     * 取得狀態顯示名稱
+     */
+    public String getRecruitStatusDisplayName() {
+        ActStatus status = getRecruitStatusEnum();
+        return status != null ? status.getDisplayName() : "未知狀態";
+    }
+
+    /**
+     * 取得狀態CSS類別
+     */
+    public String getRecruitStatusCssClass() {
+        ActStatus status = getRecruitStatusEnum();
+        return status != null ? status.getCssClass() : "ended";
+    }
+
+    /**
+     * 檢查是否為招募中狀態
+     */
+    public boolean isRecruiting() {
+        ActStatus status = getRecruitStatusEnum();
+        return status != null && status.isOpen();
+    }
+
+    /**
+     * 檢查是否為成團狀態
+     */
+    public boolean isFull() {
+        ActStatus status = getRecruitStatusEnum();
+        return status != null && status.isFull();
+    }
+
+    /**
+     * 檢查是否可以報名
+     */
+    public boolean canSignUp() {
+        ActStatus status = getRecruitStatusEnum();
+        return status != null && status.canSignUp();
+    }
 } 

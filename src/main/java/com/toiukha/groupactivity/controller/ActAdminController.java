@@ -2,6 +2,7 @@ package com.toiukha.groupactivity.controller;
 
 import com.toiukha.groupactivity.model.ActDTO;
 import com.toiukha.groupactivity.model.ActService;
+import com.toiukha.groupactivity.model.ActStatus;
 import com.toiukha.groupactivity.model.ActVO;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -14,7 +15,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -195,13 +195,6 @@ public class ActAdminController {
 
     @ModelAttribute("recruitStatusMap")
     public Map<Byte, String> getRecruitStatusMap() {
-        Map<Byte, String> statusMap = new LinkedHashMap<>();
-        statusMap.put((byte) 0, "招募中");
-        statusMap.put((byte) 1, "已成團");
-        statusMap.put((byte) 2, "未成團");
-        statusMap.put((byte) 3, "團主取消");
-        statusMap.put((byte) 4, "系統凍結");
-        statusMap.put((byte) 5, "活動結束");
-        return statusMap;
+        return ActStatus.getStatusMap();
     }
 } 

@@ -11,32 +11,42 @@ import java.util.Optional;
  * 參加者 Repository
  */
 @Repository
-public interface ParticipateRepository extends JpaRepository<ParticipantVO, ParticipantId> {
+public interface PartRepository extends JpaRepository<PartVO, PartVO.CompositeKey> {
 
     /**
      * 根據活動ID和會員ID查詢參加記錄
      */
-    Optional<ParticipantVO> findByActIdAndMemId(Integer actId, Integer memId);
+    Optional<PartVO> findByActIdAndMemId(Integer actId, Integer memId);
 
     /**
      * 根據活動ID查詢所有參加者
      */
-    List<ParticipantVO> findByActId(Integer actId);
+    List<PartVO> findByActId(Integer actId);
 
     /**
      * 根據活動ID查詢所有參加者的會員ID
      */
-    @Query("select p.memId from ParticipantVO p where p.actId = :actId")
+    @Query("select p.memId from PartVO p where p.actId = :actId")
     List<Integer> findMemIdsByActId(Integer actId);
     
     /**
      * 根據會員ID查詢所有參加的活動
      */
-    List<ParticipantVO> findByMemId(Integer memId);
+    List<PartVO> findByMemId(Integer memId);
     
     /**
      * 根據會員ID查詢所有參加的活動ID
      */
-    @Query("select p.actId from ParticipantVO p where p.memId = :memId")
+    @Query("select p.actId from PartVO p where p.memId = :memId")
     List<Integer> findActIdsByMemId(Integer memId);
+    
+    /**
+     * 根據活動ID和會員ID刪除參加記錄
+     */
+    void deleteByActIdAndMemId(Integer actId, Integer memId);
+    
+    /**
+     * 根據活動ID刪除所有參加記錄
+     */
+    void deleteByActId(Integer actId);
 }
