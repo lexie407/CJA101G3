@@ -151,9 +151,14 @@ public class StoreController {
 
 		if (storeId != null && !storeId.isBlank()) {
 			// 依 ID 精確查一筆
-			StoreVO s = storeService.getById(Integer.valueOf(storeId));
-			if (s != null) {
-				results.add(s);
+			if (storeId.matches("\\d+")) {
+				StoreVO s = storeService.getById(Integer.valueOf(storeId));
+				if (s != null) {
+					results.add(s);
+				}
+			} else {
+				model.addAttribute("errorMsg", "廠商編號必須是數字");
+				return "back-end/store/selectPage"; // 跳回查詢表單頁
 			}
 
 		} else if (storeAcc != null && !storeAcc.isBlank()) {
@@ -162,7 +167,12 @@ public class StoreController {
 
 		} else if (storeStatus != null && !storeStatus.isBlank()) {
 			// 依狀態篩選（精確）
-			results = storeService.findByStatus(Byte.valueOf(storeStatus));
+			if (storeStatus.matches("\\d+")) {
+				results = storeService.findByStatus(Byte.valueOf(storeStatus));
+			} else {
+				model.addAttribute("errorMsg", "商家狀態必須是數字");
+				return "back-end/store/selectPage";
+			}
 
 		} else if (storeName != null && !storeName.isBlank()) {
 			// 依名稱做「模糊」查詢
