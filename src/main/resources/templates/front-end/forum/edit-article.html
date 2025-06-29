@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>編輯文章 | 前台 | 島遊kha</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <!--前台CSS-->
+    <link rel="stylesheet" th:href="@{/css/light.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
+    <link th:href="@{/vendors/quillEditor/quill.snow.css}" rel="stylesheet">
+    
+    <style>
+        .edit-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .edit-form {
+            background: var(--md-sys-color-surface-container);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 6px;
+            font-size: 16px;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 2px rgba(var(--md-sys-color-on-primary-container), 0.2);
+        }
+        
+        .quill-editor {
+            background: var(--md-sys-color-surface);
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .ql-toolbar {
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            border-color: var(--md-sys-color-outline);
+        }
+        
+        .ql-container {
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            border-color: var(--md-sys-color-outline);
+            min-height: 200px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+        
+        .btn-primary:hover {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+        
+        .btn-secondary {
+            background: var(--md-sys-color-secondary);
+            color: var(--md-sys-color-on-secondary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            color: #c62828;
+        }
+        
+        .success-message {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body class="light">
+<div class="app-container">
+    <!--前台:側邊攔，通用樣式，不用改-->
+    <div th:insert="~{/navTemplate :: navbar}"></div>
+
+    <div class="main-content">
+        <!--        頂部次導覽，使用討論區前台樣式-->
+        <header>
+            <div th:insert="~{front-end/forum/subnavForum :: topbar}"></div>
+        </header>
+        <!--        main 以下為頁面主要內容 -->
+        <main class="content-area-main">
+            <div class="edit-container">
+                <div class="edit-form">
+                    <h1 style="margin-bottom: 30px; color: var(--md-sys-color-on-surface);">
+                        <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">edit</span>
+                        編輯文章
+                    </h1>
+                    
+                    <!-- 錯誤訊息 -->
+                    <div id="errorMessage" class="error-message" style="display: none;"></div>
+                    
+                    <!-- 成功訊息 -->
+                    <div id="successMessage" class="success-message" style="display: none;"></div>
+                    
+                    <form id="editArticleForm">
+                        <input type="hidden" id="artId" name="artId">
+                        
+                        <div class="form-group">
+                            <label for="artTitle">文章標題 *</label>
+                            <input type="text" id="artTitle" name="artTitle" required placeholder="請輸入文章標題">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="artCat">文章分類</label>
+                            <input type="text" id="artCat" name="artCat" readonly style="background-color: #f5f5f5; color: #666;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="artSta">文章狀態</label>
+                            <input type="text" id="artSta" name="artSta" readonly style="background-color: #f5f5f5; color: #666;">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="artCon">文章內容 *</label>
+                            <div id="editor" class="quill-editor"></div>
+                            <input type="hidden" id="artCon" name="artCon">
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="goBack()">
+                                <span class="material-icons">arrow_back</span>
+                                返回
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-icons">save</span>
+                                儲存修改
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div id="loading" class="loading">
+                        <span class="material-icons" style="animation: spin 1s linear infinite;">refresh</span>
+                        正在儲存...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script th:src="@{/vendors/quillEditor/quilljs.js}"></script>
+<script>
+    let quill;
+    let currentArticleId;
+    let currentArticleData; // 儲存載入時的原始文章資料
+    
+    // 初始化 Quill 編輯器
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化 Quill 編輯器
+        quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'header': 1 }, { 'header': 2 }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'direction': 'rtl' }],
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'font': [] }],
+                    [{ 'align': [] }],
+                    ['clean'],
+                    ['link', 'image']
+                ]
+            },
+            placeholder: '請輸入文章內容...'
+        });
+        
+        // 從 URL 參數取得文章 ID
+        const urlParams = new URLSearchParams(window.location.search);
+        currentArticleId = urlParams.get('artId');
+        
+        if (currentArticleId) {
+            loadArticle(currentArticleId);
+        } else {
+            showError('未找到文章 ID');
+        }
+        
+        // 表單提交事件
+        document.getElementById('editArticleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveArticle();
+        });
+    });
+    
+    // 載入文章資料
+    function loadArticle(artId) {
+        fetch(`/article/${artId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('載入文章失敗');
+                }
+                return response.json();
+            })
+            .then(article => {
+                // 填充表單資料
+                document.getElementById('artId').value = article.artId;
+                document.getElementById('artTitle').value = article.artTitle;
+                
+                // 設定分類文字描述
+                const categoryText = getCategoryText(article.artCat);
+                document.getElementById('artCat').value = categoryText;
+                
+                // 設定狀態文字描述
+                const statusText = getStatusText(article.artSta);
+                document.getElementById('artSta').value = statusText;
+                
+                // 設定編輯器內容
+                quill.root.innerHTML = article.artCon || '';
+                
+                // 隱藏載入訊息
+                hideLoading();
+                
+                // 儲存載入時的原始文章資料
+                currentArticleData = article;
+            })
+            .catch(error => {
+                console.error('載入文章錯誤:', error);
+                showError('載入文章失敗: ' + error.message);
+                hideLoading();
+            });
+    }
+    
+    // 取得分類文字描述
+    function getCategoryText(artCat) {
+        switch(artCat) {
+            case 1: return '一般文章';
+            case 2: return '發問中問題';
+            case 3: return '已解決問題';
+            default: return '未知分類';
+        }
+    }
+    
+    // 取得狀態文字描述
+    function getStatusText(artSta) {
+        switch(artSta) {
+            case 1: return '上架';
+            case 2: return '下架';
+            default: return '未知狀態';
+        }
+    }
+    
+    // 儲存文章
+    function saveArticle() {
+        // 顯示載入狀態
+        showLoading();
+        hideMessages();
+        
+        // 取得編輯器內容
+        const content = quill.root.innerHTML;
+        document.getElementById('artCon').value = content;
+        
+        // 準備表單資料
+        const formData = new FormData(document.getElementById('editArticleForm'));
+        const articleData = {
+            artId: parseInt(formData.get('artId')),
+            artTitle: formData.get('artTitle'),
+            artCat: currentArticleData.artCat, // 使用載入時的原始值
+            artSta: currentArticleData.artSta, // 使用載入時的原始值
+            artCon: formData.get('artCon')
+        };
+        
+        // 發送更新請求
+        fetch(`/article/${currentArticleId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(articleData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('更新失敗');
+            }
+            return response.json();
+        })
+        .then(result => {
+            hideLoading();
+            if (result.success) {
+                showSuccess('文章更新成功！');
+                // 延遲跳轉
+                setTimeout(() => {
+                    window.location.href = '/forum/members/articles';
+                }, 1500);
+            } else {
+                showError(result.message || '更新失敗');
+            }
+        })
+        .catch(error => {
+            console.error('更新文章錯誤:', error);
+            hideLoading();
+            showError('更新失敗: ' + error.message);
+        });
+    }
+    
+    // 返回上一頁
+    function goBack() {
+        window.history.back();
+    }
+    
+    // 顯示載入狀態
+    function showLoading() {
+        document.getElementById('loading').style.display = 'block';
+        document.querySelector('button[type="submit"]').disabled = true;
+    }
+    
+    // 隱藏載入狀態
+    function hideLoading() {
+        document.getElementById('loading').style.display = 'none';
+        document.querySelector('button[type="submit"]').disabled = false;
+    }
+    
+    // 顯示錯誤訊息
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+    
+    // 顯示成功訊息
+    function showSuccess(message) {
+        const successDiv = document.getElementById('successMessage');
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+    }
+    
+    // 隱藏所有訊息
+    function hideMessages() {
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'none';
+    }
+    
+    // 載入動畫
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+
+</body>
+</html> 

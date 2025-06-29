@@ -335,6 +335,45 @@ public class ArticleController {
         return ResponseEntity.ok(response);
     }
     
+    // 更新文章
+    @PutMapping("/article/{artId}")
+    public ResponseEntity<Map<String, Object>> updateArticle(
+            @PathVariable Integer artId,
+            @RequestBody Map<String, Object> articleData) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            Article article = articleService.getArticleById(artId);
+            if (article == null) {
+                response.put("success", false);
+                response.put("message", "找不到文章");
+                return ResponseEntity.ok(response);
+            }
+            
+            // 更新文章資料
+            article.setArtTitle((String) articleData.get("artTitle"));
+            article.setArtCat(((Number) articleData.get("artCat")).byteValue());
+            article.setArtSta(((Number) articleData.get("artSta")).byteValue());
+            article.setArtCon((String) articleData.get("artCon"));
+            
+            // 儲存更新
+            articleService.update(article);
+            
+            response.put("success", true);
+            response.put("message", "文章更新成功");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "更新文章時發生錯誤: " + e.getMessage());
+            System.err.println("更新文章時發生錯誤: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+    
     Timestamp getNowTime() {
         Date date = new Date();
         Timestamp now = new Timestamp(date.getTime());

@@ -75,6 +75,14 @@ public class ForumPageController {
         return "front-end/forum/add-article";
     }
 
+    // 導向編輯文章頁面
+    @GetMapping("/article/edit")
+    public String editArticle(Model model){
+        model.addAttribute("currentPage", "forum");
+
+        return "front-end/forum/edit-article";
+    }
+
     // 使用標題關鍵字搜尋文章
     @GetMapping("searchByTitle")
     public String searchByTitle(
