@@ -24,7 +24,28 @@ function initComments(shadowRoot) {
     // --- 獲取當前登入使用者 ID ---
     // 建議作法：從主文件 meta 標籤讀取，由後端（Thymeleaf）設定。
     const userIdMeta = document.querySelector('meta[name="user-id"]');
-    const CURRENT_USER_ID = userIdMeta ? parseInt(userIdMeta.content, 10) : 1;
+    const CURRENT_USER_ID = userIdMeta ? parseInt(userIdMeta.content, 10) : 3;
+
+    // 新增變數來儲存文章類別和擁有者 ID
+    let ARTICLE_CATEGORY = null;
+    let ARTICLE_OWNER_ID = null;
+
+    // 新增函式來獲取文章詳細資訊
+    async function fetchArticleDetails() {
+        try {
+            const response = await fetch(`/article/${artId}`);
+            if (!response.ok) {
+                throw new Error(`無法獲取文章資料: ${response.status} ${response.statusText}`);
+            }
+            const article = await response.json();
+            ARTICLE_CATEGORY = article.artCat; // 假設 artCat 是文章類別的數字代碼
+//            ARTICLE_OWNER_ID = article.artHol; // 假設 artHol 是文章擁有者的 ID
+            ARTICLE_OWNER_ID = 3; // 假設 artHol 是文章擁有者的 ID
+        } catch (error) {
+            console.error('載入文章詳情失敗:', error);
+            showStatusMessage('載入文章詳情失敗，部分功能可能受限。', 'error');
+        }
+    }
 
     // --- 事件監聽器：提交新留言 ---
     commentForm.addEventListener('submit', async (event) => {
@@ -124,13 +145,28 @@ function initComments(shadowRoot) {
         actionsDiv.className = 'comment-actions';
 
         const actionsButton = document.createElement('button');
-        actionsButton.className = 'actions-button btn-flat dropdown-trigger';
-        actionsButton.dataset.target = `dropdown-${comment.commId}`;
+        actionsButton.className = 'actions-button btn-flat';
         actionsButton.innerHTML = '<i class="material-icons">more_vert</i>';
+
+        // Manually toggle dropdown visibility
+        actionsButton.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent document click from closing immediately
+            closeAllDropdowns(); // 關閉所有其他下拉選單
+            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+        });
 
         const dropdownMenu = document.createElement('ul');
         dropdownMenu.id = `dropdown-${comment.commId}`;
         dropdownMenu.className = 'dropdown-content';
+        dropdownMenu.style.display = 'none'; // Initially hidden
+        dropdownMenu.style.position = 'absolute';
+        dropdownMenu.style.backgroundColor = 'white';
+        dropdownMenu.style.border = '1px solid #ccc';
+        dropdownMenu.style.zIndex = '1000';
+        dropdownMenu.style.minWidth = '150px';
+        dropdownMenu.style.boxShadow = '0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12)';
+        dropdownMenu.style.opacity = '1'; // Ensure it's not transparent
+        dropdownMenu.style.visibility = 'visible'; // Ensure it's visible
 
         // --- 根據是否為本人留言，決定顯示不同選單項目 ---
         if (CURRENT_USER_ID && comment.commHol === CURRENT_USER_ID) {
@@ -168,6 +204,47 @@ function initComments(shadowRoot) {
         actionsDiv.appendChild(dropdownMenu);
         commentItem.appendChild(actionsDiv);
 
+        // --- 處理最佳解邏輯 ---
+        if (ARTICLE_CATEGORY === 2 && CURRENT_USER_ID === ARTICLE_OWNER_ID) { // 發問中 & 文章擁有者
+            const bestAnswerButton = document.createElement('button');
+            bestAnswerButton.className = 'btn-small waves-effect waves-light green darken-1 best-answer-button';
+            bestAnswerButton.textContent = '選我最佳解';
+            bestAnswerButton.style.marginLeft = 'auto'; // 將按鈕推到右邊
+            bestAnswerButton.addEventListener('click', async () => {
+                if (confirm('確定要選擇此留言為最佳解嗎？')) {
+                    try {
+						const formData = new FormData();
+						formData.append('commId', comment.commId);
+						formData.append('artId', artId);
+                        const response = await fetch('/commentsAPI/bestAnswer', {
+                            method: 'POST',
+                            body: formData // 傳遞 commId 和 artId
+                        });
+                        if (response.ok) {
+                            alert('問題已解決！');
+                            location.reload(); // 重新整理頁面以顯示更新後的狀態
+                        } else {
+                            const errorData = await response.json();
+                            showStatusMessage(`設定最佳解失敗: ${errorData.message || response.statusText}`, 'error');
+                        }
+                    } catch (error) {
+                        console.error('設定最佳解請求失敗:', error);
+                        showStatusMessage('設定最佳解請求失敗，請檢查網路連線。', 'error');
+                    }
+                }
+            });
+            actionsDiv.appendChild(bestAnswerButton); // 將按鈕添加到 actionsDiv
+        } else if (ARTICLE_CATEGORY === 3 && comment.commSta === 3) { // 已解決 & 是最佳解
+            const bestAnswerIcon = document.createElement('i');
+            bestAnswerIcon.className = 'material-icons best-answer-icon';
+            bestAnswerIcon.textContent = 'check_circle'; // 最佳解的 Material Icon
+            bestAnswerIcon.style.color = 'gold'; // 顏色
+            bestAnswerIcon.style.fontSize = '24px';
+            bestAnswerIcon.style.marginLeft = '10px';
+            actionsDiv.appendChild(bestAnswerIcon);
+        }
+
+
         // --- 建立按讚按鈕和計數 ---
         const commentFooter = document.createElement('div');
         commentFooter.className = 'comment-footer';
@@ -187,20 +264,8 @@ function initComments(shadowRoot) {
         commentItem.appendChild(commentFooter);
 
         // 將完成的留言項目插入到列表的最前面
-        commentsList.prepend(commentItem);
+        // commentsList.prepend(commentItem); // 這行會被下面的排序邏輯取代
 
-        // --- 初始化 Materialize 下拉選單的關鍵修復 ---
-        // 暫時覆寫 document.getElementById，使其能在 Shadow DOM 中找到對應的 ul 元素
-        const originalGetElementById = document.getElementById;
-        document.getElementById = (id) => shadowRoot.getElementById(id) || originalGetElementById.call(document, id);
-
-        try {
-            // 初始化下拉選單
-            M.Dropdown.init(actionsButton, { constrainWidth: false });
-        } finally {
-            // 無論成功或失敗，立即還原原始的 getElementById 函式
-            document.getElementById = originalGetElementById;
-        }
         return commentItem;
     }
 
@@ -208,11 +273,8 @@ function initComments(shadowRoot) {
      * 關閉所有已開啟的下拉選單。
      */
     function closeAllDropdowns() {
-        shadowRoot.querySelectorAll('.dropdown-content.show').forEach(menu => {
-            const instance = M.Dropdown.getInstance(menu.previousElementSibling);
-            if (instance) {
-                instance.close();
-            }
+        shadowRoot.querySelectorAll('.dropdown-content').forEach(menu => {
+            menu.style.display = 'none';
         });
     }
 
@@ -285,7 +347,7 @@ function initComments(shadowRoot) {
 
     // --- 事件監聽器：點擊留言區塊外部時，關閉選單 ---
     shadowRoot.addEventListener('click', (event) => {
-        if (!event.target.closest('.comment-item')) {
+        if (!event.target.closest('.comment-actions')) { // 點擊非操作按鈕區域時關閉
             closeAllDropdowns();
         }
     });
@@ -522,6 +584,11 @@ function initComments(shadowRoot) {
      */
     async function fetchComments() {
         try {
+            // 確保文章資訊已載入
+            if (ARTICLE_CATEGORY === null || ARTICLE_OWNER_ID === null) {
+                await fetchArticleDetails();
+            }
+
             const formData = new FormData();
             formData.append('commArt', artId);
             const response = await fetch('/commentsAPI/getComments', {
@@ -530,9 +597,11 @@ function initComments(shadowRoot) {
             });
 
             if (response.ok) {
-                const comments = await response.json();
+                let comments = await response.json();
                 commentsList.innerHTML = ''; // 清空現有列表
-                comments.forEach(comment => displayComment(comment)); // 顯示每則留言
+
+                comments.forEach(comment => commentsList.appendChild(displayComment(comment))); // 顯示每則留言
+
             } else {
                 showStatusMessage('無法載入留言，請稍後再試。', 'error');
             }
@@ -546,19 +615,15 @@ function initComments(shadowRoot) {
     fetchComments();
 } // This is the missing brace for initComments function
 
-
-// --- 主程式進入點：等待 DOM 載入完成 ---
-window.addEventListener("DOMContentLoaded", () => {
-    const container = document.getElementById("commentsBlock");
-    if (!container) return; // 如果頁面上沒有留言區塊，則不執行
-
-    // 建立 Shadow DOM
-    const shadow = container.attachShadow({ mode: "open" });
+// --- 主程式進入點：直接呼叫 initComments ---
+const commentsBlockContainer = document.getElementById("commentsBlock");
+if (commentsBlockContainer) {
+    const shadow = commentsBlockContainer.attachShadow({ mode: "open" });
 
     // 將原始 HTML 內容暫存到一個 wrapper 中
     const wrapper = document.createElement("div");
-    wrapper.innerHTML = container.innerHTML;
-    container.innerHTML = ""; // 清空原始容器
+    wrapper.innerHTML = commentsBlockContainer.innerHTML;
+    commentsBlockContainer.innerHTML = ""; // 清空原始容器
 
     // --- 非同步載入所有 CSS 樣式 ---
     const styleSources = [
@@ -572,7 +637,10 @@ window.addEventListener("DOMContentLoaded", () => {
     const onStyleLoad = () => {
         stylesLoaded++;
         if (stylesLoaded === styleSources.length) {
-            loadScript(); // 所有 CSS 都好了，開始載入 JS
+            shadow.appendChild(wrapper); // 將 HTML 內容放回 Shadow DOM
+            requestAnimationFrame(() => {
+                initComments(shadow);
+            });
         }
     };
 
@@ -585,18 +653,4 @@ window.addEventListener("DOMContentLoaded", () => {
         link.onerror = onStyleLoad; // 即使某個 CSS 載入失敗，也繼續執行以避免卡住
         shadow.appendChild(link);
     });
-
-    /**
-     * 載入 Materialize JS 並啟動留言區塊。
-     */
-    function loadScript() {
-        shadow.appendChild(wrapper); // 將 HTML 內容放回 Shadow DOM
-        const script = document.createElement("script");
-        script.src = "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js";
-        script.onload = () => {
-            // 當 Materialize JS 載入完成後，執行我們的初始化函式
-            initComments(shadow);
-        };
-        shadow.appendChild(script);
-    }
-});
+}

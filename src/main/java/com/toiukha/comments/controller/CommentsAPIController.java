@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.toiukha.comments.model.CommentsService;
 import com.toiukha.comments.model.CommentsVO;
+import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticleServiceImpl;
 
 import lombok.RequiredArgsConstructor;
@@ -54,7 +55,12 @@ public class CommentsAPIController {
 	    try {
 	        byte[] commImg = commImgFile.getBytes();
 	        
-	        Byte commCat = articleServiceImpl.getArticleById(commArt).getArtCat();
+	        Byte commCat = null;
+	        if(articleServiceImpl.getArticleById(commArt).getArtCat() >= 2) {
+	        	commCat = 2;
+	        }else {
+	        	commCat = 1;
+	        }
 
 	        // 手動建立 CommentsVO 物件
 	        CommentsVO commentsVO = new CommentsVO(commCat, commHol, commArt, commCon, commImg);
@@ -91,9 +97,13 @@ public class CommentsAPIController {
 	
 	//最佳解
 	@PostMapping("/bestAnswer")
-	public void bestAnswer(
+	public List<CommentsVO> bestAnswer(
 			@RequestParam("commId") Integer commId) {
 		commentsService.changeSta(commId, (byte)3);
+		Article article = articleServiceImpl.getArticleById(commentsService.getOne(commId).getCommArt());
+		article.setArtCat((byte)3);
+		articleServiceImpl.update(article);
+		return commentsService.getArtComm(commentsService.getOne(commId).getCommArt());
 	}
 	
 	//刪除留言
