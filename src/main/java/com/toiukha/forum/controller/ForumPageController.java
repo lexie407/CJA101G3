@@ -4,6 +4,7 @@ import com.toiukha.forum.article.dto.ArticleDTO;
 import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticleService;
 import com.toiukha.forum.util.Debug;
+import com.toiukha.members.model.MembersVO;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,15 +106,37 @@ public class ForumPageController {
     @GetMapping("/members/articles")
     public String getMemberArticlesFromSession(HttpSession session, Model model) {
         model.addAttribute("currentPage", "forum"); //先設定是討論區頁面
-        Integer artHol = (Integer) session.getAttribute("memberId");
-        if (artHol == null) {
-            // TODO: 處理未登入的情況，現在先假定是會員編號1
-            artHol = 1; // 假設會員編號為1
-            model.addAttribute("errorMessage", "未登入或會員編號無效，使用預設會員編號1");
+        
+        // 從 session 中取得會員資訊
+        Object memberObj = session.getAttribute("member");
+        Integer artHol = null;
+        
+        if (memberObj != null) {
+            if (memberObj instanceof MembersVO) {
+                // 真實會員物件
+                MembersVO member = (MembersVO) memberObj;
+                artHol = member.getMemId();
+            } else if (memberObj instanceof String && ((String) memberObj).startsWith("DEV_USER_")) {
+                // 開發模式假用戶
+                String devUser = (String) memberObj;
+                artHol = Integer.parseInt(devUser.substring(9));
+            }
         }
+        
+        if (artHol == null) {
+            // 測試用，假定是會員編號71
+//            artHol = 71; // 假設會員編號為71
+            // 回傳空列表
+            model.addAttribute("articles", List.of());
+            model.addAttribute("questions", List.of());
+            // 如果沒有登入或會員編號無效，則顯示錯誤訊息
+            model.addAttribute("errorMessage", "未登入或會員編號錯誤");
+        }
+        
         try {
-            List<ArticleDTO> articles = articleService.findByHolAndCatAndSta(artHol, (byte)1, List.of((byte)1, (byte)2));
-            List<ArticleDTO> questions = articleService.findByHolAndCatInAndSta(artHol, List.of((byte)2, (byte)3), List.of((byte)1, (byte)2));
+            // 只查詢狀態為 1（上架）的文章和問題
+            List<ArticleDTO> articles = articleService.findByHolAndCatAndSta(artHol, (byte)1, List.of((byte)1));
+            List<ArticleDTO> questions = articleService.findByHolAndCatInAndSta(artHol, List.of((byte)2, (byte)3), List.of((byte)1));
             model.addAttribute("articles", articles != null ? articles : List.of());
             model.addAttribute("questions", questions != null ? questions : List.of());
             model.addAttribute("artHol", artHol);
@@ -132,8 +155,9 @@ public class ForumPageController {
             @PathVariable("artHol") Integer artHol,
             Model model) {
         try {
-            List<ArticleDTO> articles = articleService.findByHolAndCatAndSta(artHol, (byte)1, List.of((byte)1, (byte)2));
-            List<ArticleDTO> questions = articleService.findByHolAndCatInAndSta(artHol, List.of((byte)2, (byte)3), List.of((byte)1, (byte)2));
+            // 只查詢狀態為 1（上架）的文章和問題
+            List<ArticleDTO> articles = articleService.findByHolAndCatAndSta(artHol, (byte)1, List.of((byte)1));
+            List<ArticleDTO> questions = articleService.findByHolAndCatInAndSta(artHol, List.of((byte)2, (byte)3), List.of((byte)1));
             model.addAttribute("articles", articles != null ? articles : List.of());
             model.addAttribute("questions", questions != null ? questions : List.of());
             model.addAttribute("artHol", artHol);

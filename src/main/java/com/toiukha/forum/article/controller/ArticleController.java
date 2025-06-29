@@ -304,6 +304,37 @@ public class ArticleController {
         return ResponseEntity.ok(response);
     }
     
+    // 刪除文章（將 ARTSTA 設為 2）
+    @DeleteMapping("/article/{artId}/delete")
+    public ResponseEntity<Map<String, Object>> deleteArticle(@PathVariable Integer artId) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            Article article = articleService.getArticleById(artId);
+            if (article == null) {
+                response.put("success", false);
+                response.put("message", "找不到文章");
+                return ResponseEntity.ok(response);
+            }
+            
+            // 將文章狀態設為 2（已刪除）
+            article.setArtSta((byte) 2);
+            articleService.update(article);
+            
+            response.put("success", true);
+            response.put("message", "文章已刪除");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "刪除文章時發生錯誤: " + e.getMessage());
+            System.err.println("刪除文章時發生錯誤: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+    
     Timestamp getNowTime() {
         Date date = new Date();
         Timestamp now = new Timestamp(date.getTime());
