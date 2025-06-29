@@ -3,8 +3,10 @@ package com.toiukha.forum.article.model;
 import com.toiukha.forum.article.dto.ArticleDTO;
 import com.toiukha.forum.article.dto.ArticleSearchCriteria;
 import com.toiukha.forum.article.entity.Article;
+import com.toiukha.forum.util.ArticleMapper;
 import com.toiukha.forum.util.ArticleSpecifications;
 import com.toiukha.forum.util.Debug;
+import com.toiukha.members.model.MembersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +20,9 @@ import java.util.*;
 public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleRepository articleRepository;
+
+    // 用來找會員的名字
+    private MembersService membersService;
 
     /**
      * 用於排序的Key，包含排序欄位和方向。
@@ -79,9 +84,11 @@ public class ArticleServiceImpl implements ArticleService {
         sortMap.put(new SortKey(ArticleSortField.ARTICLE_CREATINE, SortDirection.DESC), Comparator.comparing(ArticleDTO::getArtCreTime).reversed());
     }
 
+    // 建構子注入 ArticleRepository 和 MembersService
     @Autowired
-    public ArticleServiceImpl(ArticleRepository articleRepository) {
+    public ArticleServiceImpl(ArticleRepository articleRepository, MembersService membersService) {
         this.articleRepository = articleRepository;
+        this.membersService = membersService;
     }
 
     //===================  新增  ===================
@@ -218,16 +225,38 @@ public class ArticleServiceImpl implements ArticleService {
         return articleRepository.getAllPagedDTO(pageable);
     }
 
-    // 取得所有文章的DTO列表
+    // 取得所有文章的DTO列表，並傳入排序
     public List<ArticleDTO> getAllDTO(String sortBy, String sortDirection) {
         // 取得所有文章的DTO列表
         List<ArticleDTO> articles = articleRepository.getAllDTO();
         return sortArticles(articles, sortBy, sortDirection);
     }
 
-    public List<ArticleDTO> getAllDTO(){
-        return articleRepository.getAllDTO();
+    // 根據關鍵字搜尋文章，並返回排序後 ArticleDTO 列表
+    @Override
+    public List<ArticleDTO> searchDTO(String keyword, String sortBy, String sortDirection){
+        List<Article> articles = articleRepository.findByArtTitleContaining(keyword);
+        List<ArticleDTO> articleDTOs = new ArrayList<>();
+        if (articles.isEmpty()) {
+            return articleDTOs; // 如果沒有找到文章，返回空列表
+        }
+        // 將 Article 轉換為 ArticleDTO
+        for (Article article : articles) {
+            String mamName ;
+            Integer mamId = article.getArtHol(); // 取得會員編號
+            if (membersService == null) {
+                Debug.errorLog("MembersService 尚未注入，無法取得會員名稱");
+                mamName = mamId.toString();
+            }else {
+                mamName = membersService.getOneMember(article.getArtHol()).getMemName();
+            }
+            ArticleDTO dto = ArticleMapper.toDTO(article, mamName);
+            articleDTOs.add(dto);
+        }
+        return sortArticles(articleDTOs, sortBy, sortDirection);
     }
+
+
 
     public ArticleDTO getDTOById(Integer id) {
         return articleRepository.getDTOById(id);
@@ -269,5 +298,41 @@ public class ArticleServiceImpl implements ArticleService {
             Debug.errorLog("無效的sortKey，使用初始的文章列表");
             return articles;
         }
+    }
+
+    // 依會員、分類、狀態查詢(單一分類)
+    @Override
+    public List<ArticleDTO> findByHolAndCatAndSta(Integer artHol, Byte artCat, List<Byte> artStaList) {
+        List<Article> articles = articleRepository.findByArtHolAndArtCatAndArtStaIn(artHol, artCat, artStaList);
+        List<ArticleDTO> dtos = new ArrayList<>();
+        for (Article article : articles) {
+            String mamName;
+            Integer mamId = article.getArtHol();
+            if (membersService == null) {
+                mamName = mamId.toString();
+            } else {
+                mamName = membersService.getOneMember(article.getArtHol()).getMemName();
+            }
+            dtos.add(ArticleMapper.toDTO(article, mamName));
+        }
+        return dtos;
+    }
+
+    // 依會員、多分類、狀態查詢
+    @Override
+    public List<ArticleDTO> findByHolAndCatInAndSta(Integer artHol, List<Byte> artCatList, List<Byte> artStaList) {
+        List<Article> articles = articleRepository.findByArtHolAndArtCatInAndArtStaIn(artHol, artCatList, artStaList);
+        List<ArticleDTO> dtos = new ArrayList<>();
+        for (Article article : articles) {
+            String mamName;
+            Integer mamId = article.getArtHol();
+            if (membersService == null) {
+                mamName = mamId.toString();
+            } else {
+                mamName = membersService.getOneMember(article.getArtHol()).getMemName();
+            }
+            dtos.add(ArticleMapper.toDTO(article, mamName));
+        }
+        return dtos;
     }
 }

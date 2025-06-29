@@ -1,13 +1,25 @@
 package com.toiukha.forum.controller;
 
+import com.toiukha.forum.article.dto.ArticleDTO;
 import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticleService;
 import com.toiukha.forum.util.Debug;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+import static com.toiukha.forum.article.model.ArticleServiceImpl.ArticleSortField.ARTICLE_CREATINE;
+import static com.toiukha.forum.article.model.ArticleServiceImpl.SortDirection.DESC;
+
 // 文章相關的頁面Controller
+/* 這個Controller負責處理討論區相關的頁面請求，包括首頁、文章新增、文章查詢等功能
+    PS.前後端分離的做法，不會有 return string，會通通用 URL 導向，然後 JS 用 fetch 去跟 RESTful API Controller 拿資料。
+ */
 @Controller
 @RequestMapping("/forum")
 public class ForumPageController {
@@ -15,61 +27,123 @@ public class ForumPageController {
     @Autowired
     ArticleService articleService;
 
+    // 討論區首頁
     @GetMapping
-    public String index() {
-        // 返回 forum-index.html 頁面
+    public String index(Model model) {
+        model.addAttribute("currentPage", "forum");
+
+        // 這不是導向 static 裡的 forum-index.html，
+        // 而是會由Thymeleaf解析 /templates/front-end/forum/forum-index.html 並進行渲染
         return "front-end/forum/forum-index";
     }
 
-    // 新增文章的處理
+    // 新增文章的處理與重導向
     @PostMapping("/article/insert")
-    public String insertArticle(@ModelAttribute Article art) {
+    public String insertArticle(@ModelAttribute Article art, Model model) {
+        model.addAttribute("currentPage", "forum");
+
         if (art == null) {
             Debug.log("文章資料為空，無法新增文章");
-            return "redirect:/forum/article/edit"; // 或返回錯誤頁面
+            return "redirect:/forum/article/edit";
         }
-        // 假設你已經有 setArtCon、setArtTitle 等 getter/setter
         Debug.log("文章標題：" + art.getArtTitle(),
                 "文章分類：" + art.getArtCat(),
                 "文章上架狀態：" + art.getArtSta(),
                 "文章內容：" + art.getArtCon());
 
         // 存進資料庫
-        articleService.add(art.getArtCat(),art.getArtSta(),art.getArtHol(),art.getArtTitle(),art.getArtCon()); // 假設你有 service 層
-        return "redirect:/forum"; // 或返回成功頁面
+        articleService.add(art.getArtCat(),art.getArtSta(),art.getArtHol(),art.getArtTitle(),art.getArtCon());
+        // 是Spring MVC的重導向方法，會將請求轉發到指定的URL
+        return "redirect:/forum";
     }
 
-//    @PostMapping("/article/insert")
-//    public String insertArticle(
-//            @RequestParam("artTitle") String artTitle,
-//            @RequestParam("artCat") Byte artCat,
-//            @RequestParam("artHol") Integer artHol,
-//            @RequestParam("artCon") String artCon
-//    ) {
-//        // 呼叫 Service 儲存
-////        articleServiceImpl.add(artCat, (byte)1, 1, artTitle, artCon);
-//        Debug.log("artTitle: " + artTitle,
-//                "artCat: " + artCat,
-//                "artHol: " + artHol,
-//                "artCon: " + artCon);
-//
-//        //新增文章，預設上架
-//        articleService.add(artCat, (byte)1, artHol, artTitle, artCon);
-//        // 新增成功後導回文章列表
-//        return "redirect:/forum";
-//    }
-
-
+    // 只作為導向用，forum-article頁面會由JS取出查詢參數（Query Parameter）從ArticleController的getArticleDTO取得單篇文章內容並更新
     @GetMapping("/article")
-    public String article() {
+    public String article(Model model) {
+        model.addAttribute("currentPage", "forum");
+
+        // 用 return 不會導向 static 檔案
         return "front-end/forum/forum-article";
     }
 
     // 導向新增文章頁面
     @GetMapping("/article/add")
-    public String addArticle(){
-        return "front-end/forum/add-article";
+    public String addArticle(Model model){
+        model.addAttribute("currentPage", "forum");
 
+        return "front-end/forum/add-article";
+    }
+
+    // 使用標題關鍵字搜尋文章
+    @GetMapping("searchByTitle")
+    public String searchByTitle(
+//            @NotBlank(message = "文章標題: 請勿空白")
+            @RequestParam("keyword") String title, Model model) {
+        model.addAttribute("currentPage", "forum");
+
+        // 參數驗證
+        if (title == null || title.isBlank()) {
+            model.addAttribute("errorMessage", "請輸入搜尋關鍵字！");
+            model.addAttribute("articleList", List.of());
+            model.addAttribute("keyword", title);
+            return "front-end/forum/search_Page";
+        }
+
+        List<ArticleDTO> articles = articleService.searchDTO(title,ARTICLE_CREATINE.name(), DESC.name());
+
+        if (articles.isEmpty()) {
+            model.addAttribute("errorMessage", "沒有相符結果");
+            model.addAttribute("articleList", List.of());
+        } else {
+            model.addAttribute("articleList", articles);
+        }
+        model.addAttribute("keyword", title);
+        return "front-end/forum/search_Page";
+    }
+
+    // 會員專屬文章與問題查詢（從 session 取得會員編號）
+    @GetMapping("/members/articles")
+    public String getMemberArticlesFromSession(HttpSession session, Model model) {
+        model.addAttribute("currentPage", "forum"); //先設定是討論區頁面
+        Integer artHol = (Integer) session.getAttribute("memberId");
+        if (artHol == null) {
+            // TODO: 處理未登入的情況，現在先假定是會員編號1
+            artHol = 1; // 假設會員編號為1
+            model.addAttribute("errorMessage", "未登入或會員編號無效，使用預設會員編號1");
+        }
+        try {
+            List<ArticleDTO> articles = articleService.findByHolAndCatAndSta(artHol, (byte)1, List.of((byte)1, (byte)2));
+            List<ArticleDTO> questions = articleService.findByHolAndCatInAndSta(artHol, List.of((byte)2, (byte)3), List.of((byte)1, (byte)2));
+            model.addAttribute("articles", articles != null ? articles : List.of());
+            model.addAttribute("questions", questions != null ? questions : List.of());
+            model.addAttribute("artHol", artHol);
+            return "front-end/forum/members-articles";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "載入會員文章時發生錯誤：" + e.getMessage());
+            model.addAttribute("articles", List.of());
+            model.addAttribute("questions", List.of());
+            return "front-end/forum/members-articles";
+        }
+    }
+
+    // 備註：測試用，允許直接用網址帶會員編號
+    @GetMapping("/members/{artHol}/articles")
+    public String getMemberArticles(
+            @PathVariable("artHol") Integer artHol,
+            Model model) {
+        try {
+            List<ArticleDTO> articles = articleService.findByHolAndCatAndSta(artHol, (byte)1, List.of((byte)1, (byte)2));
+            List<ArticleDTO> questions = articleService.findByHolAndCatInAndSta(artHol, List.of((byte)2, (byte)3), List.of((byte)1, (byte)2));
+            model.addAttribute("articles", articles != null ? articles : List.of());
+            model.addAttribute("questions", questions != null ? questions : List.of());
+            model.addAttribute("artHol", artHol);
+            return "front-end/forum/members-articles";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "載入會員文章時發生錯誤：" + e.getMessage());
+            model.addAttribute("articles", List.of());
+            model.addAttribute("questions", List.of());
+            return "front-end/forum/members-articles";
+        }
     }
 
 }

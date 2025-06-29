@@ -6,7 +6,9 @@
     <title>新增文章 | 前台 | 島遊kha</title>
     <link th:href="@{/vendors/quillEditor/quill.snow.css}" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
-   <link rel="stylesheet" th:href="@{/css/forum/add-article.css}">
+    <link rel="stylesheet" th:href="@{/css/forum/frontEnd/add-article.css}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
 
@@ -21,55 +23,122 @@
         </header>
 
         <main class="content-area-main">
-            <div class="app-bar">
-                <h2><span class="material-icons">edit</span>新增文章</h2>
-            </div>
-            <!-- 					放自己需要的內容 -->
-            <form  th:action="@{/forum/article/insert}" method="post" enctype="multipart/form-data" id="addArticleForm" >
-                <div class="form-container">
-
-                    <label for="artTitle">文章標題</label>
-                    <input type="text" id="artTitle" name="artTitle" required value="測試用123">
-                    <br>
-                    <label for="artHol">會員編號</label>
-                    <input type="number" id="artHol" name="artHol" required min="1" value="1">
-                    <br>
-                    <label for="artCat">分類</label>
-                    <select id="artCat" name="artCat" required>
-                        <!--                <option value="">請選擇分類</option>-->
-                        <option value="1">文章</option>
-                        <option value="2">問題</option>
-                        <!--            <option value="3">已解決</option>-->
-                    </select>
-                    <br>
-                    <label for="artSta">分類</label>
-                    <select id="artSta" name="artSta" required>
-                        <option value="1">上架</option>
-                        <option value="2">下架</option>
-                    </select>
-                    <br>
-                    <label for="editor">內容</label>
-                    <!--        <textarea id="artCon" name="artCon" rows="8" required></textarea>-->
-
-                    <textarea id="artCon" name="artCon" style="display:none;"></textarea>
-                    <div id="editor">
-                        <p>測試用456</p>
-                        <!--Qill編輯器-->
-                    </div>
-                    <!--        <label for="image">圖片上傳</label>-->
-                    <!--        <input type="file" id="image" name="image">-->
-
-                    <div class="button-group">
-                        <button type="submit">送出</button>
-                        <button type="reset">清除</button>
-                    </div>
+            <div class="container">
+                <div class="header">
+                    <h1><span class="material-icons" style="vertical-align: middle; margin-right: 8px;">create</span>新增文章</h1>
+                    <p>分享您的想法或提出問題，與社群一起交流討論</p>
                 </div>
-            </form>
+
+                <div class="form-card">
+                    <form id="articleForm" th:action="@{/forum/article/insert}" method="post">
+                        <div class="form-group">
+                            <label class="form-label">文章類型</label>
+                            <div class="category-chips">
+                                <div class="chip selected" data-category="1">
+                                    <span class="material-icons">article</span>
+                                    文章
+                                </div>
+                                <div class="chip category-2" data-category="2">
+                                    <span class="material-icons">help_outline</span>
+                                    發問
+                                </div>
+                            </div>
+                            <input type="hidden" id="artCat" name="artCat" value="1">
+                            <div class="helper-text">選擇您要發佈的內容類型</div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-field">
+                                <input type="text" id="title" name="artTitle" placeholder=" " maxlength="30" required>
+                                <label for="title" class="floating-label">標題</label>
+                            </div>
+                            <div class="char-counter">
+                                <span id="titleCounter">0</span>/30
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-field">
+                                <input type="number" id="artHol" name="artHol" required min="1" value="1">
+                                <label for="artHol" class="floating-label">會員編號</label>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="artSta" name="artSta" value="1">
+
+                        <div class="form-group">
+                            <label class="form-label">內容</label>
+                            <div class="input-field">
+                                <textarea id="artCon" name="artCon" style="display:none;"></textarea>
+                                <div id="editor">
+                                    <p>來寫點什麼吧……</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" class="btn btn-secondary" onclick="cancelForm()">
+                                取消
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-icons" style="vertical-align: middle; margin-right: 4px; font-size: 16px;">publish</span>
+                                發佈
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+            <!-- 					舊版表單 -->
+<!--            <div class="app-bar">-->
+<!--                <h2><span class="material-icons">edit</span>新增文章</h2>-->
+<!--            </div>-->
+<!--            <form  th:action="@{/forum/article/insert}" method="post" enctype="multipart/form-data" id="addArticleForm" >-->
+<!--                <div class="form-container">-->
+
+<!--                    <label for="artTitle">文章標題</label>-->
+<!--                    <input type="text" id="artTitle" name="artTitle" required value="測試用123">-->
+<!--                    <br>-->
+<!--                    <label for="artHol">會員編號</label>-->
+<!--                    <input type="number" id="artHol" name="artHol" required min="1" value="1">-->
+<!--                    <br>-->
+<!--                    <label for="artCat">分類</label>-->
+<!--                    <select id="artCat" name="artCat" required>-->
+<!--                        &lt;!&ndash;                <option value="">請選擇分類</option>&ndash;&gt;-->
+<!--                        <option value="1">文章</option>-->
+<!--                        <option value="2">問題</option>-->
+<!--                        &lt;!&ndash;            <option value="3">已解決</option>&ndash;&gt;-->
+<!--                    </select>-->
+<!--                    <br>-->
+<!--                    <label for="artSta">分類</label>-->
+<!--                    <select id="artSta" name="artSta" required>-->
+<!--                        <option value="1">上架</option>-->
+<!--                        <option value="2">下架</option>-->
+<!--                    </select>-->
+<!--                    <br>-->
+<!--                    <label for="editor">內容</label>-->
+<!--                    &lt;!&ndash;        <textarea id="artCon" name="artCon" rows="8" required></textarea>&ndash;&gt;-->
+
+<!--                    <textarea id="artCon" name="artCon" style="display:none;"></textarea>-->
+<!--                    <div id="editor">-->
+<!--                        <p>測試用456</p>-->
+<!--                        &lt;!&ndash;Qill編輯器&ndash;&gt;-->
+<!--                    </div>-->
+<!--                    &lt;!&ndash;        <label for="image">圖片上傳</label>&ndash;&gt;-->
+<!--                    &lt;!&ndash;        <input type="file" id="image" name="image">&ndash;&gt;-->
+
+<!--                    <div class="button-group">-->
+<!--                        <button type="submit">送出</button>-->
+<!--                        <button type="reset">清除</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </form>-->
             <!-- ===================================================================== -->
 
-            <button onclick="getContent()">查看輸出內容</button>
+<!--            <button onclick="getContent()">查看輸出內容</button>-->
 
-            <pre id="output"></pre>
+<!--            <pre id="output"></pre>-->
         </main>
     </div>
 </div>
@@ -78,10 +147,13 @@
 <!--<script src="/webjars/stomp-websocket/stomp.min.js"></script>-->
 <!--<script src="../js/notification/websocket.js"></script>-->
 
-<!-- Include the Quill library -->
+
+<script th:src="@{/js/forum/frontEnd/add-article.js}" ></script>
+
+<!-- Quill library -->
 <script th:src="@{/vendors/quillEditor/quilljs.js}"></script>
 
-<!-- Initialize Quill editor -->
+<!-- Quill editor -->
 <script>
     const quill = new Quill('#editor', {
         modules: {
@@ -104,34 +176,6 @@
         theme: 'snow', // or 'bubble'
     });
 
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function (){
-        document.getElementById('addArticleForm').addEventListener('submit', async function (e) {
-            e.preventDefault(); // 一律先攔截
-
-            // 文章內容檢查
-            // const content = quill.getText().trim(); 這樣是純文字內容
-            const content = quill.root.innerHTML.trim();
-
-            if (!content) {
-                alert('文章內容為必填！');
-                return; // 不送出
-            }
-
-            // 將 HTML 填入隱藏的 textarea 中
-            document.getElementById('artCon').value = content;
-
-            // 確認無誤，手動送出表單
-            e.target.submit();
-        });
-    });
-
-    // 用來查看編輯器目前內容(測試用)
-    function getContent() {
-        const quillhtml = quill.root.innerHTML;
-        document.getElementById('output').textContent = quillhtml;
-    }
 </script>
 
 <!--<script>-->
