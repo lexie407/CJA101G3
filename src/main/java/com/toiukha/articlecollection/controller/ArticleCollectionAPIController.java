@@ -22,7 +22,7 @@ public class ArticleCollectionAPIController {
 	
 	@PostMapping("/api")
 	public void api(
-			@ModelAttribute ArticleCollectionCompositePrimaryKey aPK) {
+			@RequestBody ArticleCollectionCompositePrimaryKey aPK) {
 		 
 		ArticleCollectionVO aVO = new ArticleCollectionVO(aPK);
 		if(articleCollectionService.getOne(aPK) != null) {
