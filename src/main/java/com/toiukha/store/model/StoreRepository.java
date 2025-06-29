@@ -13,6 +13,12 @@ public interface StoreRepository  extends JpaRepository<StoreVO, Integer> {
 	
 	Optional<StoreVO> findByStoreAcc(String storeAcc);     // 登入用
 	Optional<StoreVO> findByStoreEmail(String storeEmail); // 忘記密碼或驗證用
+	
 	List<StoreVO> findByStoreStatus(Byte storeStatus); //找未審核商家用
+	
+	
+    List<StoreVO> findByStoreAccContaining(String storeAcc);    // 帳號模糊查詢
+    List<StoreVO> findByStoreNameContaining(String storeName);  // 名稱模糊查詢
+    
 
 }
