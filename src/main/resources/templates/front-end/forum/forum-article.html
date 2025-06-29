@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文章 | 前台 | 島遊kha</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+	    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
 	<!-- 留言用 -->
-		<link rel="stylesheet" th:href=@{/css/comments/comments.css}>
+<!--		<link rel="stylesheet" th:href=@{/css/comments/comments.css}>-->
 		<!-- Materialize CSS -->
-	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+<!--	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">-->
 	    <!-- Material Icons -->
 	    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-	
+
 </head>
 <style>
     .article-card {
@@ -79,6 +79,7 @@
     .actions-right {
         display: flex;
         align-items: center;
+        position: relative;
     }
 
     .more-icon {
@@ -88,9 +89,10 @@
     }
 
     .likes.material-icons {
-        font-size: 24px; /* 按讚 icon */
-        color: var(--md-sys-color-secondary); /* 讓 icon 亮起來 */
+        font-size: 24px;
+        color: var(--md-sys-color-secondary);
     }
+
     .likes.material-button {
         background-color: var(--md-sys-color-secondary);
     }
@@ -106,6 +108,62 @@
         box-shadow: 0 4px 3px rgba(0, 0, 0, 0.05);
     }
 
+/* 文章下方action區塊	*/
+
+	.primary-color {
+		color: var(--primary-color);
+	}
+
+	.secondary-color {
+		color: var(--secondary-color);
+	}
+
+    .more-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 30px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        min-width: 120px;
+        z-index: 10;
+    }
+    .more-menu.show {
+        display: block;
+    }
+    .more-menu-item {
+        padding: 10px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .more-menu-item:hover {
+        background: #f5f5f5;
+    }
+
+    /* 按讚按鈕樣式 */
+    .like-btn {
+        transition: all 0.2s ease;
+    }
+
+    .like-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .like-btn.liked {
+        color: var(--md-sys-color-secondary);
+    }
+
+    .like-btn.liked .material-icons {
+        color: var(--md-sys-color-secondary);
+    }
+
+    .like-btn:not(.liked) .material-icons {
+        color: var(--md-sys-color-on-surface-variant);
+    }
 </style>
 
 
@@ -118,7 +176,6 @@
             <div th:insert="~{front-end/forum/subnavForum :: topbar}"></div>
         </header>
         <main class="content-area-main">
-            <!-- 					放自己需要的內容 -->
 <!--            這裡之後會顯示一篇文章跟它底下的留言-->
             <div id="articleDetail">載入中...</div>
 <!--             以下留言區塊 -->
@@ -138,12 +195,12 @@
 		                <div id="image-preview" style="display: none;"></div>
 		            </div>
 		        </form>
-		
+
 		        <div id="statusMessage" class="card-panel" style="display: none;"></div>
-		
+
 		        <div class="comments-section">
 		            <div id="commentsList">
-		                
+
 		            </div>
 		        </div>
             </div>
@@ -164,11 +221,13 @@
 
 <!-- 以上留言使用 -->
 <script>
+	// 取得 URL 中的 artId 參數
     function getArtIdFromUrl() {
         const params = new URLSearchParams(window.location.search);
         return params.get('artId');
     }
 
+	// 渲染文章內容
     function renderArticle(article) {
         if (!article) {
             $('#articleDetail').html('找不到文章');
@@ -197,7 +256,7 @@
             <span class="create-time">${createDate}</span>
           </div>
           <div class="meta-right">
-            <span class="likes material-icons">thumb_up</span> ${article.artLike || 0}
+<!--            <span class="likes material-icons">thumb_up</span> ${article.artLike || 0}-->
             <span class="article-id">#${article.artId}</span>
           </div>
         </div>
@@ -206,21 +265,182 @@
           ${article.artCon}
         </div>
 
+<!--	// 文章下方的按鈕區塊-->
         <div class="article-actions">
-          <div class="actions-left">
-            <button class="likes material-button secondary-btn"><span class="material-icons">thumb_up</span> 按讚</button>
-            <button class="material-button secondary-btn"><span class="material-icons">favorite</span> 收藏</button>
-          </div>
-          <div class="actions-right">
-            <span class="material-icons more-icon">more_vert</span>
-          </div>
+            <div class="actions-left">
+                <button class="icon-button like-btn" title="按讚">
+                    <span class="material-icons">thumb_up</span>
+                    <span style="font-size: medium; margin-left: 5px">${article.artLike || 0}</span>
+                </button>
+                <button class="icon-button favorite-btn" title="收藏">
+                    <span class="material-icons">favorite_border</span>
+                </button>
+                <button class="icon-button share-btn" title="分享">
+                    <span class="material-icons">share</span>
+                    分享
+                </button>
+            </div>
+            <div class="actions-right" style="position:relative;">
+                <span class="material-icons more-icon">more_vert</span>
+                <div class="more-menu">
+                    <div class="more-menu-item report-btn">
+                        <span class="material-icons">flag</span>
+                        檢舉
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
     `);
+
+        // 綁定 more-icon 點擊事件
+        $('#articleDetail .more-icon').off('click').on('click', function (e) {
+            e.stopPropagation();
+            const $menu = $(this).siblings('.more-menu');
+            $menu.toggleClass('show');
+        });
+
+        // 點擊其他地方時隱藏 more-menu
+        $(document).off('click.moremenu').on('click.moremenu', function () {
+            $('#articleDetail .more-menu').removeClass('show');
+        });
+
+        // 防止點擊 more-menu 本身時關閉
+        $('#articleDetail .more-menu').off('click').on('click', function (e) {
+            e.stopPropagation();
+        });
+
+        // 綁定按讚按鈕點擊事件
+        $('#articleDetail .like-btn').off('click').on('click', function() {
+            handleArticleLike(article.artId);
+        });
+
+        // 檢查用戶是否已按讚
+        checkArticleLikeStatus(article.artId);
     }
 
+    // 全域變數儲存當前用戶ID
+    let articleCurrentUserId = null;
+
+    // 取得當前用戶ID
+    async function getCurrentUserId() {
+        if (articleCurrentUserId !== null) {
+            return articleCurrentUserId;
+        }
+
+        try {
+            const response = await fetch('/dev/current');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.memId) {
+                    articleCurrentUserId = data.memId;
+                    return articleCurrentUserId;
+                }
+            }
+        } catch (error) {
+            console.error('取得用戶ID失敗:', error);
+        }
+        
+        return null;
+    }
+
+    // 處理文章按讚功能
+    async function handleArticleLike(artId) {
+        const likeBtn = $('#articleDetail .like-btn');
+        const likeCountSpan = likeBtn.find('span:last');
+        
+        try {
+            // 取得當前用戶ID
+            const userId = await getCurrentUserId();
+            
+            if (!userId) {
+                alert('請先登入才能按讚');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('docId', artId);
+            formData.append('memId', userId);
+
+            const response = await fetch('/article/like', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    // 更新按讚數顯示
+                    likeCountSpan.text(result.likeCount);
+                    
+                    // 切換按讚按鈕的視覺狀態
+                    const icon = likeBtn.find('.material-icons');
+                    if (icon.text() === 'thumb_up') {
+                        icon.text('thumb_up_alt'); // 已按讚的圖示
+                        likeBtn.addClass('liked');
+                    } else {
+                        icon.text('thumb_up'); // 未按讚的圖示
+                        likeBtn.removeClass('liked');
+                    }
+                } else {
+                    alert(`按讚失敗: ${result.message}`);
+                }
+            } else {
+                const errorText = await response.text();
+                try {
+                    const errorData = JSON.parse(errorText);
+                    alert(`按讚失敗: ${errorData.message || response.statusText}`);
+                } catch (e) {
+                    alert(`按讚失敗: ${response.statusText}`);
+                }
+            }
+        } catch (error) {
+            console.error('按讚請求錯誤:', error);
+            alert('按讚請求失敗，請檢查網路。');
+        }
+    }
+
+    // 檢查文章按讚狀態
+    async function checkArticleLikeStatus(artId) {
+        try {
+            const userId = await getCurrentUserId();
+            
+            if (!userId) {
+                return; // 未登入用戶不檢查按讚狀態
+            }
+
+            const formData = new FormData();
+            formData.append('docId', artId);
+            formData.append('memId', userId);
+
+            const response = await fetch('/article/isLiked', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const isLiked = await response.json();
+                const likeBtn = $('#articleDetail .like-btn');
+                const icon = likeBtn.find('.material-icons');
+                
+                if (isLiked === 1) {
+                    // 已按讚
+                    icon.text('thumb_up_alt');
+                    likeBtn.addClass('liked');
+                } else {
+                    // 未按讚
+                    icon.text('thumb_up');
+                    likeBtn.removeClass('liked');
+                }
+            }
+        } catch (error) {
+            console.error('檢查按讚狀態失敗:', error);
+        }
+    }
+
+	// 當頁面載入完成後，取得文章編號並載入文章內容
     $(function() {
-// 取得 host + context path
+        // 取得 host + context path
         function getFullContextPath() {
             const path = window.location.pathname;
             const firstSlash = path.indexOf("/", 1);
