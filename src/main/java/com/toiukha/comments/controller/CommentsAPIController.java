@@ -37,9 +37,11 @@ public class CommentsAPIController {
 		return commentsService.getArtComm(commArt);
 	}
 	
-	@GetMapping("test")
-	public String getTest() {
-		return "test";
+	//查留言
+	@PostMapping("/getOneComment")
+	public CommentsVO getOneComment(
+			@RequestParam("commHol")Integer commHol) {
+		return commentsService.getOne(commHol);
 	}
 	
 	@PostMapping("/addComments")
@@ -68,17 +70,23 @@ public class CommentsAPIController {
 	
 	//修改留言
 	@PostMapping("/updateComments")
-	public void updateComments(
-			@RequestParam("commImg")MultipartFile part,
+	public CommentsVO updateComments(
+			@RequestParam(value = "commImg", required = false)MultipartFile part,
 			@RequestParam("commCon") String commCon,
 			@RequestParam("commId") Integer commId) {
 		byte[] commImg = null;
-		try {
-			commImg = part.getBytes();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (part != null && !part.isEmpty()) {
+			try {
+				commImg = part.getBytes();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 		}
+
 		commentsService.changeComm(commId, commCon, commImg);
+		
+		return commentsService.getOne(commId);
 	}
 	
 	//最佳解

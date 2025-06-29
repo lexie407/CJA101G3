@@ -22,4 +22,9 @@ public interface CommentsRepository extends JpaRepository<CommentsVO, Integer> {
 	@Query(value = "UPDATE CommentsVO as cVO SET cVO.commCon = :commCon, cVO.commImg = :commImg WHERE cVO.commId = :commId ")
 	public void upadteComm(Integer commId, String commCon, byte[] commImg);
 	
+	@Transactional
+	@Modifying
+	@Query(value = "UPDATE CommentsVO as cVO SET cVO.commCon = :commCon WHERE cVO.commId = :commId ")
+	public void upadteComm(Integer commId, String commCon);
+	
 }
