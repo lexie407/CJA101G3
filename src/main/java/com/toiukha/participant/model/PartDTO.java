@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  * 參加者資料傳輸物件，用於 API 回傳
  * 不包含關聯物件，避免序列化問題
  */
-public class ParticipantDTO implements Serializable {
+public class PartDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private Integer actId;
@@ -19,12 +19,12 @@ public class ParticipantDTO implements Serializable {
 
     // ===== Constructor =====
     
-    public ParticipantDTO() {
+    public PartDTO() {
         super();
     }
     
-    public ParticipantDTO(Integer actId, Integer memId, String memType, 
-                         LocalDateTime joinTime, Byte joinStatus) {
+    public PartDTO(Integer actId, Integer memId, String memType,
+                   LocalDateTime joinTime, Byte joinStatus) {
         this.actId = actId;
         this.memId = memId;
         this.memType = memType;
@@ -87,8 +87,8 @@ public class ParticipantDTO implements Serializable {
     /**
      * 從 ParticipantVO 轉換為 ParticipantDTO
      */
-    public static ParticipantDTO fromVO(ParticipantVO vo) {
-        return new ParticipantDTO(
+    public static PartDTO fromVO(PartVO vo) {
+        return new PartDTO(
             vo.getActId(),
             vo.getMemId(),
             vo.getMemType(),
@@ -97,8 +97,8 @@ public class ParticipantDTO implements Serializable {
         );
     }
     
-    public static ParticipantDTO fromVO(ParticipantVO vo, String memName) {
-        ParticipantDTO dto = fromVO(vo);
+    public static PartDTO fromVO(PartVO vo, String memName) {
+        PartDTO dto = fromVO(vo);
         dto.setMemName(memName);
         return dto;
     }

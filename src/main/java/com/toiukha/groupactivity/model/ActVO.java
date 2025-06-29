@@ -7,20 +7,16 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-//import jakarta.validation.constraints.*; //驗證寫在DTO
-//import org.springframework.format.annotation.DateTimeFormat;//驗證寫在DTO
-
-//關聯物件
-//import com.toiukha.participant.model.ParticipantVO;
 
 /**
- * 活動主資料 VO，對應資料庫表格 groupactivity
+ * 活動資料庫對應物件
+ * 純粹的資料庫對應，不包含業務邏輯
  */
-// ===== 資料欄位 =====
-
 @Entity
 @Table(name = "groupactivity")
 public class ActVO implements Serializable{
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ACTID", updatable = false, nullable = false)
@@ -231,33 +227,11 @@ public class ActVO implements Serializable{
         this.recruitStatus = recruitStatus;
     }
 
-//    public List<ParticipantVO> getParticipants() {
-//        return participants;
-//    }
-//
-//    public void setParticipants(List<ParticipantVO> participants) {
-//        this.participants = participants;
-//    }
-
-    // ===== toString =====
-
     @Override
     public String toString() {
-        return "ActVO{" +
-                "actId=" + actId +
-                ", actName='" + actName + '\'' +
-                ", actDesc='" + actDesc + '\'' +
-                ", itnId=" + itnId +
-                ", hostId=" + hostId +
-                ", signupStart=" + signupStart +
-                ", signupEnd=" + signupEnd +
-                ", maxCap=" + maxCap +
-                ", signupCnt=" + signupCnt +
-                ", actStart=" + actStart +
-                ", actEnd=" + actEnd +
-                ", isPublic=" + isPublic +
-                ", allowCancel=" + allowCancel +
-                ", recruitStatus=" + recruitStatus +
-                '}';
+        return "ActVO [actId=" + actId + ", actName=" + actName + ", actDesc=" + actDesc + ", itnId=" + itnId
+                + ", hostId=" + hostId + ", signupStart=" + signupStart + ", signupEnd=" + signupEnd + ", maxCap="
+                + maxCap + ", signupCnt=" + signupCnt + ", actStart=" + actStart + ", actEnd=" + actEnd + ", isPublic="
+                + isPublic + ", allowCancel=" + allowCancel + ", recruitStatus=" + recruitStatus + "]";
     }
 }

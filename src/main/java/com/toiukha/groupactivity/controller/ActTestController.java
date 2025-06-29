@@ -2,6 +2,7 @@ package com.toiukha.groupactivity.controller;
 
 import com.toiukha.groupactivity.model.ActService;
 import com.toiukha.groupactivity.model.ActVO;
+import com.toiukha.members.model.MembersService;
 import com.toiukha.members.model.MembersVO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class ActTestController {
 	@Autowired
 	private ActService actService;
 
+	@Autowired
+	private MembersService membersService;
+
 	// 導向首頁畫面 (templates/index.html)
 	@GetMapping("/")
 	public String testMethod() {
@@ -36,33 +40,74 @@ public class ActTestController {
 	}
 
 	/**
-	 * 開發模式：切換 session 中的假用戶
-	 * 使用方式：/dev/login/38 切換到 38 號用戶
-	 * 
-	 * @param memId 要切換的會員ID
-	 * @param session HTTP Session
-	 * @return 切換結果
+	 * 開發模式：切換到真實會員（推薦，與新登入系統完全相容）
+	 * 使用方式：/dev/login/38 切換到真實的 38 號會員
 	 */
 	@GetMapping("/login/{memId}")
 	public ResponseEntity<Map<String, Object>> switchDevUser(
 			@PathVariable Integer memId, 
 			HttpSession session) {
+		// 預設使用真實會員
+		return switchToRealUser(memId, session);
+	}
+
+	/**
+	 * 開發模式：切換到真實會員
+	 * 使用方式：/dev/login/real/38 切換到真實的 38 號會員
+	 */
+	@GetMapping("/login/real/{memId}")
+	public ResponseEntity<Map<String, Object>> switchToRealUser(
+			@PathVariable Integer memId, 
+			HttpSession session) {
 		
-		// 設定假用戶格式的 session
+		// 從資料庫取得真實會員資料
+		MembersVO member = membersService.getOneMember(memId);
+		
+		Map<String, Object> response = new HashMap<>();
+		
+		if (member == null) {
+			response.put("success", false);
+			response.put("message", "找不到會員 ID " + memId);
+			return ResponseEntity.badRequest().body(response);
+		}
+		
+		// 設定真實會員物件到 session
+		session.setAttribute("member", member);
+		
+		response.put("success", true);
+		response.put("message", "已切換到真實會員：" + member.getMemName());
+		response.put("memId", member.getMemId());
+		response.put("memName", member.getMemName());
+		response.put("type", "real");
+		
+		return ResponseEntity.ok(response);
+	}
+
+	/**
+	 * 開發模式：切換到假用戶（保留相容性）
+	 * 使用方式：/dev/login/fake/38 切換到假的 38 號用戶
+	 */
+	@GetMapping("/login/fake/{memId}")
+	public ResponseEntity<Map<String, Object>> switchToFakeUser(
+			@PathVariable Integer memId, 
+			HttpSession session) {
+		
+		// 設定假用戶格式的 session（保留舊功能）
 		String devUser = "DEV_USER_" + memId;
 		session.setAttribute("member", devUser);
 		
 		Map<String, Object> response = new HashMap<>();
 		response.put("success", true);
-		response.put("message", "已切換到開發用戶 " + memId);
+		response.put("message", "已切換到假用戶 " + memId);
 		response.put("devUser", devUser);
 		response.put("memId", memId);
+		response.put("type", "fake");
 		
 		return ResponseEntity.ok(response);
 	}
 	
 	/**
-	 * 開發模式：查看當前 session 用戶
+	 * 升級版：查看當前用戶（支援兩種格式）
 	 * 
 	 * @param session HTTP Session
 	 * @return 當前用戶資訊
@@ -74,21 +119,23 @@ public class ActTestController {
 		Map<String, Object> result = new HashMap<>();
 		result.put("success", true);
 		
-		if (member instanceof String && ((String) member).startsWith("DEV_USER_")) {
-			// 開發模式：假用戶格式
+		if (member instanceof MembersVO) {
+			// 真實會員物件
+			MembersVO memberVO = (MembersVO) member;
+			result.put("memId", memberVO.getMemId());
+			result.put("memName", memberVO.getMemName());
+			result.put("memEmail", memberVO.getMemEmail());
+			result.put("memStatus", memberVO.getMemStatus());
+			result.put("type", "real");
+			result.put("message", "當前為真實會員：" + memberVO.getMemName());
+		} else if (member instanceof String && ((String) member).startsWith("DEV_USER_")) {
+			// 假用戶字串格式（相容舊系統）
 			String devUser = (String) member;
 			Integer memId = Integer.parseInt(devUser.substring(9));
 			result.put("devUser", devUser);
 			result.put("memId", memId);
-			result.put("type", "dev");
-			result.put("message", "當前為開發用戶 " + memId);
-		} else if (member instanceof MembersVO) {
-			// 生產模式：真實會員物件
-			MembersVO memberVO = (MembersVO) member;
-			result.put("memId", memberVO.getMemId());
-			result.put("memName", memberVO.getMemName());
-			result.put("type", "production");
-			result.put("message", "當前為正式會員 " + memberVO.getMemName());
+			result.put("type", "fake");
+			result.put("message", "當前為假用戶 " + memId);
 		} else {
 			// 未登入
 			result.put("type", "not_logged_in");

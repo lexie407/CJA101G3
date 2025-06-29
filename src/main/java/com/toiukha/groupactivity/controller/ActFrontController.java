@@ -4,8 +4,7 @@ import com.toiukha.groupactivity.model.ActService;
 import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.groupactivity.model.DefaultImageService;
 import com.toiukha.groupactivity.security.AuthService;
-import com.toiukha.members.model.MembersVO;
-import com.toiukha.participant.model.ParticipateService;
+import com.toiukha.participant.model.PartService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.time.format.DateTimeFormatter;
 
 /*
- * [Deprecated] 本檔案內的圖片顯示API（如 /act/member/image/{actId}）已被統一的 /api/act/image/{actId} 取代。
- * 為相容舊版頁面暫時保留，後續可安全移除。
- * 請前端一律改用 /api/act/image/{actId}。
+ * 前端轉送用controller
  */
 @Controller
 @RequestMapping("/act/member")
@@ -36,7 +33,7 @@ public class ActFrontController {
     private DefaultImageService defaultImageService;
 
     @Autowired
-    private ParticipateService participateSvc;
+    private PartService partSvc;
     
     @Autowired
     private AuthService authService;
@@ -44,17 +41,15 @@ public class ActFrontController {
     //新增活動
     @GetMapping("/add")
     public String addActPage(HttpServletRequest request) {
-        // 取得session並檢查登入狀態，未來可配合Filter或AOP統一處理
         HttpSession session = request.getSession();
-        Object member = session.getAttribute("member");
-        // TODO: 若未登入可導向登入頁或顯示提示
-        // if (member == null) { return "redirect:/members/login"; }
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
         
-        // 測試用：印出session中的會員ID
-        System.out.println("=== Test: Current Session Member ID ===");
+        // 顯示當前操作者會員ID
+        System.out.println("=== Current User ===");
         System.out.println("URI: /act/member/add");
-        System.out.println("Member: " + (member != null ? member : "Not logged in"));
-        System.out.println("=====================================");
+        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
+        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
+        System.out.println("===================");
         
         return "front-end/groupactivity/addAct_ajax";
     }
@@ -71,6 +66,7 @@ public class ActFrontController {
             return "redirect:/act/member/search";
         }
         
+        // TODO: 登入功能完成後，需要統一處理權限驗證
         // 安全驗證：檢查會員是否有權限編輯此活動
         if (!authService.canModifyActivity(session, actVo.getHostId())) {
             // 無權限：重定向到活動詳情頁面或登入頁
@@ -85,13 +81,11 @@ public class ActFrontController {
             }
         }
         
-        // 測試用：印出安全驗證結果
-        System.out.println("=== Security Check: Edit Activity ===");
+        // 顯示當前操作者會員ID
+        System.out.println("=== Current User ===");
         System.out.println("URI: /act/member/edit/" + id);
-        System.out.println("Activity HostId: " + actVo.getHostId());
-        System.out.println("Current Member: " + authService.getCurrentMember(session).getMemId());
-        System.out.println("Permission Granted: True");
-        System.out.println("=====================================");
+        System.out.println("Member ID: " + authService.getCurrentMember(session).getMemId());
+        System.out.println("===================");
         
         model.addAttribute("actVo", actVo);
         return "front-end/groupactivity/editAct_ajax";
@@ -100,13 +94,15 @@ public class ActFrontController {
     //搜尋所有揪團活動
     @GetMapping("/search")
     public String searchActPage(HttpServletRequest request) {
-        // 測試用：印出session中的會員ID
         HttpSession session = request.getSession();
-        Object member = session.getAttribute("member");
-        System.out.println("=== Test: Current Session Member ID ===");
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+        
+        // 顯示當前操作者會員ID
+        System.out.println("=== Current User ===");
         System.out.println("URI: /act/member/search");
-        System.out.println("Member: " + (member != null ? member : "Not logged in"));
-        System.out.println("=====================================");
+        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
+        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
+        System.out.println("===================");
         
         return "front-end/groupactivity/searchAct";
     }
@@ -120,32 +116,18 @@ public class ActFrontController {
         boolean isParticipant = false;
         boolean isHost = false;
 
-        Object memberObj = request.getSession().getAttribute("member");
+        HttpSession session = request.getSession();
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
 
-        if (memberObj != null) {
-            Integer memId = null;
+        if (memberInfo.isLoggedIn()) {
+            Integer memId = memberInfo.getMemId();
             
-            // 處理開發模式的假用戶 (字串格式) 或正式的 MembersVO 物件
-            if (memberObj instanceof String) {
-                // 開發模式：假用戶格式為 "DEV_USER_30"
-                String devUser = (String) memberObj;
-                if (devUser.startsWith("DEV_USER_")) {
-                    memId = Integer.parseInt(devUser.substring(9)); // 提取數字部分
-                }
-            } else if (memberObj instanceof MembersVO) {
-                // 正式模式：使用 MembersVO 物件
-                MembersVO member = (MembersVO) memberObj;
-                memId = member.getMemId();
-            }
-            
-            if (memId != null) {
-                // 檢查是否為團主
-                if (actVo.getHostId().equals(memId)) {
-                    isHost = true;
-                } else {
-                    // 如果不是團主，再檢查是否為團員
-                    isParticipant = participateSvc.getParticipants(id).contains(memId);
-                }
+            // 檢查是否為團主
+            if (actVo.getHostId().equals(memId)) {
+                isHost = true;
+            } else {
+                // 如果不是團主，再檢查是否為團員
+                isParticipant = partSvc.getParticipants(id).contains(memId);
             }
         }
         
@@ -159,19 +141,13 @@ public class ActFrontController {
         model.addAttribute("formattedActStart", actVo.getActStart().format(formatter));
         model.addAttribute("formattedActEnd", actVo.getActEnd().format(formatter));
 
-        // 測試用：印出session中的會員ID及身份
-        System.out.println("=== Test: View Activity Details ===");
+        // 顯示當前操作者會員ID
+        System.out.println("=== Current User ===");
         System.out.println("URI: /act/member/view/" + id);
-        if (memberObj instanceof String) {
-            System.out.println("Member: " + memberObj + " (dev mode)");
-        } else if (memberObj instanceof MembersVO) {
-            System.out.println("Member: " + ((MembersVO)memberObj).getMemId());
-        } else {
-            System.out.println("Member: Not logged in");
-        }
-        System.out.println("Is Host: " + isHost);
-        System.out.println("Is Participant: " + isParticipant);
-        System.out.println("=====================================");
+        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
+        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
+        System.out.println("Is Host: " + isHost + ", Is Participant: " + isParticipant);
+        System.out.println("===================");
 
         return "front-end/groupactivity/listOneAct";
     }
@@ -181,6 +157,7 @@ public class ActFrontController {
     public String listMyAct(@PathVariable Integer hostId, Model model, HttpServletRequest request) {
         HttpSession session = request.getSession();
         
+        // TODO: 登入功能完成後，需要統一處理權限驗證
         // 安全驗證：檢查會員是否有權限查看指定的活動列表
         Integer authorizedHostId = authService.getAuthorizedHostId(session, hostId);
         
@@ -197,12 +174,11 @@ public class ActFrontController {
             }
         }
         
-        // 測試用：印出安全驗證結果
-        System.out.println("=== Security Check: MyList Access ===");
+        // 顯示當前操作者會員ID
+        System.out.println("=== Current User ===");
         System.out.println("URI: /act/member/listMy/" + hostId);
-        System.out.println("Requested HostId: " + hostId);
-        System.out.println("Authorized HostId: " + authorizedHostId);
-        System.out.println("=====================================");
+        System.out.println("Member ID: " + authorizedHostId);
+        System.out.println("===================");
         
         model.addAttribute("actList", actSvc.getByHost(authorizedHostId));
         model.addAttribute("hostId", authorizedHostId);
@@ -214,6 +190,7 @@ public class ActFrontController {
     public String listMyJoinAct(@PathVariable Integer memId, Model model, HttpServletRequest request) {
         HttpSession session = request.getSession();
         
+        // TODO: 登入功能完成後，需要統一處理權限驗證
         // 安全驗證：檢查會員是否有權限查看指定的參加活動列表
         Integer authorizedMemId = authService.getAuthorizedMemId(session, memId);
         
@@ -230,12 +207,11 @@ public class ActFrontController {
             }
         }
         
-        // 測試用：印出安全驗證結果
-        System.out.println("=== Security Check: MyJoin Access ===");
+        // 顯示當前操作者會員ID
+        System.out.println("=== Current User ===");
         System.out.println("URI: /act/member/listMyJoin/" + memId);
-        System.out.println("Requested MemId: " + memId);
-        System.out.println("Authorized MemId: " + authorizedMemId);
-        System.out.println("=====================================");
+        System.out.println("Member ID: " + authorizedMemId);
+        System.out.println("===================");
         
         model.addAttribute("memId", authorizedMemId);
         return "front-end/groupactivity/listMyJoinAct";

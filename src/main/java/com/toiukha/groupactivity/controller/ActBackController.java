@@ -1,9 +1,6 @@
 package com.toiukha.groupactivity.controller;
 
-import com.toiukha.groupactivity.model.ActDTO;
-import com.toiukha.groupactivity.model.ActService;
-import com.toiukha.groupactivity.model.ActVO;
-import com.toiukha.groupactivity.model.DefaultImageService;
+import com.toiukha.groupactivity.model.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,10 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /*
- * 本頁面為學習參考用，勿再更新。
- * [Deprecated] 本檔案內的圖片顯示API（如 /act/admin/image/{actId}）已被統一的 /api/act/image/{actId} 取代。
- * 為相容舊版頁面暫時保留，後續可安全移除。
- * 請前端一律改用 /api/act/image/{actId}。
+ * 後端轉送用controller
  */
 
 // 後台管理員功能
@@ -64,14 +58,7 @@ public class ActBackController {
 
     @ModelAttribute("recruitStatusMap")
     public Map<Byte, String> getRecruitStatusMap() {
-        Map<Byte, String> statusMap = new HashMap<>();
-        statusMap.put((byte)0, "招募中");
-        statusMap.put((byte)1, "成團");
-        statusMap.put((byte)2, "未成團");
-        statusMap.put((byte)3, "團主取消");
-        statusMap.put((byte)4, "系統凍結");
-        statusMap.put((byte)5, "活動結束");
-        return statusMap;
+        return ActStatus.getStatusMap();
     }
 
     @PostMapping("/update")
@@ -178,7 +165,7 @@ public class ActBackController {
             testAct.setActStart(LocalDateTime.now().plusDays(1));
             testAct.setActEnd(LocalDateTime.now().plusDays(2));
             testAct.setMaxCap(10);
-            testAct.setRecruitStatus((byte) 0);
+            testAct.setRecruitStatusEnum(ActStatus.OPEN);
             testAct.setIsPublic((byte) 1);
             testAct.setAllowCancel((byte) 1);
 
