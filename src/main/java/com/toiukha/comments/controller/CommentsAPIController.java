@@ -39,12 +39,6 @@ public class CommentsAPIController {
 	
 	//========== 前台後台通用 ==========//
 	
-	//取得目前使用者
-	@PostMapping("/getCurrentUser")
-	public MembersVO getCurrentUser(HttpServletRequest req) {
-		return (MembersVO)req.getSession().getAttribute("member");
-	}
-	
 	//查文章的留言
 	@PostMapping("/getComments")
 	public List<CommentsDTO> getComments(

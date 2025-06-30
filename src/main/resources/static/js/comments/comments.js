@@ -23,22 +23,8 @@ function initComments(shadowRoot) {
 	
     // --- 獲取當前登入使用者 ID ---
     // 建議作法：從主文件 meta 標籤讀取，由後端（Thymeleaf）設定。
-	async function fetchsuer(){
-		try{
-				const response = await fetch(`/commentsAPI/getCurrentUser`);
-				if(!response.ok){
-					throw new Error(`無法獲取目前使用者資料: ${response.status} ${response.statusText}`);
-				}
-				const user = await response.json();
-				const id = parseInt(user.memId, 10);
-				return id;
-			}catch(error){
-				console.error('載入使用者異常:', error);
-				showStatusMessage('目前無登入，部分功能可能受限。', 'error');
-			}
-	}
 	
-    const CURRENT_USER_ID = fetchsuer();
+    const CURRENT_USER_ID = document.getElementById("currentUserNav").value;
 	console.log(CURRENT_USER_ID);
 
     // 新增變數來儲存文章類別和擁有者 ID
@@ -307,7 +293,7 @@ function initComments(shadowRoot) {
         commentItem.appendChild(commentFooter);
 
         // 將完成的留言項目插入到列表的最前面
-        // commentsList.prepend(commentItem); // 這行會被下面的排序邏輯取代
+        commentsList.prepend(commentItem); // 這行會被下面的排序邏輯取代
 		
 		//初始化按讚樣式
 		fetch('/likeAPI/getCommLike', {
