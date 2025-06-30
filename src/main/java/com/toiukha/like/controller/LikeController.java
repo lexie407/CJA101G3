@@ -32,9 +32,9 @@ public class LikeController {
 
 	    try {
 	        if (likeVO.getParDocId() == null) {
-	            existingLike = likeService.getOneLike(likeVO.getDocId());
+	            existingLike = likeService.getOneLike(likeVO.getDocId(), likeVO.getMemId());
 	        } else {
-	            existingLike = likeService.getOneLike(likeVO.getParDocId(), likeVO.getDocId());
+	            existingLike = likeService.getOneLike(likeVO.getParDocId(), likeVO.getDocId(), likeVO.getMemId());
 	        }
 
 	        // 檢查 existingLike 是否為 null，避免 NullPointerException
@@ -93,6 +93,33 @@ public class LikeController {
 			@RequestParam("artId") Integer parDocId,
 			@RequestParam("commId") Integer docId) {
 		return likeService.getLikeNum(parDocId, docId);
+	}
+	
+	//取得留言讚資料
+	@PostMapping("/getCommLike")
+	public Boolean getCommLike(
+			@RequestParam("artId") Integer parDocId,
+			@RequestParam("commId") Integer docId,
+			@RequestParam("memId") Integer memId) {
+		LikeVO likeVO = likeService.getOneLike(parDocId, docId, memId);
+		if(likeVO != null && likeVO.getLikeSta() == 1) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	//取得文章讚資料
+	@PostMapping("/getArticleLike")
+	public Boolean getArticleLike(
+			@RequestParam("artId") Integer docId,
+			@RequestParam("memId") Integer memId) {
+		LikeVO likeVO = likeService.getOneLike(docId, memId);
+		if(likeVO != null && likeVO.getLikeSta() == 1) {
+			return true;
+		}else {
+			return false;
+		}
 	}
 	
 	Timestamp getNowTime() {

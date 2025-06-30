@@ -23,8 +23,23 @@ function initComments(shadowRoot) {
 	
     // --- 獲取當前登入使用者 ID ---
     // 建議作法：從主文件 meta 標籤讀取，由後端（Thymeleaf）設定。
-    const userIdMeta = document.querySelector('meta[name="user-id"]');
-    const CURRENT_USER_ID = userIdMeta ? parseInt(userIdMeta.content, 10) : 3;
+	async function fetchsuer(){
+		try{
+				const response = await fetch(`/commentsAPI/getCurrentUser`);
+				if(!response.ok){
+					throw new Error(`無法獲取目前使用者資料: ${response.status} ${response.statusText}`);
+				}
+				const user = await response.json();
+				const id = parseInt(user.memId, 10);
+				return id;
+			}catch(error){
+				console.error('載入使用者異常:', error);
+				showStatusMessage('目前無登入，部分功能可能受限。', 'error');
+			}
+	}
+	
+    const CURRENT_USER_ID = fetchsuer();
+	console.log(CURRENT_USER_ID);
 
     // 新增變數來儲存文章類別和擁有者 ID
     let ARTICLE_CATEGORY = null;
@@ -39,8 +54,7 @@ function initComments(shadowRoot) {
             }
             const article = await response.json();
             ARTICLE_CATEGORY = article.artCat; // 假設 artCat 是文章類別的數字代碼
-//            ARTICLE_OWNER_ID = article.artHol; // 假設 artHol 是文章擁有者的 ID
-            ARTICLE_OWNER_ID = 3; // 假設 artHol 是文章擁有者的 ID
+            ARTICLE_OWNER_ID = article.artHol; // 假設 artHol 是文章擁有者的 ID
         } catch (error) {
             console.error('載入文章詳情失敗:', error);
             showStatusMessage('載入文章詳情失敗，部分功能可能受限。', 'error');
@@ -112,7 +126,7 @@ function initComments(shadowRoot) {
 
         // 顯示留言者名稱
         const authorStrong = document.createElement('strong');
-        authorStrong.textContent = comment.author || '匿名使用者';
+        authorStrong.textContent = comment.holName || '匿名使用者';
         commentItem.appendChild(authorStrong);
 
         // 顯示留言時間
@@ -137,6 +151,7 @@ function initComments(shadowRoot) {
             img.src = `/commentsReport/read.do?commId=${comment.commId}&t=${new Date().getTime()}`;
             img.alt = '留言圖片';
             img.classList.add('comment-main-image'); // 添加 class 以便在編輯時找到它
+			img.style.maxWidth = "250px";
             commentItem.appendChild(img);
         }
 
@@ -150,9 +165,27 @@ function initComments(shadowRoot) {
 
         // Manually toggle dropdown visibility
         actionsButton.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent document click from closing immediately
-            closeAllDropdowns(); // 關閉所有其他下拉選單
-            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+			e.stopPropagation(); // 防止文件點擊事件
+
+			closeAllDropdowns(); // 關閉其他選單
+			dropdownMenu.style.display = 'block';
+
+			// 取得選單與 Shadow DOM 的相對位置
+			const buttonRect = actionsButton.getBoundingClientRect();
+			const menuRect = dropdownMenu.getBoundingClientRect();
+			const shadowRect = shadowRoot.host.getBoundingClientRect(); // Shadow Host 的位置
+
+			// 計算選單是否會超出右邊界
+			const overflowRight = buttonRect.left + menuRect.width > shadowRect.right;
+
+			// 如果會超出右邊界，靠左對齊；否則靠右
+			if (overflowRight) {
+			    dropdownMenu.style.left = 'auto';
+			    dropdownMenu.style.right = '0px';
+			} else {
+			    dropdownMenu.style.left = '0px';
+			    dropdownMenu.style.right = 'auto';
+			}
         });
 
         const dropdownMenu = document.createElement('ul');
@@ -235,13 +268,23 @@ function initComments(shadowRoot) {
             });
             actionsDiv.appendChild(bestAnswerButton); // 將按鈕添加到 actionsDiv
         } else if (ARTICLE_CATEGORY === 3 && comment.commSta === 3) { // 已解決 & 是最佳解
-            const bestAnswerIcon = document.createElement('i');
-            bestAnswerIcon.className = 'material-icons best-answer-icon';
-            bestAnswerIcon.textContent = 'check_circle'; // 最佳解的 Material Icon
-            bestAnswerIcon.style.color = 'gold'; // 顏色
-            bestAnswerIcon.style.fontSize = '24px';
-            bestAnswerIcon.style.marginLeft = '10px';
-            actionsDiv.appendChild(bestAnswerIcon);
+			const bestAnswerBlock = document.createElement('div');
+			bestAnswerBlock.style.display = 'flex';
+			bestAnswerBlock.style.alignItems = 'center';
+			bestAnswerBlock.style.marginBottom = "10px";
+			bestAnswerBlock.className = 'best-answer-tag';
+//            const bestAnswerIcon = document.createElement('i');
+//            bestAnswerIcon.className = 'material-icons best-answer-icon';
+//            bestAnswerIcon.textContent = 'check_circle'; // 最佳解的 Material Icon
+//            bestAnswerIcon.style.color = 'gold'; // 顏色
+//            bestAnswerIcon.style.fontSize = '24px';
+//            bestAnswerBlock.appendChild(bestAnswerIcon);
+			const bestAnswerword = document.createElement('span');
+			bestAnswerword.innerHTML = "最佳解";
+			bestAnswerword.style.fontWeight = 'bold';     // 設定字體加粗
+			bestAnswerword.style.textDecoration = 'underline'; // 設定文字加底線
+			bestAnswerBlock.appendChild(bestAnswerword);
+			commentItem.prepend(bestAnswerBlock);
         }
 
 
@@ -265,6 +308,26 @@ function initComments(shadowRoot) {
 
         // 將完成的留言項目插入到列表的最前面
         // commentsList.prepend(commentItem); // 這行會被下面的排序邏輯取代
+		
+		//初始化按讚樣式
+		fetch('/likeAPI/getCommLike', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: new URLSearchParams({
+				artId: artId,
+				commId: comment.commId,
+				memId: CURRENT_USER_ID
+			})
+		})
+		.then(res => res.text()) // 注意：API 回傳的是純文字 true/false，不是 JSON
+		.then(text => {
+			const liked = text.trim() === 'true';
+			if (liked) {
+				likeButton.classList.add('liked');
+			}
+		})
+		.catch(err => console.error('查詢按讚狀態失敗:', err));
+
 
         return commentItem;
     }
@@ -375,6 +438,11 @@ function initComments(shadowRoot) {
             if (response.ok) {
                 const updatedLikeCount = await response.json();
                 likeCountSpan.textContent = updatedLikeCount; // 更新按讚數
+				if (updatedLikeCount > 0) {
+					likeButton.classList.add('liked');
+				} else {
+					likeButton.classList.remove('liked');
+				}
             } else {
                 const errorText = await response.text();
                 showStatusMessage(`按讚失敗: ${errorText}`, 'error');

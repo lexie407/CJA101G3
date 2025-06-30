@@ -1,6 +1,7 @@
 package com.toiukha.comments.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +15,15 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toiukha.comments.model.CommentsDTO;
 import com.toiukha.comments.model.CommentsService;
 import com.toiukha.comments.model.CommentsVO;
 import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticleServiceImpl;
+import com.toiukha.members.model.MembersService;
+import com.toiukha.members.model.MembersVO;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -29,13 +34,26 @@ public class CommentsAPIController {
 	CommentsService commentsService;
 	@Autowired
 	ArticleServiceImpl articleServiceImpl;
+	@Autowired
+	MembersService membersService;
 	
-	//========== 前台後台通用 ==========// 
+	//========== 前台後台通用 ==========//
+	
+	//取得目前使用者
+	@PostMapping("/getCurrentUser")
+	public MembersVO getCurrentUser(HttpServletRequest req) {
+		return (MembersVO)req.getSession().getAttribute("member");
+	}
+	
 	//查文章的留言
 	@PostMapping("/getComments")
-	public List<CommentsVO> getComments(
+	public List<CommentsDTO> getComments(
 			@RequestParam("commArt")Integer commArt) {
-		return commentsService.getArtComm(commArt);
+		List<CommentsDTO> list = new ArrayList<CommentsDTO>();
+		for(CommentsVO cVO : commentsService.getArtComm(commArt)) {
+			list.add(CommentsDTO.from(cVO, membersService.getById(cVO.getCommHol()).getMemName()));
+		}
+		return list;
 	}
 	
 	//查留言

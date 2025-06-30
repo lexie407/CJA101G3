@@ -22,12 +22,12 @@ public class LikeService {
 	}
 	
 	//查單一的讚
-	public LikeVO getOneLike(Integer parDocId, Integer docId) {
-		return likeRepository.searchOne(parDocId, docId);
+	public LikeVO getOneLike(Integer parDocId, Integer docId, Integer memId) {
+		return likeRepository.searchOne(parDocId, docId, memId);
 	}
 	
-	public LikeVO getOneLike(Integer docId) {
-		return likeRepository.searchOne(docId);
+	public LikeVO getOneLike(Integer docId, Integer memId) {
+		return likeRepository.searchOne(docId, memId);
 	}
 	
 	//查讚數
