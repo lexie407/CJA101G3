@@ -1,0 +1,150 @@
+<!-- templates/back-end/manageFunction/search.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>功能查詢結果 | 管理後台 | 島遊Kha</title>
+<th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+<style>
+body {
+	font-size: 1.1rem;
+}
+
+.secondary-nav {
+	background-color: var(--md-sys-color-surface);
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+	padding: 0 20px;
+	position: sticky;
+	top: 0;
+	z-index: 999;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	height: 60px;
+}
+
+.secondary-nav ul {
+	display: flex;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.secondary-nav li {
+	margin-right: 1.5rem;
+}
+
+.secondary-nav a {
+	text-decoration: none;
+	color: var(--md-sys-color-on-surface-variant);
+	padding: 0 5px;
+	display: flex;
+	align-items: center;
+	height: 100%;
+}
+
+.secondary-nav a.active {
+	color: var(--md-sys-color-primary);
+	border-bottom: 3px solid var(--md-sys-color-primary);
+}
+
+.md-card {
+	background: var(--md-sys-color-background) !important;
+	box-shadow: none !important;
+	border-radius: 8px;
+	padding: 1rem;
+	margin: 2rem auto;
+	max-width: 700px;
+}
+
+.md-headline {
+	font-size: 2rem;
+	margin-bottom: 1rem;
+	color: var(--md-sys-color-primary);
+	text-align: center;
+}
+
+.table-container {
+	overflow-x: auto;
+	margin-top: 1rem;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th, td {
+	padding: .75rem 1rem;
+	border: 1px solid var(--md-sys-color-outline-variant);
+	text-align: left;
+}
+
+thead th {
+	background: var(--md-sys-color-surface-container-high);
+	color: var(--md-sys-color-on-surface-variant);
+}
+
+tbody tr:nth-child(even) {
+	background: var(--md-sys-color-surface-container-low);
+}
+
+.edit-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: .4rem .8rem;
+	border-radius: 4px;
+	background: var(--md-sys-color-secondary-container);
+	color: var(--md-sys-color-on-secondary-container);
+	text-decoration: none;
+}
+
+.edit-btn:hover {
+	background: var(--md-sys-color-secondary);
+}
+</style>
+</head>
+<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/manageFunction/selectPage}">選擇功能</a></li>
+					<li><a th:href="@{/manageFunction/listAll}">功能列表</a></li>
+					<li><a th:href="@{/manageFunction/add}">新增功能</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<section class="md-card">
+					<h2 class="md-headline">查詢結果</h2>
+					<div class="table-container">
+						<table>
+							<thead>
+								<tr>
+									<th>功能編號</th>
+									<th>功能名稱</th>
+									<th>操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="f : ${manageFunctions}">
+									<td th:text="${f.manageFuncId}"></td>
+									<td th:text="${f.manageFuncName}"></td>
+									<td><a
+										th:href="@{/manageFunction/edit(manageFuncId=${f.manageFuncId})}"
+										class="edit-btn">編輯</a></td>
+								</tr>
+								<tr th:if="${#lists.isEmpty(manageFunctions)}">
+									<td colspan="3" style="text-align: center;">查無任何功能。</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+			</main>
+		</div>
+	</div>
+</body>
+</html>

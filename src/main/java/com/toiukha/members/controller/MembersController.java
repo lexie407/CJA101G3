@@ -151,9 +151,9 @@ public class MembersController {
 		MembersVO member = membersService.getByEmail(email);
 		if (member != null && member.getMemStatus() == 0) {
 			new Thread(() -> {
-		        emailService.sendVerificationEmail(email, member.getMemId());
-		    }).start();
-		    redirectAttr.addFlashAttribute("msg", "驗證信已重新發送，請查收！");
+				emailService.sendVerificationEmail(email, member.getMemId());
+			}).start();
+			redirectAttr.addFlashAttribute("msg", "驗證信已重新發送，請查收！");
 		} else {
 			redirectAttr.addFlashAttribute("msg", "此信箱尚未註冊或已啟用。");
 		}
@@ -172,7 +172,6 @@ public class MembersController {
 			// 若 session 沒 member，可跳到登入（或拋例外）
 			return "redirect:/members/login";
 		}
-
 
 		// 2. 加入模型供 Thymeleaf 使用
 		model.addAttribute("membersVO", member);
@@ -259,117 +258,116 @@ public class MembersController {
 		return "back-end/members/selectPage";
 	}
 
-	
-	
-	
 	@GetMapping("/searchResults")
-	public String showSearchResults(
-	        @RequestParam(value = "memStatus", required = false) Byte memStatus,
-	        @RequestParam(value = "memAcc",    required = false) String memAcc,
-	        @RequestParam(value = "memId",     required = false) Integer memId,
-	        @RequestParam(value = "memName",   required = false) String memName,
-	        @RequestParam(value = "page",      defaultValue = "0")    int page,
-	        @RequestParam(value = "size",      defaultValue = "5")    int size,
-	        Model model) {
+	public String showSearchResults(@RequestParam(value = "memStatus", required = false) Byte memStatus,
+			@RequestParam(value = "memAcc", required = false) String memAcc,
+			@RequestParam(value = "memId", required = false) Integer memId,
+			@RequestParam(value = "memName", required = false) String memName,
+			@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "5") int size, Model model) {
 
-	    boolean noCriteria =
-	        (memStatus == null)
-	     && (memAcc    == null    || memAcc.isBlank())
-	     && (memId     == null)
-	     && (memName   == null    || memName.isBlank());
-	    if (noCriteria) {
-	        return "redirect:/members/listAll";
-	    }
+		boolean noCriteria = (memStatus == null) && (memAcc == null || memAcc.isBlank()) && (memId == null)
+				&& (memName == null || memName.isBlank());
+		if (noCriteria) {
+			return "redirect:/members/listAll";
+		}
 
-	    // 使用 page 和 size 動態分頁
-	    Pageable pageable = PageRequest.of(page, size, Sort.by("memId").ascending());
-	    Page<MembersVO> pageResult =
-	        membersService.searchByCriteria(memStatus, memAcc, memId, memName, pageable);
+		// 使用 page 和 size 動態分頁
+		Pageable pageable = PageRequest.of(page, size, Sort.by("memId").ascending());
+		Page<MembersVO> pageResult = membersService.searchByCriteria(memStatus, memAcc, memId, memName, pageable);
 
-	    model.addAttribute("page",        pageResult);
-	    model.addAttribute("membersList", pageResult.getContent());
+		model.addAttribute("page", pageResult);
+		model.addAttribute("membersList", pageResult.getContent());
 
-	    model.addAttribute("memStatus",   memStatus);
-	    model.addAttribute("memAcc",      memAcc);
-	    model.addAttribute("memId",       memId);
-	    model.addAttribute("memName",     memName);
-	    model.addAttribute("currentPage", "accounts");
+		model.addAttribute("memStatus", memStatus);
+		model.addAttribute("memAcc", memAcc);
+		model.addAttribute("memId", memId);
+		model.addAttribute("memName", memName);
+		model.addAttribute("currentPage", "accounts");
 
-	    return "back-end/members/searchResults";
+		return "back-end/members/searchResults";
 	}
-	
+
 	@GetMapping("/listAll")
-    public String listAll(Model model) {
-        // 一次拿所有會員，交給前端 DataTables 處理
-        List<MembersVO> all = membersService.findAllMembers();
-        model.addAttribute("membersList", all);
-        model.addAttribute("currentPage", "accounts");
-        return "back-end/members/listAll";
-    }
-	
-	@GetMapping("/editMembers")
-    public String showEditForm(@RequestParam("memId") Integer memId, Model model) {
-        MembersVO member = membersService.getOneMember(memId);
-        model.addAttribute("membersVO", member);
-        model.addAttribute("currentPage", "accounts");
-        return "back-end/members/editMembers";
-    }
-	
-	
-	@PostMapping("/editMembers")
-	public String updateMember(
-	    @Valid @ModelAttribute("membersVO") MembersVO membersVO,
-	    BindingResult br,
-	    Model model,
-	    @RequestParam(value = "memAvatarFile", required = false) MultipartFile avatar,
-	    @RequestParam(value = "memAvatarFrameFile", required = false) MultipartFile frame
-	) throws IOException {
-
-	    MembersVO original = membersService.getById(membersVO.getMemId());
-
-	    /*************************** 1. 驗證錯誤處理 ***************************/
-	    if (br.hasErrors()) {
-	        // 補回畫面沒綁定的欄位，避免空值造成畫面壞掉或資料被清空
-	        membersVO.setMemAvatar(original.getMemAvatar());
-	        membersVO.setMemAvatarFrame(original.getMemAvatarFrame());
-	        membersVO.setMemRegTime(original.getMemRegTime());
-	        membersVO.setMemUpdatedAt(original.getMemUpdatedAt());
-
-	        if (membersVO.getMemStorePoint() == null)
-	            membersVO.setMemStorePoint(original.getMemStorePoint());
-	        if (membersVO.getMemLogErrTime() == null)
-	            membersVO.setMemLogErrTime(original.getMemLogErrTime());
-
-	        List<String> errorMsgs = new ArrayList<>();
-	        for (FieldError error : br.getFieldErrors()) {
-	            errorMsgs.add(error.getDefaultMessage());
-	        }
-	        model.addAttribute("errorMsgs", errorMsgs);
-	        return "back-end/members/editMembers";
-	    }
-
-	    /*************************** 2. 處理上傳圖片（補原圖） ***************************/
-	    if (avatar != null && !avatar.isEmpty()) {
-	        membersVO.setMemAvatar(avatar.getBytes());
-	    } else {
-	        membersVO.setMemAvatar(original.getMemAvatar());
-	    }
-
-	    if (frame != null && !frame.isEmpty()) {
-	        membersVO.setMemAvatarFrame(frame.getBytes());
-	    } else {
-	        membersVO.setMemAvatarFrame(original.getMemAvatarFrame());
-	    }
-
-	    /*************************** 3. 設定更新時間 ***************************/
-	    membersVO.setMemUpdatedAt(new Timestamp(System.currentTimeMillis()));
-
-	    /*************************** 4. 執行更新並導向查詢結果頁 ***************************/
-	    membersService.editMember(membersVO);
-	    return "redirect:/members/searchResults?memId=" + membersVO.getMemId();
+	public String listAll(Model model) {
+		// 一次拿所有會員，交給前端 DataTables 處理
+		List<MembersVO> all = membersService.findAllMembers();
+		model.addAttribute("membersList", all);
+		model.addAttribute("currentPage", "accounts");
+		return "back-end/members/listAll";
 	}
-	
-	
+
+	@GetMapping("/editMembers")
+	public String showEditForm(@RequestParam(value = "memId", required = false) Integer memId, Model model,
+			RedirectAttributes ra) {
+
+		// 1. 防呆：没有 memId
+		if (memId == null) {
+			ra.addFlashAttribute("errorMsg", "必須指定會員 ID");
+			return "redirect:/members/listAll"; // 
+		}
+
+		// 2. 撈資料
+		MembersVO member = membersService.getOneMember(memId);
+		if (member == null) {
+			ra.addFlashAttribute("errorMsg", "找不到指定的會員");
+			return "redirect:/members/listAll";
+		}
+
+		// 3. 成功：把 VO 塞入 Model
+		model.addAttribute("membersVO", member);
+		model.addAttribute("currentPage", "accounts");
+		return "back-end/members/editMembers";
+	}
+
+	@PostMapping("/editMembers")
+	public String updateMember(@Valid @ModelAttribute("membersVO") MembersVO membersVO, BindingResult br, Model model,
+			@RequestParam(value = "memAvatarFile", required = false) MultipartFile avatar,
+			@RequestParam(value = "memAvatarFrameFile", required = false) MultipartFile frame) throws IOException {
+
+		MembersVO original = membersService.getById(membersVO.getMemId());
+
+		/*************************** 1. 驗證錯誤處理 ***************************/
+		if (br.hasErrors()) {
+			// 補回畫面沒綁定的欄位，避免空值造成畫面壞掉或資料被清空
+			membersVO.setMemAvatar(original.getMemAvatar());
+			membersVO.setMemAvatarFrame(original.getMemAvatarFrame());
+			membersVO.setMemRegTime(original.getMemRegTime());
+			membersVO.setMemUpdatedAt(original.getMemUpdatedAt());
+
+			if (membersVO.getMemStorePoint() == null)
+				membersVO.setMemStorePoint(original.getMemStorePoint());
+			if (membersVO.getMemLogErrTime() == null)
+				membersVO.setMemLogErrTime(original.getMemLogErrTime());
+
+			List<String> errorMsgs = new ArrayList<>();
+			for (FieldError error : br.getFieldErrors()) {
+				errorMsgs.add(error.getDefaultMessage());
+			}
+			model.addAttribute("errorMsgs", errorMsgs);
+			return "back-end/members/editMembers";
+		}
+
+		/*************************** 2. 處理上傳圖片（補原圖） ***************************/
+		if (avatar != null && !avatar.isEmpty()) {
+			membersVO.setMemAvatar(avatar.getBytes());
+		} else {
+			membersVO.setMemAvatar(original.getMemAvatar());
+		}
+
+		if (frame != null && !frame.isEmpty()) {
+			membersVO.setMemAvatarFrame(frame.getBytes());
+		} else {
+			membersVO.setMemAvatarFrame(original.getMemAvatarFrame());
+		}
+
+		/*************************** 3. 設定更新時間 ***************************/
+		membersVO.setMemUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+		/*************************** 4. 執行更新並導向查詢結果頁 ***************************/
+		membersService.editMember(membersVO);
+		return "redirect:/members/searchResults?memId=" + membersVO.getMemId();
+	}
 
 	// 去除 BindingResult 中某個欄位的 FieldError 紀錄
 	private BindingResult removeFieldError(MembersVO membersVO, BindingResult result, String removedFieldname) {

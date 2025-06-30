@@ -2,12 +2,18 @@ package com.toiukha.administrant.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.toiukha.administrantauth.model.AdministrantAuthVO;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -46,6 +52,13 @@ public class AdministrantVO implements Serializable {
 
 	@Column(name = "ADMINUPDATEDAT")
 	private Timestamp adminUpdatedAt;
+	
+	@OneToMany(
+	        mappedBy = "administrant",
+	        cascade = CascadeType.ALL,
+	        orphanRemoval = true
+	    )
+	    private Set<AdministrantAuthVO> auths = new HashSet<>();
 
 	public AdministrantVO() {
 		super();
@@ -107,6 +120,15 @@ public class AdministrantVO implements Serializable {
 		this.adminUpdatedAt = adminUpdatedAt;
 	}
 
+	public Set<AdministrantAuthVO> getAuths() {
+		return auths;
+	}
+
+	public void setAuths(Set<AdministrantAuthVO> auths) {
+		this.auths = auths;
+	}
+
+	
 	
 	
 	
