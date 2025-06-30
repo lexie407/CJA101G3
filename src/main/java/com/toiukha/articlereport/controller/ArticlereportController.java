@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.toiukha.articlereport.model.ArticlereportService;
 import com.toiukha.comments.model.CommentsVO;
 import com.toiukha.articlereport.model.ArticlereportVO;
+import com.toiukha.forum.article.dto.ArticleDTO;
 import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticleServiceImpl;
 import com.toiukha.notification.model.NotificationService;
@@ -64,28 +65,28 @@ public class ArticlereportController {
 		public String allReportList(ModelMap model) {
 			List<ArticlereportVO> list = articlereportService.getAll();
 			model.addAttribute("list", list);
-			return "back-end/articlereport/allCommentsReportList";
+			return "back-end/articlereport/allArticleReportList";
 		}
 		
 		//編輯案件頁面
-		@PostMapping("/editCommentsReportList")
-		public String editCommentsReportList(
-				@RequestParam("commRepId") Integer commRepId,
+		@PostMapping("/editArticleReportList")
+		public String editArticleReportList(
+				@RequestParam("artRepId") Integer artRepId,
 				ModelMap model) {
-			ArticlereportVO ArticlereportVO = articlereportService.getOne(commRepId);
-			Article article = articleServiceImpl.getArticleById(ArticlereportVO.getArtId());
+			ArticlereportVO articlereportVO = articlereportService.getOne(artRepId);
+			Article article = articleServiceImpl.getArticleById(articlereportVO.getArtId());
 			
-			model.addAttribute("ArticlereportVO", ArticlereportVO);
+			model.addAttribute("articlereportVO", articlereportVO);
 			model.addAttribute("article", article);
 			model.addAttribute("currentPage", "account");
-			return "back-end/articlereport/editCommentsReport";
+			return "back-end/articlereport/editArticleReport";
 		}
 		
 		//案件成立處理
 		@PostMapping("/established")
 		public String established(
 				@RequestParam("artId") Integer artId,
-				@RequestParam("remarks") String remarks, 
+				@RequestParam("remark") String remark, 
 				@RequestParam("artRepId") Integer artRepId,
 				RedirectAttributes redirectAttributes) {
 			//修改文章狀態
@@ -94,12 +95,11 @@ public class ArticlereportController {
 			articleServiceImpl.update(article);
 			
 			//修改檢舉狀態
-			ArticlereportVO ArticlereportVO = new ArticlereportVO();
-			ArticlereportVO.setArtRepId(artRepId);
-			ArticlereportVO.setRemark(remarks);
-			ArticlereportVO.setRepSta((byte)1);
-			ArticlereportVO.setRevTime(getNowTime());
-			articlereportService.changeSta(ArticlereportVO);
+			ArticlereportVO existingArticlereportVO = articlereportService.getOne(artRepId);
+			existingArticlereportVO.setRemark(remark);
+			existingArticlereportVO.setRepSta((byte)1);
+			existingArticlereportVO.setRevTime(getNowTime());
+			articlereportService.changeSta(existingArticlereportVO);
 			
 			//發通知
 			NotificationVO notificationVO = new NotificationVO(
@@ -109,31 +109,31 @@ public class ArticlereportController {
 					getNowTime());
 			notificationService.addOneNoti(notificationVO);
 			
-			
+			Integer memId2 = articleServiceImpl.getArticleById(artId).getArtHol();
 			NotificationVO notificationVO2 = new NotificationVO(
 					"[系統]文章下架通知", 
 					"你好，你有一則文章因違反平台規範遭下架處理，特此通知。",
-					articleServiceImpl.getArticleById(artId).getArtHol(),
+					memId2,
 					getNowTime());
+			notificationService.addOneNoti(notificationVO2);
 			
 			redirectAttributes.addFlashAttribute("successMsg", "檢舉案件處理已完成!");
 			
-			return "redirect:/CommentsReports/allReportList";
+			return "redirect:/Articlereport/allReportList";
 		}
 		
 		//案件不成立處理
 		@PostMapping("/unEstablished")
 		public String unEstablished(
-				@RequestParam("remarks") String remarks, 
+				@RequestParam("remark") String remark, 
 				@RequestParam("artRepId") Integer artRepId,
 				RedirectAttributes redirectAttributes) {
 			//修改檢舉狀態
-			ArticlereportVO ArticlereportVO = new ArticlereportVO();
-			ArticlereportVO.setArtRepId(artRepId);
-			ArticlereportVO.setRemark(remarks);
-			ArticlereportVO.setRepSta((byte)2);
-			ArticlereportVO.setRevTime(getNowTime());
-			articlereportService.changeSta(ArticlereportVO);
+			ArticlereportVO existingArticlereportVO = articlereportService.getOne(artRepId);
+			existingArticlereportVO.setRemark(remark);
+			existingArticlereportVO.setRepSta((byte)2);
+			existingArticlereportVO.setRevTime(getNowTime());
+			articlereportService.changeSta(existingArticlereportVO);
 			
 			//發通知
 			NotificationVO notificationVO = new NotificationVO(
@@ -145,7 +145,7 @@ public class ArticlereportController {
 			
 			redirectAttributes.addFlashAttribute("successMsg", "檢舉案件處理已完成!");
 			
-			return "redirect:/CommentsReports/allReportList";
+			return "redirect:/Articlereport/allReportList";
 		}
 		
 		//現在時間

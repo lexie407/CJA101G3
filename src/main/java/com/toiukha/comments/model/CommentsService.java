@@ -56,4 +56,8 @@ public class CommentsService {
 		commentsRepository.upadteComm(commId, commCon, commImg);
 	}
 	
+	public void changeComm(Integer commId, String commCon) {
+		commentsRepository.upadteComm(commId, commCon);
+	}
+	
 }

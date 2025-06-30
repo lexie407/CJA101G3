@@ -6,13 +6,17 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.toiukha.commentsReport.model.CommentsReportVO;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 public class ArticlereportService {
 
 	@Autowired
 	private ArticlereportRepository articlereportRepository;
+	
+	@PersistenceContext
+    private EntityManager entityManager;
 	
 	//新增檢舉
 		public void addOne (ArticlereportVO articlereportVO) {
@@ -26,8 +30,9 @@ public class ArticlereportService {
 		
 		//查一個
 		public ArticlereportVO getOne(Integer artRepId) {
+			System.out.println("ArticlereportService: Attempting to get ArticlereportVO for artRepId: " + artRepId);
 			Optional<ArticlereportVO> optional = articlereportRepository.findById(artRepId);
-			return optional.orElse(null);			
+			return optional.orElse(null);
 		}
 		
 		//查全部

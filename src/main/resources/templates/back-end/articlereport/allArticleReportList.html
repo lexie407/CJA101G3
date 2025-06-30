@@ -42,23 +42,21 @@
 								<th>案件時間</th>
 								<th>會員</th>
 								<th>進度</th>
-								<th>案件標題</th>
 								<th>案件內容</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr th:each="commentsReportVO : ${list}" class="noti-table-line"
-								th:attr="data-commRepId=${commentsReportVO.commRepId}, data-rptSta=${commentsReportVO.rptSta}">
-								<td th:text="${commentsReportVO.commRepId}"></td>
+							<tr th:each="articlereportVO : ${list}" class="noti-table-line"
+								th:attr="data-artRepId=${articlereportVO.artRepId}, data-repSta=${articlereportVO.repSta}">
+								<td th:text="${articlereportVO.artRepId}"></td>
 								<td
-									th:text="${#dates.format(commentsReportVO.repTime, 'yyyy-MM-dd HH:mm')}"></td>
-								<td th:text="${commentsReportVO.memId}"></td>
-								<td><span th:switch="${commentsReportVO.rptSta}"> <span
+									th:text="${#dates.format(articlereportVO.repTime, 'yyyy-MM-dd HH:mm')}"></td>
+								<td th:text="${articlereportVO.memId}"></td>
+								<td><span th:switch="${articlereportVO.repSta}"> <span
 										th:case="0">處理中</span> <span th:case="1">檢舉成立</span> <span
 										th:case="2">檢舉不成立</span>
 								</span></td>
-								<td th:text="${commentsReportVO.repCat}"></td>
-								<td th:text="${commentsReportVO.repDes}"></td>
+								<td th:text="${articlereportVO.repDes}"></td>
 							</tr>
 						</tbody>
 					</table>
@@ -69,7 +67,7 @@
 
 	<script src="../vendors/jquery/jquery-3.7.1.min.js"></script>
 	<script src="../vendors/datatables.js"></script>
-	<script src="../js/commentsreports/allCommentsReportList.js"></script>
+	<script src="../js/articlereports/allArticleReportList.js"></script>
 	
 
 

@@ -1,56 +1,82 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const commentForm = document.getElementById('commentForm');
-    const statusMessage = document.getElementById('statusMessage');
-    const commentsList = document.getElementById('commentsList');
-	
+/**
+ * @file 留言區塊的主要 JavaScript 檔案。
+ * 使用 Shadow DOM 將留言區塊的 HTML、CSS 和 JavaScript 完全封裝，
+ * 避免與主頁面的樣式和腳本產生衝突。
+ */
+
+/**
+ * 初始化留言區塊的所有功能。
+ * @param {ShadowRoot} shadowRoot - 封裝留言區塊的 Shadow DOM 根節點。
+ */
+function initComments(shadowRoot) {
+    // --- DOM 元素獲取 ---
+    const commentForm = shadowRoot.getElementById('commentForm');
+    const statusMessage = shadowRoot.getElementById('statusMessage');
+    const commentsList = shadowRoot.getElementById('commentsList');
+    const commentImageInput = shadowRoot.getElementById('commentImage');
+    const imagePreviewContainer = shadowRoot.getElementById('image-preview');
+    const commentTextarea = shadowRoot.getElementById('commentContent');
+
+    // --- 從 URL 獲取文章 ID ---
 	const params = new URLSearchParams(window.location.search);
 	const artId = params.get('artId');
 	
-    // !!! 重要 !!!
-    // 模擬當前登入使用者的 ID (實際應用中，這會從後端取得)
-    // 例如：從一個隱藏的 input 欄位讀取，或者在頁面載入時透過 AJAX 請求獲取。
-    // 在這裡我設定為 'user1' 作為範例。
-    // 請根據你的後端邏輯，替換成實際登入使用者的 ID。
-    const CURRENT_USER_ID = 1;
+    // --- 獲取當前登入使用者 ID ---
+    // 建議作法：從主文件 meta 標籤讀取，由後端（Thymeleaf）設定。
+    const userIdMeta = document.querySelector('meta[name="user-id"]');
+    const CURRENT_USER_ID = userIdMeta ? parseInt(userIdMeta.content, 10) : 3;
 
-    // 獲取圖片輸入元素和預覽容器
-    const commentImageInput = document.getElementById('commentImage');
-    const imagePreviewContainer = document.getElementById('image-preview');
-    const commentTextarea = document.getElementById('commentContent');
+    // 新增變數來儲存文章類別和擁有者 ID
+    let ARTICLE_CATEGORY = null;
+    let ARTICLE_OWNER_ID = null;
 
-    // 監聽表單提交事件
+    // 新增函式來獲取文章詳細資訊
+    async function fetchArticleDetails() {
+        try {
+            const response = await fetch(`/article/${artId}`);
+            if (!response.ok) {
+                throw new Error(`無法獲取文章資料: ${response.status} ${response.statusText}`);
+            }
+            const article = await response.json();
+            ARTICLE_CATEGORY = article.artCat; // 假設 artCat 是文章類別的數字代碼
+//            ARTICLE_OWNER_ID = article.artHol; // 假設 artHol 是文章擁有者的 ID
+            ARTICLE_OWNER_ID = 3; // 假設 artHol 是文章擁有者的 ID
+        } catch (error) {
+            console.error('載入文章詳情失敗:', error);
+            showStatusMessage('載入文章詳情失敗，部分功能可能受限。', 'error');
+        }
+    }
+
+    // --- 事件監聽器：提交新留言 ---
     commentForm.addEventListener('submit', async (event) => {
-        event.preventDefault(); // 阻止表單的預設提交行為
+        event.preventDefault(); // 防止表單傳統提交
+        statusMessage.style.display = 'none'; // 隱藏舊的狀態訊息
 
-        statusMessage.style.display = 'none'; // 隱藏之前的狀態訊息
+        const formData = new FormData(commentForm);
+		formData.append("commArt", artId); // 附加文章 ID
+        // 如果有登入者，才附加留言者 ID
+        if (CURRENT_USER_ID) {
+		    formData.append("commHol", CURRENT_USER_ID);
+        }
 
-        const formData = new FormData(commentForm); // 從表單建立 FormData 物件
-		formData.append("commArt", artId);
-		formData.append("commHol", CURRENT_USER_ID);
-
-        // 獲取檔案並檢查是否為空
+        // 如果未選擇圖片，則從 FormData 中移除，避免後端收到空檔案
         const imageFile = formData.get('commentImage');
-        // 檢查 file 物件是否存在且其 name 屬性為空（表示沒有選擇檔案）
-        // 並且文件大小為 0 (這是更嚴格的檢查，因為某些瀏覽器空檔案也可能有 name)
         if (imageFile && imageFile.name === '' && imageFile.size === 0) {
-            formData.delete('commentImage'); // 從 FormData 中移除它，這樣後端就不會收到空檔案
+            formData.delete('commentImage');
         }
 
         try {
-            // 假設 API 接收 { author, content, commentImage } 並回傳新增的 CommentVO
             const response = await fetch('/commentsAPI/addComments', {
                 method: 'POST',
-                body: formData, // 直接傳入 FormData，fetch 會自動設定 Content-Type 為 multipart/form-data
-                // 不要手動設定 'Content-Type': 'multipart/form-data'，讓瀏覽器自動處理邊界
+                body: formData,
             });
 
             if (response.ok) {
                 const newComment = await response.json();
-                displayComment(newComment);
-
+                displayComment(newComment); // 在列表頂部顯示新留言
                 showStatusMessage('留言新增成功！', 'success');
-                commentForm.reset();
-                imagePreviewContainer.innerHTML = "";
+                commentForm.reset(); // 清空表單
+                imagePreviewContainer.innerHTML = ""; // 清空圖片預覽
                 imagePreviewContainer.style.display = 'none';
             } else {
                 const errorData = await response.json();
@@ -62,69 +88,89 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // 顯示狀態訊息的輔助函數
+    /**
+     * 顯示狀態訊息（如成功、失敗）。
+     * @param {string} message - 要顯示的訊息內容。
+     * @param {'success' | 'error' | 'info'} type - 訊息的類型。
+     */
     function showStatusMessage(message, type) {
         statusMessage.textContent = message;
-        statusMessage.className = `message ${type}`; // 設置樣式類別
+        statusMessage.className = `message ${type}`;
         statusMessage.style.display = 'block';
     }
 
-    // 動態顯示留言的函數
+    /**
+     * 將一則留言的資料轉換為 HTML 元素並顯示在頁面上。
+     * @param {object} comment - 從後端 API 獲取的留言物件。
+     * @returns {HTMLElement} 建立的留言 DOM 元素。
+     */
     function displayComment(comment) {
         const commentItem = document.createElement('div');
         commentItem.className = 'comment-item card';
         commentItem.dataset.commentId = comment.commId;
         commentItem.dataset.userId = comment.memId;
 
+        // 顯示留言者名稱
         const authorStrong = document.createElement('strong');
         authorStrong.textContent = comment.author || '匿名使用者';
         commentItem.appendChild(authorStrong);
 
+        // 顯示留言時間
         if (comment.commCreTime) {
             const date = new Date(comment.commCreTime);
             const formattedTime = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
             const timeParagraph = document.createElement('p');
             timeParagraph.className = 'comment-time';
-            timeParagraph.textContent = `${formattedTime}`;
+            timeParagraph.textContent = formattedTime;
             commentItem.appendChild(timeParagraph);
         }
 
+        // 顯示留言內容
         const contentParagraph = document.createElement('p');
         contentParagraph.className = 'comment-content-display';
         contentParagraph.textContent = comment.commCon;
         commentItem.appendChild(contentParagraph);
 
+        // 如果有圖片，則顯示圖片
         if (comment.commImg) {
             const img = document.createElement('img');
-            const commId = comment.commId;
-            img.src = `/commentsReport/read.do?commId=${commId}`;
+            img.src = `/commentsReport/read.do?commId=${comment.commId}&t=${new Date().getTime()}`;
             img.alt = '留言圖片';
+            img.classList.add('comment-main-image'); // 添加 class 以便在編輯時找到它
             commentItem.appendChild(img);
         }
 
+        // --- 建立操作選單（...按鈕）---
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'comment-actions';
 
         const actionsButton = document.createElement('button');
-        actionsButton.className = 'actions-button btn-flat dropdown-trigger';
-        actionsButton.dataset.target = `dropdown-${comment.commId}`;
+        actionsButton.className = 'actions-button btn-flat';
         actionsButton.innerHTML = '<i class="material-icons">more_vert</i>';
-        actionsButton.setAttribute('aria-expanded', 'false');
+
+        // Manually toggle dropdown visibility
+        actionsButton.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent document click from closing immediately
+            closeAllDropdowns(); // 關閉所有其他下拉選單
+            dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+        });
 
         const dropdownMenu = document.createElement('ul');
         dropdownMenu.id = `dropdown-${comment.commId}`;
         dropdownMenu.className = 'dropdown-content';
+        dropdownMenu.style.display = 'none'; // Initially hidden
+        dropdownMenu.style.position = 'absolute';
+        dropdownMenu.style.backgroundColor = 'white';
+        dropdownMenu.style.border = '1px solid #ccc';
+        dropdownMenu.style.zIndex = '1000';
+        dropdownMenu.style.minWidth = '150px';
+        dropdownMenu.style.boxShadow = '0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12)';
+        dropdownMenu.style.opacity = '1'; // Ensure it's not transparent
+        dropdownMenu.style.visibility = 'visible'; // Ensure it's visible
 
-        const reportLi = document.createElement('li');
-        const reportLink = document.createElement('a');
-        reportLink.href = '#!';
-        reportLink.className = 'action-report';
-        reportLink.dataset.action = 'report';
-        reportLink.textContent = '檢舉';
-        reportLi.appendChild(reportLink);
-        dropdownMenu.appendChild(reportLi);
-
-        if (comment.memId === CURRENT_USER_ID) {
+        // --- 根據是否為本人留言，決定顯示不同選單項目 ---
+        if (CURRENT_USER_ID && comment.commHol === CURRENT_USER_ID) {
+            // 本人的留言：顯示修改和刪除
             const editLi = document.createElement('li');
             const editLink = document.createElement('a');
             editLink.href = '#!';
@@ -142,73 +188,118 @@ document.addEventListener("DOMContentLoaded", function() {
             deleteLink.textContent = '刪除';
             deleteLi.appendChild(deleteLink);
             dropdownMenu.appendChild(deleteLi);
+        } else {
+            // 他人的留言：只顯示檢舉
+            const reportLi = document.createElement('li');
+            const reportLink = document.createElement('a');
+            reportLink.href = '#!';
+            reportLink.className = 'action-report';
+            reportLink.dataset.action = 'report';
+            reportLink.textContent = '檢舉';
+            reportLi.appendChild(reportLink);
+            dropdownMenu.appendChild(reportLi);
         }
 
         actionsDiv.appendChild(actionsButton);
         actionsDiv.appendChild(dropdownMenu);
         commentItem.appendChild(actionsDiv);
 
-        // --- 新增按讚按鈕和按讚數 --- 
+        // --- 處理最佳解邏輯 ---
+        if (ARTICLE_CATEGORY === 2 && CURRENT_USER_ID === ARTICLE_OWNER_ID) { // 發問中 & 文章擁有者
+            const bestAnswerButton = document.createElement('button');
+            bestAnswerButton.className = 'btn-small waves-effect waves-light green darken-1 best-answer-button';
+            bestAnswerButton.textContent = '選我最佳解';
+            bestAnswerButton.style.marginLeft = 'auto'; // 將按鈕推到右邊
+            bestAnswerButton.addEventListener('click', async () => {
+                if (confirm('確定要選擇此留言為最佳解嗎？')) {
+                    try {
+						const formData = new FormData();
+						formData.append('commId', comment.commId);
+						formData.append('artId', artId);
+                        const response = await fetch('/commentsAPI/bestAnswer', {
+                            method: 'POST',
+                            body: formData // 傳遞 commId 和 artId
+                        });
+                        if (response.ok) {
+                            alert('問題已解決！');
+                            location.reload(); // 重新整理頁面以顯示更新後的狀態
+                        } else {
+                            const errorData = await response.json();
+                            showStatusMessage(`設定最佳解失敗: ${errorData.message || response.statusText}`, 'error');
+                        }
+                    } catch (error) {
+                        console.error('設定最佳解請求失敗:', error);
+                        showStatusMessage('設定最佳解請求失敗，請檢查網路連線。', 'error');
+                    }
+                }
+            });
+            actionsDiv.appendChild(bestAnswerButton); // 將按鈕添加到 actionsDiv
+        } else if (ARTICLE_CATEGORY === 3 && comment.commSta === 3) { // 已解決 & 是最佳解
+            const bestAnswerIcon = document.createElement('i');
+            bestAnswerIcon.className = 'material-icons best-answer-icon';
+            bestAnswerIcon.textContent = 'check_circle'; // 最佳解的 Material Icon
+            bestAnswerIcon.style.color = 'gold'; // 顏色
+            bestAnswerIcon.style.fontSize = '24px';
+            bestAnswerIcon.style.marginLeft = '10px';
+            actionsDiv.appendChild(bestAnswerIcon);
+        }
+
+
+        // --- 建立按讚按鈕和計數 ---
         const commentFooter = document.createElement('div');
         commentFooter.className = 'comment-footer';
 
         const likeButton = document.createElement('button');
         likeButton.className = 'like-button';
-        likeButton.dataset.commentId = comment.commId; // 儲存留言 ID
+        likeButton.dataset.commentId = comment.commId;
         likeButton.innerHTML = '<i class="material-icons">thumb_up</i>';
 
         const likeCountSpan = document.createElement('span');
         likeCountSpan.className = 'like-count';
-        likeCountSpan.dataset.commentId = comment.commId; // 儲存留言 ID
-        // 直接使用 comment 物件中傳遞過來的 likeCount
+        likeCountSpan.dataset.commentId = comment.commId;
         likeCountSpan.textContent = comment.commLike !== undefined ? comment.commLike : 0; 
 
         commentFooter.appendChild(likeButton);
         commentFooter.appendChild(likeCountSpan);
         commentItem.appendChild(commentFooter);
 
-        commentsList.prepend(commentItem);
+        // 將完成的留言項目插入到列表的最前面
+        // commentsList.prepend(commentItem); // 這行會被下面的排序邏輯取代
 
-        M.Dropdown.init(actionsButton, { constrainWidth: false });
+        return commentItem;
     }
 
+    /**
+     * 關閉所有已開啟的下拉選單。
+     */
     function closeAllDropdowns() {
-        document.querySelectorAll('.dropdown-content.show').forEach(menu => {
-            const instance = M.Dropdown.getInstance(menu.previousElementSibling);
-            if (instance) {
-                instance.close();
-            }
+        shadowRoot.querySelectorAll('.dropdown-content').forEach(menu => {
+            menu.style.display = 'none';
         });
     }
 
+    // --- 事件委派：處理所有留言列表中的點擊事件 ---
     commentsList.addEventListener('click', async (event) => {
         const target = event.target;
 
-        if (target.classList.contains('action-report') ||
-            target.classList.contains('action-edit') ||
-            target.classList.contains('action-delete')) {
-
-            closeAllDropdowns();
-
+        // 判斷點擊的是否為操作按鈕（檢舉、修改、刪除）
+        if (target.matches('.action-report, .action-edit, .action-delete')) {
+            closeAllDropdowns(); // 先關閉其他選單
             const action = target.dataset.action;
             const commentItem = target.closest('.comment-item');
-            const commentId = parseInt(commentItem.getAttribute("data-comment-id"), 10);
-            const userId = commentItem.dataset.userId;
+            const commentId = parseInt(commentItem.dataset.commentId, 10);
 
             switch (action) {
                 case 'report':
-					let userInput = window.prompt(`確定檢舉這條留言，請輸入檢舉原因...`);
+                    const userInput = window.prompt(`確定檢舉這條留言，請輸入檢舉原因...`);
                     if (userInput) {
-                        console.log(`執行檢舉操作，留言 ID: ${commentId}`);
                         showStatusMessage(`正在檢舉留言 ID: ${commentId}...`, 'info');
-//						Integer memId, Integer commId, String repCat, String repDes
                         try {
                             const response = await fetch(`/CommentsReportsAPI/addCommentsReports`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ commId: commentId, repCat: "使用者檢舉", repDes: userInput, memId: CURRENT_USER_ID }) // 傳送更多檢舉資訊
+                                body: JSON.stringify({ commId: commentId, repCat: "使用者檢舉", repDes: userInput, memId: CURRENT_USER_ID })
                             });
-
                             if (response.ok) {
                                 showStatusMessage(`留言 ID: ${commentId} 檢舉成功！`, 'success');
                             } else {
@@ -216,7 +307,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                 showStatusMessage(`檢舉失敗: ${errorData.message || response.statusText}`, 'error');
                             }
                         } catch (error) {
-                            console.error('檢舉請求錯誤:', error);
                             showStatusMessage('檢舉請求失敗，請檢查網路。', 'error');
                         }
                     }
@@ -226,65 +316,55 @@ document.addEventListener("DOMContentLoaded", function() {
                     break;
                 case 'delete':
                     if (window.confirm(`確定要刪除這條留言嗎？此操作無法恢復。`)) {
-                        console.log(`執行刪除操作，留言 ID: ${commentId}`);
                         showStatusMessage(`正在刪除留言 ID: ${commentId}...`, 'info');
                         try {
-                            // 使用 FormData 傳遞參數以符合後端 @RequestParam
                             const formData = new FormData();
                             formData.append('commId', commentId);
-
                             const response = await fetch(`/commentsAPI/deleteComments`, {
                                 method: 'POST',
                                 body: formData,
                             });
-
                             if (response.ok) {
                                 showStatusMessage(`留言 ID: ${commentId} 刪除成功！`, 'success');
-                                commentItem.remove();
+                                commentItem.remove(); // 從畫面上移除
                             } else {
                                 const errorData = await response.json();
                                 showStatusMessage(`刪除失敗: ${errorData.message || response.statusText}`, 'error');
                             }
                         } catch (error) {
-                            console.error('刪除請求錯誤:', error);
                             showStatusMessage('刪除請求失敗，請檢查網路。', 'error');
                         }
                     }
                     break;
             }
-        }
-        else if (target.closest('.like-button')) {
+        } else if (target.closest('.like-button')) {
+            // 處理按讚按鈕點擊
             const likeButton = target.closest('.like-button');
             const commentId = likeButton.dataset.commentId;
             handleLikeComment(commentId, likeButton);
         }
     });
 
-    document.addEventListener('click', (event) => {
-        if (!event.target.closest('.comment-item') && !event.target.classList.contains('actions-button')) {
+    // --- 事件監聽器：點擊留言區塊外部時，關閉選單 ---
+    shadowRoot.addEventListener('click', (event) => {
+        if (!event.target.closest('.comment-actions')) { // 點擊非操作按鈕區域時關閉
             closeAllDropdowns();
         }
     });
 
     /**
-     * 處理按讚功能
-     * @param {string} commentId - 留言的 ID
-     * @param {HTMLElement} likeButton - 按讚按鈕的 DOM 元素
+     * 處理按讚/收回讚的邏輯。
+     * @param {string} commentId - 被按讚的留言 ID。
+     * @param {HTMLElement} likeButton - 被點擊的按讚按鈕。
      */
     async function handleLikeComment(commentId, likeButton) {
         const likeCountSpan = commentsList.querySelector(`.like-count[data-comment-id="${commentId}"]`);
-        if (!likeCountSpan) {
-            console.error('找不到對應的按讚計數元素。');
-            return;
-        }
+        if (!likeCountSpan) return;
 
         try {
-            // 呼叫 LikeController 的 dolike API
-            // 這裡假設 docId 就是 commentId，parDocId 為 null (如果按讚的是留言本身)
-            // 您可能需要根據實際的 LikeVO 結構調整這裡的屬性
             const likeFormData = new FormData();
             likeFormData.append('docId', commentId);
-            likeFormData.append('parDocId', artId); // 傳遞空字串或 null，取決於後端如何處理 null
+            likeFormData.append('parDocId', artId);
             likeFormData.append('memId', CURRENT_USER_ID);
 
             const response = await fetch('/likeAPI/dolike', {
@@ -293,195 +373,236 @@ document.addEventListener("DOMContentLoaded", function() {
             });
 
             if (response.ok) {
-                // dolike 現在直接返回按讚數
-                const updatedLikeCount = await response.json(); // 假設返回的是純數字
-                if (typeof updatedLikeCount === 'number') {
-                    likeCountSpan.textContent = updatedLikeCount; // 更新顯示的按讚數
-                    // 可以根據需要改變按鈕的顏色或圖示，表示已按讚
-                    // 例如：likeButton.classList.toggle('liked');
-                } else {
-                    console.warn('dolike API 返回的數據格式不符合預期。', updatedLikeCount);
-                }
+                const updatedLikeCount = await response.json();
+                likeCountSpan.textContent = updatedLikeCount; // 更新按讚數
             } else {
-                // 嘗試解析錯誤訊息，如果不是 JSON 則使用 response.statusText
                 const errorText = await response.text();
-                try {
-                    const errorData = JSON.parse(errorText);
-                    showStatusMessage(`按讚失敗: ${errorData.message || response.statusText}`, 'error');
-                } catch (e) {
-                    showStatusMessage(`按讚失敗: ${response.statusText} - ${errorText.substring(0, 100)}...`, 'error');
-                }
+                showStatusMessage(`按讚失敗: ${errorText}`, 'error');
             }
         } catch (error) {
-            console.error('按讚請求錯誤:', error);
             showStatusMessage('按讚請求失敗，請檢查網路。', 'error');
         }
     }
 
-
     /**
-     * 開始編輯留言的就地編輯模式
-     * @param {HTMLElement} commentItem - 留言的 DOM 元素
-     * @param {string} commentId - 留言的 ID
+     * 啟動留言的「就地編輯」模式。
+     * @param {HTMLElement} originalCommentItem - 要編輯的原始留言 DOM 元素。
+     * @param {string} commentId - 要編輯的留言 ID。
      */
-    function startEditComment(commentItem, commentId) {
-        const contentDisplay = commentItem.querySelector('.comment-content-display');
-        const originalContent = contentDisplay.textContent;
+    async function startEditComment(originalCommentItem, commentId) {
+        // 顯示載入提示
+        originalCommentItem.innerHTML = '<p>正在載入編輯器...</p>';
 
-        // 創建 textarea
-        const textarea = document.createElement('textarea');
-        textarea.className = 'materialize-textarea';
-        textarea.value = originalContent;
-        textarea.style.width = '100%';
-        textarea.style.minHeight = '80px';
-        textarea.style.marginBottom = '10px';
-        textarea.style.border = '1px solid #ccc';
-        textarea.style.borderRadius = '4px';
-        textarea.style.padding = '8px';
-        textarea.style.boxSizing = 'border-box'; // 確保 padding 不會增加寬度
+			const updateFormData = new FormData();
+			updateFormData.append('commHol', commentId);
+            // 1. 呼叫 API 獲取最新的留言資料
+            const response = await fetch(`/commentsAPI/getOneComment`, {
+	                                method: 'POST',
+	                                body: updateFormData
+	                            });
+            if (!response.ok) {
+                throw new Error('無法獲取留言資料');
+            }
+            const comment = await response.json();
 
-        // 隱藏顯示內容，插入 textarea
-        contentDisplay.style.display = 'none';
-        contentDisplay.parentNode.insertBefore(textarea, contentDisplay.nextSibling);
+            // 清空載入提示
+            originalCommentItem.innerHTML = '';
 
-        // 創建儲存和取消按鈕
-        const saveButton = document.createElement('button');
-        saveButton.className = 'btn waves-effect waves-light green darken-1';
-        saveButton.textContent = '儲存';
-        saveButton.style.marginRight = '10px';
+            // --- 建立編輯介面 ---
+            const editContainer = document.createElement('div');
+            editContainer.className = 'edit-container';
 
-        const cancelButton = document.createElement('button');
-        cancelButton.className = 'btn waves-effect waves-light grey';
-        cancelButton.textContent = '取消';
+            // 2. 文字編輯區
+            const textarea = document.createElement('textarea');
+            textarea.className = 'materialize-textarea';
+            textarea.value = comment.commCon;
+            editContainer.appendChild(textarea);
 
-        // 將按鈕添加到留言項目中
-        const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'edit-buttons'; // 添加一個容器以便管理
-        buttonContainer.appendChild(saveButton);
-        buttonContainer.appendChild(cancelButton);
-        commentItem.appendChild(buttonContainer);
+            // 3. 圖片預覽和操作區
+            const editImagePreview = document.createElement('div');
+            editImagePreview.className = 'image-preview-wrapper';
+            if (comment.commImg) {
+                editImagePreview.innerHTML = `
+                    <img src="/commentsReport/read.do?commId=${comment.commId}" alt="現有圖片">
+                    <span class="remove-preview">&times;</span>
+                `;
+            }
+            editContainer.appendChild(editImagePreview);
 
-        // 自動調整 textarea 大小
-        M.textareaAutoResize(textarea);
-        textarea.focus(); // 讓 textarea 獲得焦點
+            // 4. 檔案選擇器
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.id = `edit-comment-image-${commentId}`; // 為 input 建立唯一 ID
+            fileInput.accept = 'image/*';
+            fileInput.style.display = 'none';
+            editContainer.appendChild(fileInput);
 
-        // 儲存按鈕事件監聽器
-        saveButton.addEventListener('click', async () => {
-            const newContent = textarea.value;
-            if (newContent.trim() === '') {
-                alert('留言內容不能為空！');
-                return;
+            const fileInputLabel = document.createElement('label');
+            fileInputLabel.htmlFor = `edit-comment-image-${commentId}`; // 將 label 的 for 屬性指向 input 的 ID
+            fileInputLabel.className = 'btn-flat waves-effect waves-light';
+            fileInputLabel.innerHTML = '<i class="material-icons">photo_camera</i> 更換圖片';
+            fileInputLabel.style.cursor = 'pointer';
+            editContainer.appendChild(fileInputLabel);
+
+            // --- 建立儲存和取消按鈕 ---
+            const saveButton = document.createElement('button');
+            saveButton.className = 'btn waves-effect waves-light green darken-1';
+            saveButton.textContent = '儲存';
+
+            const cancelButton = document.createElement('button');
+            cancelButton.className = 'btn waves-effect waves-light grey';
+            cancelButton.textContent = '取消';
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'edit-buttons';
+            buttonContainer.appendChild(saveButton);
+            buttonContainer.appendChild(cancelButton);
+            editContainer.appendChild(buttonContainer);
+
+            originalCommentItem.appendChild(editContainer);
+
+            M.textareaAutoResize(textarea);
+            textarea.focus();
+
+            // --- 編輯介面的事件處理 ---
+            let imageRemoved = false;
+
+            const removeBtn = editImagePreview.querySelector('.remove-preview');
+            if (removeBtn) {
+                removeBtn.onclick = () => {
+                    editImagePreview.innerHTML = '';
+                    imageRemoved = true;
+                };
             }
 
-            showStatusMessage(`正在更新留言 ID: ${commentId}...`, 'info');
-            try {
-                // 使用 FormData 傳遞參數以符合後端 @RequestParam
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        editImagePreview.innerHTML = `
+                            <img src="${e.target.result}" alt="新圖片預覽">
+                            <span class="remove-preview">&times;</span>
+                        `;
+                        editImagePreview.querySelector('.remove-preview').onclick = () => {
+                            editImagePreview.innerHTML = '';
+                            fileInput.value = '';
+                            imageRemoved = true;
+                        };
+                    };
+                    reader.readAsDataURL(file);
+                    imageRemoved = false;
+                }
+            });
+
+            // --- 儲存和取消的邏輯 ---
+            const exitEditMode = () => {
+                // 用最新的留言資料重新渲染，恢復原樣
+                const newCommentItem = displayComment(comment);
+                originalCommentItem.parentNode.replaceChild(newCommentItem, originalCommentItem);
+            };
+
+            cancelButton.addEventListener('click', exitEditMode);
+
+            saveButton.addEventListener('click', async () => {
+                const newContent = textarea.value.trim();
+                if (!newContent) return alert('留言內容不能為空！');
+
                 const updateFormData = new FormData();
                 updateFormData.append('commId', commentId);
                 updateFormData.append('commCon', newContent);
-                // 傳遞一個空的 Blob 作為 commImg，以滿足後端 MultipartFile 的要求
-                updateFormData.append('commImg', new Blob(), 'empty.txt'); 
 
-                const response = await fetch(`/commentsAPI/updateComments`, {
-                    method: 'POST', // CommentsAPIController 的 updateComments 是 POST
-                    body: updateFormData,
-                });
-
-                if (response.ok) {
-                    showStatusMessage(`留言 ID: ${commentId} 更新成功！`, 'success');
-                    contentDisplay.textContent = newContent; // 更新顯示內容
-                    exitEditMode();
-                } else {
-                    const errorData = await response.json();
-                    showStatusMessage(`更新失敗: ${errorData.message || response.statusText}`, 'error');
+                if (fileInput.files[0]) {
+                    updateFormData.append('commImg', fileInput.files[0]);
+                } else if (imageRemoved) {
+                    updateFormData.append('removeImage', 'true');
+                } else if (comment.commImg) { // If original comment had an image and it's not removed or replaced
+                    updateFormData.append('keepImage', 'true');
                 }
-            } catch (error) {
-                console.error('更新請求錯誤:', error);
-                showStatusMessage('更新請求失敗，請檢查網路。', 'error');
-            }
-        });
 
-        // 取消按鈕事件監聽器
-        cancelButton.addEventListener('click', () => {
-            exitEditMode();
-        });
+                try {
+                    const updateResponse = await fetch(`/commentsAPI/updateComments`, {
+                        method: 'POST',
+                        body: updateFormData,
+                    });
 
-        // 退出編輯模式的輔助函數
-        function exitEditMode() {
-            textarea.remove(); // 移除 textarea
-            buttonContainer.remove(); // 移除按鈕容器
-            contentDisplay.style.display = 'block'; // 顯示原始內容
-        }
-    }
+                    if (updateResponse.ok) {
+                        const updatedComment = await updateResponse.json();
+                        console.log('Updated comment from API:', updatedComment);
+                        // 用 API 回傳的最新資料重新渲染留言
+                        const newCommentItem = displayComment(updatedComment);
+                        originalCommentItem.parentNode.replaceChild(newCommentItem, originalCommentItem);
+                        showStatusMessage('留言更新成功！', 'success');
+                    } else {
+                        const errorData = await updateResponse.json();
+                        showStatusMessage(`更新失敗: ${errorData.message || updateResponse.statusText}`, 'error');
+                        exitEditMode(); // 更新失敗時也恢復原狀
+                    }
+                } catch (error) {
+                    showStatusMessage('更新請求失敗，請檢查網路。', 'error');
+                    exitEditMode(); // 發生錯誤時也恢復原狀
+                }
+            }); 
+    } // <-- 這裡缺少一個大括號，導致 "Unexpected end of input" 錯誤
+    
 
-    // 自動調整 textarea 大小 (Materialize 會處理 materialize-textarea 類別，但為了健壯性保留)
+    // --- 事件監聽器：輸入時自動調整留言框高度 ---
     commentTextarea.addEventListener('input', function() {
         M.textareaAutoResize(this);
     });
 
-    // 處理圖片選擇事件
+    // --- 事件監聽器：處理圖片預覽 ---
     commentImageInput.addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                imagePreviewContainer.innerHTML = ''; // 清除之前的預覽
-
-                const imageWrapper = document.createElement('div'); // 創建新的圖片包裝器
-                imageWrapper.className = 'image-preview-wrapper'; // 添加樣式類別
-
-                const img = document.createElement('img'); // 創建圖片元素
-                img.src = e.target.result; // 設定圖片來源為讀取到的資料 URL
-
-                const removeBtn = document.createElement('span'); // 創建移除按鈕
-                removeBtn.className = 'remove-preview'; // 添加樣式類別
-                removeBtn.innerHTML = '&times;'; // 設定按鈕內容為 'x'
-                removeBtn.onclick = function() { // 設定點擊事件
-                    imagePreviewContainer.innerHTML = ''; // 清空預覽容器
-                    imagePreviewContainer.style.display = 'none'; // 隱藏預覽容器
-                    commentImageInput.value = ''; // 清空檔案輸入欄位，以便再次選擇相同檔案
+                imagePreviewContainer.innerHTML = ''; // 清空舊預覽
+                const imageWrapper = document.createElement('div');
+                imageWrapper.className = 'image-preview-wrapper';
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'remove-preview';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.onclick = function() {
+                    imagePreviewContainer.innerHTML = '';
+                    imagePreviewContainer.style.display = 'none';
+                    commentImageInput.value = ''; // 清空 file input
                 };
-
-                imageWrapper.appendChild(img); // 將圖片添加到包裝器
-                imageWrapper.appendChild(removeBtn); // 將移除按鈕添加到包裝器
-                imagePreviewContainer.appendChild(imageWrapper); // 將包裝器添加到預覽容器
-                imagePreviewContainer.style.display = 'block'; // 顯示預覽容器
+                imageWrapper.appendChild(img);
+                imageWrapper.appendChild(removeBtn);
+                imagePreviewContainer.appendChild(imageWrapper);
+                imagePreviewContainer.style.display = 'block';
             }
-            reader.readAsDataURL(file); // 以 Data URL 格式讀取檔案內容
+            reader.readAsDataURL(file);
         }
     });
 
-    // 可選：表單提交後清除預覽
-    document.getElementById('commentForm').addEventListener('submit', function() {
-        setTimeout(() => {
-            imagePreviewContainer.innerHTML = ''; // 清空預覽容器
-            imagePreviewContainer.style.display = 'none'; // 隱藏預覽容器
-            // M.textareaAutoResize(commentTextarea); // 重新調整 textarea 高度 (如果需要)
-        }, 100);
-    });
-
-    // 初始化 Materialize 的下拉選單 (dropdowns)
-    const dropdowns = document.querySelectorAll('.dropdown-trigger');
-    M.Dropdown.init(dropdowns, { constrainWidth: false });
-
-    // --- 新增：載入留言資料 --- 
+    /**
+     * 從後端 API 獲取並載入所有留言。
+     */
     async function fetchComments() {
         try {
+            // 確保文章資訊已載入
+            if (ARTICLE_CATEGORY === null || ARTICLE_OWNER_ID === null) {
+                await fetchArticleDetails();
+            }
+
             const formData = new FormData();
             formData.append('commArt', artId);
-
             const response = await fetch('/commentsAPI/getComments', {
                 method: 'POST',
                 body: formData,
             });
 
             if (response.ok) {
-                const comments = await response.json();
-                commentsList.innerHTML = ''; // 清空現有留言，重新載入
-                // 遍歷所有留言，並使用 displayComment 函數將其顯示在頁面上
-                comments.forEach(comment => displayComment(comment));
+                let comments = await response.json();
+                commentsList.innerHTML = ''; // 清空現有列表
+
+                comments.forEach(comment => commentsList.appendChild(displayComment(comment))); // 顯示每則留言
+
             } else {
-                console.error('獲取留言失敗:', response.statusText);
                 showStatusMessage('無法載入留言，請稍後再試。', 'error');
             }
         } catch (error) {
@@ -490,6 +611,46 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // 頁面載入完成後立即載入留言
+    // --- 初始化：立即載入留言 ---
     fetchComments();
-});
+} // This is the missing brace for initComments function
+
+// --- 主程式進入點：直接呼叫 initComments ---
+const commentsBlockContainer = document.getElementById("commentsBlock");
+if (commentsBlockContainer) {
+    const shadow = commentsBlockContainer.attachShadow({ mode: "open" });
+
+    // 將原始 HTML 內容暫存到一個 wrapper 中
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = commentsBlockContainer.innerHTML;
+    commentsBlockContainer.innerHTML = ""; // 清空原始容器
+
+    // --- 非同步載入所有 CSS 樣式 ---
+    const styleSources = [
+        "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css",
+        "/css/comments/comments.css", // 你的自訂樣式
+        "https://fonts.googleapis.com/icon?family=Material+Icons" // Material 圖示字體
+    ];
+    let stylesLoaded = 0;
+
+    // 定義一個回呼函式，在所有樣式都載入完成後執行
+    const onStyleLoad = () => {
+        stylesLoaded++;
+        if (stylesLoaded === styleSources.length) {
+            shadow.appendChild(wrapper); // 將 HTML 內容放回 Shadow DOM
+            requestAnimationFrame(() => {
+                initComments(shadow);
+            });
+        }
+    };
+
+    // 遍歷並載入所有 CSS 檔案
+    styleSources.forEach(src => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = src;
+        link.onload = onStyleLoad;
+        link.onerror = onStyleLoad; // 即使某個 CSS 載入失敗，也繼續執行以避免卡住
+        shadow.appendChild(link);
+    });
+}

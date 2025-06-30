@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.toiukha.comments.model.CommentsService;
 import com.toiukha.comments.model.CommentsVO;
+import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticleServiceImpl;
 
 import lombok.RequiredArgsConstructor;
@@ -37,9 +38,11 @@ public class CommentsAPIController {
 		return commentsService.getArtComm(commArt);
 	}
 	
-	@GetMapping("test")
-	public String getTest() {
-		return "test";
+	//查留言
+	@PostMapping("/getOneComment")
+	public CommentsVO getOneComment(
+			@RequestParam("commHol")Integer commHol) {
+		return commentsService.getOne(commHol);
 	}
 	
 	@PostMapping("/addComments")
@@ -52,7 +55,12 @@ public class CommentsAPIController {
 	    try {
 	        byte[] commImg = commImgFile.getBytes();
 	        
-	        Byte commCat = articleServiceImpl.getArticleById(commArt).getArtCat();
+	        Byte commCat = null;
+	        if(articleServiceImpl.getArticleById(commArt).getArtCat() >= 2) {
+	        	commCat = 2;
+	        }else {
+	        	commCat = 1;
+	        }
 
 	        // 手動建立 CommentsVO 物件
 	        CommentsVO commentsVO = new CommentsVO(commCat, commHol, commArt, commCon, commImg);
@@ -68,24 +76,34 @@ public class CommentsAPIController {
 	
 	//修改留言
 	@PostMapping("/updateComments")
-	public void updateComments(
-			@RequestParam("commImg")MultipartFile part,
+	public CommentsVO updateComments(
+			@RequestParam(value = "commImg", required = false)MultipartFile part,
 			@RequestParam("commCon") String commCon,
 			@RequestParam("commId") Integer commId) {
 		byte[] commImg = null;
-		try {
-			commImg = part.getBytes();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (part != null && !part.isEmpty()) {
+			try {
+				commImg = part.getBytes();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 		}
+
 		commentsService.changeComm(commId, commCon, commImg);
+		
+		return commentsService.getOne(commId);
 	}
 	
 	//最佳解
 	@PostMapping("/bestAnswer")
-	public void bestAnswer(
+	public List<CommentsVO> bestAnswer(
 			@RequestParam("commId") Integer commId) {
 		commentsService.changeSta(commId, (byte)3);
+		Article article = articleServiceImpl.getArticleById(commentsService.getOne(commId).getCommArt());
+		article.setArtCat((byte)3);
+		articleServiceImpl.update(article);
+		return commentsService.getArtComm(commentsService.getOne(commId).getCommArt());
 	}
 	
 	//刪除留言
