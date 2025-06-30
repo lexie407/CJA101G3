@@ -254,58 +254,7 @@ public class ArticleController {
         
         return ResponseEntity.ok(response);
     }
-    
-    // 取得文章分享資訊
-    @GetMapping("/article/{artId}/share")
-    public ResponseEntity<Map<String, Object>> getArticleShareInfo(@PathVariable Integer artId) {
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            Article article = articleService.getArticleById(artId);
-            if (article == null) {
-                response.put("success", false);
-                response.put("message", "找不到文章");
-                return ResponseEntity.ok(response);
-            }
-            
-            // 取得當前網站的基礎 URL
-            String baseUrl = "http://localhost:8080"; // 這裡可以從配置檔案讀取
-            String articleUrl = baseUrl + "/forum/article?artId=" + artId;
-            
-            // 準備分享資訊
-            Map<String, Object> shareInfo = new HashMap<>();
-            shareInfo.put("url", articleUrl);
-            shareInfo.put("title", article.getArtTitle());
-            
-            // 安全地處理文章內容描述
-            String description = "查看這篇精彩文章";
-            if (article.getArtCon() != null && !article.getArtCon().trim().isEmpty()) {
-                // 移除 HTML 標籤
-                String cleanContent = article.getArtCon().replaceAll("<[^>]*>", "").trim();
-                if (!cleanContent.isEmpty()) {
-                    // 限制描述長度為 100 字元
-                    int maxLength = Math.min(100, cleanContent.length());
-                    description = cleanContent.substring(0, maxLength);
-                    if (cleanContent.length() > 100) {
-                        description += "...";
-                    }
-                }
-            }
-            shareInfo.put("description", description);
-            
-            response.put("success", true);
-            response.put("shareInfo", shareInfo);
-            
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "取得分享資訊失敗: " + e.getMessage());
-            System.err.println("取得文章分享資訊時發生錯誤: " + e.getMessage());
-            e.printStackTrace(); // 添加詳細的錯誤追蹤
-        }
-        
-        return ResponseEntity.ok(response);
-    }
-    
+
     // 刪除文章（將 ARTSTA 設為 2）
     @DeleteMapping("/article/{artId}/delete")
     public ResponseEntity<Map<String, Object>> deleteArticle(@PathVariable Integer artId) {

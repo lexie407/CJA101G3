@@ -8,7 +8,6 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: 理解這是幹嘛的
 // 進階查詢用
 public class ArticleSpecifications {
 

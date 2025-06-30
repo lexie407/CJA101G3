@@ -670,6 +670,58 @@
         }
     }
 
+    // 取得文章連結
+    function getArticleUrl(artId) {
+        return window.location.origin + '/forum/article?artId=' + artId;
+    }
+
+    // 複製文章連結
+    async function copyArticleLink(artId) {
+        const url = getArticleUrl(artId);
+        if (navigator.clipboard) {
+            await navigator.clipboard.writeText(url);
+            showToast('連結已複製到剪貼簿！');
+        } else {
+            const textArea = document.createElement('textarea');
+            textArea.value = url;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast('連結已複製到剪貼簿！');
+        }
+    }
+
+    // 原生分享
+    async function nativeShare(artId) {
+        const url = getArticleUrl(artId);
+        const title = document.querySelector('.article-title')?.textContent || '文章分享';
+        const description = '快來看看這篇文章！';
+        if (navigator.share) {
+            await navigator.share({
+                title: title,
+                text: description,
+                url: url
+            });
+        } else {
+            copyArticleLink(artId);
+        }
+    }
+
+    // 分享到 Facebook
+    async function shareToFacebook(artId) {
+        const url = getArticleUrl(artId);
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        window.open(facebookUrl, '_blank', 'width=600,height=400');
+    }
+
+    // 分享到 Line
+    async function shareToLine(artId) {
+        const url = getArticleUrl(artId);
+        const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`;
+        window.open(lineUrl, '_blank', 'width=600,height=400');
+    }
+
     // 綁定分享選單項目點擊事件
     function bindShareMenuEvents(artId) {
         // 複製連結
@@ -691,100 +743,6 @@
         $('#articleDetail .line-share').off('click').on('click', function() {
             shareToLine(artId);
         });
-    }
-
-    // 複製文章連結
-    async function copyArticleLink(artId) {
-        try {
-            const response = await fetch(`/article/${artId}/share`);
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    const url = result.shareInfo.url;
-                    
-                    // 使用 Clipboard API 複製連結
-                    if (navigator.clipboard) {
-                        await navigator.clipboard.writeText(url);
-                        showToast('連結已複製到剪貼簿！');
-                    } else {
-                        // 備用方案：使用傳統方法
-                        const textArea = document.createElement('textarea');
-                        textArea.value = url;
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                        showToast('連結已複製到剪貼簿！');
-                    }
-                } else {
-                    showToast('複製失敗：' + result.message);
-                }
-            }
-        } catch (error) {
-            console.error('複製連結失敗:', error);
-            showToast('複製連結失敗，請稍後再試');
-        }
-    }
-
-    // 原生分享
-    async function nativeShare(artId) {
-        try {
-            const response = await fetch(`/article/${artId}/share`);
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success && navigator.share) {
-                    const shareInfo = result.shareInfo;
-                    await navigator.share({
-                        title: shareInfo.title,
-                        text: shareInfo.description,
-                        url: shareInfo.url
-                    });
-                } else {
-                    // 如果不支援原生分享，回退到複製連結
-                    copyArticleLink(artId);
-                }
-            }
-        } catch (error) {
-            console.error('原生分享失敗:', error);
-            // 回退到複製連結
-            copyArticleLink(artId);
-        }
-    }
-
-    // 分享到 Facebook
-    async function shareToFacebook(artId) {
-        try {
-            const response = await fetch(`/article/${artId}/share`);
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    const shareInfo = result.shareInfo;
-                    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareInfo.url)}`;
-                    window.open(facebookUrl, '_blank', 'width=600,height=400');
-                }
-            }
-        } catch (error) {
-            console.error('Facebook 分享失敗:', error);
-            showToast('分享失敗，請稍後再試');
-        }
-    }
-
-    // 分享到 Line
-    async function shareToLine(artId) {
-        try {
-            const response = await fetch(`/article/${artId}/share`);
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    const shareInfo = result.shareInfo;
-                    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareInfo.url)}`;
-                    window.open(lineUrl, '_blank', 'width=600,height=400');
-                }
-            }
-        } catch (error) {
-            console.error('Line 分享失敗:', error);
-            showToast('分享失敗，請稍後再試');
-        }
     }
 
     // 顯示提示訊息
