@@ -1,9 +1,9 @@
 package com.toiukha.groupactivity.controller;
 
-import com.toiukha.groupactivity.model.ActService;
 import com.toiukha.groupactivity.model.ActVO;
-import com.toiukha.groupactivity.model.DefaultImageService;
 import com.toiukha.groupactivity.security.AuthService;
+import com.toiukha.groupactivity.service.ActService;
+import com.toiukha.groupactivity.service.DefaultImageService;
 import com.toiukha.participant.model.PartService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -44,13 +44,6 @@ public class ActFrontController {
         HttpSession session = request.getSession();
         AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
         
-        // 顯示當前操作者會員ID
-        System.out.println("=== Current User ===");
-        System.out.println("URI: /act/member/add");
-        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
-        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
-        System.out.println("===================");
-        
         return "front-end/groupactivity/addAct_ajax";
     }
 
@@ -66,7 +59,6 @@ public class ActFrontController {
             return "redirect:/act/member/search";
         }
         
-        // TODO: 登入功能完成後，需要統一處理權限驗證
         // 安全驗證：檢查會員是否有權限編輯此活動
         if (!authService.canModifyActivity(session, actVo.getHostId())) {
             // 無權限：重定向到活動詳情頁面或登入頁
@@ -81,12 +73,6 @@ public class ActFrontController {
             }
         }
         
-        // 顯示當前操作者會員ID
-        System.out.println("=== Current User ===");
-        System.out.println("URI: /act/member/edit/" + id);
-        System.out.println("Member ID: " + authService.getCurrentMember(session).getMemId());
-        System.out.println("===================");
-        
         model.addAttribute("actVo", actVo);
         return "front-end/groupactivity/editAct_ajax";
     }
@@ -96,13 +82,6 @@ public class ActFrontController {
     public String searchActPage(HttpServletRequest request) {
         HttpSession session = request.getSession();
         AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
-        
-        // 顯示當前操作者會員ID
-        System.out.println("=== Current User ===");
-        System.out.println("URI: /act/member/search");
-        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
-        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
-        System.out.println("===================");
         
         return "front-end/groupactivity/searchAct";
     }
@@ -141,14 +120,6 @@ public class ActFrontController {
         model.addAttribute("formattedActStart", actVo.getActStart().format(formatter));
         model.addAttribute("formattedActEnd", actVo.getActEnd().format(formatter));
 
-        // 顯示當前操作者會員ID
-        System.out.println("=== Current User ===");
-        System.out.println("URI: /act/member/view/" + id);
-        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
-        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
-        System.out.println("Is Host: " + isHost + ", Is Participant: " + isParticipant);
-        System.out.println("===================");
-
         return "front-end/groupactivity/listOneAct";
     }
 
@@ -157,7 +128,6 @@ public class ActFrontController {
     public String listMyAct(@PathVariable Integer hostId, Model model, HttpServletRequest request) {
         HttpSession session = request.getSession();
         
-        // TODO: 登入功能完成後，需要統一處理權限驗證
         // 安全驗證：檢查會員是否有權限查看指定的活動列表
         Integer authorizedHostId = authService.getAuthorizedHostId(session, hostId);
         
@@ -174,12 +144,6 @@ public class ActFrontController {
             }
         }
         
-        // 顯示當前操作者會員ID
-        System.out.println("=== Current User ===");
-        System.out.println("URI: /act/member/listMy/" + hostId);
-        System.out.println("Member ID: " + authorizedHostId);
-        System.out.println("===================");
-        
         model.addAttribute("actList", actSvc.getByHost(authorizedHostId));
         model.addAttribute("hostId", authorizedHostId);
         return "front-end/groupactivity/listMyAct";
@@ -190,7 +154,6 @@ public class ActFrontController {
     public String listMyJoinAct(@PathVariable Integer memId, Model model, HttpServletRequest request) {
         HttpSession session = request.getSession();
         
-        // TODO: 登入功能完成後，需要統一處理權限驗證
         // 安全驗證：檢查會員是否有權限查看指定的參加活動列表
         Integer authorizedMemId = authService.getAuthorizedMemId(session, memId);
         
@@ -207,30 +170,39 @@ public class ActFrontController {
             }
         }
         
-        // 顯示當前操作者會員ID
-        System.out.println("=== Current User ===");
-        System.out.println("URI: /act/member/listMyJoin/" + memId);
-        System.out.println("Member ID: " + authorizedMemId);
-        System.out.println("===================");
-        
         model.addAttribute("memId", authorizedMemId);
         return "front-end/groupactivity/listMyJoinAct";
     }
 
 
     /**
-     * 圖片顯示端點 - 直接回傳 byte[] 圖片資料
-     * 如果活動沒有圖片，回傳預設圖片
+     * 圖片顯示端點 - 參考members模組的錯誤處理模式
+     * 如果活動沒有圖片或發生錯誤，回傳預設圖片
      */
     @GetMapping(value = "/image/{actId}", produces = MediaType.IMAGE_JPEG_VALUE)
     @ResponseBody
     public ResponseEntity<byte[]> getImage(@PathVariable Integer actId) {
-        ActVO actVo = actSvc.getOneAct(actId);
-        if (actVo != null && actVo.getActImg() != null && actVo.getActImg().length > 0) {
-            return ResponseEntity.ok(actVo.getActImg());
-        } else {
-            // 如果沒有圖片，回傳預設圖片
-            return ResponseEntity.ok(defaultImageService.getDefaultImage());
+        try {
+            // 嘗試獲取活動圖片
+            byte[] imageBytes = actSvc.getActImageOnly(actId);
+            
+            if (imageBytes != null && imageBytes.length > 0) {
+                return ResponseEntity.ok(imageBytes);
+            } else {
+                // 如果沒有圖片，回傳預設圖片
+                return ResponseEntity.ok(defaultImageService.getDefaultImage());
+            }
+            
+        } catch (Exception e) {
+            // 發生任何錯誤時，返回預設圖片而非拋出異常
+            System.err.println("獲取活動圖片錯誤 (actId: " + actId + "): " + e.getMessage());
+            try {
+                return ResponseEntity.ok(defaultImageService.getDefaultImage());
+            } catch (Exception defaultImageError) {
+                // 如果連預設圖片都無法載入，返回空的圖片回應
+                System.err.println("載入預設圖片失敗: " + defaultImageError.getMessage());
+                return ResponseEntity.notFound().build();
+            }
         }
     }
 }

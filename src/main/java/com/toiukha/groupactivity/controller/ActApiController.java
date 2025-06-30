@@ -2,9 +2,12 @@ package com.toiukha.groupactivity.controller;
 
 import com.toiukha.groupactivity.model.*;
 import com.toiukha.groupactivity.security.AuthService;
+import com.toiukha.groupactivity.service.ActService;
+import com.toiukha.groupactivity.service.DefaultImageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,11 +15,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,130 +40,88 @@ public class ActApiController {
     @Autowired
     private AuthService authService;
 
-    // 新增活動（AJAX專用，回傳JSON）
+    // 新增活動
     @PostMapping("/add")
     public ResponseEntity<?> addAct(
-            @RequestParam("actName") String actName,
-            @RequestParam("actDesc") String actDesc,
-            @RequestParam("itnId") Integer itnId,
-            @RequestParam("hostId") Integer hostId,
-            @RequestParam("signupStart") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime signupStart,
-            @RequestParam("signupEnd") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime signupEnd,
-            @RequestParam("actStart") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime actStart,
-            @RequestParam("actEnd") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime actEnd,
-
-            @RequestParam("maxCap") Integer maxCap,
-            @RequestParam(value = "isPublic", required = false, defaultValue = "0") Byte isPublic,
-            @RequestParam(value = "allowCancel", required = false, defaultValue = "1") Byte allowCancel,
-            @RequestParam(value = "recruitStatus", required = false, defaultValue = "0") Byte recruitStatus,
+            @Valid @ModelAttribute ActDTO actDto,
+            BindingResult bindingResult,
             @RequestParam(value = "actImg", required = false) MultipartFile actImg,
             HttpServletRequest request) throws IOException {
         
-        System.out.println("=== 開始處理新增活動請求 ===");
-        System.out.println("actName: " + actName);
-        System.out.println("itnId: " + itnId);
-        System.out.println("hostId: " + hostId);
-        System.out.println("signupStart: " + signupStart);
-        System.out.println("actStart: " + actStart);
+        // 1. 登入驗證
+        HttpSession session = request.getSession();
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
         
-        // === 基本參數驗證 ===
-        if (actName == null || actName.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
+        if (!memberInfo.isLoggedIn()) {
+            return ResponseEntity.status(401).body(Map.of(
                 "success", false,
-                "error", "活動名稱不能為空"
+                "error", "請先登入"
             ));
         }
         
-        if (signupStart.isAfter(actStart)) {
+        // 2. 設定團主ID（從session獲取，避免前端偽造）
+        actDto.setHostId(memberInfo.getMemId());
+        
+        // 3. 檢查驗證錯誤
+        if (bindingResult.hasErrors()) {
+            List<String> errorMessages = new ArrayList<>();
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                String message = error.getDefaultMessage();
+                // 過濾掉Spring框架的技術錯誤，只保留業務驗證錯誤
+                if (message != null) {
+                    errorMessages.add(message);
+                }
+            }
+            // 如果沒有有效的業務錯誤訊息，回傳通用錯誤
+            if (errorMessages.isEmpty()) {
+                errorMessages.add("表單資料格式錯誤，請檢查輸入內容");
+            }
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "error", "報名開始時間不能晚於活動開始時間"
+                "errors", errorMessages
             ));
         }
         
-        if (signupEnd.isAfter(actStart)) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", "報名結束時間不能晚於活動開始時間"
-            ));
-        }
-        
-        if (actStart.isAfter(actEnd)) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", "活動開始時間不能晚於活動結束時間"
-            ));
-        }
-        
-        // === 創建 ActDTO 對象 ===
-        ActDTO actDto = new ActDTO();
-        actDto.setActName(actName);
-        actDto.setActDesc(actDesc);
-        actDto.setItnId(itnId);
-        actDto.setHostId(hostId);
-        actDto.setSignupStart(signupStart);
-        actDto.setSignupEnd(signupEnd);
-        actDto.setActStart(actStart);
-        actDto.setActEnd(actEnd);
-        actDto.setMaxCap(maxCap);
-        actDto.setIsPublic(isPublic);
-        actDto.setAllowCancel(allowCancel);
-        actDto.setRecruitStatus(recruitStatus);
-        
-        try {
-            // === 會員認證和權限檢查 ===
-            AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
-            System.out.println("會員認證結果: " + memberInfo.isLoggedIn() + ", ID: " + memberInfo.getMemId());
-            
-            if (!memberInfo.isLoggedIn()) {
-                System.out.println("會員未登入");
-                return ResponseEntity.status(401).body(Map.of(
+        // 4. 處理圖片上傳
+        if (actImg != null && !actImg.isEmpty()) {
+            if (actImg.getSize() > 5 * 1024 * 1024) {
+                return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "error", "請先登入",
-                    "redirectTo", "/members/login"
+                    "error", "圖片檔案大小不能超過5MB"
                 ));
             }
-            
-            // === 設定活動團主（簡化邏輯：只能設定自己為團主）===
-            Integer finalHostId = memberInfo.getMemId();
-            actDto.setHostId(finalHostId);
-            System.out.println("設定團主ID: " + finalHostId);
-            
-            // === 處理圖片上傳 ===
-            if (actImg != null && !actImg.isEmpty()) {
-                System.out.println("處理圖片上傳，大小: " + actImg.getSize() + " bytes");
-                if (actImg.getSize() > 5 * 1024 * 1024) { // 5MB限制
-                    System.out.println("圖片檔案過大");
-                    return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "error", "圖片檔案大小不能超過5MB"
-                    ));
-                }
-                actDto.setActImg(actImg.getBytes());
-            } else {
-                System.out.println("無圖片上傳");
+            actDto.setActImg(actImg.getBytes());
+        }
+        
+        // 5. 設定標籤
+        try {
+            if (actDto.getActType() != null) {
+                actDto.setTypeTag(ActTag.valueOf(actDto.getActType()));
             }
-            
-            // === 業務邏輯處理 ===
-            System.out.println("準備呼叫 actSvc.addAct()");
+            if (actDto.getActCity() != null) {
+                actDto.setCityTag(ActTag.valueOf(actDto.getActCity()));
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", "無效的活動類型或城市標籤"
+            ));
+        }
+        
+        // 6. 執行新增
+        try {
             actSvc.addAct(actDto);
-            System.out.println("actSvc.addAct() 執行完成");
-            
-            System.out.println("會員 " + memberInfo.getMemId() + " 成功新增活動: " + actDto.getActName());
-            
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "活動新增成功",
-                "hostId", actDto.getHostId()
+                "hostId", memberInfo.getMemId()
             ));
-            
         } catch (Exception e) {
-            System.err.println("新增活動失敗，詳細錯誤: " + e.getClass().getSimpleName() + ": " + e.getMessage());
-            e.printStackTrace(); // 印出完整的錯誤堆疊
+            System.err.println("新增活動時發生錯誤: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
                 "success", false,
-                "error", "系統錯誤，請稍後再試",
-                "detail", e.getMessage() // 開發階段顯示詳細錯誤
+                "error", "系統錯誤，請稍後再試"
             ));
         }
     }
@@ -179,6 +143,8 @@ public class ActApiController {
             @RequestParam(value = "isPublic", required = false, defaultValue = "0") Byte isPublic,
             @RequestParam(value = "allowCancel", required = false, defaultValue = "1") Byte allowCancel,
             @RequestParam(value = "recruitStatus", required = false, defaultValue = "0") Byte recruitStatus,
+            @RequestParam(value = "actType", required = false, defaultValue = "OUTDOOR") String actType,
+            @RequestParam(value = "actCity", required = false, defaultValue = "TAIPEI") String actCity,
             @RequestParam(value = "actImg", required = false) MultipartFile actImg,
             HttpServletRequest request) throws IOException {
         
@@ -226,6 +192,8 @@ public class ActApiController {
         actDto.setIsPublic(isPublic);
         actDto.setAllowCancel(allowCancel);
         actDto.setRecruitStatus(recruitStatus);
+        actDto.setActType(actType);
+        actDto.setActCity(actCity);
         
         // === 處理圖片上傳 ===
         if (actImg != null && !actImg.isEmpty()) {
@@ -242,8 +210,6 @@ public class ActApiController {
         try {
             actSvc.updateAct(actDto);
             
-            System.out.println("會員 " + memberInfo.getMemId() + " 成功修改活動: " + actDto.getActId());
-            
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "活動修改成功",
@@ -259,14 +225,66 @@ public class ActApiController {
         }
     }
 
-    //查詢所有活動(測試用api) - 改為回傳ActCardDTO避免序列化byte[]
+    //變更活動狀態
+    @PutMapping("/{actId}/status/{status}")
+    public String changeStatus(@PathVariable Integer actId,
+                               @PathVariable Byte status,
+                               @RequestParam Integer operatorId,
+                               @RequestParam(defaultValue = "false") boolean admin,
+                               HttpServletRequest request) {
+        // 取得session並檢查登入狀態
+        HttpSession session = request.getSession();
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+
+        actSvc.changeStatus(actId, status, operatorId, admin);
+        return "statusChanged";
+    }
+
+    //查詢所有活動(測試用api)
     @GetMapping("/all")
     public List<ActCardDTO> getAllAct() {
         List<ActVO> allActs = actSvc.getAll();
         return allActs.stream().map(this::convertToCardDTO).toList();
     }
 
-    //查詢單一活動 - 移除actImg欄位避免序列化問題
+    //多條件查詢（限公開活動）
+    @GetMapping("/search")
+    public PageResDTO<ActCardDTO> search(@RequestParam(required = false) Byte recruitStatus,
+                                         @RequestParam(required = false) String actName,
+                                         @RequestParam(required = false) Integer hostId,
+                                         @RequestParam(required = false) LocalDateTime actStart,
+                                         @RequestParam(required = false) Integer maxCap,
+                                         @PageableDefault(size = 9, sort = {"actStart"}, direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<ActCardDTO> page = actSvc.searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, pageable);
+        return PageResDTO.of(page);
+    }
+
+    //根據標籤搜尋活動
+    @GetMapping("/searchByTags")
+    public PageResDTO<ActCardDTO> searchByTags(
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "city", required = false) String city,
+            @PageableDefault(size = 9, sort = {"actStart"}, direction = Sort.Direction.DESC) Pageable pageable) {
+
+        ActTag typeTag = null;
+        ActTag cityTag = null;
+
+        try {
+            if (type != null && !type.isEmpty()) {
+                typeTag = ActTag.valueOf(type);
+            }
+            if (city != null && !city.isEmpty()) {
+                cityTag = ActTag.valueOf(city);
+            }
+        } catch (IllegalArgumentException e) {
+            // 無效的標籤值，使用預設搜尋
+        }
+
+        Page<ActCardDTO> page = actSvc.searchByTags(typeTag, cityTag, pageable);
+        return PageResDTO.of(page);
+    }
+
+    //查詢單一活動
     @GetMapping("/get/{actId}")
     public Map<String, Object> getOneAct(@PathVariable Integer actId) {
         ActVO actVo = actSvc.getOneAct(actId);
@@ -293,12 +311,12 @@ public class ActApiController {
         return result;
     }
 
-    //我揪的團 - 加入安全驗證，避免序列化byte[]
+    //查詢我揪的團
     @GetMapping("/my/{hostId}")
     public ResponseEntity<?> getMyActs(@PathVariable Integer hostId, HttpServletRequest request) {
         HttpSession session = request.getSession();
         
-        // 安全驗證：檢查用戶是否有權限查看指定的活動列表
+        // 登入驗證：限團主身份
         Integer authorizedHostId = authService.getAuthorizedHostId(session, hostId);
         
         if (authorizedHostId == null) {
@@ -319,13 +337,6 @@ public class ActApiController {
             }
         }
         
-        // 測試用：印出安全驗證結果
-        System.out.println("=== Security Check: API MyList Access ===");
-        System.out.println("URI: /api/act/my/" + hostId);
-        System.out.println("Requested HostId: " + hostId);
-        System.out.println("Authorized HostId: " + authorizedHostId);
-        System.out.println("=======================================");
-        
         List<ActVO> myActs = actSvc.getByHost(authorizedHostId);
         List<ActCardDTO> result = myActs.stream().map(this::convertToCardDTO).toList();
         
@@ -336,12 +347,12 @@ public class ActApiController {
         ));
     }
     
-    //我跟的團 - 加入安全驗證，回傳 ActCardDTO 避免序列化 byte[]
+    //查詢我跟的團
     @GetMapping("/myJoin/{memId}")
     public ResponseEntity<?> getMyJoinedActs(@PathVariable Integer memId, HttpServletRequest request) {
         HttpSession session = request.getSession();
         
-        // 安全驗證：檢查用戶是否有權限查看指定的參加活動列表
+        // 登入驗證：限團圓身份
         Integer authorizedMemId = authService.getAuthorizedMemId(session, memId);
         
         if (authorizedMemId == null) {
@@ -362,13 +373,6 @@ public class ActApiController {
             }
         }
         
-        // 測試用：印出安全驗證結果
-        System.out.println("=== Security Check: API MyJoin Access ===");
-        System.out.println("URI: /api/act/myJoin/" + memId);
-        System.out.println("Requested MemId: " + memId);
-        System.out.println("Authorized MemId: " + authorizedMemId);
-        System.out.println("==========================================");
-        
         List<ActCardDTO> result = actSvc.getJoinedActsAsCard(authorizedMemId);
         
         return ResponseEntity.ok(Map.of(
@@ -378,7 +382,78 @@ public class ActApiController {
         ));
     }
 
-    // 輔助方法：將ActVO轉換為ActCardDTO
+    //================其他方法=================
+
+    // 圖片顯示API - 參考members模組的錯誤處理模式
+    @GetMapping("/image/{actId}")
+    public void getActImage(
+            @PathVariable Integer actId,
+            HttpServletRequest req,
+            HttpServletResponse res) throws IOException {
+        
+        res.setContentType("image/jpeg");
+        
+        try {
+            byte[] imageBytes = actSvc.getActImageOnly(actId);
+            
+            if (imageBytes != null && imageBytes.length > 0) {
+                res.getOutputStream().write(imageBytes);
+            } else {
+                // 沒有圖片時使用預設圖片
+                byte[] defaultImage = defaultImageService.getDefaultImage();
+                res.getOutputStream().write(defaultImage);
+            }
+            
+        } catch (Exception e) {
+            // 參考members模組的錯誤處理：發生錯誤時使用預設圖片
+            System.err.println("獲取活動圖片錯誤 (actId: " + actId + "): " + e.getMessage());
+            try {
+                byte[] defaultImage = defaultImageService.getDefaultImage();
+                res.getOutputStream().write(defaultImage);
+            } catch (Exception defaultImageError) {
+                System.err.println("載入預設圖片失敗: " + defaultImageError.getMessage());
+                // 如果連預設圖片都無法載入，寫入空的圖片資料
+                res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            }
+        }
+    }
+
+    // 取得所有活動標籤
+    @GetMapping("/tags")
+    public Map<String, Object> getTags() {
+        List<Map<String, String>> types = ActTag.getTypesTags().stream()
+                .map(tag -> Map.of("value", tag.name(), "label", tag.getDisplayName()))
+                .collect(java.util.stream.Collectors.toList());
+
+        List<Map<String, String>> cities = ActTag.getCityTags().stream()
+                .map(tag -> Map.of("value", tag.name(), "label", tag.getDisplayName()))
+                .collect(java.util.stream.Collectors.toList());
+
+        return Map.of(
+                "types", types,
+                "cities", cities
+        );
+    }
+
+    //獲取單一活動標籤
+    @GetMapping("/tags/{actId}")
+    public Map<String, Object> getActTags(@PathVariable Integer actId) {
+        Map<String, ActTag> tags = actSvc.getActTags(actId);
+
+        return Map.of(
+                "actId", actId,
+                "typeTag", Map.of(
+                        "value", tags.get("type").name(),
+                        "label", tags.get("type").getDisplayName()
+                ),
+                "cityTag", Map.of(
+                        "value", tags.get("city").name(),
+                        "label", tags.get("city").getDisplayName()
+                )
+        );
+    }
+
+    // 將ActVO轉換為ActCardDTO
     private ActCardDTO convertToCardDTO(ActVO actVo) {
         ActCardDTO cardDTO = new ActCardDTO();
         cardDTO.setActId(actVo.getActId());
@@ -392,46 +467,6 @@ public class ActApiController {
         return cardDTO;
     }
 
-    /**
-     * 搜尋公開活動，支援多條件組合
-     * 商業邏輯：強制只顯示公開活動（isPublic=1），私人活動視為草稿僅在 MyList 顯示
-     * 前端無法透過參數篡改來查看私人活動
-     */
-    @GetMapping("/search")
-    public Page<ActCardDTO> search(@RequestParam(required = false) Byte recruitStatus,
-                                   @RequestParam(required = false) String actName,
-                                   @RequestParam(required = false) Integer hostId,
-                                   @RequestParam(required = false) LocalDateTime actStart,
-                                   @RequestParam(required = false) Integer maxCap,
-                                   @PageableDefault(size = 9, sort = {"actStart"}, direction = Sort.Direction.DESC) Pageable pageable) {
-        // 使用專門的公開活動搜尋方法，不接受 isPublic 參數
-        return actSvc.searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, pageable);
-    }
-
-    /**
-     * 變更狀態 */
-    @PutMapping("/{actId}/status/{status}")
-    public String changeStatus(@PathVariable Integer actId,
-                               @PathVariable Byte status,
-                               @RequestParam Integer operatorId,
-                               @RequestParam(defaultValue = "false") boolean admin,
-                               HttpServletRequest request) {
-        // 取得session並檢查登入狀態
-        HttpSession session = request.getSession();
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
-        // TODO: 若未登入可回傳未授權訊息
-        // if (!memberInfo.isLoggedIn()) { return "unauthorized"; }
-        
-        // 測試用：印出session中的會員ID
-        System.out.println("=== Test: Current Session Member ID ===");
-        System.out.println("URI: /api/act/" + actId + "/status/" + status);
-        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
-        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
-        System.out.println("=====================================");
-        
-        actSvc.changeStatus(actId, status, operatorId, admin);
-        return "statusChanged";
-    }
 
     // ========================================
     // 測試相關端點 - 開發完成後可移除
@@ -440,7 +475,6 @@ public class ActApiController {
     /**
      * 測試端點 - 檢查資料庫狀態
      * 用途：檢查資料庫中的活動資料和圖片狀態
-     * 移除時機：開發完成後
      */
     @GetMapping("/debug")
     public Object debug() {
@@ -458,9 +492,8 @@ public class ActApiController {
     }
 
     /**
-     * 測試圖片上傳端點
+     * 測試端點 - 圖片上傳
      * 用途：測試前端傳送的 base64 圖片是否能正確解碼
-     * 移除時機：開發完成後
      */
     @PostMapping("/test-image")
     public Object testImage(@RequestBody Map<String, Object> request) {
@@ -489,9 +522,8 @@ public class ActApiController {
     }
 
     /**
-     * 測試圖片回傳端點
+     * 測試端點 - 圖片回傳
      * 用途：檢查特定活動的圖片資料格式和狀態
-     * 移除時機：開發完成後
      */
     @GetMapping("/test-image-response/{actId}")
     public Object testImageResponse(@PathVariable Integer actId) {
@@ -510,9 +542,8 @@ public class ActApiController {
     }
 
     /**
-     * 測試預設圖片端點
+     * 測試端點 - 預設圖片
      * 用途：檢查預設圖片功能是否正常
-     * 移除時機：開發完成後
      */
     @GetMapping("/test-default-image")
     public Object testDefaultImage() {
@@ -532,21 +563,37 @@ public class ActApiController {
         }
     }
 
-    // 圖片顯示API，瀏覽器直接<img src="/api/act/image/{actId}">
-    @GetMapping("/image/{actId}")
-    public void getActImage(
-            @PathVariable Integer actId,
-            HttpServletRequest req,
-            HttpServletResponse res) throws IOException {
-        res.setContentType("image/jpeg");
-        byte[] imageBytes = null;
-        ActVO act = actSvc.getOneAct(actId);
-        if (act != null && act.getActImg() != null && act.getActImg().length > 0) {
-            imageBytes = act.getActImg();
-        } else {
-            // 若無圖，回傳預設圖
-            imageBytes = defaultImageService.getDefaultImage();
+    /**
+     * 判斷是否為Spring技術錯誤訊息，過濾掉不適合顯示給用戶的技術訊息
+     */
+    private boolean isSpringTechnicalError(String message) {
+        if (message == null) {
+            return true;
         }
-        res.getOutputStream().write(imageBytes);
+        
+        // 過濾包含Spring框架技術關鍵字的錯誤訊息
+        String[] technicalKeywords = {
+            "Failed to convert",
+            "PropertyEditor",
+            "org.springframework",
+            "StandardMultipartHttpServletRequest", 
+            "Cannot convert value of type",
+            "required type",
+            "property editor",
+            "type mismatch",
+            "ConversionFailedException",
+            "CustomNumberEditor",
+            "returned inappropriate value"
+        };
+        
+        String lowerMessage = message.toLowerCase();
+        for (String keyword : technicalKeywords) {
+            if (lowerMessage.contains(keyword.toLowerCase())) {
+                return true;
+            }
+        }
+        
+        return false;
     }
+
 }

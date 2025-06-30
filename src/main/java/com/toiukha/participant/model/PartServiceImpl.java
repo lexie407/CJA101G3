@@ -1,6 +1,6 @@
 package com.toiukha.participant.model;
 
-import com.toiukha.groupactivity.model.ActHandlerService;
+import com.toiukha.groupactivity.service.ActHandlerService;
 import com.toiukha.members.model.MembersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

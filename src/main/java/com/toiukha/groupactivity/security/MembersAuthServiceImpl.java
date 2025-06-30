@@ -1,22 +1,22 @@
 package com.toiukha.groupactivity.security;
 
-import jakarta.servlet.http.HttpSession;
-import org.springframework.stereotype.Service;
-import org.springframework.context.annotation.Primary;
 import com.toiukha.members.model.MembersVO;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
+
 import java.util.Objects;
 
 /**
  * 生產環境的權限驗證實作
- * 與 Members 模組整合後啟用此實作
  * 
  * 啟用方式：
  * 1. 將此檔案改名為 MembersAuthServiceImpl.java
  * 2. 加上 @Primary 註解
  * 3. DevAuthServiceImpl 會自動被停用
  */
-//@Service
-//@Primary  // 加上此註解後會替代 DevAuthServiceImpl
+@Service
+@Primary
 public class MembersAuthServiceImpl implements AuthService {
     
     @Override

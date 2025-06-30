@@ -1,9 +1,9 @@
 package com.toiukha.groupactivity.controller;
 
-import com.toiukha.groupactivity.model.ActService;
 import com.toiukha.groupactivity.model.ActStatus;
 import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.groupactivity.security.AuthService;
+import com.toiukha.groupactivity.service.ActService;
 import com.toiukha.members.model.MembersService;
 import com.toiukha.participant.model.PartDTO;
 import com.toiukha.participant.model.PartService;
@@ -34,50 +34,29 @@ public class GroupHomeController {
 
     @GetMapping("/{actId}/home")
     public String groupHome(@PathVariable Integer actId, Model model, HttpServletRequest request) {
-        System.out.println("=== GroupHome Debug ===");
-        System.out.println("Requested ActId: " + actId);
-
         ActVO act = actService.getOneAct(actId);
-        System.out.println("Found Act: " + (act != null ? "Yes" : "No"));
 
         if (act == null) {
-            System.out.println("Act not found, redirecting to search");
             return "redirect:/act/member/search";
         }
 
-        System.out.println("Act Status: " + act.getRecruitStatus());
-        System.out.println("Expected Status: " + ActStatus.FULL.getValue());
-
         if (act.getRecruitStatus() != ActStatus.FULL.getValue()) {
-            System.out.println("Act status is not FULL, redirecting to search");
             return "redirect:/act/member/search";
         }
 
         AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
-        System.out.println("Member Info: " + memberInfo.getMemId() + ", LoggedIn: " + memberInfo.isLoggedIn());
 
         if (!memberInfo.isLoggedIn()) {
-            System.out.println("Not logged in, redirecting to login");
             return "redirect:/members/login";
         }
 
         boolean isHost = act.getHostId().equals(memberInfo.getMemId());
         boolean isParticipant = partService.getParticipants(actId).contains(memberInfo.getMemId());
 
-        System.out.println("Is Host: " + isHost);
-        System.out.println("Is Participant: " + isParticipant);
-        System.out.println("Act HostId: " + act.getHostId());
-        System.out.println("Current MemberId: " + memberInfo.getMemId());
-        System.out.println("Participants: " + partService.getParticipants(actId));
-
         // 修改權限檢查：團主或參加者都可以進入
         if (!isHost && !isParticipant) {
-            System.out.println("Not host or participant, redirecting to search");
             return "redirect:/act/member/search";
         }
-
-        System.out.println("All checks passed, rendering groupHome");
-        System.out.println("================================");
 
         // 查詢所有參加者詳細資料（含狀態與姓名）
         List<PartDTO> participantList = partService.getParticipantsAsDTO(actId);
@@ -105,39 +84,25 @@ public class GroupHomeController {
      */
     @GetMapping("/{actId}/chat")
     public String groupChatRoom(@PathVariable Integer actId, Model model, HttpServletRequest request) {
-        System.out.println("=== GroupChatRoom Debug ===");
-        System.out.println("Requested ActId: " + actId);
-
         ActVO act = actService.getOneAct(actId);
-        System.out.println("Found Act: " + (act != null ? "Yes" : "No"));
 
         if (act == null) {
-            System.out.println("Act not found, redirecting to search");
             return "redirect:/act/member/search";
         }
 
         AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
-        System.out.println("Member Info: " + memberInfo.getMemId() + ", LoggedIn: " + memberInfo.isLoggedIn());
 
         if (!memberInfo.isLoggedIn()) {
-            System.out.println("Not logged in, redirecting to login");
             return "redirect:/members/login";
         }
 
         boolean isHost = act.getHostId().equals(memberInfo.getMemId());
         boolean isParticipant = partService.getParticipants(actId).contains(memberInfo.getMemId());
 
-        System.out.println("Is Host: " + isHost);
-        System.out.println("Is Participant: " + isParticipant);
-
         // 權限檢查：團主或參加者都可以進入聊天室
         if (!isHost && !isParticipant) {
-            System.out.println("Not host or participant, redirecting to search");
             return "redirect:/act/member/search";
         }
-
-        System.out.println("All checks passed, rendering groupChatRoom");
-        System.out.println("================================");
 
         model.addAttribute("act", act);
         model.addAttribute("isHost", isHost);
@@ -190,8 +155,6 @@ public class GroupHomeController {
             if (messages == null) {
                 messages = new ArrayList<>();
             }
-            
-            System.out.println("載入團隊 " + actId + " 的歷史記錄，共 " + messages.size() + " 條");
             
             return ResponseEntity.ok(Map.of(
                 "actId", actId,

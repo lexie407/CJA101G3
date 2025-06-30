@@ -3,141 +3,461 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>編輯活動</title>
+    <title>編輯活動 | 島遊kha</title>
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
+    <!-- GroupActivity 模組 CSS -->
+    <link
+      rel="stylesheet"
+      th:href="@{/css/groupactivity/styleAct_common.css}"
+    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
+    <!-- Bootstrap CSS (只用於Floating Labels) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Select2 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
   </head>
   <body class="light">
     <div class="app-container">
       <div th:insert="~{/navTemplate :: navbar}"></div>
 
       <div class="main-content act-page">
-        <main class="content-area-main act-area">
-          <h3 class="act-front-title">編輯活動</h3>
+        <div th:insert="~{/subnavActFront :: subnav('edit')}"></div>
 
+        <main class="content-area-main act-area">
           <div class="act-detail-container">
-            <form id="editActForm" class="act-detail-form">
+            <form
+              id="editActForm"
+              method="post"
+              enctype="multipart/form-data"
+              novalidate
+            >
               <input type="hidden" name="actId" th:value="${actVo.actId}" />
 
+              <!-- 基本資訊 -->
               <div class="act-detail-info">
-                <div class="act-detail-item">
-                  <label class="act-detail-label">活動名稱 *</label>
+                <div class="form-floating">
                   <input
                     type="text"
                     name="actName"
+                    id="actName"
+                    class="form-control"
+                    placeholder="請輸入活動名稱"
                     th:value="${actVo.actName}"
-                    class="act-search-input"
                     required
                   />
+                  <label for="actName"
+                    >活動名稱 <span class="required-mark">*</span></label
+                  >
+                  <div class="invalid-feedback"></div>
                 </div>
-                <div class="act-detail-item">
-                  <label class="act-detail-label">行程編號 *</label>
+                <div class="form-floating">
                   <input
                     type="number"
                     name="itnId"
+                    id="itnId"
+                    class="form-control"
+                    placeholder="請輸入行程編號"
                     th:value="${actVo.itnId}"
-                    class="act-search-input"
                     required
                   />
+                  <label for="itnId"
+                    >行程編號 <span class="required-mark">*</span></label
+                  >
+                  <div class="invalid-feedback"></div>
                 </div>
               </div>
 
-              <div class="act-detail-item" style="grid-column: 1 / -1">
-                <label class="act-detail-label">活動說明</label>
+              <div class="form-floating">
                 <textarea
                   name="actDesc"
+                  id="actDesc"
+                  class="form-control large-textarea"
+                  placeholder="請輸入活動說明"
                   th:text="${actVo.actDesc}"
-                  class="act-search-input"
-                  rows="4"
                 ></textarea>
+                <label for="actDesc">活動說明</label>
               </div>
 
-              <div class="act-detail-item">
-                <label class="act-detail-label">團主編號</label>
-                <input
-                  type="number"
-                  name="hostId"
-                  th:value="${actVo.hostId}"
-                  class="act-search-input"
-                  readonly
-                />
-              </div>
-              <div class="act-detail-info">
-                <div class="act-detail-item">
-                  <label class="act-detail-label">報名開始 *</label>
-                  <input
-                    type="datetime-local"
-                    name="signupStart"
-                    th:value="${#temporals.format(actVo.signupStart,'yyyy-MM-dd''T''HH:mm')}"
-                    class="act-search-input"
-                    required
-                  />
-                </div>
-                <div class="act-detail-item">
-                  <label class="act-detail-label">報名截止 *</label>
-                  <input
-                    type="datetime-local"
-                    name="signupEnd"
-                    th:value="${#temporals.format(actVo.signupEnd,'yyyy-MM-dd''T''HH:mm')}"
-                    class="act-search-input"
-                    required
-                  />
-                </div>
-              </div>
+              <br />
 
+              <!-- 時間設定 -->
               <div class="act-detail-info">
-                <div class="act-detail-item">
-                  <label class="act-detail-label">活動開始 *</label>
+                <div class="form-floating">
                   <input
                     type="datetime-local"
                     name="actStart"
+                    id="actStart"
+                    class="form-control"
                     th:value="${#temporals.format(actVo.actStart,'yyyy-MM-dd''T''HH:mm')}"
-                    class="act-search-input"
                     required
                   />
+                  <label for="actStart"
+                    >活動開始時間 <span class="required-mark">*</span></label
+                  >
+                  <div class="invalid-feedback"></div>
                 </div>
-                <div class="act-detail-item">
-                  <label class="act-detail-label">活動結束 *</label>
+                <div class="form-floating">
                   <input
                     type="datetime-local"
                     name="actEnd"
+                    id="actEnd"
+                    class="form-control"
                     th:value="${#temporals.format(actVo.actEnd,'yyyy-MM-dd''T''HH:mm')}"
-                    class="act-search-input"
                     required
                   />
+                  <label for="actEnd"
+                    >活動結束時間 <span class="required-mark">*</span></label
+                  >
+                  <div class="invalid-feedback"></div>
                 </div>
               </div>
 
+              <!-- 活動類型和地區 -->
               <div class="act-detail-info">
-                <div class="act-detail-item">
-                  <label class="act-detail-label">人數需求 *</label>
+                <div>
+                  <label class="act-detail-label"></label>
+                  <select
+                    name="actType"
+                    id="actTypeSelect"
+                    class="js-tags act-search-input full-width"
+                    multiple="multiple"
+                    title="選擇活動類型"
+                  >
+                    <option
+                      value="ARTS"
+                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'ARTS')}"
+                    >
+                      藝文
+                    </option>
+                    <option
+                      value="ECOLOGY"
+                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'ECOLOGY')}"
+                    >
+                      生態
+                    </option>
+                    <option
+                      value="OUTDOOR"
+                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'OUTDOOR')}"
+                    >
+                      戶外
+                    </option>
+                    <option
+                      value="SPORTS"
+                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'SPORTS')}"
+                    >
+                      運動
+                    </option>
+                    <option
+                      value="FOOD"
+                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'FOOD')}"
+                    >
+                      美食
+                    </option>
+                    <option
+                      value="FAMILY"
+                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'FAMILY')}"
+                    >
+                      親子
+                    </option>
+                    <option
+                      value="SENIOR"
+                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'SENIOR')}"
+                    >
+                      銀髮
+                    </option>
+                    <option
+                      value="PET"
+                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'PET')}"
+                    >
+                      寵物
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="act-detail-label"></label>
+                  <select
+                    name="actCity"
+                    id="actCitySelect"
+                    class="js-tags act-search-input full-width"
+                    multiple="multiple"
+                    title="選擇活動地區"
+                  >
+                    <option
+                      value="TAIPEI"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAIPEI')}"
+                    >
+                      台北
+                    </option>
+                    <option
+                      value="NEW_TAIPEI"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NEW_TAIPEI')}"
+                    >
+                      新北
+                    </option>
+                    <option
+                      value="TAOYUAN"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAOYUAN')}"
+                    >
+                      桃園
+                    </option>
+                    <option
+                      value="TAICHUNG"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAICHUNG')}"
+                    >
+                      台中
+                    </option>
+                    <option
+                      value="TAINAN"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAINAN')}"
+                    >
+                      台南
+                    </option>
+                    <option
+                      value="KAOHSIUNG"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KAOHSIUNG')}"
+                    >
+                      高雄
+                    </option>
+                    <option
+                      value="KEELUNG"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KEELUNG')}"
+                    >
+                      基隆
+                    </option>
+                    <option
+                      value="HSINCHU"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HSINCHU')}"
+                    >
+                      新竹
+                    </option>
+                    <option
+                      value="MIAOLI"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'MIAOLI')}"
+                    >
+                      苗栗
+                    </option>
+                    <option
+                      value="CHANGHUA"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHANGHUA')}"
+                    >
+                      彰化
+                    </option>
+                    <option
+                      value="NANTOU"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NANTOU')}"
+                    >
+                      南投
+                    </option>
+                    <option
+                      value="YUNLIN"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YUNLIN')}"
+                    >
+                      雲林
+                    </option>
+                    <option
+                      value="CHIAYI"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHIAYI')}"
+                    >
+                      嘉義
+                    </option>
+                    <option
+                      value="PINGTUNG"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'PINGTUNG')}"
+                    >
+                      屏東
+                    </option>
+                    <option
+                      value="YILAN"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YILAN')}"
+                    >
+                      宜蘭
+                    </option>
+                    <option
+                      value="HUALIEN"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HUALIEN')}"
+                    >
+                      花蓮
+                    </option>
+                    <option
+                      value="TAITUNG"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAITUNG')}"
+                    >
+                      台東
+                    </option>
+                    <option
+                      value="ISLANDS"
+                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'ISLANDS')}"
+                    >
+                      離島
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 圖片上傳區域 -->
+              <div class="act-detail-info">
+                <div>
+                  <label class="act-detail-label"></label>
+
+                  <!-- 隱藏的檔案輸入框 -->
+                  <input
+                    type="file"
+                    name="actImg"
+                    id="actImgInput"
+                    accept="image/*"
+                    class="hidden"
+                    title="選擇活動圖片"
+                  />
+
+                  <!-- 拖拽上傳區域 -->
+                  <div id="dragDropArea" class="drag-drop-area">
+                    <div class="drag-drop-content">
+                      <div class="drag-drop-icon">
+                        <svg
+                          width="48"
+                          height="48"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                        >
+                          <rect
+                            x="3"
+                            y="3"
+                            width="18"
+                            height="18"
+                            rx="2"
+                            ry="2"
+                          />
+                          <circle cx="8.5" cy="8.5" r="1.5" />
+                          <polyline points="21,15 16,10 5,21" />
+                        </svg>
+                      </div>
+                      <div class="drag-drop-text">
+                        <p class="drag-drop-main">拖曳圖片到這裡上傳</p>
+                        <p class="drag-drop-sub">
+                          或
+                          <span class="drag-drop-browse">點擊瀏覽</span>
+                          選擇檔案
+                        </p>
+                        <p class="drag-drop-hint">
+                          支援 JPG、PNG、GIF 格式，檔案大小不超過 5MB
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 圖片預覽區域 -->
+                  <div id="imagePreview" class="image-preview-container hidden">
+                    <div class="image-preview-wrapper">
+                      <img
+                        id="previewImg"
+                        class="preview-image"
+                        alt="活動圖片預覽"
+                      />
+                      <div class="image-overlay">
+                        <button
+                          type="button"
+                          id="removeImage"
+                          class="remove-image-btn"
+                          title="移除圖片"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div id="compressionInfo" class="compression-info"></div>
+                  </div>
+                </div>
+              </div>
+
+              <hr />
+
+              <!-- 報名時間設定 -->
+              <div class="act-detail-info">
+                <div class="form-floating">
+                  <input
+                    type="datetime-local"
+                    name="signupStart"
+                    id="signupStart"
+                    class="form-control"
+                    th:value="${#temporals.format(actVo.signupStart,'yyyy-MM-dd''T''HH:mm')}"
+                    required
+                  />
+                  <label for="signupStart"
+                    >報名開始時間 <span class="required-mark">*</span></label
+                  >
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-floating">
+                  <input
+                    type="datetime-local"
+                    name="signupEnd"
+                    id="signupEnd"
+                    class="form-control"
+                    th:value="${#temporals.format(actVo.signupEnd,'yyyy-MM-dd''T''HH:mm')}"
+                    required
+                  />
+                  <label for="signupEnd"
+                    >報名截止時間 <span class="required-mark">*</span></label
+                  >
+                  <div class="invalid-feedback"></div>
+                </div>
+              </div>
+
+              <!-- 人數和狀態設定 -->
+              <div class="act-detail-info">
+                <div class="form-floating">
                   <input
                     type="number"
                     name="maxCap"
+                    id="maxCap"
+                    class="form-control"
+                    placeholder="請輸入人數需求"
                     th:value="${actVo.maxCap}"
-                    class="act-search-input"
                     min="1"
                     required
                   />
+                  <label for="maxCap"
+                    >人數需求 <span class="required-mark">*</span></label
+                  >
+                  <div class="invalid-feedback"></div>
                 </div>
-                <div class="act-detail-item">
-                  <label class="act-detail-label">已報名人數</label>
+                <div class="form-floating">
                   <input
                     type="number"
                     name="signupCnt"
+                    id="signupCnt"
+                    class="form-control"
                     th:value="${actVo.signupCnt}"
-                    class="act-search-input"
                     readonly
                   />
+                  <label for="signupCnt">已報名人數</label>
                 </div>
               </div>
 
+              <!-- 設定選項 -->
               <div class="act-detail-info">
-                <div class="act-detail-item">
-                  <label class="act-detail-label">是否公開</label>
-                  <select name="isPublic" class="act-search-input">
+                <div class="form-floating">
+                  <select name="isPublic" id="isPublic" class="form-select">
                     <option value="0" th:selected="${actVo.isPublic == 0}">
                       私人
                     </option>
@@ -145,10 +465,14 @@
                       公開
                     </option>
                   </select>
+                  <label for="isPublic">是否公開</label>
                 </div>
-                <div class="act-detail-item">
-                  <label class="act-detail-label">允許退出</label>
-                  <select name="allowCancel" class="act-search-input">
+                <div class="form-floating">
+                  <select
+                    name="allowCancel"
+                    id="allowCancel"
+                    class="form-select"
+                  >
                     <option value="0" th:selected="${actVo.allowCancel == 0}">
                       不允許
                     </option>
@@ -156,12 +480,17 @@
                       允許
                     </option>
                   </select>
+                  <label for="allowCancel">是否允許退出</label>
                 </div>
               </div>
 
-              <div class="act-detail-item">
-                <label class="act-detail-label">招募狀態</label>
-                <select name="recruitStatus" class="act-search-input">
+              <!-- 招募狀態 -->
+              <div class="form-floating">
+                <select
+                  name="recruitStatus"
+                  id="recruitStatus"
+                  class="form-select"
+                >
                   <option value="0" th:selected="${actVo.recruitStatus == 0}">
                     招募中
                   </option>
@@ -181,37 +510,11 @@
                     已結束
                   </option>
                 </select>
+                <label for="recruitStatus">招募狀態</label>
               </div>
 
-              <div class="act-detail-item">
-                <label class="act-detail-label">活動圖片</label>
-                <input
-                  type="file"
-                  name="actImg"
-                  id="actImgInput"
-                  accept="image/*"
-                  class="act-search-input"
-                />
-                <div id="imagePreview" style="margin-top: 10px; display: none">
-                  <img
-                    id="previewImg"
-                    style="
-                      max-width: 200px;
-                      max-height: 150px;
-                      border-radius: 8px;
-                    "
-                  />
-                  <div
-                    id="compressionInfo"
-                    style="font-size: 12px; color: #666; margin-top: 5px"
-                  ></div>
-                </div>
-              </div>
-
-              <div
-                class="act-card-actions"
-                style="margin-top: 24px; justify-content: center"
-              >
+              <!-- 提交按鈕 -->
+              <div class="act-detail-info">
                 <button type="submit" class="act-btn act-btn-primary">
                   儲存修改
                 </button>
@@ -222,119 +525,247 @@
       </div>
     </div>
 
+    <!-- jQuery & Select2 JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- GroupActivity 模組 JavaScript -->
+    <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
+    <script th:src="@{/js/groupactivity/groupactivity-form.js}"></script>
+    <script th:src="@{/js/groupactivity/groupactivity-api.js}"></script>
+
     <script>
-      // 圖片壓縮功能
-      function compressImage(
-        file,
-        maxWidth = 800,
-        maxHeight = 600,
-        quality = 0.8
-      ) {
-        return new Promise((resolve) => {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          const img = new Image();
+      function initializeForm() {
+        const form = document.getElementById("editActForm");
+        if (!form) return;
 
-          img.onload = () => {
-            // 計算壓縮比例
-            let { width, height } = img;
-            const ratio = Math.min(maxWidth / width, maxHeight / height);
+        // 初始化Select2多標籤選擇器
+        initializeSelect2();
 
-            if (ratio < 1) {
-              width *= ratio;
-              height *= ratio;
-            }
+        // 初始化拖拽上傳功能
+        initializeDragDrop();
 
-            canvas.width = width;
-            canvas.height = height;
+        // 初始化實時驗證
+        initializeRealTimeValidation();
 
-            // 繪製壓縮後的圖片
-            ctx.drawImage(img, 0, 0, width, height);
-
-            // 轉為 Blob
-            canvas.toBlob(resolve, "image/jpeg", quality);
-          };
-
-          img.src = URL.createObjectURL(file);
+        // 表單提交事件
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          clearAllFieldErrors();
+          handleEditFormSubmission(this);
         });
       }
 
-      // 圖片預覽與壓縮
-      document
-        .getElementById("actImgInput")
-        .addEventListener("change", async function (e) {
-          const file = e.target.files[0];
-          const preview = document.getElementById("imagePreview");
-          const previewImg = document.getElementById("previewImg");
-          const compressionInfo = document.getElementById("compressionInfo");
+      // 初始化Select2多標籤選擇器
+      function initializeSelect2() {
+        // 活動類型選擇器
+        $("#actTypeSelect").select2({
+          placeholder: "選擇活動類型",
+          allowClear: false,
+          width: "100%",
+          containerCssClass: "select2-container-custom",
+          dropdownCssClass: "select2-dropdown-custom",
+        });
 
-          if (!file) {
-            preview.style.display = "none";
+        // 活動地區選擇器
+        $("#actCitySelect").select2({
+          placeholder: "選擇活動地區",
+          allowClear: false,
+          width: "100%",
+          containerCssClass: "select2-container-custom",
+          dropdownCssClass: "select2-dropdown-custom",
+        });
+
+        // 添加select2-label
+        addSelect2Labels();
+      }
+
+      // 添加Select2標籤
+      function addSelect2Labels() {
+        const typeContainer = $("#actTypeSelect").next(".select2-container");
+        const cityContainer = $("#actCitySelect").next(".select2-container");
+
+        if (!typeContainer.prev(".select2-label").length) {
+          typeContainer.before('<label class="select2-label">活動類型</label>');
+        }
+
+        if (!cityContainer.prev(".select2-label").length) {
+          cityContainer.before('<label class="select2-label">活動地區</label>');
+        }
+      }
+
+      // 初始化拖拽上傳功能
+      function initializeDragDrop() {
+        const dragDropArea = document.getElementById("dragDropArea");
+        const fileInput = document.getElementById("actImgInput");
+        const imagePreview = document.getElementById("imagePreview");
+        const previewImg = document.getElementById("previewImg");
+        const removeBtn = document.getElementById("removeImage");
+        const compressionInfo = document.getElementById("compressionInfo");
+
+        // 點擊拖拽區域開啟檔案選擇器
+        dragDropArea.addEventListener("click", () => {
+          fileInput.click();
+        });
+
+        // 檔案選擇事件
+        fileInput.addEventListener("change", handleFileSelect);
+
+        // 拖拽事件
+        dragDropArea.addEventListener("dragover", handleDragOver);
+        dragDropArea.addEventListener("dragenter", handleDragEnter);
+        dragDropArea.addEventListener("dragleave", handleDragLeave);
+        dragDropArea.addEventListener("drop", handleDrop);
+
+        // 移除圖片按鈕
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          removeImage();
+        });
+
+        function handleDragOver(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        function handleDragEnter(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          dragDropArea.classList.add("drag-over");
+        }
+
+        function handleDragLeave(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!dragDropArea.contains(e.relatedTarget)) {
+            dragDropArea.classList.remove("drag-over");
+          }
+        }
+
+        function handleDrop(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          dragDropArea.classList.remove("drag-over");
+
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith("image/")) {
+              fileInput.files = files;
+              handleFileSelect({ target: { files: [file] } });
+            }
+          }
+        }
+
+        function handleFileSelect(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          if (!file.type.startsWith("image/")) {
+            alert("請選擇圖片檔案");
             return;
           }
 
-          // 顯示原始檔案資訊
-          const originalSize = (file.size / 1024 / 1024).toFixed(2);
-          compressionInfo.textContent = `原始大小: ${originalSize}MB，壓縮中...`;
+          // 使用GroupActivityForm的共用函數
+          const { compressImage } = GroupActivityForm;
+          compressImage(file, (compressedFile) => {
+            showImagePreview(compressedFile);
+          });
+        }
 
-          try {
-            // 壓縮圖片
-            const compressedFile = await compressImage(file);
-            const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(
-              2
-            );
+        function showImagePreview(file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            previewImg.src = e.target.result;
+            dragDropArea.classList.add("hidden");
+            imagePreview.classList.remove("hidden");
 
-            // 更新預覽
-            previewImg.src = URL.createObjectURL(compressedFile);
-            compressionInfo.textContent = `原始: ${originalSize}MB → 壓縮後: ${compressedSize}MB`;
-            preview.style.display = "block";
+            // 顯示壓縮資訊
+            const originalSize = (file.originalSize / 1024).toFixed(1);
+            const compressedSize = (file.size / 1024).toFixed(1);
+            const compressionRatio = (
+              ((file.originalSize - file.size) / file.originalSize) *
+              100
+            ).toFixed(1);
 
-            // 將壓縮後的檔案替換原始檔案
-            const dataTransfer = new DataTransfer();
-            const compressedFileObj = new File([compressedFile], file.name, {
-              type: "image/jpeg",
-              lastModified: Date.now(),
-            });
-            dataTransfer.items.add(compressedFileObj);
-            e.target.files = dataTransfer.files;
-          } catch (error) {
-            console.error("圖片壓縮失敗:", error);
-            compressionInfo.textContent = "圖片壓縮失敗，將使用原始檔案";
-            previewImg.src = URL.createObjectURL(file);
-            preview.style.display = "block";
-          }
-        });
+            compressionInfo.innerHTML = `
+              <div class="compression-stats">
+                <span>原始大小: ${originalSize} KB</span>
+                <span>壓縮後: ${compressedSize} KB</span>
+                <span>節省: ${compressionRatio}%</span>
+              </div>
+            `;
+          };
+          reader.readAsDataURL(file);
+        }
 
-      // AJAX 更新活動（改用FormData）
-      document
-        .getElementById("editActForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
+        function removeImage() {
+          fileInput.value = "";
+          previewImg.src = "";
+          compressionInfo.innerHTML = "";
+          dragDropArea.classList.remove("hidden");
+          imagePreview.classList.add("hidden");
+        }
+      }
 
-          const formData = new FormData(this);
+      // 初始化實時驗證
+      function initializeRealTimeValidation() {
+        const { validateField } = GroupActivityForm;
 
-          try {
-            const response = await fetch("/api/act/update", {
-              method: "PUT",
-              body: formData,
-            });
-
-            if (response.ok) {
-              alert("更新完成");
-              // 自動刷新上一頁（groupHome）
-              if (document.referrer) {
-                window.location.href = document.referrer;
-              } else {
-                window.history.back();
+        // 設置實時驗證
+        [
+          "actName",
+          "itnId",
+          "actStart",
+          "actEnd",
+          "signupStart",
+          "signupEnd",
+          "maxCap",
+        ].forEach((fieldId) => {
+          const field = document.getElementById(fieldId);
+          if (field) {
+            field.addEventListener("blur", () => validateField(field));
+            field.addEventListener("input", () => {
+              if (field.classList.contains("is-invalid")) {
+                validateField(field);
               }
-            } else {
-              throw new Error("伺服器回應錯誤");
-            }
-          } catch (error) {
-            console.error("更新活動失敗:", error);
-            alert("更新活動失敗，請檢查網路連線或稍後再試");
+            });
           }
         });
+      }
+
+      // 清除所有欄位錯誤
+      function clearAllFieldErrors() {
+        const { clearFieldError } = GroupActivityForm;
+        document
+          .querySelectorAll(".form-control, .form-select")
+          .forEach(clearFieldError);
+      }
+
+      // 處理編輯表單提交
+      async function handleEditFormSubmission(form) {
+        const { updateActivity } = GroupActivityAPI;
+
+        try {
+          const formData = new FormData(form);
+          const result = await updateActivity(formData);
+
+          alert("活動更新成功！");
+
+          // 自動返回上一頁
+          if (document.referrer) {
+            window.location.href = document.referrer;
+          } else {
+            window.history.back();
+          }
+        } catch (error) {
+          console.error("更新活動失敗:", error);
+          alert("更新活動失敗，請檢查網路連線或稍後再試");
+        }
+      }
+
+      // 頁面載入時初始化
+      document.addEventListener("DOMContentLoaded", initializeForm);
     </script>
   </body>
 </html>

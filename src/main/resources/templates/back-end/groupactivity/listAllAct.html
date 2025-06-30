@@ -9,7 +9,7 @@
   <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
   <link rel="stylesheet" th:href="@{/css/back_light.css}" />
   <link rel="stylesheet" th:href="@{/css/back_style.css}" />
-  <link rel="stylesheet" th:href="@{/css/styleAct_admin.css}" />
+  <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_admin.css}" />
 
   <!-- DataTables CSS -->
   <link
@@ -222,7 +222,7 @@
           ordering: true, //排序功能, 預設是開啟
           scrollX: true, //自動產生卷軸
           columnDefs: [
-            { responsivePriority: 1, targets: -1 }, //最優先：操作（超出視窗會隱藏）
+            { responsivePriority: 1, targets: -1 }, //（優先順位,目標欄位：操作超出視窗會隱藏
             { responsivePriority: 2, targets: 0 }, //活動編號
             { responsivePriority: 3, targets: 1 }, //活動名稱
             // { responsivePriority: 4, targets: 2 },  //活動說明

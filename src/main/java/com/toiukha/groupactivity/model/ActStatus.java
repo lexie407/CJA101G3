@@ -37,9 +37,7 @@ public enum ActStatus {
         return cssClass; 
     }
     
-    /**
-     * 根據數值取得對應的Enum
-     */
+    //依數字回傳對應的類別
     public static ActStatus fromValue(byte value) {
         for (ActStatus status : values()) {
             if (status.value == value) {
@@ -48,10 +46,7 @@ public enum ActStatus {
         }
         throw new IllegalArgumentException("Unknown status value: " + value);
     }
-    
-    /**
-     * 根據數值取得對應的Enum，如果找不到則回傳null
-     */
+
     public static ActStatus fromValueOrNull(Byte value) {
         if (value == null) {
             return null;
@@ -64,9 +59,7 @@ public enum ActStatus {
         return null;
     }
     
-    /**
-     * 取得狀態Map供前端使用
-     */
+    //取得狀態Map供前端使用
     public static Map<Byte, String> getStatusMap() {
         Map<Byte, String> map = new LinkedHashMap<>();
         for (ActStatus status : values()) {
@@ -74,32 +67,19 @@ public enum ActStatus {
         }
         return map;
     }
-    
-    /**
-     * 檢查是否為招募中狀態
-     */
-    public boolean isOpen() {
+
+    //招募中
+    public boolean isOpen() { return this == OPEN; }
+    //允許報名
+    public boolean canSignUp() {
         return this == OPEN;
     }
-    
-    /**
-     * 檢查是否為成團狀態
-     */
+    //成團
     public boolean isFull() {
         return this == FULL;
     }
-    
-    /**
-     * 檢查是否為結束狀態（未成團、取消、凍結、結束）
-     */
+    //結束（未成團、取消、凍結、結束）
     public boolean isEnded() {
         return this == FAILED || this == CANCELLED || this == FROZEN || this == ENDED;
-    }
-    
-    /**
-     * 檢查是否可以報名
-     */
-    public boolean canSignUp() {
-        return this == OPEN;
     }
 } 

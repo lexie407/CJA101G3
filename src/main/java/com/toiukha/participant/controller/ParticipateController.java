@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 參加者控制器，提供報名相關 API
@@ -35,47 +36,196 @@ public class ParticipateController {
      * @return 報名結果
      */
     @PostMapping("/{actId}/signup/{memId}")
-    public String signup(@PathVariable Integer actId, @PathVariable Integer memId, HttpServletRequest request) {
-        // 取得session並檢查登入狀態
-        HttpSession session = request.getSession();
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
-        // TODO: 若未登入可回傳未授權訊息
-        // if (!memberInfo.isLoggedIn()) { return "unauthorized"; }
-        
-        // 測試用：印出session中的會員ID
-        System.out.println("=== Test: Current Session Member ID ===");
-        System.out.println("URI: /api/participate/" + actId + "/signup/" + memId);
-        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
-        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
-        System.out.println("=====================================");
-        
-        partSvc.signup(actId, memId);
-        return "signed up";
+    public ResponseEntity<Map<String, Object>> signup(@PathVariable Integer actId, @PathVariable Integer memId, HttpServletRequest request) {
+        try {
+            // 1. 基本參數驗證
+            if (actId == null || actId <= 0) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "無效的活動ID"
+                ));
+            }
+            
+            if (memId == null || memId <= 0) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "無效的會員ID"
+                ));
+            }
+            
+            // 2. 權限驗證
+            HttpSession session = request.getSession();
+            AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+            
+            if (!memberInfo.isLoggedIn()) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "error", "請先登入",
+                    "redirectTo", "/members/login"
+                ));
+            }
+            
+            if (!memberInfo.getMemId().equals(memId)) {
+                return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "error", "您只能為自己報名活動"
+                ));
+            }
+            
+            // 3. 檢查活動是否存在
+            ActVO activity = actRepository.findById(actId).orElse(null);
+            if (activity == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "活動不存在"
+                ));
+            }
+            
+            // 4. 執行報名
+            partSvc.signup(actId, memId);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "報名成功",
+                "data", Map.of(
+                    "actId", actId,
+                    "actName", activity.getActName()
+                )
+            ));
+            
+        } catch (IllegalStateException e) {
+            // 業務邏輯錯誤（如已報名、人數已滿等）
+            String errorMessage = e.getMessage();
+            String userFriendlyMessage;
+            
+            // 錯誤訊息
+            if (errorMessage.contains("團主無需報名")) {
+                userFriendlyMessage = "您是活動團主，無需報名自己的活動";
+            } else if (errorMessage.contains("已報名")) {
+                userFriendlyMessage = "您已經報名此活動";
+            } else if (errorMessage.contains("人數已滿")) {
+                userFriendlyMessage = "活動人數已滿，無法報名";
+            } else if (errorMessage.contains("未開放報名")) {
+                userFriendlyMessage = "活動尚未開放報名或已結束報名";
+            } else {
+                userFriendlyMessage = errorMessage;
+            }
+            
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", userFriendlyMessage,
+                "errorType", "BUSINESS_LOGIC_ERROR"
+            ));
+            
+        } catch (Exception e) {
+            // 系統錯誤
+            System.err.println("報名活動時發生系統錯誤 (actId: " + actId + ", memId: " + memId + "): " + e.getMessage());
+            e.printStackTrace();
+            
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", "系統繁忙，請稍後再試",
+                "errorType", "SYSTEM_ERROR"
+            ));
+        }
     }
 
     /**
-     * 取消報名
+     * 取消報名 
      * @param actId 活動ID
      * @param memId 會員ID
      * @return 取消結果
      */
     @DeleteMapping("/{actId}/signup/{memId}")
-    public String cancel(@PathVariable Integer actId, @PathVariable Integer memId, HttpServletRequest request) {
-        // 取得session並檢查登入狀態
-        HttpSession session = request.getSession();
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
-        // TODO: 若未登入可回傳未授權訊息
-        // if (!memberInfo.isLoggedIn()) { return "unauthorized"; }
-        
-        // 測試用：印出session中的會員ID
-        System.out.println("=== Test: Current Session Member ID ===");
-        System.out.println("URI: /api/participate/" + actId + "/signup/" + memId);
-        System.out.println("Member ID: " + (memberInfo.isLoggedIn() ? memberInfo.getMemId() : "Not logged in"));
-        System.out.println("Member Name: " + (memberInfo.isLoggedIn() ? memberInfo.getMemName() : "N/A"));
-        System.out.println("=====================================");
-        
-        partSvc.cancel(actId, memId);
-        return "canceled";
+    public ResponseEntity<Map<String, Object>> cancel(@PathVariable Integer actId, @PathVariable Integer memId, HttpServletRequest request) {
+        try {
+            // 1. 基本參數驗證
+            if (actId == null || actId <= 0) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "無效的活動ID"
+                ));
+            }
+            
+            if (memId == null || memId <= 0) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "無效的會員ID"
+                ));
+            }
+            
+            // 2. 權限驗證
+            HttpSession session = request.getSession();
+            AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+            
+            if (!memberInfo.isLoggedIn()) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "error", "請先登入",
+                    "redirectTo", "/members/login"
+                ));
+            }
+            
+            if (!memberInfo.getMemId().equals(memId)) {
+                return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "error", "您只能取消自己的報名"
+                ));
+            }
+            
+            // 3. 檢查活動是否存在
+            ActVO activity = actRepository.findById(actId).orElse(null);
+            if (activity == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "活動不存在"
+                ));
+            }
+            
+            // 4. 執行取消報名
+            partSvc.cancel(actId, memId);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "取消報名成功",
+                "data", Map.of(
+                    "actId", actId,
+                    "actName", activity.getActName()
+                )
+            ));
+            
+        } catch (IllegalStateException e) {
+            // 業務邏輯錯誤
+            String errorMessage = e.getMessage();
+            String userFriendlyMessage;
+            
+            if (errorMessage.contains("團主不能退出")) {
+                userFriendlyMessage = "團主不能退出自己的活動，如需取消活動請聯繫管理員";
+            } else if (errorMessage.contains("尚未報名")) {
+                userFriendlyMessage = "您尚未報名此活動";
+            } else if (errorMessage.contains("不允許退出")) {
+                userFriendlyMessage = "此活動不允許退出";
+            } else {
+                userFriendlyMessage = errorMessage;
+            }
+            
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", userFriendlyMessage,
+                "errorType", "BUSINESS_LOGIC_ERROR"
+            ));
+            
+        } catch (Exception e) {
+            // 系統錯誤
+            System.err.println("取消報名時發生系統錯誤 (actId: " + actId + ", memId: " + memId + "): " + e.getMessage());
+            e.printStackTrace();
+            
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", "系統繁忙，請稍後再試",
+                "errorType", "SYSTEM_ERROR"
+            ));
+        }
     }
 
     /**

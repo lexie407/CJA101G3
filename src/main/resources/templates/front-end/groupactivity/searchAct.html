@@ -9,42 +9,12 @@
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
-
-    <style>
-      /* 日期區間樣式 */
-      .act-date-range-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .act-date-input {
-        flex: 1;
-        min-width: 140px;
-      }
-
-      .act-date-separator {
-        color: var(--md-sys-color-on-surface-variant);
-        font-weight: 500;
-        white-space: nowrap;
-      }
-
-      @media (max-width: 768px) {
-        .act-date-range-container {
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .act-date-separator {
-          display: none;
-        }
-
-        .act-date-input {
-          min-width: unset;
-        }
-      }
-    </style>
+    <!-- GroupActivity 模組 CSS -->
+    <link
+      rel="stylesheet"
+      th:href="@{/css/groupactivity/styleAct_common.css}"
+    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
   </head>
   <body class="light">
     <div class="app-container">
@@ -151,202 +121,82 @@
       </div>
     </div>
 
+    <!-- GroupActivity 模組 JavaScript -->
+    <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
+    <script th:src="@{/js/groupactivity/groupactivity-ui.js}"></script>
+    <script th:src="@{/js/groupactivity/groupactivity-api.js}"></script>
+
     <script>
+      // 頁面變數
       const searchForm = document.getElementById("searchForm");
       const searchResults = document.getElementById("searchResults");
       const initialState = document.getElementById("initialState");
       let currentPage = 0;
-      let currentQuery = "";
       let isLastPage = false;
 
-      function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("zh-TW", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
+      // 使用共用函數
+      const { formatDate, getStatusText } = GroupActivityCore;
+      const { createActCard } = GroupActivityUI;
+      const { buildSearchUrl, loadPaginatedResults } = GroupActivityAPI;
+
+      // 活動卡片渲染器
+      function renderActivityCard(activity) {
+        return createActCard(activity, {
+          showActions: true,
+          showHostActions: false,
+          showImage: true,
         });
       }
 
-      function getStatusText(status) {
-        const statusMap = {
-          0: { text: "招募中", class: "recruiting" },
-          1: { text: "成團", class: "full" },
-          2: { text: "未成團", class: "ended" },
-          3: { text: "已取消", class: "ended" },
-          4: { text: "已凍結", class: "ended" },
-          5: { text: "已結束", class: "ended" },
-        };
-        return statusMap[status] || { text: "未知", class: "ended" };
-      }
+      // 搜尋活動
+      async function searchActivities(isNewSearch = false) {
+        try {
+          const formData = new FormData(searchForm);
+          const params = {
+            actName: formData.get("actName")?.trim(),
+            maxCap: formData.get("maxCap"),
+            actStart: formData.get("dateRangeStart"),
+          };
 
-      // 查看活動詳情
-      function viewAct(actId) {
-        window.location.href = `/act/member/view/${actId}`;
-      }
+          // 隱藏初始狀態
+          initialState.style.display = "none";
+          searchResults.style.display = "block";
 
-      function createActCard(act) {
-        const status = getStatusText(act.recruitStatus);
+          const url = buildSearchUrl(params, isNewSearch ? 0 : currentPage + 1);
+          const result = await loadPaginatedResults(
+            url,
+            searchResults,
+            renderActivityCard,
+            isNewSearch
+          );
 
-        // [優化] 圖片統一由專用端點載入，不再檢查 actImg 欄位
-        const imageHtml = `<img src="/api/act/image/${act.actId}" alt="活動圖片" class="act-card-image">`;
+          if (isNewSearch) {
+            currentPage = 0;
+          } else {
+            currentPage++;
+          }
 
-        return `
-                <div class="act-card">
-                    ${imageHtml}
-                    <h3 class="act-card-title">${
-                      act.actName || "未命名活動"
-                    }</h3>
-                    <p class="act-card-desc">${act.actDesc || "無描述"}</p>
-                    
-                    <div class="act-card-info">
-                        <div class="act-info-item">
-                            <span class="act-info-label">人數</span>
-                            <span class="act-info-value">${
-                              act.signupCnt || 0
-                            }/${act.maxCap || 0}</span>
-                        </div>
-                        <div class="act-info-item">
-                            <span class="act-info-label">開始日期</span>
-                            <span class="act-info-value">${
-                              act.actStart ? formatDate(act.actStart) : "未設定"
-                            }</span>
-                        </div>
-                    </div>
-                    
-                    <span class="act-status ${status.class}">${
-          status.text
-        }</span>
-                    
-                    <div class="act-card-actions">
-                        <button onclick="viewAct(${
-                          act.actId
-                        })" class="act-btn act-btn-primary">
-                            查看詳情
-                        </button>
-                    </div>
-                </div>
-            `;
-      }
+          isLastPage = !result.hasMore;
 
-      function buildSearchUrl(formData, page = 0) {
-        const params = new URLSearchParams();
-
-        // 關鍵字搜尋
-        const actName = formData.get("actName");
-        if (actName && actName.trim()) {
-          params.append("actName", actName.trim());
+          // 添加載入更多按鈕
+          if (result.hasMore) {
+            const loadMoreBtn = document.createElement("button");
+            loadMoreBtn.id = "loadMoreBtn";
+            loadMoreBtn.className = "act-btn act-btn-primary";
+            loadMoreBtn.textContent = "載入更多";
+            loadMoreBtn.style.marginTop = "20px";
+            loadMoreBtn.onclick = () => searchActivities(false);
+            searchResults.appendChild(loadMoreBtn);
+          }
+        } catch (error) {
+          console.error("搜尋失敗:", error);
         }
-
-        // 需求人數（maxCap）
-        const maxCap = formData.get("maxCap");
-        if (maxCap && maxCap > 0) {
-          params.append("maxCap", maxCap);
-        }
-
-        // 活動開始日期（只使用開始日期，因為後端只支援單一日期查詢）
-        const dateRangeStart = formData.get("dateRangeStart");
-        if (dateRangeStart) {
-          // 將日期轉換為 LocalDateTime 格式 (ISO 8601)
-          const startDateTime = new Date(dateRangeStart + "T00:00:00");
-          params.append("actStart", startDateTime.toISOString());
-        }
-
-        // 分頁參數
-        params.append("page", page);
-        params.append("size", 9);
-
-        return `/api/act/search?${params.toString()}`;
       }
 
-      function fetchActivities(url, isNewSearch = false) {
-        // 顯示載入狀態
-        initialState.style.display = "none";
-        searchResults.style.display = "block";
-
-        if (isNewSearch) {
-          searchResults.innerHTML = '<div class="act-loading">搜尋中...</div>';
-        } else {
-          // 移除舊的 "載入更多" 按鈕
-          const oldLoadMoreBtn = document.getElementById("loadMoreBtn");
-          if (oldLoadMoreBtn) oldLoadMoreBtn.remove();
-        }
-
-        fetch(url)
-          .then((r) => {
-            searchResults.classList.remove("act-loading");
-            if (!r.ok) throw new Error("Network response was not ok");
-            return r.json();
-          })
-          .then((page) => {
-            console.log("搜尋結果:", page); // 除錯用
-
-            const content = page.content;
-            isLastPage = page.last;
-
-            if (isNewSearch) {
-              searchResults.innerHTML = ""; // 清空舊結果
-            }
-
-            if (content && content.length > 0) {
-              const cardContainer =
-                isNewSearch || !document.querySelector(".act-card-container")
-                  ? document.createElement("div")
-                  : document.querySelector(".act-card-container");
-
-              if (isNewSearch) {
-                cardContainer.className = "act-card-container";
-                searchResults.appendChild(cardContainer);
-              }
-
-              content.forEach((act) => {
-                const cardHtml = createActCard(act);
-                cardContainer.insertAdjacentHTML("beforeend", cardHtml);
-              });
-
-              // 如果不是最後一頁，新增 "載入更多" 按鈕
-              if (!isLastPage) {
-                const loadMoreBtn = document.createElement("button");
-                loadMoreBtn.id = "loadMoreBtn";
-                loadMoreBtn.className = "act-btn act-btn-primary";
-                loadMoreBtn.innerText = "載入更多";
-                loadMoreBtn.style.marginTop = "20px";
-                searchResults.appendChild(loadMoreBtn);
-
-                loadMoreBtn.onclick = () => {
-                  currentPage++;
-                  const formData = new FormData(searchForm);
-                  const nextUrl = buildSearchUrl(formData, currentPage);
-                  fetchActivities(nextUrl, false);
-                };
-              }
-            } else if (isNewSearch) {
-              searchResults.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: var(--md-sys-color-on-surface-variant);">
-                        <h3>找不到符合條件的活動</h3>
-                        <p>請嘗試修改您的搜尋條件</p>
-                    </div>
-                `;
-            }
-          })
-          .catch((error) => {
-            console.error("Fetch error:", error);
-            searchResults.classList.remove("act-loading");
-            searchResults.innerHTML = `
-                  <div style="text-align: center; padding: 40px; color: var(--md-sys-color-error);">
-                      <h3>搜尋失敗</h3>
-                      <p>發生網路錯誤，請稍後再試</p>
-                  </div>
-              `;
-          });
-      }
-
+      // 表單提交處理
       searchForm.addEventListener("submit", function (e) {
         e.preventDefault();
-        currentPage = 0;
-        const formData = new FormData(searchForm);
-        const searchUrl = buildSearchUrl(formData, currentPage);
-        fetchActivities(searchUrl, true);
+        searchActivities(true);
       });
 
       // 頁面載入時自動載入公開活動（最新優先）
@@ -366,73 +216,6 @@
         const formData = new FormData(searchForm);
         const searchUrl = buildSearchUrl(formData, currentPage);
         fetchActivities(searchUrl, true);
-      }
-
-      // ========================================
-      // 測試相關端點 - 開發完成後可移除
-      // ========================================
-
-      /**
-       * 測試 API 連線
-       * 用途：檢查 API 端點是否正常運作
-       * 移除時機：開發完成後
-       */
-      function testApi() {
-        console.log("開始測試 API...");
-
-        // 測試 debug 端點
-        fetch("/api/act/debug")
-          .then((r) => r.json())
-          .then((data) => {
-            console.log("Debug API 回應:", data);
-            alert(
-              `資料庫狀態:\n總計: ${data.totalCount} 個活動\n時間: ${data.timestamp}`
-            );
-          })
-          .catch((error) => {
-            console.error("Debug API 失敗:", error);
-            alert("Debug API 失敗: " + error.message);
-          });
-      }
-
-      /**
-       * 測試圖片回傳
-       * 用途：檢查圖片端點是否正常運作
-       * 移除時機：開發完成後
-       */
-      function testImageResponse() {
-        console.log("開始測試圖片回傳...");
-
-        // 先取得第一個活動的 ID
-        fetch("/api/act/search/all")
-          .then((r) => r.json())
-          .then((data) => {
-            if (data && data.length > 0) {
-              const firstAct = data[0];
-              console.log("測試活動:", firstAct.actId, firstAct.actName);
-
-              // 測試圖片回傳端點
-              return fetch(`/api/act/test-image-response/${firstAct.actId}`);
-            } else {
-              throw new Error("沒有活動資料可測試");
-            }
-          })
-          .then((r) => r.json())
-          .then((data) => {
-            console.log("圖片回傳測試結果:", data);
-            alert(
-              `圖片回傳測試結果:\n` +
-                `活動ID: ${data.actId}\n` +
-                `活動名稱: ${data.actName}\n` +
-                `有 actImg: ${data.hasActImg}\n` +
-                `actImg 長度: ${data.actImgLength}\n` +
-                `訊息: ${data.message}`
-            );
-          })
-          .catch((error) => {
-            console.error("圖片回傳測試失敗:", error);
-            alert("圖片回傳測試失敗: " + error.message);
-          });
       }
     </script>
   </body>
