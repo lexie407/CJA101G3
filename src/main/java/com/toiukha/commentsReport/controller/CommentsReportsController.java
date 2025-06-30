@@ -19,6 +19,7 @@ import com.toiukha.comments.model.CommentsService;
 import com.toiukha.comments.model.CommentsVO;
 import com.toiukha.commentsReport.model.CommentsReportService;
 import com.toiukha.commentsReport.model.CommentsReportVO;
+import com.toiukha.members.model.MembersVO;
 import com.toiukha.notification.model.NotificationService;
 import com.toiukha.notification.model.NotificationVO;
 
@@ -40,10 +41,8 @@ public class CommentsReportsController {
 	//查看檢舉
 	@GetMapping("/memberReportList")
 	public String memberReportList(HttpServletRequest req, ModelMap model) {
-//		等登入串接後使用
-//		Integer memId = (Integer)req.getSession().getAttribute("member");
-		Integer memId = 1;
-		List<CommentsReportVO> list = commentsReportService.getMemList(memId);
+		MembersVO membersVO = (MembersVO)req.getSession().getAttribute("member");
+		List<CommentsReportVO> list = commentsReportService.getMemList(membersVO.getMemId());
 		model.addAttribute("list", list);
 		model.addAttribute("currentPage", "account");
 		return "front-end/commentsreports/memberCommentsReportList";
