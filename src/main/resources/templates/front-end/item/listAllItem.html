@@ -20,7 +20,7 @@
                 <div th:insert="~{/subnavStore_front::subnav(${activeItem})}"></div>
             </header>
             <main class="content-area-main">
-                <input type="hidden" name="memId" th:value="${session.memId}">
+                <input type="hidden" name="memId" th:value="${session.member != null ? session.member.memId : ''}">
                 <div class="container">
                     <th:block th:each="itemVO : ${itemListData_front}">
                         <div class="card">
@@ -44,7 +44,8 @@
                             <form method="post" th:action="@{/item/add_to_shopCart}" class="shopping-cart-form"
                                 style="display: flex; align-items: center; justify-content: center; gap: 6px;">
                                 <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
-                                <input type="hidden" name="memId" th:value="${session.memId}">
+                                <input type="hidden" name="memId"
+                                    th:value="${session.member != null ? session.member.memId : ''}">
                                 <input type="number" name="quantity" class="quantity-input" min="1" max="99" value="1"
                                     style="width: 50px; height: 28px; border-radius: 4px; border: 1px solid #ccc; text-align: center; margin-right: 4px;" />
                                 <button type="button" class="add-to-cart-btn" style="height: 32px;">加入購物車</button>
@@ -114,7 +115,7 @@
                             var quantity = form.find('input[name="quantity"]').val();
 
                             if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
-                                window.location.href = window.location.origin + '/fakeLogin';
+                                window.location.href = window.location.origin + '/members/login';
                                 return;
                             }
 
@@ -150,7 +151,7 @@
                         $('#cart-fab').click(function () {
                             var memId = $('input[name="memId"]').val();
                             if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
-                                window.location.href = window.location.origin + '/fakeLogin';
+                                window.location.href = window.location.origin + '/members/login';
                                 return;
                             }
 
