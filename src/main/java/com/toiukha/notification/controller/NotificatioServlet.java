@@ -41,7 +41,6 @@ public class NotificatioServlet {
 		HttpServletRequest req,
 		ModelMap model) {
 		
-//		登入功能放入要改!
 		Integer memId = ((MembersVO)req.getSession().getAttribute("member")).getMemId();
 		System.out.println(memId);
 		
