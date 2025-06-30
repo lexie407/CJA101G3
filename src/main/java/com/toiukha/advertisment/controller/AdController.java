@@ -37,6 +37,7 @@ import com.toiukha.advertisment.model.AdVO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -52,24 +53,58 @@ public class AdController {
 	@Autowired
 	AdService adSvc;	// 自動注入AdService
 	
-    // 模擬登入商家的 storeId - 實際應該從 Session 或 JWT 中獲取
-    private final Integer MOCK_STORE_ID = 1;
-    
-    // 檢查商家是否已登入
-    private boolean isStoreLoggedIn() {
-        // 這裡應該檢查 Session 或 JWT 中的登入狀態
-        // 目前使用假資料，實際實作時需要替換
-        return MOCK_STORE_ID != null;
+    /**
+     * 檢查商家是否已登入
+     */
+    private boolean isStoreLoggedIn(HttpSession session) {
+        Object storeObj = session.getAttribute("store");
+        return storeObj != null;
     }
     
-    // 檢查商家是否有權限操作特定廣告
-    private boolean hasPermissionToAd(Integer adId) {
-        if (!isStoreLoggedIn()) {
+    /**
+     * 檢查管理員是否已登入
+     */
+    private boolean isAdminLoggedIn(HttpSession session) {
+        Object adminObj = session.getAttribute("admin");
+        return adminObj != null;
+    }
+    
+    /**
+     * 檢查會員是否已登入
+     */
+    private boolean isMemberLoggedIn(HttpSession session) {
+        Object memberObj = session.getAttribute("member");
+        return memberObj != null;
+    }
+    
+    /**
+     * 獲取當前登入的商家ID
+     */
+    private Integer getCurrentStoreId(HttpSession session) {
+        Object storeObj = session.getAttribute("store");
+        if (storeObj != null) {
+            // 假設 Store 物件有 getStoreId() 方法
+            // 實際需要根據您的 StoreVO 類別來調整
+            return ((com.toiukha.store.model.StoreVO) storeObj).getStoreId();
+        }
+        return null;
+    }
+    
+    /**
+     * 檢查商家是否有權限操作特定廣告
+     */
+    private boolean hasPermissionToAd(Integer adId, HttpSession session) {
+        if (!isStoreLoggedIn(session)) {
+            return false;
+        }
+        
+        Integer currentStoreId = getCurrentStoreId(session);
+        if (currentStoreId == null) {
             return false;
         }
         
         AdVO ad = adSvc.getOneAd(adId);
-        return ad != null && ad.getStoreId().equals(MOCK_STORE_ID);
+        return ad != null && ad.getStoreId().equals(currentStoreId);
     }
 	
 //	//放入StoreService後要改!!
@@ -79,9 +114,9 @@ public class AdController {
 	// ** 處理 /advertisment/addAd 的 GET 請求，顯示新增廣告的表單頁面 **
 	
 	@GetMapping("addAd")
-	public String addAd(ModelMap model) {
+	public String addAd(HttpSession session, ModelMap model) {
 		// 檢查商家是否已登入
-		if (!isStoreLoggedIn()) {
+		if (!isStoreLoggedIn(session)) {
 			model.addAttribute("errorMessage", "請先登入商家帳號");
 			return "error/403";
 		}
@@ -111,18 +146,20 @@ public class AdController {
 			@RequestParam("adStartTime") String adStartTime,
 			@RequestParam("adEndTime") String adEndTime,
 			@RequestParam("adImage") MultipartFile adImageFile,
+			HttpSession session,
 			ModelMap model,
 	        RedirectAttributes redirectAttributes
 			) throws IOException {
 		
 		// 檢查商家是否已登入
-		if (!isStoreLoggedIn()) {
+		if (!isStoreLoggedIn(session)) {
 			model.addAttribute("errorMessage", "請先登入商家帳號");
 			return "error/403";
 		}
 		
+		Integer currentStoreId = getCurrentStoreId(session);
 		System.out.println("=== 開始處理廣告新增 ===");
-		System.out.println("商家ID: " + MOCK_STORE_ID);
+		System.out.println("商家ID: " + currentStoreId);
 		System.out.println("廣告標題: " + adVO.getAdTitle());
 		
 		// 圖片驗證
@@ -156,7 +193,7 @@ public class AdController {
 				model.addAttribute("errorMessage", "結束時間不能早於開始時間");
 				return "front-end/advertisment/addAd";
 			}
-			adVO.setStoreId(MOCK_STORE_ID); // 強制綁定登入商家
+			adVO.setStoreId(currentStoreId); // 強制綁定登入商家
 			adVO.setAdCreatedTime(new Timestamp(System.currentTimeMillis()));
 			adVO.setAdStartTime(astime);
 			adVO.setAdEndTime(aetime);
@@ -188,25 +225,25 @@ public class AdController {
 
 	
     @PostMapping("/getOne_For_Update")
-    public String getOne_For_Update(@RequestParam("adId") Integer adId, ModelMap model) {
-        return prepareUpdateForm(adId, model);
+    public String getOne_For_Update(@RequestParam("adId") Integer adId, HttpSession session, ModelMap model) {
+        return prepareUpdateForm(adId, session, model);
     }
     
 	@GetMapping("/getOne_For_Update")
-	public String getOne_ForUpdateViaGet(@RequestParam("adId") Integer adId, Model model) {
-	    return prepareUpdateForm(adId, (ModelMap) model);
+	public String getOne_ForUpdateViaGet(@RequestParam("adId") Integer adId, HttpSession session, Model model) {
+	    return prepareUpdateForm(adId, session, (ModelMap) model);
 	}
 	
 	// 統一的表單準備方法
-	private String prepareUpdateForm(Integer adId, ModelMap model) {
+	private String prepareUpdateForm(Integer adId, HttpSession session, ModelMap model) {
 		// 檢查商家是否已登入
-		if (!isStoreLoggedIn()) {
+		if (!isStoreLoggedIn(session)) {
 			model.addAttribute("errorMessage", "請先登入商家帳號");
 			return "error/403";
 		}
 		
 		// 檢查是否有權限修改此廣告
-		if (!hasPermissionToAd(adId)) {
+		if (!hasPermissionToAd(adId, session)) {
 			model.addAttribute("errorMessage", "無權限修改此廣告！");
 			return "error/403";
 		}
@@ -241,25 +278,27 @@ public class AdController {
 						 @RequestParam("adStartTime") String adStartTime,
 						 @RequestParam("adEndTime") String adEndTime,
 					 	 @RequestParam("adImageFile") MultipartFile[] parts,
+					 	 HttpSession session,
 						 ModelMap model) throws IOException { 				
 		
 		// 檢查商家是否已登入
-		if (!isStoreLoggedIn()) {
+		if (!isStoreLoggedIn(session)) {
 			model.addAttribute("errorMessage", "請先登入商家帳號");
 			return "error/403";
 		}
 		
 		// 檢查是否有權限修改此廣告
-		if (!hasPermissionToAd(adId)) {
+		if (!hasPermissionToAd(adId, session)) {
 			model.addAttribute("errorMessage", "無權限修改此廣告！");
 			return "error/403";
 		}
 		
+		Integer currentStoreId = getCurrentStoreId(session);
 		System.out.println("=== 開始處理廣告更新 ===");
 		System.out.println("廣告ID: " + adId);
 		System.out.println("廣告標題: " + adTitle);
 		System.out.println("廣告狀態: " + adStatus);
-		System.out.println("商家ID: " + MOCK_STORE_ID);
+		System.out.println("商家ID: " + currentStoreId);
 		
 		// 手動驗證必要欄位
 		if (adTitle == null || adTitle.trim().isEmpty()) {
@@ -340,7 +379,7 @@ public class AdController {
 		adVO.setAdStatus(Byte.valueOf(adStatus));
 		adVO.setAdStartTime(astime);
 		adVO.setAdEndTime(aetime);
-		adVO.setStoreId(MOCK_STORE_ID);
+		adVO.setStoreId(currentStoreId);
 
         // 處理圖片更新
         AdVO originalAd = adSvc.getOneAd(adId);
@@ -395,23 +434,24 @@ public class AdController {
 	// 處理從列表頁面發送的"刪除"請求，根據 **廣告ID (adId)** 刪除廣告資料。
 	
 	@PostMapping("/delete")
-	public String delete(@RequestParam("adId") String adId, ModelMap model) {
+	public String delete(@RequestParam("adId") String adId, HttpSession session, ModelMap model) {
 		
 		// 檢查商家是否已登入
-		if (!isStoreLoggedIn()) {
+		if (!isStoreLoggedIn(session)) {
 			model.addAttribute("errorMessage", "請先登入商家帳號");
 			return "error/403";
 		}
 		
 		// 檢查是否有權限刪除此廣告
-		if (!hasPermissionToAd(Integer.valueOf(adId))) {
+		if (!hasPermissionToAd(Integer.valueOf(adId), session)) {
 			model.addAttribute("errorMessage", "無權限刪除此廣告！");
 			return "error/403";
 		}
 		
+		Integer currentStoreId = getCurrentStoreId(session);
 		System.out.println("=== 開始處理廣告刪除 ===");
 		System.out.println("廣告ID: " + adId);
-		System.out.println("商家ID: " + MOCK_STORE_ID);
+		System.out.println("商家ID: " + currentStoreId);
 		
 		try {
 			adSvc.deleteAd(Integer.valueOf(adId));
@@ -429,17 +469,18 @@ public class AdController {
 	
     // 商家管理頁（只看自己 storeId 的）
     @GetMapping("/myAds")
-    public String viewMyAds(Model model) {
+    public String viewMyAds(HttpSession session, Model model) {
         // 檢查商家是否已登入
-        if (!isStoreLoggedIn()) {
+        if (!isStoreLoggedIn(session)) {
             model.addAttribute("errorMessage", "請先登入商家帳號");
             return "error/403";
         }
         
+        Integer currentStoreId = getCurrentStoreId(session);
         System.out.println("=== 查看我的廣告 ===");
-        System.out.println("商家ID: " + MOCK_STORE_ID);
+        System.out.println("商家ID: " + currentStoreId);
         
-        List<AdVO> list = adSvc.getAllByStoreId(MOCK_STORE_ID);
+        List<AdVO> list = adSvc.getAllByStoreId(currentStoreId);
         model.addAttribute("adListData", list);
         return "front-end/advertisment/myAds";
     }
@@ -553,16 +594,17 @@ public class AdController {
 		return "index";
 	}
 	
-	@GetMapping("/test")
-	public String test() {
-		return "測試頁面 - 應用程式正常運行";
-	}
-	
+
 	// ========== 後台管理功能 ==========
 	
 	// 後台管理主頁面
 	@GetMapping("/admin/dashboard")
-	public String adminDashboard(ModelMap model) {
+	public String adminDashboard(HttpSession session, ModelMap model) {
+		// 檢查管理員登入狀態
+		if (!isAdminLoggedIn(session)) {
+			return "redirect:/admin/login";
+		}
+		
 		// 獲取統計資料
 		List<AdVO> pendingAds = adSvc.getPendingAds();
 		List<AdVO> approvedAds = adSvc.getApprovedAds();
@@ -578,7 +620,12 @@ public class AdController {
 	
 	// 後台廣告審核列表頁面
 	@GetMapping("/admin/pending")
-	public String adminPendingAds(ModelMap model) {
+	public String adminPendingAds(HttpSession session, ModelMap model) {
+		// 檢查管理員登入狀態
+		if (!isAdminLoggedIn(session)) {
+			return "redirect:/admin/login";
+		}
+		
 		List<AdVO> pendingAds = adSvc.getPendingAds();
 		model.addAttribute("pendingAds", pendingAds);
 		
@@ -594,7 +641,12 @@ public class AdController {
 	
 	// 後台已審核廣告列表頁面
 	@GetMapping("/admin/reviewed")
-	public String adminReviewedAds(ModelMap model) {
+	public String adminReviewedAds(HttpSession session, ModelMap model) {
+		// 檢查管理員登入狀態
+		if (!isAdminLoggedIn(session)) {
+			return "redirect:/admin/login";
+		}
+		
 		List<AdVO> approvedAds = adSvc.getApprovedAds();
 		List<AdVO> rejectedAds = adSvc.getRejectedAds();
 		
@@ -613,7 +665,12 @@ public class AdController {
 	
 	// 審核通過廣告
 	@PostMapping("/admin/approve")
-	public String approveAd(@RequestParam("adId") Integer adId, RedirectAttributes redirectAttributes) {
+	public String approveAd(@RequestParam("adId") Integer adId, HttpSession session, RedirectAttributes redirectAttributes) {
+		// 檢查管理員登入狀態
+		if (!isAdminLoggedIn(session)) {
+			return "redirect:/admin/login";
+		}
+		
 		try {
 			adSvc.approveAd(adId);
 			redirectAttributes.addFlashAttribute("successMessage", "廣告審核通過成功！");
@@ -625,7 +682,12 @@ public class AdController {
 	
 	// 審核拒絕廣告
 	@PostMapping("/admin/reject")
-	public String rejectAd(@RequestParam("adId") Integer adId, RedirectAttributes redirectAttributes) {
+	public String rejectAd(@RequestParam("adId") Integer adId, HttpSession session, RedirectAttributes redirectAttributes) {
+		// 檢查管理員登入狀態
+		if (!isAdminLoggedIn(session)) {
+			return "redirect:/admin/login";
+		}
+		
 		try {
 			adSvc.rejectAd(adId);
 			redirectAttributes.addFlashAttribute("successMessage", "廣告已拒絕！");
@@ -637,7 +699,12 @@ public class AdController {
 	
 	// 停用廣告
 	@PostMapping("/admin/deactivate")
-	public String deactivateAd(@RequestParam("adId") Integer adId, RedirectAttributes redirectAttributes) {
+	public String deactivateAd(@RequestParam("adId") Integer adId, HttpSession session, RedirectAttributes redirectAttributes) {
+		// 檢查管理員登入狀態
+		if (!isAdminLoggedIn(session)) {
+			return "redirect:/admin/login";
+		}
+		
 		try {
 			adSvc.deactivateAd(adId);
 			redirectAttributes.addFlashAttribute("successMessage", "廣告已停用！");
