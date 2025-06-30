@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import com.toiukha.forum.article.dto.ArticleDTO;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -24,13 +25,15 @@ public interface ArticleRepository extends JpaRepository<Article, Integer>, JpaS
             SELECT ARTID as artId, ARTCAT as artCat, ARTSTA as artSta, m.MEMNAME as mamName, ARTLIKE as artLike, ARTTITLE as artTitle, ARTCON as artCon, ARTCRETIME as artCreTime
             FROM article a
             LEFT JOIN members m ON m.MEMID = a.ARTHOL
+            WHERE ARTSTA = :artSta
             """,
             countQuery = """
             SELECT COUNT(*) FROM article a
             LEFT JOIN members m ON m.MEMID = a.ARTHOL
+            WHERE ARTSTA = 1
             """,
             nativeQuery = true)
-    Page<ArticleDTO> getAllPagedDTO(Pageable pageable);
+    Page<ArticleDTO> getAllPagedDTO(@Param("artSta") Byte artSta, Pageable pageable);
 
 
     // 根據文章分類查詢

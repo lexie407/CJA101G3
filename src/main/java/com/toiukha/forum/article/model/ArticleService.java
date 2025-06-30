@@ -45,7 +45,8 @@ public interface ArticleService {
 
     /******************* DTO *******************/
 
-    Page<ArticleDTO> getAllPagedDTO(int page, int size, String sortBy, ArticleServiceImpl.SortDirection order);
+    // 取得前台首頁文章的DTO列表(有分頁功能)
+    Page<ArticleDTO> getAllPagedDTO(int page, int size, String sortBy, ArticleServiceImpl.SortDirection order, byte artSta);
 
     List<ArticleDTO> getAllDTO(String sortBy, String sortDirection);
 

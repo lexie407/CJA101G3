@@ -5,6 +5,7 @@ import com.toiukha.forum.article.dto.ArticleDTO;
 import com.toiukha.forum.article.model.ArticleService;
 //import org.hibernate.query.SortDirection;
 import com.toiukha.forum.article.model.ArticleServiceImpl;
+import com.toiukha.forum.article.model.ArticleStatus;
 import com.toiukha.forum.util.Debug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -71,7 +72,8 @@ public class ArticleController {
             @RequestParam(defaultValue = "artCreTime") String sortBy,
             @RequestParam(name = "order",defaultValue = "DESC") ArticleServiceImpl.SortDirection dir
     ) {
-        Page<ArticleDTO> articlePage = articleService.getAllPagedDTO(page, size, sortBy, dir);
+        // 只查詢上架的文章
+        Page<ArticleDTO> articlePage = articleService.getAllPagedDTO(page, size, sortBy, dir, ArticleStatus.PUBLISHED.getValue());
 
         Map<String, Object> response = new HashMap<>();
         response.put("articles", articlePage.getContent());

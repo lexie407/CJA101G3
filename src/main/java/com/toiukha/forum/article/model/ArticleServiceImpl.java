@@ -217,12 +217,12 @@ public class ArticleServiceImpl implements ArticleService {
 
     //===================  DTO查詢  ===================
 
-    // 取得所有文章的DTO列表(支援分頁功能)
-    @Override
-    public Page<ArticleDTO> getAllPagedDTO(int page, int size, String sortBy, SortDirection sortDirection) {
+    // 取得前台首頁文章的DTO列表(有分頁功能，並傳入文章狀態)
+     @Override
+    public Page<ArticleDTO> getAllPagedDTO(int page, int size, String sortBy, SortDirection sortDirection, byte artSta) {
         Sort.Direction direction = Sort.Direction.valueOf(sortDirection.name());
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        return articleRepository.getAllPagedDTO(pageable);
+        return articleRepository.getAllPagedDTO(artSta, pageable);
     }
 
     // 取得所有文章的DTO列表，並傳入排序
