@@ -68,23 +68,41 @@ input, select {
 }
 
 .form-field button {
-  height: 2.2rem;
-  font-size: 1rem;
-  padding: 0 0.8rem;
-  margin-left: 1rem;
-  background: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-  border: none;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px var(--md-sys-color-shadow);
-  line-height: 2.2rem;
-  cursor: pointer;
+	height: 2.2rem;
+	font-size: 1rem;
+	padding: 0 0.8rem;
+	margin-left: 1rem;
+	background: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+	border: none;
+	border-radius: 4px;
+	box-shadow: 0 1px 2px var(--md-sys-color-shadow);
+	line-height: 2.2rem;
+	cursor: pointer;
 }
+
 .form-field button:hover {
-  background: var(--md-sys-color-primary-container);
+	background: var(--md-sys-color-primary-container);
 }
 
+.error-messages-container {
+	background-color: #ffebee; /* 淺紅底 */
+	color: #b71c1c; /* 深紅文字 */
+	border-left: 5px solid #b71c1c;
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	text-align: left;
+}
 
+.error-message {
+	margin-bottom: 5px;
+}
+
+.error-message:last-child {
+	margin-bottom: 0;
+}
 </style>
 </head>
 <body class="light">
@@ -102,6 +120,9 @@ input, select {
 				<section class="md-card"
 					style="max-width: 700px; margin: 2rem auto; padding: 1rem;">
 					<h2 class="md-headline">商家查詢</h2>
+					<div th:if="${errorMsg}" class="error-messages-container">
+						<p th:text="${errorMsg}" class="error-message"></p>
+					</div>
 					<a th:href="@{/store/listAll}" class="show-all-link">顯示全部商家</a>
 					<!-- 按狀態查詢 -->
 					<form th:action="@{/store/listOne}" method="get" class="form-field">

@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>查詢結果 | 管理後台 | 島遊Kha</title>
-<!-- 共用資源 -->
+<title>列出所有管理員 | 管理後台 | 島遊Kha</title>
+<!-- 共用 head 資源 -->
 <th:block th:replace="~{/navBackTemplate :: headResources}" />
 <!-- DataTables CSS -->
 <link
 	th:href="@{https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css}"
 	rel="stylesheet" />
-<!-- 以下 CSS 與 listAll.html 完全相同 -->
 <style>
 .app-container {
 	display: flex;
@@ -363,69 +362,53 @@ td[colspan="23"] {
 	opacity: .4 !important;
 	cursor: default !important;
 }
-
-
 </style>
 </head>
 <body class="light">
 	<div class="app-container">
 		<div th:insert="~{/navBackTemplate :: navbar}" />
 		<div class="main-content">
-			<!-- 次導覽列：跟 listAll 一樣，只把「審核商家」設 active -->
 			<header class="secondary-nav">
 				<ul>
-					<li><a th:href="@{/store/selectPage}">查詢主頁</a></li>
-					<li><a th:href="@{/store/listAll}">列出所有商家</a></li>
-					<li><a th:href="@{/store/reviewStore}">審核商家</a></li>
+					<li><a th:href="@{/admins/selectPage}">查詢主頁</a></li>
+					<li><a th:href="@{/admins/listAll}" class="active">列出所有管理員</a></li>
+					<li><a th:href="@{/admins/add}">新增管理員</a></li>
 				</ul>
 			</header>
 			<main class="content-area-main">
 				<section class="md-card">
-					<h2 class="md-headline">查詢結果</h2>
+					<h2 class="md-headline">所有管理員列表</h2>
 					<div class="table-container">
-						<table id="storeListTable" class="manual-datatable">
+						<table id="adminListTable" class="display internal-datatable">
 							<thead>
 								<tr>
-									<th>廠商編號</th>
+									<th>ID</th>
 									<th>帳號</th>
 									<th>密碼</th>
-									<th>廠商名稱</th>
-									<th>統編</th>
-									<th>負責人</th>
-									<th>連絡電話</th>
-									<th>公司地址</th>
-									<th>傳真</th>
-									<th>信箱</th>
-									<th>加入時間</th>
-									<th>修改時間</th>
-									<th>帳號狀態</th>
-									<th>廠商圖片</th>
-									<th>編輯</th>
+									<th>姓名</th>
+									<th>狀態</th>
+									<th>建立時間</th>
+									<th>更新時間</th>
+									<th>操作</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr th:each="s : ${stores}">
-									<td th:text="${s.storeId}"></td>
-									<td th:text="${s.storeAcc}"></td>
-									<td th:text="${s.storePwd}"></td>
-									<td th:text="${s.storeName}"></td>
-									<td th:text="${s.storeGui}"></td>
-									<td th:text="${s.storeRep}"></td>
-									<td th:text="${s.storeTel}"></td>
-									<td th:text="${s.storeAddr}"></td>
-									<td th:text="${s.storeFax}"></td>
-									<td th:text="${s.storeEmail}"></td>
+								<tr th:each="a : ${admins}">
+									<td th:text="${a.adminId}"></td>
+									<td th:text="${a.adminAcc}"></td>
+									<td th:text="${a.adminPwd}"></td>
+									<td th:text="${a.adminName}"></td>
+									<td th:text="${a.adminStatus}"></td>
 									<td
-										th:text="${#dates.format(s.storeRegDate,'yyyy-MM-dd HH:mm')}"></td>
+										th:text="${#dates.format(a.adminCreatedAt,'yyyy-MM-dd HH:mm')}"></td>
 									<td
-										th:text="${#dates.format(s.storeUpdatedAt,'yyyy-MM-dd HH:mm')}"></td>
-									<td th:text="${s.storeStatus}"></td>
-									<td><img th:if="${s.storeImg!=null}"
-										th:src="@{/store/DBGifReader(storeId=${s.storeId})}"
-										class="store-img" /> <img th:if="${s.storeImg==null}"
-										th:src="@{/images/user.png}" class="store-img" alt="預設圖示" /></td>
-									<td><a th:href="@{/store/editStore(storeId=${s.storeId})}"
-										class="material-button md-secondary-button">編輯</a></td>
+										th:text="${#dates.format(a.adminUpdatedAt,'yyyy-MM-dd HH:mm')}"></td>
+									<td><a th:href="@{/admins/edit(adminId=${a.adminId})}"
+										class="edit-btn">編輯</a></td>
+								</tr>
+								<tr th:if="${#lists.isEmpty(admins)}">
+									<td colspan="7" style="text-align: center;">查無任何管理員。</td>
+								</tr>
 							</tbody>
 						</table>
 					</div>
@@ -438,33 +421,6 @@ td[colspan="23"] {
 	<script th:src="@{https://code.jquery.com/jquery-3.6.0.min.js}"></script>
 	<script
 		th:src="@{https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js}"></script>
-
-
-	<script>
-		$(function() {
-			$('#storeListTable')
-					.DataTable(
-							{
-								destroy : true, // 先销毁已有实例，避免和通用 datatable.js 冲突
-								lengthMenu : [ 5, 10 ],
-								searching : true,
-								paging : true,
-								ordering : true,
-								scrollX : true,
-								language : {
-									lengthMenu : "顯示 _MENU_ 筆結果",
-									zeroRecords : "沒有符合的結果",
-									info : "顯示第 _START_ 至 _END_ 筆結果，共 <font color='red'>_TOTAL_</font> 筆",
-									infoEmpty: "顯示第 0 至 0 筆結果，共 0 筆",
-									search : "搜尋：",
-									paginate : {
-										previous : "上一頁",
-										next : "下一頁"
-									}
-								}
-							});
-		});
-	</script>
-
+	<script th:src="@{/js/administrant/datatable.js}"></script>
 </body>
 </html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>新增管理員 | 管理後台 | 島遊Kha</title>
+<!-- 共用 head 資源 -->
+<th:block th:replace="~{/navBackTemplate :: headResources}" />
+
+<style>
+/* Material Design 卡片樣式 */
+.md-card {
+	max-width: 800px;
+	margin: 40px auto;
+	padding: 30px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	border-radius: 12px;
+	background-color: var(--md-sys-color-surface-container-low);
+}
+
+.md-headline {
+	text-align: center;
+	margin-bottom: 24px;
+	color: var(--md-sys-color-primary);
+	font-size: 1.8rem;
+}
+
+.form-group {
+	margin-bottom: 16px;
+	text-align: left;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 6px;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-text-field {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface-container-high);
+	color: var(--md-sys-color-on-surface);
+	box-sizing: border-box;
+	transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.md-text-field:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary);
+	box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+}
+
+.form-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+.material-button {
+	padding: 10px 24px;
+	border: none;
+	border-radius: 24px;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.md-primary-button {
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+}
+
+.md-primary-button:hover {
+	background-color: var(--md-sys-color-primary-container);
+}
+
+.md-secondary-button {
+	background-color: var(--md-sys-color-secondary-container);
+	color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-secondary-button:hover {
+	background-color: var(--md-sys-color-secondary);
+}
+
+.error-messages-container {
+	margin-bottom: 16px;
+	color: var(--md-sys-color-error);
+	font-size: 0.9rem;
+}
+
+.success-container {
+	margin-bottom: 16px;
+	color: var(--md-sys-color-primary);
+	font-size: 0.9rem;
+}
+</style>
+</head>
+<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}" />
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/admins/selectPage}">查詢主頁</a></li>
+					<li><a th:href="@{/admins/listAll}">列出所有管理員</a></li>
+					<li><a th:href="@{/admins/add}" class="active">新增管理員</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<section class="md-card">
+					<h2 class="md-headline">新增管理員</h2>
+
+					<!-- 錯誤訊息 -->
+					<div th:if="${errorMsgs}" class="error-messages-container">
+						<p th:each="msg : ${errorMsgs}" th:text="${msg}"></p>
+					</div>
+					
+					<form th:action="@{/admins/add}" th:object="${administrantVO}"
+						method="post">
+						<div class="form-group">
+							<label for="adminAcc">帳號</label> <input id="adminAcc" type="text"
+								th:field="*{adminAcc}" placeholder="管理員帳號" class="md-text-field" />
+						</div>
+						<div class="form-group">
+							<label for="adminPwd">密碼</label> <input id="adminPwd"
+								type="password" th:field="*{adminPwd}" placeholder="密碼"
+								class="md-text-field" />
+						</div>
+						<div class="form-group">
+							<label for="adminName">名稱</label> <input id="adminName"
+								type="text" th:field="*{adminName}" placeholder="姓名"
+								class="md-text-field" />
+						</div>
+						<div class="form-group">
+							<label for="adminStatus">狀態</label> <select id="adminStatus"
+								th:field="*{adminStatus}" class="md-text-field">
+								<option value="0">啟用</option>
+								<option value="1">停權</option>
+							</select>
+						</div>
+
+						<div class="form-actions">
+							<button type="button" onclick="history.back()"
+								class="material-button md-secondary-button">取消</button>
+							<button type="submit" class="material-button md-primary-button">
+								送出</button>
+						</div>
+					</form>
+				</section>
+			</main>
+		</div>
+	</div>
+</body>
+</html>
