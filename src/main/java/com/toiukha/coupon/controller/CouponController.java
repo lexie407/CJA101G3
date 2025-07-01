@@ -93,6 +93,9 @@ public class CouponController {
 	protected List<CouponVO> referenceListData_byStoreId(Model model, HttpSession session) {
 		
 		Object storeObj = session.getAttribute("store");
+		if (storeObj == null) {
+			return new ArrayList<>(); // 或回傳 null，看你需求
+		}
 		StoreVO store = (StoreVO) storeObj;
 		int storeId = store.getStoreId();
 		session.setAttribute("storeId", storeId);
