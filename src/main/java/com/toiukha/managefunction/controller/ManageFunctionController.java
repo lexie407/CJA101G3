@@ -33,6 +33,7 @@ public class ManageFunctionController {
 	public String showSelectPage(Model model) {
 		// 一定要把所有功能丟給前端下拉
 		model.addAttribute("manageFunctions", manageFunctionService.getAll());
+		model.addAttribute("currentPage", "accounts");
 		return "back-end/manageFunction/selectPage";
 	}
 
@@ -44,12 +45,14 @@ public class ManageFunctionController {
 
 		if (manageFuncId == null) {
 			model.addAttribute("errorMsg", "請先選擇一個管理功能");
+			model.addAttribute("currentPage", "accounts");
 			return "back-end/manageFunction/selectPage";
 		}
 
 		Optional<ManageFunctionVO> opt = manageFunctionService.findById(manageFuncId);
 
 		model.addAttribute("selectedFunction", opt.get());
+		model.addAttribute("currentPage", "accounts");
 		return "back-end/manageFunction/search";
 	}
 
@@ -57,6 +60,7 @@ public class ManageFunctionController {
 	@GetMapping("/listAll")
 	public String listAll(Model model) {
 		model.addAttribute("manageFunctions", manageFunctionService.getAll());
+		model.addAttribute("currentPage", "accounts");
 		return "back-end/manageFunction/listAll";
 	}
 
@@ -64,6 +68,7 @@ public class ManageFunctionController {
 	@GetMapping("/add")
 	public String showAddForm(Model model) {
 		model.addAttribute("manageFunctionVO", new ManageFunctionVO());
+		model.addAttribute("currentPage", "accounts");
 		return "back-end/manageFunction/add";
 	}
 
@@ -79,6 +84,7 @@ public class ManageFunctionController {
 				errorMsgs.add(fe.getDefaultMessage());
 			}
 			model.addAttribute("errorMsgs", errorMsgs);
+			model.addAttribute("currentPage", "accounts");
 			return "back-end/manageFunction/add";
 		}
 
@@ -108,6 +114,7 @@ public class ManageFunctionController {
 
 		// 2. 找得到：把 VO 放到 Model，顯示表單
 		model.addAttribute("manageFunctionVO", opt.get());
+		model.addAttribute("currentPage", "accounts");
 		return "back-end/manageFunction/edit";
 	}
 
@@ -120,6 +127,7 @@ public class ManageFunctionController {
 		if (result.hasErrors()) {
 			List<String> errorMsgs = result.getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
 			model.addAttribute("errorMsgs", errorMsgs);
+			model.addAttribute("currentPage", "accounts");
 			return "back-end/manageFunction/edit";
 		}
 
