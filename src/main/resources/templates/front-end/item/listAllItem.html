@@ -49,6 +49,11 @@
                                 <input type="number" name="quantity" class="quantity-input" min="1" max="99" value="1"
                                     style="width: 50px; height: 28px; border-radius: 4px; border: 1px solid #ccc; text-align: center; margin-right: 4px;" />
                                 <button type="button" class="add-to-cart-btn" style="height: 32px;">加入購物車</button>
+                                <button type="button" class="add-to-favorite-btn"
+    							th:attr="data-itemid=${itemVO.itemId},data-memid=${session.member != null ? session.member.memId : ''}"
+    							style="height: 32px; width: 32px; background: none; color: #FFD600; border: none; border-radius: 50%; cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center;">
+    							<i class="fa-regular fa-star"></i>
+								</button>
                             </form>
                         </div>
                     </th:block>
@@ -106,6 +111,35 @@
                 <script src="../js/notification/websocket.js"></script>
                 <script>
                     $(document).ready(function () {
+                    	// 加入收藏按鈕事件
+                    	$('.add-to-favorite-btn').click(function () {
+                    	    var itemId = $(this).data('itemid');
+                    	    var memId = $(this).data('memid');
+
+                    	    if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
+                    	        window.location.href = window.location.origin + '/members/login';
+                    	        return;
+                    	    }
+
+                    	    $.ajax({
+                    	        url: '/productfav/add_to_favorite', // 依你後端實際路徑調整
+                    	        type: 'POST',
+                    	        data: {
+                    	            itemId: itemId,
+                    	            memId: memId
+                    	        },
+                    	        success: function (response) {
+                    	            if (response === 'success') {
+                    	                alert('已加入收藏！');
+                    	            } else {
+                    	                alert('加入收藏失敗：' + response);
+                    	            }
+                    	        },
+                    	        error: function (xhr, status, error) {
+                    	            alert('加入收藏失敗，請稍後再試！\n錯誤信息：' + error);
+                    	        }
+                    	    });
+                    	});
                         // 處理加入購物車按鈕點擊事件
                         $('.add-to-cart-btn').click(function (e) {
                             e.preventDefault();
