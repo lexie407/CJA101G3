@@ -45,3 +45,6 @@ src/main/resources/application.properties
 src/main/resources/application.yml
 src/main/resources/application-local.properties
 src/main/resources/hibernate.cfg.xml
+
+#用作於後台api匯入景點
+src/main/resources/static/vendors/spot/
