@@ -7,19 +7,10 @@
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <link
-      rel="stylesheet"
-      th:href="@{/css/groupactivity/styleAct_common.css}"
-    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
   </head>
   <body class="light">
     <div class="app-container">
@@ -345,8 +336,10 @@
     <script>
       function initializeForm() {
         const form = document.getElementById("addActForm");
-        if (!form) return;
-
+        if (!form) {
+          return;
+        }
+        
         // 初始化Select2多標籤選擇器
         initializeSelect2();
 
@@ -718,9 +711,6 @@
           // 保存表單數據（用於錯誤時恢復）
           const savedFormData = saveFormData(form);
 
-          // 前端表單驗證（顯示錯誤但不阻止提交）
-          validateForm(formData);
-
           // 處理多選標籤 - 暫時只取第一個選中的值（保持後端相容性）
           const selectedTypes = $("#actTypeSelect").val();
           const selectedCities = $("#actCitySelect").val();
@@ -750,28 +740,11 @@
           const result = await response.json();
 
           if (!response.ok) {
-            let errorMessages = [];
-
-            if (
-              result.success === false &&
-              result.errors &&
-              Array.isArray(result.errors)
-            ) {
-              errorMessages = result.errors;
-            } else if (result.success === false && result.error) {
-              errorMessages = [result.error];
-            } else if (result.message) {
-              errorMessages = [result.message];
-            } else if (result.error) {
-              errorMessages = [result.error];
-            } else {
-              errorMessages = ["提交失敗，請檢查輸入內容"];
-            }
-
             // 恢復用戶輸入的數據
             restoreFormData(savedFormData);
 
             // 根據錯誤訊息內容為相應欄位標記錯誤
+            const errorMessages = result.errors || [result.error || result.message || "提交失敗，請檢查輸入內容"];
             errorMessages.forEach((msg) => {
               const lowerMsg = msg.toLowerCase();
 
@@ -829,11 +802,12 @@
             });
           } else {
             showSuccessMessage("活動新增成功！正在跳轉...");
-            setTimeout(() => {
-              window.location.href = `/act/member/listMy/${
-                result.data?.hostId || "current"
-              }`;
-            }, 1500);
+            // 跳轉時直接取 result.hostId，若無則顯示錯誤
+            if (result.hostId) {
+              window.location.href = `/act/member/listMy/${result.hostId}`;
+            } else {
+              alert("找不到會員ID，請重新登入或聯絡管理員");
+            }
           }
         } catch (error) {
           alert("網絡錯誤，請稍後再試: " + error.message);

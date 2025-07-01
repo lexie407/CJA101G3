@@ -8,21 +8,10 @@
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <!-- GroupActivity 模組 CSS -->
-    <link
-      rel="stylesheet"
-      th:href="@{/css/groupactivity/styleAct_common.css}"
-    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
-    <!-- Bootstrap CSS (只用於Floating Labels) -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Select2 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
   </head>
   <body class="light">
     <div class="app-container">
@@ -41,7 +30,6 @@
             >
               <input type="hidden" name="actId" th:value="${actVo.actId}" />
 
-              <!-- 基本資訊 -->
               <div class="act-detail-info">
                 <div class="form-floating">
                   <input
@@ -88,7 +76,6 @@
 
               <br />
 
-              <!-- 時間設定 -->
               <div class="act-detail-info">
                 <div class="form-floating">
                   <input
@@ -302,10 +289,47 @@
                 </div>
               </div>
 
-              <!-- 圖片上傳區域 -->
+              <!-- 圖片上傳 -->
               <div class="act-detail-info">
                 <div>
-                  <label class="act-detail-label"></label>
+                  <label class="act-detail-label">活動圖片</label>
+                  
+                  <!-- 現有圖片顯示 -->
+                  <div
+                    class="current-image"
+                    th:if="${actVo.actImg != null and actVo.actImg.length > 0}"
+                    style="margin-bottom: 16px;"
+                  >
+                    <label style="font-weight: bold; color: #333; display: block; margin-bottom: 8px;">目前圖片：</label>
+                    <img
+                      th:src="@{'/api/act/image/' + ${actVo.actId}}"
+                      alt="目前圖片"
+                      style="
+                        max-width: 200px;
+                        max-height: 150px;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;
+                        object-fit: cover;
+                      "
+                    />
+                    <small style="color: #666; display: block; margin-top: 8px;">
+                      ※ 如果不上傳新圖片，將保留原有圖片
+                    </small>
+                  </div>
+                  
+                  <div
+                    th:if="${actVo.actImg == null or actVo.actImg.length == 0}"
+                    style="
+                      margin-bottom: 16px;
+                      padding: 12px;
+                      background-color: #f8f9fa;
+                      border: 1px solid #dee2e6;
+                      border-radius: 8px;
+                      color: #666;
+                    "
+                  >
+                    <strong>目前狀態：</strong> 使用預設圖片
+                  </div>
 
                   <!-- 隱藏的檔案輸入框 -->
                   <input
@@ -736,32 +760,102 @@
 
       // 清除所有欄位錯誤
       function clearAllFieldErrors() {
-        const { clearFieldError } = GroupActivityForm;
-        document
-          .querySelectorAll(".form-control, .form-select")
-          .forEach(clearFieldError);
+        // 1. 清除 is-invalid 樣式
+        document.querySelectorAll('.is-invalid').forEach(function(field) {
+          field.classList.remove('is-invalid');
+        });
+        // 2. 清空所有 .invalid-feedback 內容
+        document.querySelectorAll('.invalid-feedback').forEach(function(element) {
+          element.textContent = '';
+        });
       }
 
       // 處理編輯表單提交
       async function handleEditFormSubmission(form) {
-        const { updateActivity } = GroupActivityAPI;
-
         try {
           const formData = new FormData(form);
-          const result = await updateActivity(formData);
 
-          alert("活動更新成功！");
+          // 處理多選標籤 - 只取第一個選中的值（與後端相容）
+          const selectedTypes = $("#actTypeSelect").val();
+          const selectedCities = $("#actCitySelect").val();
+          if (selectedTypes && selectedTypes.length > 0) {
+            formData.set("actType", selectedTypes[0]);
+          }
+          if (selectedCities && selectedCities.length > 0) {
+            formData.set("actCity", selectedCities[0]);
+          }
 
-          // 自動返回上一頁
-          if (document.referrer) {
-            window.location.href = document.referrer;
+          // 顯示提交中的狀態
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+          submitBtn.textContent = "儲存中...";
+          submitBtn.disabled = true;
+
+          const result = await GroupActivityAPI.updateActivity(formData);
+
+          if (result.success) {
+            // 成功情況
+            showSuccessMessage("活動更新成功！正在跳轉...");
+            // 跳轉到我的活動列表
+            if (result.hostId) {
+              window.location.href = `/act/member/listMy/${result.hostId}`;
+            } else {
+              window.history.back();
+            }
           } else {
-            window.history.back();
+            // 失敗情況 - 根據錯誤訊息內容為相應欄位標記錯誤
+            const errorMessages = result.errors || [result.error || result.message || "儲存失敗，請檢查輸入內容"];
+            errorMessages.forEach((msg) => {
+              const lowerMsg = msg.toLowerCase();
+              if (msg.includes("活動名稱") || lowerMsg.includes("actname")) {
+                GroupActivityForm.showFieldError(document.getElementById("actName"), msg);
+              }
+              if (msg.includes("行程編號") || lowerMsg.includes("itnid")) {
+                GroupActivityForm.showFieldError(document.getElementById("itnId"), msg);
+              }
+              if (msg.includes("報名開始時間") || lowerMsg.includes("signupstart")) {
+                GroupActivityForm.showFieldError(document.getElementById("signupStart"), msg);
+              }
+              if (msg.includes("報名截止時間") || lowerMsg.includes("signupend")) {
+                GroupActivityForm.showFieldError(document.getElementById("signupEnd"), msg);
+              }
+              if (msg.includes("活動開始時間") || lowerMsg.includes("actstart")) {
+                GroupActivityForm.showFieldError(document.getElementById("actStart"), msg);
+              }
+              if (msg.includes("活動結束時間") || lowerMsg.includes("actend")) {
+                GroupActivityForm.showFieldError(document.getElementById("actEnd"), msg);
+              }
+              if (msg.includes("人數需求") || lowerMsg.includes("maxcap")) {
+                GroupActivityForm.showFieldError(document.getElementById("maxCap"), msg);
+              }
+            });
           }
         } catch (error) {
           console.error("更新活動失敗:", error);
           alert("更新活動失敗，請檢查網路連線或稍後再試");
+        } finally {
+          // 恢復提交按鈕狀態
+          const submitBtn = form.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.textContent = "儲存修改";
+            submitBtn.disabled = false;
+          }
         }
+      }
+
+      // 顯示成功訊息
+      function showSuccessMessage(message) {
+        const successDiv = document.createElement("div");
+        successDiv.className = "alert alert-success";
+        successDiv.textContent = message;
+        successDiv.style.margin = "16px 0";
+
+        const form = document.getElementById("editActForm");
+        form.parentNode.insertBefore(successDiv, form);
+
+        setTimeout(() => {
+          successDiv.remove();
+        }, 3000);
       }
 
       // 頁面載入時初始化
