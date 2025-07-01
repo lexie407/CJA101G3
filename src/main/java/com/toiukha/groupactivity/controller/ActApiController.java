@@ -149,8 +149,9 @@ public class ActApiController {
         }
         
         // === 權限檢查：檢查是否可以修改此活動 ===
+        ActVO existingAct = null;
         if (actDto.getActId() != null) {
-            ActVO existingAct = actSvc.getOneAct(actDto.getActId());
+            existingAct = actSvc.getOneAct(actDto.getActId());
             if (existingAct == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
@@ -164,7 +165,17 @@ public class ActApiController {
                     "error", "您沒有權限修改此活動"
                 ));
             }
+            
+            // === 設定團主ID（從現有活動資料獲取，確保不會被前端偽造） ===
+            actDto.setHostId(existingAct.getHostId());
         }
+        
+        // === 移除編輯時不適用的驗證錯誤 ===
+        // 移除圖片欄位的FieldError（避免MultipartFile與byte[]型別不符的錯誤）
+        bindingResult = removeFieldError(actDto, bindingResult, "actImg");
+        
+        // 移除時間相關的 @Future 驗證錯誤（編輯時允許過去時間）
+        bindingResult = removeTimeValidationErrors(actDto, bindingResult);
         
         // === 驗證錯誤處理 ===
         if (bindingResult.hasErrors()) {
@@ -616,6 +627,36 @@ public class ActApiController {
     private BindingResult removeFieldError(ActDTO actDto, BindingResult result, String removedFieldname) {
         List<FieldError> errorsListToKeep = result.getFieldErrors().stream()
                 .filter(fieldError -> !fieldError.getField().equals(removedFieldname))
+                .collect(java.util.stream.Collectors.toList());
+
+        result = new BeanPropertyBindingResult(actDto, "actDTO");
+        for (FieldError fieldError : errorsListToKeep) {
+            result.addError(fieldError);
+        }
+        return result;
+    }
+
+    /**
+     * 移除編輯時不適用的時間驗證錯誤
+     * 編輯活動時允許過去的時間（例如已開始或已結束的活動）
+     * 
+     * @param actDto 活動DTO物件
+     * @param result 驗證結果
+     * @return 移除時間驗證錯誤後的 BindingResult
+     */
+    private BindingResult removeTimeValidationErrors(ActDTO actDto, BindingResult result) {
+        List<FieldError> errorsListToKeep = result.getFieldErrors().stream()
+                .filter(fieldError -> {
+                    String field = fieldError.getField();
+                    String message = fieldError.getDefaultMessage();
+                    
+                    // 移除時間欄位的 @Future 驗證錯誤
+                    if ((field.equals("actStart") || field.equals("actEnd")) && 
+                        message != null && message.contains("日期必須是在今日(不含)之後")) {
+                        return false;
+                    }
+                    return true;
+                })
                 .collect(java.util.stream.Collectors.toList());
 
         result = new BeanPropertyBindingResult(actDto, "actDTO");
