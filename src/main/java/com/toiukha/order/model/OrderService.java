@@ -89,7 +89,7 @@ public class OrderService {
 		return completedOrders.stream()
 			.map(order -> getOrderWithItems(order.getOrdId()))
 			.collect(Collectors.toList());
-	}
+	} 
 
 
 }
