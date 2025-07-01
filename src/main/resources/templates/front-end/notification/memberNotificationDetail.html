@@ -40,7 +40,7 @@
 							th:text="${notificationVO.notiTitle}"></h2>
 						<p id="detail-notification-date" class="notification-detail-date">
 							<span
-								th:text="${notificationVO.notiSendAt}"></span>
+								th:text="${#dates.format(notificationVO.notiSendAt, 'yyyy-MM-dd HH:mm')}"></span>
 						</p>
 						<div id="detail-notification-message"
 							class="notification-detail-message"

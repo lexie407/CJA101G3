@@ -16,6 +16,9 @@
 <body class="light">
     <div class="app-container">
         <aside th:fragment="navbar" class="left-nav">
+        	<div th:if="${session.member != null}">
+        		<input type="hidden" id="currentUserNav" th:value="${session.member.memId}">
+        	</div>
             <div class="logo-area">
                 <img th:src="@{/images/logo.png}" alt="島遊 kak"> <p class="site-name">島遊<span class="site-name2">kha</span></p>
             </div>
@@ -31,9 +34,17 @@
                 <li th:classappend="${currentPage == 'bePartner' ? 'active' : ''}"><a href="#"><span class="material-icons">add_circle_outline</span>成為廠商</a></li>
             </ul>
 
-            <div class="bottom-notification">
-            	<a th:classappend="${currentPage == 'chatWithMe' ? 'active' : ''}" th:href="@{/report/chat}" id="chatWithMe"><span class="material-icons">support_agent</span>與我聊聊</a>
-                <a th:href="@{/notification/getMemNoti}" id="notificationButton"><span class="material-icons">notifications</span>通知</a>
+            <div class="bottom-notification" style="display: flex; gap: 20px; padding-left: 12px; position: relative;">
+            	<div id="chatWithMeHover" class="hover-bubble" style="">與我聊聊</div>
+            	<a th:classappend="${currentPage == 'chatWithMe' ? 'active' : ''}" th:href="@{/report/chat}" id="chatWithMe"><span class="material-icons">support_agent</span></a>
+            	<div id="notificationButtonHover" class="hover-bubble" style="">通知</div>
+                <a th:href="@{/notification/getMemNoti}" id="notificationButton"><span class="material-icons">notifications</span></a>
+            </div>
+            
+            <div th:if="${session.member == null}" class="logout-area">
+                <button class="logout-btn material-button">
+                    <span class="material-icons">login</span> 登入
+                </button>
             </div>
 
         </aside>

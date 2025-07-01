@@ -203,7 +203,6 @@ body {
 }
 
 .left-nav .material-icons {
-    margin-right: 15px;
     font-size: 20px;
 }
 
@@ -228,7 +227,7 @@ body {
     margin-right: 5px;
 }
 
-.left-nav .bottom-notification a.has_new_noti {
+.left-nav #notificationButton.has_new_noti {
     display: flex;
     align-items: center;
     padding: 12px 20px;
@@ -371,11 +370,10 @@ body {
 /* 登出按鈕區塊 */
 .logout-area {
     padding: 0;
-    margin: 0; /* 清除所有 margin */
+    margin-bottom: 10px; /* 清除所有 margin */
     text-align: center;
     flex-shrink: 0;
     border-top: none;
-    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -987,3 +985,48 @@ body {
         padding-right: 36px; /* 留出空間給自訂箭頭 */
 
 /* } */
+
+
+/*hover泡泡*/
+
+.hover-bubble {
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 100;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    font-size: 14px;
+}
+
+/* 泡泡尾巴樣式 */
+.hover-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -5px; /* 將箭頭放在泡泡下方 */
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    background-color: #333;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+/* 確保這個規則的權重足夠 */
+.hover-bubble.show {
+    opacity: 1;
+    visibility: visible;
+}
+/* 調整 chatWithMeHover 的位置 */
+#chatWithMeHover {
+    top: 0; /* 定位在 chatWithMe 的上方或旁邊 */
+}
+
+/* 調整 notificationButtonHover 的位置 */
+#notificationButtonHover {
+    top: 0; /* 定位在 notificationButton 的上方或旁邊 */
+}

@@ -9,6 +9,7 @@ var stompClient = null;
        var currentUserId = "1"; // 範例用戶ID，請替換為實際登入用戶的ID
 
        // 頁面元素引用
+       var notificationButtonHover = document.getElementById('notificationButtonHover');
        var notificationButton = document.getElementById('notificationButton');
        var realtimeNotificationsDiv = document.getElementById('realtimeNotifications');
 
@@ -62,10 +63,10 @@ var stompClient = null;
        function updateNotificationUI() {
            if (unreadNotificationsCount > 0) {
                notificationButton.classList.add('has_new_noti'); // 添加 has_new_noti 類別，使其變色
-			   notificationButton.innerHTML = `<span class="material-icons">notifications</span>你有${unreadNotificationsCount}筆新通知`;
+			   notificationButtonHover.innerHTML = `你有${unreadNotificationsCount}筆新通知`;
            } else {
-               notificationButton.classList.remove('has_new_noti'); // 移除 has_new_noti 類別
-			   notificationButton.innerHTML = `<span class="material-icons">notifications</span>通知`;
+//               notificationButton.classList.remove('has_new_noti'); // 移除 has_new_noti 類別
+//			   notificationButton.innerHTML = `<span class="material-icons">notifications</span>通知`;
            }
        }
 
@@ -117,3 +118,47 @@ var stompClient = null;
        };
        // 頁面關閉或導航離開時斷開 WebSocket 連接
        window.onbeforeunload = disconnect;
+	   
+	   //泡泡
+	   document.addEventListener('DOMContentLoaded', function () {
+	       function setupHoverBubble(triggerId, bubbleId) {
+	           const triggerEl = document.getElementById(triggerId);
+	           const bubbleEl = document.getElementById(bubbleId);
+
+	           if (!triggerEl || !bubbleEl) return;
+
+	           triggerEl.addEventListener('mouseenter', function () {
+	               const triggerRect = triggerEl.getBoundingClientRect();
+	               const parentRect = triggerEl.parentElement.getBoundingClientRect();
+	               const bubbleHeight = bubbleEl.offsetHeight || 24;
+	               const bubbleWidth = bubbleEl.offsetWidth || 60;
+
+	               // 顯示泡泡（先顯示才能抓尺寸）
+	               bubbleEl.classList.add('show');
+
+	               // top：放在 icon 上方 10px
+	               const top = (triggerRect.top - parentRect.top) - bubbleHeight - 10;
+
+	               // left：水平置中於 icon
+	               let left = (triggerRect.left - parentRect.left) + (triggerRect.width / 2) - (bubbleWidth / 2);
+
+	               // 邊界控制，不可超出左側與右側
+	               if (left < 0) left = 0;
+	               if (left + bubbleWidth > parentRect.width) {
+	                   left = parentRect.width - bubbleWidth;
+	               }
+
+	               // 設定定位
+	               bubbleEl.style.top = `${top}px`;
+	               bubbleEl.style.left = `${left}px`;
+	           });
+
+	           triggerEl.addEventListener('mouseleave', function () {
+	               bubbleEl.classList.remove('show');
+	           });
+	       }
+
+	       // 初始化泡泡提示
+	       setupHoverBubble('chatWithMe', 'chatWithMeHover');
+	       setupHoverBubble('notificationButton', 'notificationButtonHover');
+	   });

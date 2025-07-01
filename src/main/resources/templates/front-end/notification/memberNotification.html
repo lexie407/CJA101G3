@@ -22,6 +22,8 @@
 			
 				
 				<div class="notification-center-container">
+					<h2 style="margin-top: 0px; margin-bottom: 20px;">以下是你的通知</h2>
+					<p>可點擊各列資料觀看詳細資訊</p>
 					<div class="notification-actions">
 						<label class="checkbox-container"> <input type="checkbox"
 							class="selectAllNotifications"> <span class="checkmark"></span>
@@ -52,7 +54,7 @@
 										<span class="notification-title"
 											th:text="${notificationVO.notiTitle}"></span> <span
 											class="notification-date"> <span
-											th:text="${notificationVO.notiSendAt}"></span>
+											th:text="${#dates.format(notificationVO.notiSendAt, 'yyyy-MM-dd HH:mm')}"></span>
 										</span>
 									</div>
 									<p class="notification-message"

@@ -19,6 +19,9 @@ import com.toiukha.articlecollection.model.ArticleCollectionService;
 import com.toiukha.articlecollection.model.ArticleCollectionVO;
 import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticleServiceImpl;
+import com.toiukha.members.model.MembersVO;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 @RequestMapping("/articleCollection")
@@ -31,11 +34,9 @@ public class ArticleCollectionController {
 
 	//收藏明細頁面
 	@GetMapping("/allList")
-	public String allList(
-//			@RequestParam("memId")Integer memId,
-			ModelMap model) {
-//		記得串會員後要改
-		List<ArticleCollectionVO> list = articleCollectionService.getByMem(1);
+	public String allList(HttpServletRequest req, ModelMap model) {
+		MembersVO membersVO = (MembersVO)req.getSession().getAttribute("member");
+		List<ArticleCollectionVO> list = articleCollectionService.getByMem(membersVO.getMemId());
 		List<ArticleCollectionDTO> nList = new ArrayList<>();
 		for(ArticleCollectionVO aVO : list) {
 			Article article = articleServiceImpl.getArticleById(aVO.getId().getArtId());

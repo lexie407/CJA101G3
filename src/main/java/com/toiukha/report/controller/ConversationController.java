@@ -1,6 +1,8 @@
 package com.toiukha.report.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.toiukha.members.model.MembersVO;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,11 +38,15 @@ public class ConversationController {
         String difyUrl = "https://api.dify.ai/v1/chat-messages";
 
         Map<String, Object> payload = new HashMap<>();
+        Map<String, Object> inputs = new HashMap<>();
+        inputs.put("memId", ((MembersVO)httpRequest.getSession().getAttribute("member")).getMemId());
+        inputs.put("memName", ((MembersVO)httpRequest.getSession().getAttribute("member")).getMemName());
         payload.put("query", requestBody.get("query"));
-        payload.put("inputs", new HashMap<>());
+        payload.put("inputs", inputs);
         payload.put("response_mode", "streaming");
         payload.put("conversation_id", requestBody.get("conversation_id"));
         payload.put("user", httpRequest.getSession().getId());
+        
 
         restTemplate.execute(difyUrl, HttpMethod.POST, (ClientHttpRequest req) -> {
             HttpHeaders headers = req.getHeaders();
