@@ -114,6 +114,9 @@ public class CouponController {
 	@ModelAttribute("listAddCoupons")
 	protected List<CouponVO>referenceListData_member(Model model,HttpSession session){
 		MembersVO member = (MembersVO) session.getAttribute("member");
+		if (member == null) {
+			return new ArrayList<>(); // 或回傳 null，看你需求
+		}
 		int memId = member.getMemId();
 		session.setAttribute("memId", memId);
 		List<CouponVO> list = couponSvc.getCouponsForMember(memId);
