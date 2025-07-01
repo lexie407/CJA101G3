@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.toiukha.item.model.ItemService;
 import com.toiukha.item.model.ItemVO;
+import com.toiukha.members.model.MembersVO;
 import com.toiukha.order.model.OrderService;
 import com.toiukha.order.model.OrderVO;
 import com.toiukha.order.model.OrderWithItemsDTO;
@@ -146,11 +147,11 @@ public class OrderController {
 	}
 	@ModelAttribute("orderListData_mem")
 	protected List<OrderVO> referenceListData1(Model model,HttpSession session) {
-		Object memIdObj = session.getAttribute("memId");
-		if (memIdObj == null) {
-			return new ArrayList<>(); // 或回傳 null，看你需求
-		}
-		int memId = Integer.parseInt(memIdObj.toString());
+		MembersVO member = (MembersVO) session.getAttribute("member");
+
+		int memId = member.getMemId();
+		session.setAttribute("memId", memId);
+
 		
 		List<OrderVO> list = orderSvc.findByMemId(memId);
 	    return list;
@@ -159,23 +160,22 @@ public class OrderController {
 	// 會員查看已完成訂單及其項目
 	@GetMapping("listCompletedOrders")
 	public String listCompletedOrders(Model model, HttpSession session) {
-		Object memIdObj = session.getAttribute("memId");
-		if (memIdObj == null) {
-			// 如果沒有登入，重導向到登入頁面
-			return "";
-		}
+		MembersVO member = (MembersVO) session.getAttribute("member");
+
+		int memId = member.getMemId();
+		session.setAttribute("memId", memId);
 		model.addAttribute("currentPage", "store");
 		model.addAttribute("activeItem", "orderList");
 		return "front-end/order/listCompletedOrders";
 	}
 	
+	//會員查看訂單項目
 	@ModelAttribute("completedOrdersWithItems")
 	protected List<OrderWithItemsDTO> referenceCompletedOrdersData(Model model, HttpSession session) {
-		Object memIdObj = session.getAttribute("memId");
-		if (memIdObj == null) {
-			return new ArrayList<>();
-		}
-		int memId = Integer.parseInt(memIdObj.toString());
+		MembersVO member = (MembersVO) session.getAttribute("member");
+
+		int memId = member.getMemId();
+		session.setAttribute("memId", memId);
 		
 		List<OrderWithItemsDTO> list = orderSvc.getCompletedOrdersWithItems(memId);
 		return list;
