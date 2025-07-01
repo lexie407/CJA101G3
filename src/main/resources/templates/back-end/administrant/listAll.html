@@ -389,6 +389,7 @@ td[colspan="23"] {
 									<th>狀態</th>
 									<th>建立時間</th>
 									<th>更新時間</th>
+									<th>已指派功能</th>
 									<th>操作</th>
 								</tr>
 							</thead>
@@ -403,11 +404,18 @@ td[colspan="23"] {
 										th:text="${#dates.format(a.adminCreatedAt,'yyyy-MM-dd HH:mm')}"></td>
 									<td
 										th:text="${#dates.format(a.adminUpdatedAt,'yyyy-MM-dd HH:mm')}"></td>
+									<td>
+										<ul>
+											<li th:each="auth : ${a.auths}"
+												       th:text="${auth.manageFunction.manageFuncName}"></li>
+										</ul>
+									</td>
+
 									<td><a th:href="@{/admins/edit(adminId=${a.adminId})}"
 										class="edit-btn">編輯</a></td>
 								</tr>
 								<tr th:if="${#lists.isEmpty(admins)}">
-									<td colspan="7" style="text-align: center;">查無任何管理員。</td>
+									<td colspan="9" style="text-align: center;">查無任何管理員。</td>
 								</tr>
 							</tbody>
 						</table>

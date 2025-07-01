@@ -123,9 +123,8 @@
 					<div th:if="${errorMsgs}" class="error-messages-container">
 						<p th:each="msg : ${errorMsgs}" th:text="${msg}"></p>
 					</div>
-					
-					<form th:action="@{/admins/add}" th:object="${administrantVO}"
-						method="post">
+
+					<form th:action="@{/admins/add}" th:object="${form}" method="post">
 						<div class="form-group">
 							<label for="adminAcc">帳號</label> <input id="adminAcc" type="text"
 								th:field="*{adminAcc}" placeholder="管理員帳號" class="md-text-field" />
@@ -147,6 +146,17 @@
 								<option value="1">停權</option>
 							</select>
 						</div>
+
+						<fieldset class="form-group">
+							<legend>功能分配</legend>
+							<ul>
+								<li th:each="func : ${allFunctions}"><label> <input
+										type="checkbox" th:field="*{manageFuncIds}"
+										th:value="${func.manageFuncId}" /> <span
+										th:text="${func.manageFuncName}">功能名稱</span>
+								</label></li>
+							</ul>
+						</fieldset>
 
 						<div class="form-actions">
 							<button type="button" onclick="history.back()"

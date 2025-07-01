@@ -379,6 +379,9 @@ td[colspan="23"] {
 			</header>
 			<main class="content-area-main">
 				<section class="md-card">
+					<div th:if="${errorMsg}" class="error-messages-container">
+						<p th:text="${errorMsg}"></p>
+					</div>
 					<h2 class="md-headline">所有商家列表</h2>
 					<div class="table-container">
 						<table id="storeListTable" class="display datatable-class">

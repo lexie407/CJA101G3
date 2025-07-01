@@ -1,0 +1,169 @@
+<!-- templates/back-end/manageFunction/add.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新增管理功能 | 管理後台 | 島遊Kha</title>
+<th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+<style>
+/* 同 selectPage/search 共用的樣式 */
+body {
+	font-size: 1.1rem;
+}
+
+.secondary-nav {
+	background: var(--md-sys-color-surface);
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+	padding: 0 20px;
+	position: sticky;
+	top: 0;
+	z-index: 999;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	height: 60px;
+}
+
+.secondary-nav ul {
+	display: flex;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.secondary-nav li {
+	margin-right: 1.5rem;
+}
+
+.secondary-nav a {
+	text-decoration: none;
+	color: var(--md-sys-color-on-surface-variant);
+	padding: 0 5px;
+	display: flex;
+	align-items: center;
+	height: 100%;
+}
+
+.secondary-nav a.active {
+	color: var(--md-sys-color-primary);
+	border-bottom: 3px solid var(--md-sys-color-primary);
+}
+
+.md-card {
+	background: var(--md-sys-color-background) !important;
+	box-shadow: none !important;
+	border-radius: 8px;
+	padding: 1rem;
+	margin: 2rem auto;
+	max-width: 600px;
+	border: none !important;
+}
+
+.md-headline {
+	font-size: 2rem;
+	margin-bottom: 1rem;
+	color: var(--md-sys-color-primary);
+	text-align: center;
+}
+
+.form-group {
+	margin-bottom: 1.5rem;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: .5rem;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-text-field {
+	width: 100%;
+	padding: .5rem;
+	font-size: 1rem;
+	border: 1px solid var(--md-sys-color-outline);
+	border-radius: 4px;
+	background: var(--md-sys-color-surface-container);
+	color: var(--md-sys-color-on-surface);
+}
+
+.form-actions {
+	text-align: center;
+}
+
+.material-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: .6rem 1.2rem;
+	border-radius: 24px;
+	border: none;
+	font-size: 1rem;
+	font-weight: 500;
+	cursor: pointer;
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+	box-shadow: 0 1px 2px var(--md-sys-color-shadow);
+	transition: background-color .3s, box-shadow .3s;
+}
+
+.material-button:hover {
+	background-color: var(--md-sys-color-primary-container);
+}
+
+.error-messages-container {
+	background: #ffebee;
+	color: #b71c1c;
+	border-left: 5px solid #b71c1c;
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	font-size: .9rem;
+	text-align: left;
+}
+
+.error-message {
+	margin-bottom: 5px;
+}
+
+.error-message:last-child {
+	margin-bottom: 0;
+}
+</style>
+</head>
+<body class="light">
+	<div class="app-container">
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+				<ul>
+					<li><a th:href="@{/manageFunction/selectPage}">選擇功能</a></li>
+					<li><a th:href="@{/manageFunction/listAll}">功能列表</a></li>
+					<li><a th:href="@{/manageFunction/add}" class="active">新增功能</a></li>
+				</ul>
+			</header>
+			<main class="content-area-main">
+				<section class="md-card">
+					<div th:if="${errorMsgs}" class="error-messages-container">
+						<p th:each="err : ${errorMsgs}" th:text="${err}"
+							class="error-message"></p>
+					</div>
+					<h2 class="md-headline">新增管理功能</h2>
+					<form th:action="@{/manageFunction/add}"
+						th:object="${manageFunctionVO}" method="post">
+						<div class="form-group">
+							<label for="manageFuncName">功能名稱</label> <input
+								id="manageFuncName" type="text" th:field="*{manageFuncName}"
+								placeholder="請輸入功能名稱" class="md-text-field" />
+						</div>
+						<div class="form-actions">
+							<button type="submit" class="material-button">送出</button>
+						</div>
+					</form>
+				</section>
+			</main>
+		</div>
+	</div>
+</body>
+</html>

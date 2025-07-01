@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.toiukha.store.model.StoreVO;
 
@@ -193,11 +194,28 @@ public class StoreController {
 	}
 
 	@GetMapping("/editStore")
-	public String showEditForm(@RequestParam("storeId") Integer storeId, Model model) {
-		StoreVO store = storeService.getById(storeId);
-		model.addAttribute("currentPage", "partner");
-		model.addAttribute("storeVO", store);
-		return "back-end/store/editStore";
+	public String showEditForm(
+	        @RequestParam(value = "storeId", required = false) Integer storeId,
+	        Model model,
+	        RedirectAttributes ra) {
+
+	    // 1. 防呆：如果没传 storeId
+	    if (storeId == null) {
+	        ra.addFlashAttribute("errorMsg", "必須指定商店 ID");
+	        return "redirect:/store/listAll";  
+	    }
+
+	    // 2. 查不到该商店
+	    StoreVO store = storeService.getById(storeId);
+	    if (store == null) {
+	        ra.addFlashAttribute("errorMsg", "找不到指定的商店");
+	        return "redirect:/store/listAll";
+	    }
+
+	    // 3. 成功：把它塞到 Model
+	    model.addAttribute("storeVO", store);
+	    model.addAttribute("currentPage", "partner");
+	    return "back-end/store/editStore";
 	}
 
 	@PostMapping("/editStore")

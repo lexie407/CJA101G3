@@ -63,6 +63,12 @@ public class AdministrantLoginController {
 
 		// 4. 登入成功：放入 Session
 		session.setAttribute("admin", admin);
+		
+		// 把功能授權也存進 session 
+		List<Integer> funcIds = admin.getAuths().stream()
+		    .map(auth -> auth.getManageFunction().getManageFuncId())
+		    .toList();
+		session.setAttribute("adminFuncIds", funcIds);
 
 		// 5. 回跳原始頁面或導到管理員列表
 		String location = (String) session.getAttribute("location");
