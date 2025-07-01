@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <title>我的廣告管理 - 島遊Kha</title>
+    
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .add-button {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .add-button:hover {
+            background-color: #229954;
+            transform: translateY(-2px);
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .ad-image {
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        .status-active {
+            color: #27ae60;
+            font-weight: 600;
+        }
+        .status-inactive {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        .status-pending {
+            color: #f39c12;
+            font-weight: 600;
+        }
+        .status-rejected {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .btn-edit {
+            background-color: #3498db;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        .btn-edit:hover {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+        }
+        .btn-delete:hover {
+            background-color: #c0392b;
+            transform: translateY(-1px);
+        }
+        .no-ads {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        .no-ads p {
+            margin-bottom: 20px;
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+    </style>
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+<!-- 					放自己需要的內容 -->
+					<li>
+						<h2>我的廣告管理</h2>
+					</li>
+                </ul>
+            </header>
+			<main class="content-area-main">
+<!-- 					放自己需要的內容 -->
+	            <!-- 成功訊息顯示 -->
+                <div th:if="${successMessage}" class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 12px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+                    <span th:text="${successMessage}"></span>
+                </div>
+                
+                <!-- 錯誤訊息顯示 -->
+                <div th:if="${errorMessage}" class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+                    <span th:text="${errorMessage}"></span>
+                </div>
+                
+                <div class="page-header">
+                    <h3>廣告列表</h3>
+                    <a th:href="@{/advertisment/addAd}" class="add-button" style="display: inline-flex !important; visibility: visible !important;">
+                        <span class="material-icons">add</span>
+                        新增廣告
+                    </a>
+                </div>
+                
+                <!-- 審核流程說明 -->
+                <div style="background-color: #e3f2fd; padding: 15px; margin-bottom: 20px; border-radius: 5px; border-left: 4px solid #2196f3;">
+                    <h4 style="margin: 0 0 10px 0; color: #1976d2;">審核流程說明</h4>
+                    <p style="margin: 0; color: #1565c0; font-size: 14px;">
+                        • <strong>待審核</strong>：新建立的廣告需要等待管理員審核<br>
+                        • <strong>已通過</strong>：廣告已通過審核，正在前台顯示<br>
+                        • <strong>已拒絕</strong>：廣告被管理員拒絕，您可以修改後重新提交<br>
+                        • <strong>已停用</strong>：廣告已被管理員停用
+                    </p>
+                </div>
+                
+                <!-- 調試資訊 -->
+                <div style="background-color: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                    <p><strong>調試資訊：</strong></p>
+                    <p>廣告數量: <span th:text="${#lists.size(adListData)}">0</span></p>
+                    <p>是否有廣告: <span th:text="${#lists.isEmpty(adListData)}">true</span></p>
+                    <p>新增按鈕應該顯示在右上方</p>
+                </div>
+                
+	            <div th:if="${#lists.isEmpty(adListData)}" class="no-ads">
+	                <p>目前沒有任何廣告。</p>
+	                <a th:href="@{/advertisment/addAd}" class="add-button">立即新增廣告</a>
+	            </div>
+	            
+		        <div th:unless="${#lists.isEmpty(adListData)}" class="table-container">
+	                <table>
+	                    <thead>
+	                        <tr>
+	                            <th>圖片</th>
+	                            <th>標題</th>
+	                            <th>狀態</th>
+	                            <th>起始時間</th>
+	                            <th>結束時間</th>
+	                            <th>操作</th>
+	                        </tr>
+	                    </thead>
+	                    <tbody>
+	                        <tr th:each="ad : ${adListData}">
+	                            <td>
+	                                <img th:src="@{/advertisment/DBGifReader(adId=${ad.adId})}" 
+	                                     width="120" height="90" alt="廣告圖片" class="ad-image">
+	                            </td>
+	                            <td th:text="${ad.adTitle}">廣告標題</td>
+	                            <td>
+	                                <span th:class="${ad.adStatus == 1 ? 'status-active' : (ad.adStatus == 0 ? 'status-pending' : (ad.adStatus == 2 ? 'status-rejected' : 'status-inactive'))}" 
+	                                      th:text="${ad.adStatus == 1 ? '已通過' : (ad.adStatus == 0 ? '待審核' : (ad.adStatus == 2 ? '已拒絕' : '已停用'))}"></span>
+	                            </td>
+	                            <td th:text="${#dates.format(ad.adStartTime, 'yyyy-MM-dd HH:mm')}"></td>
+	                            <td th:text="${#dates.format(ad.adEndTime, 'yyyy-MM-dd HH:mm')}"></td>
+	                            <td>
+	                                <div class="action-buttons">
+	                                    <!-- 修改按鈕 - 只對待審核或已拒絕的廣告顯示 -->
+	                                    <form th:if="${ad.adStatus == 0 || ad.adStatus == 2}" 
+	                                          th:action="@{/advertisment/getOne_For_Update}" method="post" style="display:inline">
+	                                        <input type="hidden" name="adId" th:value="${ad.adId}" />
+	                                        <button type="submit" class="btn-edit">修改</button>
+	                                    </form>
+	                                    <!-- 刪除按鈕 -->
+	                                    <form th:action="@{/advertisment/delete}" method="post" style="display:inline" onsubmit="return confirm('確定要刪除這個廣告嗎？')">
+	                                        <input type="hidden" name="adId" th:value="${ad.adId}" />
+	                                        <button type="submit" class="btn-delete">刪除</button>
+	                                    </form>
+	                                </div>
+	                            </td>
+	                        </tr>
+	                    </tbody>
+	                </table>
+	            </div>
+	            
+            </main>
+		</div>
+	</div>
+    
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../js/notification/websocket.js"></script>
+    
+</body>
+</html>

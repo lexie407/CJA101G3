@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>廣告詳情 - 島遊Kha</title>
+    
+    <!-- 引入 Thymeleaf 模板中的 headResources 片段，包含 Material Design 相關 CSS/JS -->
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
+    <!-- 這裡可以放置此頁面特有的 CSS -->
+    <style>
+        .ad-detail-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .ad-detail-card {
+            background-color: var(--card-background-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .ad-detail-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+        }
+        .ad-detail-content {
+            padding: 24px;
+        }
+        .ad-detail-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-color-primary);
+        }
+        .ad-detail-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background-color: var(--background-color-secondary);
+            border-radius: 8px;
+        }
+        .info-label {
+            font-weight: 600;
+            color: var(--text-color-secondary);
+            min-width: 80px;
+        }
+        .info-value {
+            color: var(--text-color-primary);
+        }
+        .ad-status-active {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .ad-status-inactive {
+            color: #FFC107;
+            font-weight: bold;
+        }
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .back-button:hover {
+            background-color: var(--primary-color-dark);
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<!-- 引入 Thymeleaf 模板中的 navbar 片段 -->
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+                    <li><h2>廣告詳情</h2></li>
+                </ul>
+            </header>
+			
+            <main class="content-area-main">
+                <div class="ad-detail-container">
+                    <!-- 錯誤訊息顯示 -->
+                    <div th:if="${errorMessage}" class="error-message">
+                        <span th:text="${errorMessage}"></span>
+                    </div>
+                    
+                    <!-- 返回按鈕 -->
+                    <a th:href="@{/advertisment/listAllAd}" class="back-button">
+                        <span class="material-icons">arrow_back</span>
+                        返回廣告列表
+                    </a>
+                    
+                    <!-- 廣告詳情內容 -->
+                    <div th:if="${adVO}" class="ad-detail-card">
+                        <!-- 廣告圖片 -->
+                        <img th:src="@{/advertisment/DBGifReader(adId=${adVO.adId})}" 
+                             class="ad-detail-image" alt="廣告圖片">
+                        
+                        <div class="ad-detail-content">
+                            <!-- 廣告標題 -->
+                            <h1 class="ad-detail-title" th:text="${adVO.adTitle}">廣告標題</h1>
+                            
+                            <!-- 廣告資訊 -->
+                            <div class="ad-detail-info">
+                                <div class="info-item">
+                                    <span class="material-icons">store</span>
+                                    <span class="info-label">商店：</span>
+                                    <span class="info-value" th:text="${storeNamesMap != null ? storeNamesMap.get(adVO.storeId) : '未知商店'}">商店名稱</span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="material-icons">info</span>
+                                    <span class="info-label">狀態：</span>
+                                    <span class="info-value" 
+                                          th:class="${adVO.adStatus == 1 ? 'ad-status-active' : 'ad-status-inactive'}" 
+                                          th:text="${adVO.adStatus == 1 ? '啟用中' : '已停用'}">
+                                        狀態
+                                    </span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="material-icons">event</span>
+                                    <span class="info-label">開始時間：</span>
+                                    <span class="info-value" th:text="${#dates.format(adVO.adStartTime, 'yyyy-MM-dd HH:mm')}">開始時間</span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="material-icons">event_busy</span>
+                                    <span class="info-label">結束時間：</span>
+                                    <span class="info-value" th:text="${#dates.format(adVO.adEndTime, 'yyyy-MM-dd HH:mm')}">結束時間</span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="material-icons">schedule</span>
+                                    <span class="info-label">建立時間：</span>
+                                    <span class="info-value" th:text="${#dates.format(adVO.adCreatedTime, 'yyyy-MM-dd HH:mm')}">建立時間</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+		</div>
+	</div>
+    
+    <!-- 引入 Thymeleaf 模板中的腳本 -->
+    <script th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
+    <script th:src="@{/webjars/stomp-websocket/stomp.min.js}"></script>
+    <script th:src="@{/js/notification/websocket.js}"></script>
+    
+</body>
+</html>

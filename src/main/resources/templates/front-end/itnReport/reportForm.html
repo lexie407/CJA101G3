@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>島遊Kha - 商品檢舉</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <style>
+        .report-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .report-title {
+            text-align: center;
+            color: #1976d2;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #1976d2;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+        }
+        
+        .form-control.textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn-submit {
+            background: #1976d2;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        
+        .btn-submit:hover {
+            background: #1565c0;
+        }
+        
+        .btn-cancel {
+            background: #666;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: background 0.3s;
+        }
+        
+        .btn-cancel:hover {
+            background: #555;
+        }
+        
+        .alert {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-upload-label {
+            display: block;
+            padding: 12px;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .file-upload-label:hover {
+            border-color: #1976d2;
+        }
+        
+        .file-upload input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+    </style>
+</head>
+<body class="light">
+    <div class="app-container">
+        <div th:insert="~{/navTemplate :: navbar}"></div>
+        
+        <div class="main-content">
+            <div class="report-container">
+                <h1 class="report-title">商品檢舉</h1>
+                
+                <!-- 顯示錯誤或成功訊息 -->
+                <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+                <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                
+                <form th:action="@{/item-report/submit}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="memId" th:value="${memId}">
+                    <input type="hidden" name="itemId" th:value="${itemId}">
+                    
+                    <div class="form-group">
+                        <label class="form-label">商品編號</label>
+                        <input type="text" class="form-control" th:value="${itemId}" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="repReason">
+                            檢舉理由 <span class="required">*</span>
+                        </label>
+                        <textarea id="repReason" name="repReason" class="form-control textarea" 
+                                placeholder="請詳細說明檢舉原因，例如：商品描述與實際不符、品質問題、虛假宣傳等..." 
+                                required minlength="10" maxlength="200"></textarea>
+                        <small style="color: #666;">請提供10-200字的詳細說明</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="repImg">檢舉相關圖片（選填）</label>
+                        <div class="file-upload">
+                            <label for="repImg" class="file-upload-label">
+                                <i class="material-icons" style="vertical-align: middle;">cloud_upload</i>
+                                點擊選擇圖片檔案
+                            </label>
+                            <input type="file" id="repImg" name="repImg" accept="image/*">
+                        </div>
+                        <small style="color: #666;">支援格式：JPG、PNG、GIF，檔案大小不超過5MB</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn-submit">提交檢舉</button>
+                        <a th:href="@{/item/listAllItem}" class="btn-cancel">取消</a>
+                    </div>
+                </form>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                    <h4 style="color: #666; margin-bottom: 15px;">檢舉須知：</h4>
+                    <ul style="color: #666; line-height: 1.6;">
+                        <li>請確保您已購買過此商品才能進行檢舉</li>
+                        <li>檢舉內容必須真實，惡意檢舉將承擔相應責任</li>
+                        <li>每個會員對同一商品只能檢舉一次</li>
+                        <li>檢舉將由管理員審核，處理結果會透過站內信通知</li>
+                        <li>商品累計檢舉通過次數超過3次將自動下架</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 檔案上傳預覽
+        document.getElementById('repImg').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const label = document.querySelector('.file-upload-label');
+            
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB
+                    alert('檔案大小不能超過5MB');
+                    this.value = '';
+                    return;
+                }
+                
+                label.innerHTML = '<i class="material-icons" style="vertical-align: middle;">check_circle</i> ' + file.name;
+                label.style.borderColor = '#4caf50';
+                label.style.color = '#4caf50';
+            } else {
+                label.innerHTML = '<i class="material-icons" style="vertical-align: middle;">cloud_upload</i> 點擊選擇圖片檔案';
+                label.style.borderColor = '#ddd';
+                label.style.color = 'inherit';
+            }
+        });
+        
+        // 表單提交前驗證
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const reason = document.getElementById('repReason').value.trim();
+            
+            if (reason.length < 10) {
+                alert('檢舉理由至少需要10個字符');
+                e.preventDefault();
+                return false;
+            }
+            
+            if (reason.length > 200) {
+                alert('檢舉理由不能超過200個字符');
+                e.preventDefault();
+                return false;
+            }
+            
+            // 確認提交
+            if (!confirm('確定要提交此檢舉嗎？檢舉內容提交後無法修改。')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+</body>
+</html> 
