@@ -1,0 +1,557 @@
+/* ========================================
+   GroupActivity 模組 - 統一基礎樣式
+   合併自: groupactivity-common.css + groupactivity-components.css
+   ======================================== */
+
+/* ========================================
+   核心設計變數與基礎工具類
+   ======================================== */
+
+/* 核心設計變數 */
+:root {
+  --act-primary-color: var(--md-sys-color-primary);
+  --act-secondary-color: var(--md-sys-color-secondary);
+  --act-surface-color: var(--md-sys-color-surface);
+  --act-on-surface-color: var(--md-sys-color-on-surface);
+  --act-border-radius: 8px;
+  --act-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --act-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --act-transition: all 0.2s ease;
+}
+
+/* ========================================
+   基礎表單與佈局樣式
+   ======================================== */
+
+/* 基礎表單樣式 */
+.act-form .form-group {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.act-form .form-group label {
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.act-form .form-group input,
+.act-form .form-group textarea,
+.act-form .form-group select {
+  padding: 8px 12px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 4px;
+  font-size: 14px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  transition: var(--act-transition);
+}
+
+.act-form .form-group input:focus,
+.act-form .form-group textarea:focus,
+.act-form .form-group select:focus {
+  outline: none;
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+}
+
+/* 表單組件樣式 */
+.act-form-group {
+  margin-bottom: 20px;
+}
+
+.act-form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.act-form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.act-form-row .act-form-group {
+  flex: 1;
+}
+
+/* 日期區間樣式組 */
+.act-date-range-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.act-date-input {
+  flex: 1;
+  min-width: 140px;
+}
+
+.act-date-separator {
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 搜尋表單響應式佈局 */
+.act-search-form {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+/* ========================================
+   按鈕樣式系統
+   ======================================== */
+
+/* 基礎按鈕樣式 */
+.act-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--act-transition);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--act-shadow);
+}
+
+.act-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.act-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 按鈕變體樣式 */
+.act-btn-primary {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.act-btn-secondary {
+  background-color: var(--md-sys-color-secondary);
+  color: var(--md-sys-color-on-secondary);
+}
+
+.act-btn-outline {
+  background-color: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-primary);
+}
+
+.act-btn-danger {
+  background-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+
+.act-btn-success {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.act-btn-success:hover {
+  background-color: #218838;
+}
+
+/* 管理操作按鈕樣式 */
+.act-view {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.act-edit {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.act-delete {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+/* ========================================
+   狀態樣式與標籤
+   ======================================== */
+
+/* 活動狀態樣式 */
+.act-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.act-status.recruiting {
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+.act-status.full {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.act-status.ended {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+.act-host-badge {
+  background: var(--md-sys-color-tertiary);
+  color: var(--md-sys-color-on-tertiary);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ========================================
+   UI 組件樣式
+   ======================================== */
+
+/* 模態框基礎樣式 */
+.act-modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.act-modal-content {
+  background-color: var(--md-sys-color-surface);
+  padding: 24px;
+  border-radius: var(--act-border-radius);
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  box-shadow: var(--act-shadow-hover);
+}
+
+.act-modal-close {
+  color: var(--md-sys-color-on-surface-variant);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+.act-modal-close:hover {
+  color: var(--md-sys-color-on-surface);
+}
+
+/* 成員列表樣式 */
+.act-member-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.act-member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface);
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.act-member-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+/* 圖片預覽樣式 */
+.act-image-preview {
+  margin-top: 10px;
+  display: none;
+}
+
+.act-image-preview img {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: var(--act-border-radius);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.act-compression-info {
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: 5px;
+}
+
+/* ========================================
+   表單驗證與錯誤處理樣式
+   ======================================== */
+
+/* 舊版錯誤樣式（向後相容） */
+.error {
+  border: 2px solid #e74c3c !important;
+  background-color: #fdf2f2 !important;
+}
+
+.field-error {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.act-error {
+  color: var(--md-sys-color-error);
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.act-error-container {
+  text-align: center;
+  padding: 40px;
+  color: var(--md-sys-color-error);
+}
+
+/* Bootstrap 風格的表單驗證樣式（主要使用） */
+.is-invalid {
+  border-color: #dc3545 !important;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'><circle cx='6' cy='6' r='4.5'/><path stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/><circle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: right calc(0.375em + 0.1875rem) center !important;
+  background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+  padding-right: calc(1.5em + 0.75rem) !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+  animation: shake 0.5s ease-in-out;
+}
+
+.is-invalid:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.invalid-feedback {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #dc3545;
+  animation: slideDown 0.3s ease-out;
+}
+
+.invalid-feedback:empty {
+  display: none;
+}
+
+/* 成功狀態樣式 */
+.is-valid {
+  border-color: #28a745 !important;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path fill='%2328a745' d='m2.3 6.73.45.27 4.34-4.34-.44-.44-3.89 3.89-1.45-1.45-.44.44z'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: right calc(0.375em + 0.1875rem) center !important;
+  background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+  padding-right: calc(1.5em + 0.75rem) !important;
+}
+
+.is-valid:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}
+
+.valid-feedback {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #28a745;
+}
+
+.valid-feedback:empty {
+  display: none;
+}
+
+/* 統一錯誤訊息區塊樣式 */
+.alert.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.1);
+  animation: slideDown 0.3s ease-out;
+}
+
+.alert.alert-danger ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.alert.alert-danger li {
+  margin-bottom: 4px;
+}
+
+.alert.alert-danger li:last-child {
+  margin-bottom: 0;
+}
+
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  margin: 16px 0;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* ========================================
+   載入與空狀態樣式
+   ======================================== */
+
+/* 載入狀態樣式 */
+.act-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 14px;
+}
+
+.act-loading::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--md-sys-color-outline-variant);
+  border-top: 2px solid var(--md-sys-color-primary);
+  border-radius: 50%;
+  animation: act-spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+/* 空狀態樣式 */
+.act-empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.act-empty-state h3 {
+  margin-bottom: 8px;
+  color: var(--md-sys-color-on-surface);
+}
+
+.act-empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ========================================
+   動畫效果
+   ======================================== */
+
+@keyframes act-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   響應式設計
+   ======================================== */
+
+@media (max-width: 1024px) {
+  .act-search-form {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .act-search-form {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .act-date-range-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .act-date-separator {
+    display: none;
+  }
+
+  .act-date-input {
+    min-width: unset;
+  }
+}

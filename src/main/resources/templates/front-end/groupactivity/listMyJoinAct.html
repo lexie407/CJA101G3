@@ -7,7 +7,16 @@
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
+    <!-- GroupActivity 模組 CSS -->
+    <link
+      rel="stylesheet"
+      th:href="@{/css/groupactivity/styleAct_common.css}"
+    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
+
+    <!-- GroupActivity 模組 -->
+    <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
+    <script th:src="@{/js/groupactivity/groupactivity-ui.js}"></script>
 
     <style>
       /* 日期區間樣式 */
@@ -171,74 +180,6 @@
       const filterForm = document.getElementById("filterForm");
       let allActivities = []; // 存儲所有活動資料
 
-      function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("zh-TW", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        });
-      }
-
-      function getStatusText(status) {
-        const statusMap = {
-          0: { text: "招募中", class: "recruiting" },
-          1: { text: "成團", class: "full" },
-          2: { text: "未成團", class: "ended" },
-          3: { text: "已取消", class: "ended" },
-          4: { text: "已凍結", class: "ended" },
-          5: { text: "已結束", class: "ended" },
-        };
-        return statusMap[status] || { text: "未知", class: "ended" };
-      }
-
-      function createActCard(act) {
-        const status = getStatusText(act.recruitStatus);
-        let imageHtml = '<div class="act-card-image-placeholder">無圖片</div>';
-
-        // 使用統一的圖片端點
-        imageHtml = `<img src="/api/act/image/${act.actId}" alt="活動圖片" class="act-card-image">`;
-
-        return `
-                <div class="act-card">
-                    ${imageHtml}
-                    <h3 class="act-card-title">${act.actName}</h3>
-                    <p class="act-card-desc">${act.actDesc || "無描述"}</p>
-
-                    <div class="act-card-info">
-                        <div class="act-info-item">
-                            <span class="act-info-label">人數</span>
-                            <span class="act-info-value">${
-                              act.signupCnt || 0
-                            }/${act.maxCap}</span>
-                        </div>
-                        <div class="act-info-item">
-                            <span class="act-info-label">開始日期</span>
-                            <span class="act-info-value">${formatDate(
-                              act.actStart
-                            )}</span>
-                        </div>
-                        <div class="act-info-item">
-                            <span class="act-info-label">團主</span>
-                            <span class="act-info-value">會員 ${
-                              act.hostId
-                            }</span>
-                        </div>
-                    </div>
-
-                    <span class="act-status ${status.class}">${
-          status.text
-        }</span>
-
-                    <div class="act-card-actions">
-                        <a href="/act/member/view/${act.actId}" class="act-btn act-btn-primary">查看詳情</a>
-                        <a href="/act/group/${act.actId}/home" class="act-btn act-btn-success">進入揪團主頁</a>
-                        <button onclick="cancelParticipation(${act.actId})" class="act-btn act-btn-danger">取消報名</button>
-                    </div>
-                </div>
-            `;
-      }
-
       // 篩選活動
       function filterActivities() {
         const formData = new FormData(filterForm);
@@ -290,10 +231,43 @@
         } else {
           listEl.innerHTML = `
             <div class="act-card-container">
-                ${activities.map(createActCard).join("")}
+                ${activities
+                  .map((act) =>
+                    GroupActivityUI.createActCard(act, { template: "myJoin" })
+                  )
+                  .join("")}
             </div>
           `;
         }
+      }
+
+      // 取消報名函數
+      function cancelParticipation(actId) {
+        if (!confirm("確定要取消報名嗎？")) {
+          return;
+        }
+
+        const currentMemId = memId; // 使用頁面載入時的memId
+
+        fetch(`/api/participate/${actId}/signup/${currentMemId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert("取消報名成功");
+              loadActivities(); // 重新載入活動列表
+            } else {
+              alert("取消報名失敗：" + data.error);
+            }
+          })
+          .catch((error) => {
+            console.error("取消報名錯誤:", error);
+            alert("取消報名失敗，請稍後再試");
+          });
       }
 
       // 清除篩選
@@ -358,6 +332,11 @@
             `;
           });
       }
+
+      // 頁面載入時執行
+      document.addEventListener("DOMContentLoaded", function () {
+        loadActivities();
+      });
     </script>
   </body>
 </html>

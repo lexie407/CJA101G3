@@ -33,7 +33,7 @@ public class ActDTO implements Serializable {
     @NotNull(message="行程編號: 請勿空白")
     private Integer itnId;
 
-    @NotNull(message="團主編號: 請勿空白")
+    // @NotNull(message="團主編號: 請勿空白")  // 由後端從session設定，無需前端驗證
     private Integer hostId;
 
     @NotNull(message = "報名開始時間不得為空")
@@ -41,14 +41,14 @@ public class ActDTO implements Serializable {
     private LocalDateTime signupStart;
 
     @NotNull(message = "報名截止時間不得為空")
-    //@Future(message="日期必須是在今日(不含)之後")//報名開始如果設定在今日以前，就可以視為截止?
+    //@Future(message="日期必須是在今日(不含)之後")
     private LocalDateTime signupEnd;
 
     @NotNull(message = "必須設定活動需求人數")
     @Min(1)
     private Integer maxCap;
 
-    //以報名人數由程式計算
+    //報名人數由程式計算
     private Integer signupCnt;
 
     @NotNull(message = "活動開始時間不得為空")
@@ -69,6 +69,11 @@ public class ActDTO implements Serializable {
 
     //0 = 招募中，1 = 額滿，2 = 截止，3 = 取消，4 = 凍結，5 = 結束。允許null
     private Byte recruitStatus;
+
+    // 活動標籤（不儲存到資料庫，存入Redis）
+    private String actType;  // 活動類型
+    private String actCity;  // 活動縣市
+
 
     // ===== Getter / Setter =====
 
@@ -200,47 +205,84 @@ public class ActDTO implements Serializable {
         this.recruitStatus = recruitStatus;
     }
 
-    /**
-     * 取得RecruitStatus Enum（如果recruitStatus為null則回傳null）
-     */
+    public String getActType() {
+        return actType;
+    }
+
+    public void setActType(String actType) {
+        this.actType = actType;
+    }
+
+    public String getActCity() {
+        return actCity;
+    }
+
+    public void setActCity(String actCity) {
+        this.actCity = actCity;
+    }
+
+    //活動狀態設定與檢查
+
     public ActStatus getRecruitStatusEnum() {
         return ActStatus.fromValueOrNull(recruitStatus);
     }
 
-    /**
-     * 設定RecruitStatus Enum
-     */
     public void setRecruitStatusEnum(ActStatus status) {
         this.recruitStatus = status != null ? status.getValue() : null;
     }
 
-    /**
-     * 檢查是否為招募中狀態
-     */
     public boolean isRecruiting() {
         ActStatus status = getRecruitStatusEnum();
         return status != null && status.isOpen();
     }
 
-    /**
-     * 檢查是否為成團狀態
-     */
     public boolean isFull() {
         ActStatus status = getRecruitStatusEnum();
         return status != null && status.isFull();
     }
 
-    /**
-     * 檢查是否可以報名
-     */
     public boolean canSignUp() {
         ActStatus status = getRecruitStatusEnum();
         return status != null && status.canSignUp();
     }
 
-    /**
-     * 前端特別驗證欄位
-     */
+    //活動標籤便利方法
+    public ActTag getTypeTag() {
+        try {
+            return ActTag.valueOf(actType);
+        } catch (Exception e) {
+            return ActTag.OUTDOOR;
+        }
+    }
+
+    public ActTag getCityTag() {
+        try {
+            return ActTag.valueOf(actCity);
+        } catch (Exception e) {
+            return ActTag.TAIPEI;
+        }
+    }
+
+    public void setTypeTag(ActTag tag) {
+        this.actType = tag != null ? tag.name() : ActTag.OUTDOOR.name();
+    }
+
+    public void setCityTag(ActTag tag) {
+        this.actCity = tag != null ? tag.name() : ActTag.TAIPEI.name();
+    }
+
+    // =======前端特別商業驗證邏輯=======
+
+    //開放招募時需填寫必要欄位
+    @AssertTrue(message = "開放招募時需填寫名稱、開始/結束時間與名額")
+    public boolean isOpenFieldsValid() {
+        if (recruitStatus != null && recruitStatus == ActStatus.OPEN.getValue()) {
+            return actName != null && !actName.isBlank()
+                    && actStart != null && actEnd != null && maxCap != null;
+        }
+        return true;
+    }
+
     // 招募時間邏輯
     @AssertTrue(message = "活動結束時間必須晚於開始時間")
     public boolean isSignUpEndAfterStart() {
@@ -259,19 +301,7 @@ public class ActDTO implements Serializable {
         return true;
     }
 
-    //開放招募時需填寫必要欄位
-    @AssertTrue(message = "開放招募時需填寫名稱、開始/結束時間與名額")
-    public boolean isOpenFieldsValid() {
-        if (recruitStatus != null && recruitStatus == ActStatus.OPEN.getValue()) {
-            return actName != null && !actName.isBlank()
-                && actStart != null && actEnd != null && maxCap != null;
-        }
-        return true;
-    }
-
-    /**
-     * 驗證：人數上限不可小於目前已報名人數
-     */
+    //人數上限不可小於目前已報名人數
     @AssertTrue(message = "人數上限不可小於目前已報名人數")
     public boolean isMaxCapValid() {
         if (maxCap != null && signupCnt != null) {
@@ -280,15 +310,13 @@ public class ActDTO implements Serializable {
         return true;
     }
 
-    /**
-     * 將 DTO 內容轉為 VO 以進行資料庫操作
-     */
+    //將 DTO 內容轉為 VO 以進行資料庫操作
     public ActVO toVO() {
         ActVO vo = new ActVO();
         vo.setActId(this.actId);
         vo.setActName(this.actName);
         vo.setActDesc(this.actDesc);
-        
+
         // 處理圖片：如果有 base64 字串，轉換為 byte[]
         if (this.actImgBase64 != null && !this.actImgBase64.isEmpty()) {
             try {
@@ -301,7 +329,7 @@ public class ActDTO implements Serializable {
         } else {
             vo.setActImg(this.actImg);
         }
-        
+
         vo.setItnId(this.itnId);
         vo.setHostId(this.hostId);
         vo.setSignupStart(this.signupStart);

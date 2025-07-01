@@ -1,0 +1,559 @@
+/* ========================================
+   GroupActivity 模組 - 前台專用樣式（卡片+詳細頁+搜尋）
+   ======================================== */
+
+/* 前端活動頁面專用樣式 - styleAct_front_enhanced.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 統一主內容位置 */
+.content-area-main.act-page {
+  padding: 32px 56px 32px 56px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 頁面標題 */
+.act-front-title.act-area {
+  max-width: 100%;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 24px;
+  color: var(--md-sys-color-primary);
+  text-align: center;
+}
+
+/*============= 卡片樣式===================*/
+
+/* 卡片容器 */
+.act-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* 活動卡片 */
+.act-card {
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.act-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 活動圖片 */
+.act-card-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.act-card-image-placeholder {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(
+    135deg,
+    var(--md-sys-color-surface-container),
+    var(--md-sys-color-outline-variant)
+  );
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 1.2rem;
+}
+
+/* 活動標題 */
+.act-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* 活動描述 */
+.act-card-desc {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 活動資訊 */
+.act-card-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.act-info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background-color: var(--md-sys-color-surface-container);
+  border-radius: 6px;
+}
+
+.act-info-label {
+  font-size: 0.75rem;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 4px;
+}
+
+.act-info-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* 按鈕組 */
+.act-card-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/*============= 詳細頁面樣式 ===================*/
+
+/* 詳細頁面容器 */
+.act-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.act-detail-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.act-detail-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 8px;
+}
+
+.act-detail-meta {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.9rem;
+}
+
+.act-detail-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.act-detail-content {
+  margin-bottom: 32px;
+}
+
+.act-detail-desc {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 24px;
+}
+
+.act-detail-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.act-detail-item {
+  background: var(--md-sys-color-surface-container);
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.act-detail-label {
+  font-size: 0.875rem;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.act-detail-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+}
+
+/*============= 搜尋介面樣式 ===================*/
+
+/* 搜尋容器 */
+.act-search-container {
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.act-search-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.act-search-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.act-search-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 8px;
+}
+
+.act-search-input {
+  padding: 10px 12px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.act-search-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.act-search-input.error:focus {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25);
+}
+
+.act-search-btn {
+  padding: 10px 20px;
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.act-search-btn:hover {
+  background: var(--md-sys-color-primary);
+  opacity: 0.9;
+}
+
+/*============= 響應式設計 ===================*/
+
+@media (max-width: 768px) {
+  .content-area-main {
+    padding: 16px;
+  }
+
+  .act-card-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .act-detail-container {
+    padding: 16px;
+  }
+
+  .act-search-form {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .act-detail-info {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
+   Bootstrap Floating Labels 專用樣式
+   ======================================== */
+
+/* Bootstrap Floating Labels基礎樣式 */
+.form-floating > .form-control:not(.is-invalid),
+.form-floating > .form-select:not(.is-invalid) {
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline);
+  color: var(--md-sys-color-on-surface);
+}
+
+.form-floating > .form-control:not(.is-invalid):focus,
+.form-floating > .form-select:not(.is-invalid):focus {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 0.25rem rgba(41, 153, 194, 0.25);
+}
+
+.form-floating > label {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.form-floating > .form-control:not(.is-invalid):focus ~ label,
+.form-floating > .form-control:not(.is-invalid):not(:placeholder-shown) ~ label,
+.form-floating > .form-select:not(.is-invalid) ~ label {
+  color: var(--md-sys-color-primary);
+}
+
+/* Bootstrap Floating Labels錯誤狀態 (專用於覆蓋通用樣式) */
+.form-floating > .form-control.is-invalid {
+  border: 2px solid #dc3545 !important;
+  background-color: #fdf2f2 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.form-floating > .form-control.is-invalid:focus {
+  border: 2px solid #dc3545 !important;
+  background-color: #fdf2f2 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+  outline: none !important;
+}
+
+.form-floating > .form-control.is-invalid ~ label {
+  color: #dc3545 !important;
+}
+
+/* ========================================
+   Select2 多選標籤樣式
+   ======================================== */
+
+.select2-container--default .select2-selection--multiple {
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 6px;
+  padding: 6px;
+  min-height: 42px;
+  background: var(--md-sys-color-surface);
+}
+
+.select2-container--default
+  .select2-selection--multiple
+  .select2-selection__choice {
+  background-color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border-radius: 15px;
+  padding: 2px 8px;
+  font-size: 12px;
+  margin: 2px;
+}
+
+.select2-container--default
+  .select2-selection--multiple
+  .select2-selection__choice__remove {
+  color: var(--md-sys-color-on-primary);
+  margin-right: 4px;
+}
+
+.select2-container--default
+  .select2-results__option--highlighted[aria-selected] {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.select2-container--default .select2-search--inline .select2-search__field {
+  border: none;
+  outline: none;
+  padding: 4px;
+}
+
+.select2-container--default.select2-container--focus
+  .select2-selection--multiple {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 0.2rem rgba(41, 153, 194, 0.25);
+}
+
+.select2-dropdown {
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   拖拽上傳區域樣式
+   ======================================== */
+
+.drag-drop-area {
+  border: 2px dashed var(--md-sys-color-outline);
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  background-color: var(--md-sys-color-surface);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.drag-drop-area:hover,
+.drag-drop-area.drag-over {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+}
+
+.drag-drop-area.drag-over {
+  border-style: solid;
+}
+
+.drag-drop-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.drag-drop-icon {
+  color: var(--md-sys-color-primary);
+  opacity: 0.7;
+}
+
+.drag-drop-main {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  color: var(--md-sys-color-on-surface);
+}
+
+.drag-drop-sub {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.drag-drop-browse {
+  color: var(--md-sys-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.drag-drop-browse:hover {
+  color: var(--md-sys-color-secondary);
+}
+
+.drag-drop-hint {
+  font-size: 12px;
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.8;
+}
+
+/* ========================================
+   圖片預覽樣式
+   ======================================== */
+
+.image-preview-container {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-preview-wrapper {
+  position: relative;
+  display: inline-block;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--md-sys-color-surface-variant);
+  border: 1px solid var(--md-sys-color-outline);
+}
+
+.preview-image {
+  width: 100%;
+  max-width: 300px;
+  max-height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-preview-wrapper:hover .image-overlay {
+  opacity: 1;
+}
+
+.remove-image-btn {
+  background-color: var(--md-sys-color-error);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.remove-image-btn:hover {
+  background-color: var(--md-sys-color-error-container);
+}
+
+.compression-info {
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  padding: 8px 0;
+}
+
+/* ========================================
+   工具樣式類
+   ======================================== */
+
+/* 必填欄位標記 */
+.required-mark {
+  color: var(--md-sys-color-error);
+}
+
+/* 大型文字區域 */
+.large-textarea {
+  height: 120px;
+}
+
+/* 全寬度 */
+.full-width {
+  width: 100%;
+}
+
+/* 隱藏元素 */
+.hidden {
+  display: none;
+}

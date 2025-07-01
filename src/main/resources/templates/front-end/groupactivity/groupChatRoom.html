@@ -8,146 +8,22 @@
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/light.css}" type="text/css" />
     <link rel="stylesheet" th:href="@{/css/style.css}" type="text/css" />
-    <!--    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}">-->
+    <!--    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front_enhanced.css}">-->
+    <!-- GroupActivity 模組 CSS -->
+    <link
+      rel="stylesheet"
+      th:href="@{/css/groupactivity/styleAct_common.css}"
+    />
+    <link
+      rel="stylesheet"
+      th:href="@{/css/groupactivity/groupactivity-chat.css}"
+    />
 
-    <style>
-      /* 聊天室樣式 - 使用 light.css 配色 */
-      .chat-container {
-        max-width: 800px;
-        margin: 20px auto;
-        padding: 20px;
-        background: var(--md-sys-color-surface-container-lowest);
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        border: 1px solid var(--md-sys-color-outline-variant);
-      }
-      .chat-status {
-        margin: 10px 0;
-        padding: 12px 16px;
-        border-radius: 8px;
-        text-align: center;
-        font-weight: 500;
-        font-size: 14px;
-      }
-      .error {
-        background: var(--md-sys-color-error-container);
-        color: var(--md-sys-color-on-error-container);
-      }
-      .success {
-        background: var(--md-sys-color-primary-container);
-        color: var(--md-sys-color-on-primary-container);
-      }
-      .info {
-        background: var(--md-sys-color-secondary-container);
-        color: var(--md-sys-color-on-secondary-container);
-      }
-      .back-link {
-        display: inline-block;
-        margin-bottom: 20px;
-        color: var(--md-sys-color-primary);
-        text-decoration: none;
-        font-weight: 500;
-        padding: 8px 16px;
-        border-radius: 8px;
-        transition: background-color 0.2s ease;
-      }
-      .back-link:hover {
-        background: var(--md-sys-color-primary-container);
-        color: var(--md-sys-color-on-primary-container);
-        text-decoration: none;
-      }
+    <!-- SockJS 和 STOMP 庫 -->
+    <script th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
+    <script th:src="@{/webjars/stomp-websocket/stomp.min.js}"></script>
 
-      /* 聊天室標題樣式 */
-      .chat-title {
-        color: var(--md-sys-color-on-surface);
-        margin-bottom: 16px;
-        font-weight: 600;
-      }
-
-      /* 聊天訊息區域樣式 */
-      .messages-area {
-        height: 400px;
-        border: 2px solid var(--md-sys-color-outline-variant);
-        border-radius: 12px;
-        padding: 16px;
-        overflow-y: auto;
-        margin: 20px 0;
-        background: var(--md-sys-color-surface);
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-      }
-
-      /* 輸入區域樣式 */
-      .input-area {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
-
-      .message-input {
-        flex: 1;
-        padding: 12px 16px;
-        border: 2px solid var(--md-sys-color-outline);
-        border-radius: 24px;
-        font-size: 14px;
-        background: var(--md-sys-color-surface);
-        color: var(--md-sys-color-on-surface);
-        transition: border-color 0.2s ease;
-      }
-
-      .message-input:focus {
-        outline: none;
-        border-color: var(--md-sys-color-primary);
-        box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
-      }
-
-      .message-input:disabled {
-        background: var(--md-sys-color-surface-variant);
-        color: var(--md-sys-color-on-surface-variant);
-        border-color: var(--md-sys-color-outline-variant);
-      }
-
-      .send-btn {
-        padding: 12px 20px;
-        background: var(--md-sys-color-primary);
-        color: var(--md-sys-color-on-primary);
-        border: none;
-        border-radius: 20px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s ease, transform 0.1s ease;
-      }
-
-      .send-btn:hover:not(:disabled) {
-        background: var(--md-sys-color-primary);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(41, 171, 194, 0.3);
-      }
-
-      .send-btn:disabled {
-        background: var(--md-sys-color-surface-variant);
-        color: var(--md-sys-color-on-surface-variant);
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-      }
-
-      .disconnect-btn {
-        padding: 12px 20px;
-        background: var(--md-sys-color-error);
-        color: var(--md-sys-color-on-error);
-        border: none;
-        border-radius: 20px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s ease, transform 0.1s ease;
-      }
-
-      .disconnect-btn:hover {
-        background: var(--md-sys-color-error);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(186, 26, 26, 0.3);
-      }
-    </style>
+    <!-- 聊天室樣式已移動到 groupactivity-chat.css -->
   </head>
 
   <body class="light">
@@ -158,45 +34,45 @@
           th:insert="~{/subnavActFrontGroup :: subnav('chat', ${act.actId})}"
         ></div>
         <main class="content-area-main act-area">
-          <div class="chat-container">
-<!--            <a-->
-<!--              th:href="@{'/act/group/' + ${act.actId} + '/home'}"-->
-<!--              class="back-link"-->
-<!--            >-->
-<!--              ← 返回團隊主頁-->
-<!--            </a>-->
+          <div class="act-chat-container">
+            <!--            <a-->
+            <!--              th:href="@{'/act/group/' + ${act.actId} + '/home'}"-->
+            <!--              class="act-chat-back-link"-->
+            <!--            >-->
+            <!--              ← 返回團隊主頁-->
+            <!--            </a>-->
 
             <!-- 聊天室標題 -->
-            <h1 class="chat-title" th:text="${act.actName} + ' 聊天室'">
+            <h1 class="act-chat-title" th:text="${act.actName} + ' 聊天室'">
               團隊聊天室
             </h1>
 
             <!-- 狀態顯示 -->
-            <div class="chat-status info" id="statusOutput">
+            <div class="act-chat-status info" id="statusOutput">
               正在連接聊天室...
             </div>
 
             <!-- 聊天訊息區域 -->
-            <div id="messagesArea" class="messages-area"></div>
+            <div id="messagesArea" class="act-chat-messages"></div>
 
             <!-- 輸入區域 -->
-            <div class="input-area">
+            <div class="act-chat-input-area">
               <input
                 id="messageInput"
                 type="text"
                 placeholder="輸入您的訊息..."
-                class="message-input"
+                class="act-chat-message-input"
                 disabled
               />
               <button
                 id="sendBtn"
                 onclick="sendMessage();"
-                class="send-btn"
+                class="act-chat-send-btn"
                 disabled
               >
                 發送
               </button>
-              <button onclick="disconnect();" class="disconnect-btn">
+              <button onclick="disconnect();" class="act-chat-disconnect-btn">
                 離開
               </button>
             </div>
@@ -206,19 +82,19 @@
     </div>
 
     <script th:inline="javascript">
+      /*
+       * Spring WebSocket + STOMP 聊天室前端實現
+       * 使用SockJS和STOMP協議進行即時通訊
+       */
+
       // 從 Thymeleaf 獲取資料
-      const actNo = /*[[${act.actId}]]*/ 1;
+      const actId = /*[[${act.actId}]]*/ 1;
       const actName = /*[[${act.actName}]]*/ "團隊活動";
       const currentMemberId = /*[[${currentMemberId}]]*/ 0;
       const currentMemberName = /*[[${currentMemberName}]]*/ "當前用戶";
 
-      // 構造 WebSocket URL
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = window.location.host;
-      const endPointURL = `${protocol}//${host}/groupchat/${actNo}`;
-
-      let webSocket;
-      let isConnected = false;
+      let stompClient = null; // STOMP客戶端
+      let isConnected = false; // 連接狀態
 
       // 界面元素
       const statusOutput = document.getElementById("statusOutput");
@@ -226,58 +102,68 @@
       const messageInput = document.getElementById("messageInput");
       const sendBtn = document.getElementById("sendBtn");
 
-      // 頁面載入時自動連接
       window.onload = function () {
         connect();
-      };
+      }; // 頁面載入時自動連接
 
       function connect() {
         updateStatus("正在連接...", "info");
 
         try {
-          webSocket = new WebSocket(endPointURL);
+          const socket = new SockJS("/ws"); // 建立SockJS連接
+          stompClient = Stomp.over(socket);
 
-          webSocket.onopen = function (event) {
-            isConnected = true;
-            updateStatus("✅ 已連接到聊天室", "success");
-            enableInputs(true);
-            loadChatHistory();
-          };
+          stompClient.connect(
+            {},
+            function (frame) {
+              // 連接到STOMP服務器
+              isConnected = true;
+              updateStatus("✅ 已連接到聊天室", "success");
+              enableInputs(true);
 
-          webSocket.onmessage = function (event) {
-            try {
-              const messageData = JSON.parse(event.data);
-              displayMessage(messageData);
-            } catch (e) {
-              addSystemMessage("收到無效格式的訊息");
+              stompClient.subscribe(
+                "/topic/public/" + actId,
+                function (message) {
+                  // 訂閱團隊聊天頻道
+                  try {
+                    const messageData = JSON.parse(message.body);
+                    displayMessage(messageData);
+                  } catch (e) {
+                    console.error("解析訊息錯誤:", e);
+                    addSystemMessage("收到無效格式的訊息");
+                  }
+                }
+              );
+
+              stompClient.send(
+                "/app/chat.addUser/" + actId,
+                {},
+                JSON.stringify({
+                  // 發送加入聊天室的訊息
+                  userName: currentMemberName,
+                  type: "JOIN",
+                })
+              );
+
+              loadChatHistory(); // 載入歷史聊天記錄
+            },
+            function (error) {
+              isConnected = false; // 連接錯誤處理
+              enableInputs(false);
+              updateStatus("❌ 連接失敗", "error");
+              addSystemMessage("STOMP 連接錯誤: " + error);
+              console.error("STOMP 連接錯誤:", error);
             }
-          };
-
-          webSocket.onclose = function (event) {
-            isConnected = false;
-            enableInputs(false);
-
-            let message = `❌ 連接已關閉 (${event.code})`;
-            if (event.reason) message += ` - ${event.reason}`;
-
-            updateStatus(message, "error");
-            addSystemMessage(
-              `連接關閉: ${event.code} - ${event.reason || "未知原因"}`
-            );
-          };
-
-          webSocket.onerror = function (error) {
-            updateStatus("❌ 連接錯誤", "error");
-            addSystemMessage("WebSocket 連接發生錯誤");
-          };
+          );
         } catch (e) {
           updateStatus("❌ 無法建立連接", "error");
-          addSystemMessage("無法建立 WebSocket 連接: " + e.message);
+          addSystemMessage("無法建立 STOMP 連接: " + e.message);
+          console.error("建立連接錯誤:", e);
         }
       }
 
       function sendMessage() {
-        if (!isConnected) {
+        if (!isConnected || !stompClient) {
           alert("尚未連接到聊天室");
           return false;
         }
@@ -289,11 +175,20 @@
         }
 
         try {
-          const messageObj = { message: message };
-          webSocket.send(JSON.stringify(messageObj));
+          stompClient.send(
+            "/app/chat.sendMessage/" + actId,
+            {},
+            JSON.stringify({
+              // 發送訊息到STOMP端點
+              message: message,
+              userName: currentMemberName,
+              actId: actId,
+              memberId: currentMemberId,
+              type: "CHAT",
+            })
+          );
 
-          // 確保輸入框被清空
-          messageInput.value = "";
+          messageInput.value = ""; // 清空輸入框
           messageInput.blur();
           setTimeout(() => {
             messageInput.focus();
@@ -302,14 +197,19 @@
           return true;
         } catch (e) {
           alert("發送訊息失敗: " + e.message);
+          console.error("發送訊息錯誤:", e);
           return false;
         }
       }
 
       function disconnect() {
-        if (webSocket && isConnected) {
-          webSocket.close();
+        if (stompClient && isConnected) {
+          stompClient.disconnect();
+          isConnected = false;
+          enableInputs(false);
+          updateStatus("已斷開連接", "info");
         }
+        window.location.href = "/act/group/" + actId + "/home"; // 返回團隊主頁
       }
 
       function updateStatus(message, type) {
@@ -335,7 +235,11 @@
         messageDiv.style.wordWrap = "break-word";
         messageDiv.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
 
-        if (messageData.type === "system") {
+        if (
+          messageData.type === "system" ||
+          messageData.type === "join" ||
+          messageData.type === "leave"
+        ) {
           // 系統訊息置中 - 使用 light.css 配色
           messageContainer.style.justifyContent = "center";
           messageDiv.style.background =
@@ -347,7 +251,12 @@
           messageDiv.style.maxWidth = "80%";
           messageDiv.style.border =
             "1px solid var(--md-sys-color-outline-variant)";
-          messageDiv.innerHTML = `<strong>🤖 系統:</strong> ${
+
+          let icon = "🤖";
+          if (messageData.type === "join") icon = "👋";
+          if (messageData.type === "leave") icon = "👋";
+
+          messageDiv.innerHTML = `<strong>${icon} 系統:</strong> ${
             messageData.message
           } <small style="color: var(--md-sys-color-on-tertiary-container); opacity: 0.7;">(${formatTime(
             messageData.timestamp
@@ -410,9 +319,9 @@
         return date.toLocaleTimeString();
       }
 
-      // 載入歷史聊天記錄
       function loadChatHistory() {
-        fetch(`/act/group/${actNo}/chat/history`)
+        // 載入歷史聊天記錄
+        fetch(`/act/group/${actId}/chat/history`)
           .then((response) => {
             if (!response.ok) {
               throw new Error(
@@ -445,6 +354,7 @@
           })
           .catch((error) => {
             addSystemMessage("⚠️ 載入歷史記錄失敗，但您仍可以正常聊天");
+            console.error("載入歷史記錄錯誤:", error);
           });
       }
 
@@ -455,6 +365,13 @@
           setTimeout(() => {
             sendMessage();
           }, 10);
+        }
+      });
+
+      // 頁面卸載時斷開連接
+      window.addEventListener("beforeunload", function () {
+        if (stompClient && isConnected) {
+          stompClient.disconnect();
         }
       });
     </script>

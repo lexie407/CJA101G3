@@ -1,5 +1,8 @@
-package com.toiukha.groupactivity.model;
+package com.toiukha.groupactivity.service;
 
+import com.toiukha.groupactivity.model.ActRepository;
+import com.toiukha.groupactivity.model.ActStatus;
+import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.participant.model.PartRepository;
 import com.toiukha.participant.model.PartVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +69,11 @@ public class ActHandlerService {
             throw new IllegalStateException("活動未開放報名");
         }
         
+        // 檢查是否為團主
+        if (act.getHostId().equals(memId)) {
+            throw new IllegalStateException("團主無需報名自己的活動");
+        }
+        
         // 檢查人數限制
         if (act.getSignupCnt() >= act.getMaxCap()) {
             throw new IllegalStateException("人數已滿");
@@ -94,9 +102,14 @@ public class ActHandlerService {
      */
     @Transactional
     public void handleParticipantCancellation(Integer actId, Integer memId) {
-        partRepo.deleteByActIdAndMemId(actId, memId);
-        
         ActVO act = actRepo.findById(actId).orElseThrow();
+        
+        // 檢查是否為團主
+        if (act.getHostId().equals(memId)) {
+            throw new IllegalStateException("團主不能退出自己的活動，請改為取消活動");
+        }
+        
+        partRepo.deleteByActIdAndMemId(actId, memId);
         updateActivityStatus(act, act.getSignupCnt() - 1);
     }
     
@@ -116,11 +129,17 @@ public class ActHandlerService {
     }
     
     /**
-     * 查詢會員參加的活動
+     * 查詢會員參加的活動（不包括自己當團主的活動）
      */
     public List<ActVO> getJoinedActivities(Integer memId) {
         List<Integer> actIds = partRepo.findActIdsByMemId(memId);
         List<ActVO> activities = actRepo.findAllById(actIds);
+        
+        // 過濾掉自己當團主的活動
+        activities = activities.stream()
+                .filter(activity -> !activity.getHostId().equals(memId))
+                .collect(java.util.stream.Collectors.toList());
+                
         activities.sort((a, b) -> Integer.compare(b.getActId(), a.getActId()));
         return activities;
     }

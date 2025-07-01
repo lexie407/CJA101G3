@@ -7,63 +7,12 @@
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
-    <link rel="stylesheet" th:href="@{/css/styleAct_front_enhanced.css}" />
-
-    <style>
-      /* 日期區間樣式 */
-      .act-date-range-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .act-date-input {
-        flex: 1;
-        min-width: 140px;
-      }
-
-      .act-date-separator {
-        color: var(--md-sys-color-on-surface-variant);
-        font-weight: 500;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-
-      /* 修正搜尋表單的響應式佈局 */
-      .act-search-form {
-        display: grid;
-        grid-template-columns: 1fr 2fr 1fr 1fr;
-        gap: 16px;
-        align-items: end;
-      }
-
-      @media (max-width: 1024px) {
-        .act-search-form {
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .act-search-form {
-          grid-template-columns: 1fr;
-          gap: 16px;
-        }
-
-        .act-date-range-container {
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .act-date-separator {
-          display: none;
-        }
-
-        .act-date-input {
-          min-width: unset;
-        }
-      }
-    </style>
+    <!-- GroupActivity 模組 CSS -->
+    <link
+      rel="stylesheet"
+      th:href="@{/css/groupactivity/styleAct_common.css}"
+    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
   </head>
   <body class="light">
     <div class="app-container">
@@ -164,139 +113,76 @@
       </div>
     </div>
 
+    <!-- GroupActivity 模組 JavaScript -->
+    <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
+    <script th:src="@{/js/groupactivity/groupactivity-ui.js}"></script>
+    <script th:src="@{/js/groupactivity/groupactivity-api.js}"></script>
+
     <script>
-      // 載入個人活動列表
+      // 頁面變數
       const listEl = document.getElementById("myActList");
       const hostId = listEl.dataset.hostId;
       const filterForm = document.getElementById("filterForm");
       let allActivities = []; // 存儲所有活動資料
 
-      function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("zh-TW", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
+      // 使用共用函數
+      const {
+        formatDate,
+        getStatusText,
+        showLoading,
+        hideLoading,
+        showError,
+        showEmptyState,
+      } = GroupActivityCore;
+      const { createActCard } = GroupActivityUI;
+      const { getMyActivities } = GroupActivityAPI;
+
+      // 活動卡片渲染器
+      function renderMyActivityCard(activity) {
+        return createActCard(activity, {
+          showActions: true,
+          showHostActions: true,
+          showImage: true,
         });
       }
 
-      function getStatusText(status) {
-        const statusMap = {
-          0: { text: "招募中", class: "recruiting" },
-          1: { text: "成團", class: "full" },
-          2: { text: "未成團", class: "ended" },
-          3: { text: "已取消", class: "ended" },
-          4: { text: "已凍結", class: "ended" },
-          5: { text: "已結束", class: "ended" },
-        };
-        return statusMap[status] || { text: "未知", class: "ended" };
-      }
-
-      function createActCard(act) {
-        const status = getStatusText(act.recruitStatus);
-        let imageHtml = '<div class="act-card-image-placeholder">無圖片</div>';
-
-        // 使用統一的圖片端點，無圖片時自動顯示預設圖片
-        imageHtml = `<img src="/api/act/image/${act.actId}" alt="活動圖片" class="act-card-image">`;
-
-        return `
-                <div class="act-card">
-                    ${imageHtml}
-                    <h3 class="act-card-title">${act.actName}</h3>
-                    <p class="act-card-desc">${act.actDesc || "無描述"}</p>
-
-                    <div class="act-card-info">
-                        <div class="act-info-item">
-                            <span class="act-info-label">人數</span>
-                            <span class="act-info-value">${
-                              act.signupCnt || 0
-                            }/${act.maxCap}</span>
-                        </div>
-                        <div class="act-info-item">
-                            <span class="act-info-label">開始日期</span>
-                            <span class="act-info-value">${formatDate(
-                              act.actStart
-                            )}</span>
-                        </div>
-                    </div>
-
-                    <span class="act-status ${status.class}">${
-          status.text
-        }</span>
-
-                    <div class="act-card-actions">
-                        <a href="/act/member/view/${act.actId}" class="act-btn act-btn-primary">查看詳情</a>
-                        <a href="/act/group/${act.actId}/home" class="act-btn act-btn-success">進入揪團主頁</a>
-                        <a href="/act/member/edit/${act.actId}" class="act-btn act-btn-secondary">編輯</a>
-                    </div>
-                </div>
-            `;
-      }
-
       // 載入所有活動資料
-      function loadActivities() {
-        listEl.classList.add("act-loading");
-        listEl.innerHTML = "載入中...";
+      async function loadActivities() {
+        try {
+          showLoading(listEl, "載入中...");
 
-        fetch("/api/act/my/" + hostId)
-          .then((response) => {
-            if (response.status === 401) {
-              window.location.href = "/members/login";
-              return;
-            }
-            if (response.status === 403) {
-              response.json().then((data) => {
-                if (data.redirectTo) {
-                  window.location.href = data.redirectTo;
-                } else {
-                  alert("您沒有權限查看此頁面");
-                  window.history.back();
-                }
-              });
-              return;
-            }
-            return response.json();
-          })
-          .then((result) => {
-            if (!result) return;
+          const result = await getMyActivities(hostId);
 
-            listEl.classList.remove("act-loading");
+          hideLoading(listEl);
 
-            // 儲存所有活動資料
-            if (result.success && result.data) {
-              allActivities = result.data;
-            } else {
-              allActivities = Array.isArray(result) ? result : [];
-            }
+          // 儲存所有活動資料
+          if (result.success && result.data) {
+            allActivities = result.data;
+          } else {
+            allActivities = Array.isArray(result) ? result : [];
+          }
 
-            // 顯示活動（初始載入不做篩選）
-            displayActivities(allActivities);
-          })
-          .catch((error) => {
-            console.error("載入活動失敗:", error);
-            listEl.classList.remove("act-loading");
-            listEl.innerHTML = `
-              <div style="text-align: center; padding: 40px; color: var(--md-sys-color-error);">
-                  <h3>載入失敗</h3>
-                  <p>無法載入活動列表，請稍後再試</p>
-              </div>
-            `;
-          });
+          // 顯示活動（初始載入不做篩選）
+          displayActivities(allActivities);
+        } catch (error) {
+          console.error("載入活動失敗:", error);
+          hideLoading(listEl);
+          showError(listEl, "載入失敗", "無法載入活動列表，請稍後再試");
+        }
       }
 
       // 顯示活動列表
       function displayActivities(activities) {
         if (activities.length === 0) {
-          listEl.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: var(--md-sys-color-on-surface-variant);">
-                <h3>沒有符合條件的活動</h3>
-                <p>請嘗試調整篩選條件或建立新活動</p>
-            </div>
-          `;
+          showEmptyState(
+            listEl,
+            "沒有符合條件的活動",
+            "請嘗試調整篩選條件或建立新活動"
+          );
         } else {
           listEl.innerHTML = `
             <div class="act-card-container">
-                ${activities.map(createActCard).join("")}
+                ${activities.map(renderMyActivityCard).join("")}
             </div>
           `;
         }
@@ -350,25 +236,6 @@
 
       // 初始載入
       loadActivities();
-
-      function deleteAct(actId) {
-        if (confirm("確定要刪除這個活動嗎？此操作無法復原。")) {
-          fetch(`/api/act/${actId}/status/3?operatorId=${hostId}&admin=false`, {
-            method: "PUT",
-          })
-            .then((response) => {
-              if (response.ok) {
-                location.reload();
-              } else {
-                alert("刪除失敗，請稍後再試");
-              }
-            })
-            .catch((error) => {
-              console.error("刪除失敗:", error);
-              alert("刪除失敗，請稍後再試");
-            });
-        }
-      }
     </script>
   </body>
 </html>

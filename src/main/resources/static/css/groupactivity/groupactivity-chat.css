@@ -1,0 +1,161 @@
+/* ========================================
+   GroupActivity 模組 - 聊天室樣式
+   ======================================== */
+
+/* 聊天容器樣式 */
+.act-chat-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: var(--md-sys-color-surface-container-lowest);
+  border-radius: 16px;
+  box-shadow: var(--act-shadow-hover);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.act-chat-title {
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+/* 聊天狀態樣式 */
+.act-chat-status {
+  margin: 10px 0;
+  padding: 12px 16px;
+  border-radius: var(--act-border-radius);
+  text-align: center;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.act-chat-status.error {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+.act-chat-status.success {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.act-chat-status.info {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+/* 聊天訊息區域 */
+.act-chat-messages {
+  height: 400px;
+  border: 2px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+  padding: 16px;
+  overflow-y: auto;
+  margin: 20px 0;
+  background: var(--md-sys-color-surface);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.act-chat-message {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: var(--md-sys-color-surface-variant);
+  border-radius: var(--act-border-radius);
+  font-size: 14px;
+}
+
+.act-chat-message .timestamp {
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-left: 8px;
+}
+
+/* 聊天輸入區域 */
+.act-chat-input-area {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.act-chat-message-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid var(--md-sys-color-outline);
+  border-radius: 24px;
+  font-size: 14px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  transition: var(--act-transition);
+}
+
+.act-chat-message-input:focus {
+  outline: none;
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+}
+
+.act-chat-message-input:disabled {
+  background: var(--md-sys-color-surface-variant);
+  color: var(--md-sys-color-on-surface-variant);
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+.act-chat-send-btn {
+  padding: 12px 20px;
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border: none;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--act-transition);
+}
+
+.act-chat-send-btn:hover:not(:disabled) {
+  background: var(--md-sys-color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(41, 171, 194, 0.3);
+}
+
+.act-chat-send-btn:disabled {
+  background: var(--md-sys-color-surface-variant);
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.act-chat-disconnect-btn {
+  padding: 12px 20px;
+  background: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+  border: none;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--act-transition);
+}
+
+.act-chat-disconnect-btn:hover {
+  background: var(--md-sys-color-error);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(186, 26, 26, 0.3);
+}
+
+/* 返回連結樣式 */
+.act-chat-back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: var(--act-border-radius);
+  transition: var(--act-transition);
+}
+
+.act-chat-back-link:hover {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  text-decoration: none;
+}
