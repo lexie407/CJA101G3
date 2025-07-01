@@ -18,7 +18,7 @@ import static com.toiukha.forum.article.model.ArticleServiceImpl.ArticleSortFiel
 import static com.toiukha.forum.article.model.ArticleServiceImpl.SortDirection.DESC;
 
 // 文章相關的頁面Controller
-/* 這個Controller負責處理討論區相關的頁面請求，包括首頁、文章新增、文章查詢等功能
+/* 這個Controller負責處理討論區前台相關的頁面請求，包括首頁、文章新增、文章查詢等功能
     PS.前後端分離的做法，不會有 return string，會通通用 URL 導向，然後 JS 用 fetch 去跟 RESTful API Controller 拿資料。
  */
 @Controller

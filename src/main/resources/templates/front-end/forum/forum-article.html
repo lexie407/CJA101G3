@@ -386,7 +386,7 @@
             <div class="actions-right" style="position:relative;">
                 <span class="material-icons more-icon">more_vert</span>
                 <div class="more-menu">
-                    <div class="more-menu-item report-btn">
+                    <div class="more-menu-item report-btn icon-button">
                         <span class="material-icons">flag</span>
                         檢舉
                     </div>
@@ -443,7 +443,50 @@
             e.stopPropagation();
         });
 
-        // 檢查用戶是否已按讚
+		// 綁定檢舉按鈕事件
+		$('#articleDetail .report-btn').off('click').on('click', async function () {
+			const userId = await getCurrentUserId();
+			if (!userId) {
+				alert('請先登入才能檢舉文章');
+				return;
+			}
+
+			// const repCat = prompt('請輸入檢舉標題（如：垃圾訊息 / 不當內容 / 其他）：');
+			// if (!repCat) return;
+
+			const repDes = prompt('請輸入檢舉描述：');
+			if (!repDes) return;
+
+			const reportData = {
+				memId: userId,
+				artId: article.artId,
+				// repCat: repCat,
+				repDes: repDes
+			};
+			console.log(reportData);
+
+			try {
+				const response = await fetch('/ArticleReportsAPI/addArticleReports', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(reportData)
+				});
+
+				if (response.ok) {
+					showToast('檢舉已送出');
+				} else {
+					alert('檢舉送出失敗，請稍後再試');
+				}
+			} catch (err) {
+				console.error('送出檢舉時出錯:', err);
+				alert('發生錯誤，請稍後再試');
+			}
+		});
+
+
+		// 檢查用戶是否已按讚
         checkArticleLikeStatus(article.artId);
         
         // 檢查用戶是否已收藏
@@ -467,7 +510,7 @@
         }
 
         try {
-            const response = await fetch('/dev/current');
+            const response = await fetch('/api/session/currentMember');
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.memId) {
@@ -753,7 +796,7 @@
         toast.textContent = message;
         toast.style.cssText = `
             position: fixed;
-            top: 20px;
+            bottom: 20px;
             right: 20px;
             background: var(--md-sys-color-surface-container);
             color: var(--md-sys-color-on-surface);
