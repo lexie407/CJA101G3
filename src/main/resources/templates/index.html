@@ -1,12 +1,314 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>景點首頁 - 島遊Kha</title>
+    
+    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 景點首頁樣式 -->
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/index.css}">
 </head>
-<body>
-<h1>連線測試</h1>
-<p>如果有看到這一行，就代表專案啟動成功!</p>
+<body class="light">
+    <div class="app-container">
+        <!-- 左側主導覽列 -->
+        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        
+        <div class="main-content">
+            <!-- 頂部次導覽列 -->
+            <div th:replace="~{/front-end/spot/subnavSpotFront :: subnav('home')}"></div>
+            
+            <main class="content-area-main">
+                <!-- 英雄區塊 -->
+                <section class="spot-index-hero">
+                    <span class="spot-index-hero__illustration material-icons" aria-hidden="true">landscape</span>
+                    <div class="spot-index-hero__content">
+                        <h1 class="spot-index-hero__title">
+                            <span class="material-icons" aria-hidden="true">explore</span>
+                            探索台灣美麗景點
+                        </h1>
+                        <p class="spot-index-hero__subtitle">發現台灣各地精選景點，規劃您的完美旅程</p>
+                        <div class="spot-index-hero__search" role="search" aria-label="景點搜尋">
+                            <label for="searchInput" class="sr-only">搜尋景點</label>
+                            <input type="text" 
+                                   id="searchInput"
+                                   class="spot-index-search-input" 
+                                   placeholder="搜尋景點名稱、地區或關鍵字..."
+                                   aria-describedby="searchHelp"
+                                   data-placeholders="搜尋景點名稱、地區或關鍵字...,試試搜尋「太魯閣」或「日月潭」,探索台灣各地美麗景點,找尋您的下一個旅遊目的地">
+                            <button type="button" 
+                                    class="spot-index-search-btn"
+                                    aria-label="執行搜尋">
+                                <span class="material-icons" aria-hidden="true">search</span>
+                                搜尋
+                            </button>
+                            <div id="searchHelp" class="sr-only">輸入景點名稱、地區或關鍵字來搜尋相關景點</div>
+                        </div>
+                    </div>
+                </section>
 
+                <!-- 快速操作區 -->
+                <section class="spot-index-quick-actions">
+                    <div class="container">
+                        <div class="spot-index-quick-actions__grid">
+                            <a th:href="@{/spot/map}" class="spot-index-quick-action" title="地圖上看所有景點">
+                                <span class="material-icons" aria-hidden="true">map</span>
+                                <span>地圖瀏覽</span>
+                            </a>
+                            <a th:href="@{/spot/list}" class="spot-index-quick-action" title="用清單檢視所有景點">
+                                <span class="material-icons" aria-hidden="true">list</span>
+                                <span>列表瀏覽</span>
+                            </a>
+                            <a th:href="@{/spot/nearby}" class="spot-index-quick-action" title="查找附近的景點">
+                                <span class="material-icons" aria-hidden="true">near_me</span>
+                                <span>附近景點</span>
+                            </a>
+                            <a th:href="@{/spot/search}" class="spot-index-quick-action" title="用關鍵字搜尋景點">
+                                <span class="material-icons" aria-hidden="true">search</span>
+                                <span>搜尋景點</span>
+                            </a>
+                            <a th:href="@{/spot/random}" class="spot-index-quick-action" title="隨機推薦一個景點">
+                                <span class="material-icons" aria-hidden="true">casino</span>
+                                <span>隨機推薦</span>
+                            </a>
+                            <a th:href="@{/spot/compare}" class="spot-index-quick-action" title="多個景點功能比較">
+                                <span class="material-icons" aria-hidden="true">compare_arrows</span>
+                                <span>景點比較</span>
+                            </a>
+                            <a th:href="@{/spot/favorites}" class="spot-index-quick-action" title="收藏過的景點">
+                                <span class="material-icons" aria-hidden="true">favorite</span>
+                                <span>我的收藏</span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 地區選擇區 -->
+                <section class="spot-index-regions">
+                    <div class="container">
+                        <div class="spot-index-regions__header">
+                            <h2 class="spot-index-regions__title">
+                                <span class="material-icons">public</span>
+                                地區選擇
+                            </h2>
+                            <a href="#" class="spot-index-regions__link">查看更多 →</a>
+                        </div>
+                        
+                        <div class="spot-index-regions__grid">
+                            <button class="spot-index-region-item active" title="查看全部地區景點">
+                                <span class="material-icons" aria-hidden="true">star</span>
+                                全部地區
+                            </button>
+                            <button class="spot-index-region-item" title="北台灣景點">
+                                <span class="material-icons" aria-hidden="true">location_city</span>
+                                北台灣
+                            </button>
+                            <button class="spot-index-region-item" title="中台灣景點">
+                                <span class="material-icons" aria-hidden="true">landscape</span>
+                                中台灣
+                            </button>
+                            <button class="spot-index-region-item" title="南台灣景點">
+                                <span class="material-icons" aria-hidden="true">wb_sunny</span>
+                                南台灣
+                            </button>
+                            <button class="spot-index-region-item" title="東台灣景點">
+                                <span class="material-icons" aria-hidden="true">waves</span>
+                                東台灣
+                            </button>
+                        </div>
+                        
+
+                    </div>
+                </section>
+
+                <!-- 熱門景點推薦 -->
+                <section class="spot-index-popular">
+                    <div class="container">
+                        <div class="spot-index-popular__header">
+                            <h2 class="spot-index-section-title">
+                                <span class="material-icons">local_fire_department</span>
+                                熱門景點
+                            </h2>
+                            <div class="spot-index-header-actions">
+                                <div class="spot-index-category-filters">
+                                    <button class="spot-index-category-item active">熱門</button>
+                                    <button class="spot-index-category-item">精選</button>
+                                    <button class="spot-index-category-item">最新</button>
+                                </div>
+                                <div class="spot-index-sort-area">
+                                    <select class="spot-index-sort-select" aria-label="排序方式">
+                                        <option value="popular">按熱門度</option>
+                                        <option value="rating">按評分</option>
+                                        <option value="newest">按最新</option>
+                                        <option value="distance">按距離</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 重構後的篩選區域 -->
+                        <div class="spot-index-filter-area">
+                            <!-- 左側篩選區域 -->
+                            <div class="spot-index-filter-section">
+                                <div class="spot-index-filter-card">
+                                    <div class="spot-index-filter-groups">
+                                        <div class="spot-index-filter-group">
+                                            <label class="spot-index-filter-label">評分篩選</label>
+                                            <select class="spot-index-filter-select" aria-label="選擇評分條件" data-filter-type="rating">
+                                                <option value="">所有評分</option>
+                                                <option value="4.5">4.5+ 優秀</option>
+                                                <option value="4.0">4.0+ 良好</option>
+                                                <option value="3.5">3.5+ 普通</option>
+                                            </select>
+                                        </div>
+                                        <div class="spot-index-filter-group">
+                                            <label class="spot-index-filter-label">距離範圍</label>
+                                            <select class="spot-index-filter-select" aria-label="選擇距離範圍" data-filter-type="distance">
+                                                <option value="">不限距離</option>
+                                                <option value="5">5km 內</option>
+                                                <option value="10">10km 內</option>
+                                                <option value="30">30km 內</option>
+                                            </select>
+                                        </div>
+                                        <div class="spot-index-filter-group">
+                                            <label class="spot-index-filter-label">門票類型</label>
+                                            <select class="spot-index-filter-select" aria-label="選擇門票類型" data-filter-type="ticket">
+                                                <option value="">全部門票</option>
+                                                <option value="free">免費景點</option>
+                                                <option value="paid">付費景點</option>
+                                            </select>
+                                        </div>
+                                        <div class="spot-index-filter-group">
+                                            <label class="spot-index-filter-label">景點類型</label>
+                                            <select class="spot-index-filter-select" aria-label="選擇景點類型" data-filter-type="type">
+                                                <option value="">所有類型</option>
+                                                <option value="nature">自然風景</option>
+                                                <option value="culture">文化古蹟</option>
+                                                <option value="leisure">休閒娛樂</option>
+                                                <option value="food">美食餐廳</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="spot-index-filter-actions">
+                                        <button class="spot-index-reset-btn" onclick="resetAllFilters()">
+                                            <span class="material-icons" aria-hidden="true">refresh</span>
+                                            重置篩選
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 篩選標籤顯示區域 -->
+                            <div class="spot-index-filter-tags" id="filterTagsContainer" style="display: none;">
+                                <h3 class="spot-index-filter-tags__title">
+                                    <span class="material-icons">filter_list</span>
+                                    目前篩選條件：
+                                </h3>
+                                <div class="tags-list" id="filterTagsList"></div>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${spotList != null and !spotList.isEmpty()}" class="spot-index-popular__grid">
+                            <div th:each="spot, iterStat : ${spotList}" 
+                                 th:if="${iterStat.index < 8}" 
+                                 class="spot-index-spot-card">
+                                <div class="spot-index-spot-card__image">
+                                    <!-- 收藏按鈕 -->
+                                    <button class="spot-index-spot-card__favorite" title="加入收藏">
+                                        <span class="material-icons">favorite_border</span>
+                                    </button>
+                                    <!-- 分類標籤 -->
+                                    <span class="spot-index-spot-card__category-badge" 
+                                          th:text="${iterStat.index == 0 ? '熱門' : (iterStat.index == 1 ? '推薦' : '美景')}">熱門</span>
+                                    <!-- 預設圖示 -->
+                                    <span class="spot-index-spot-card__icon material-icons">home</span>
+                                    <!-- 如果有圖片的話 -->
+                                    <img th:if="${spot.firstPictureUrl}" 
+                                         th:src="${spot.firstPictureUrl}" 
+                                         th:alt="${spot.spotName}"
+                                         loading="lazy"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                         style="display: block;">
+                                    <!-- 圖片載入失敗時的佔位符 -->
+                                    <div class="spot-index-spot-card__placeholder" style="display: none;">
+                                        <span class="material-icons">image_not_supported</span>
+                                        <span>圖片載入失敗</span>
+                                    </div>
+                                </div>
+                                <div class="spot-index-spot-card__content">
+                                    <div class="spot-index-spot-card__header">
+                                        <h4 class="spot-index-spot-card__name" th:text="${spot.spotName}">景點名稱</h4>
+                                        <div class="spot-index-spot-card__rating">
+                                            <span class="material-icons">star</span>
+                                            <span th:text="${iterStat.index == 0 ? '4.8' : (iterStat.index == 1 ? '4.6' : (iterStat.index == 2 ? '4.7' : (iterStat.index == 3 ? '4.3' : (iterStat.index == 4 ? '4.5' : '4.9'))))}">4.7</span>
+                                        </div>
+                                    </div>
+                                    <p class="spot-index-spot-card__location">
+                                        <span class="material-icons">place</span>
+                                        <span th:text="${spot.spotLoc}">景點地址</span>
+                                    </p>
+                                    <p class="spot-index-spot-card__desc collapsed" 
+                                       th:text="${spot.spotDesc != null ? (spot.spotDesc.length() > 40 ? spot.spotDesc.substring(0, 40) + '...' : spot.spotDesc) : '暫無描述'}">
+                                       景點描述...
+                                    </p>
+                                    <button class="spot-index-spot-card__expand-btn" style="display: none;">查看詳情</button>
+                                    <div class="spot-index-spot-card__actions">
+                                        <a th:href="@{/spot/detail/{id}(id=${spot.spotId})}" 
+                                           class="spot-index-spot-card__link">
+                                            <span class="material-icons">visibility</span>
+                                            查看詳情
+                                        </a>
+                                        <div class="spot-index-spot-card__action-btns">
+                                            <button class="spot-index-spot-card__action-btn" title="分享">
+                                                <span class="material-icons">share</span>
+                                            </button>
+                                            <button class="spot-index-spot-card__action-btn" title="加入收藏">
+                                                <span class="material-icons">bookmark_border</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 統計資訊與查看更多按鈕 -->
+                        <div th:if="${spotList != null and !spotList.isEmpty()}" class="spot-index-stats">
+                            <div class="spot-index-stats__content">
+                                <p class="spot-index-stats__text">已顯示 8 個景點，還有 124 個等你探索</p>
+                                <a th:href="@{/spot/list}" class="spot-index-view-all-btn">
+                                    查看更多景點
+                                    <span class="material-icons">arrow_forward</span>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- 空狀態 -->
+                        <div th:if="${spotList == null or spotList.isEmpty()}" 
+                             class="spot-index-empty">
+                            <div class="spot-index-empty__icon">
+                                <span class="material-icons">explore_off</span>
+                            </div>
+                            <h3 class="spot-index-empty__title">暫時沒有景點資料</h3>
+                            <p class="spot-index-empty__desc">請稍後再來查看，或者您可以新增景點分享給大家！</p>
+                            <a th:href="@{/spot/add}" class="spot-index-btn spot-index-btn--primary">
+                                <span class="material-icons">add</span>
+                                新增景點
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+
+            </main>
+        </div>
+    </div>
+    
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="/js/notification/websocket.js"></script>
+    <!-- 景點首頁腳本 -->
+    <script th:src="@{/js/spot/front-end/index.js}"></script>
 </body>
-</html>
+</html> 

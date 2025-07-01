@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>景點座標管理 - CJA101G3</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-4">
+        <h2><i class="fas fa-map-marker-alt me-2"></i>景點座標管理</h2>
+        <p class="text-muted">管理景點的經緯度座標，支援自動地理編碼</p>
+
+        <div class="row">
+            <!-- 左側：操作面板 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-tools me-2"></i>操作面板</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- 服務狀態 -->
+                        <div class="mb-3">
+                            <h6>服務狀態</h6>
+                            <div id="serviceStatus" class="alert alert-secondary">
+                                <i class="fas fa-spinner fa-spin me-2"></i>檢查中...
+                            </div>
+                        </div>
+
+                        <!-- 單個景點更新 -->
+                        <div class="mb-3">
+                            <h6>更新單個景點</h6>
+                            <div class="input-group">
+                                <input type="number" id="singleSpotId" class="form-control" placeholder="景點ID" min="1">
+                                <button class="btn btn-primary" onclick="updateSingleSpot()">
+                                    <i class="fas fa-sync me-1"></i>更新
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 批量更新 -->
+                        <div class="mb-3">
+                            <h6>批量更新</h6>
+                            <div class="input-group">
+                                <input type="number" id="batchLimit" class="form-control" placeholder="限制數量" min="1" max="50" value="5">
+                                <button class="btn btn-warning" onclick="batchUpdateSpots()">
+                                    <i class="fas fa-layer-group me-1"></i>批量更新
+                                </button>
+                            </div>
+                            <small class="text-muted">建議每次不超過10個，避免API配額用盡</small>
+                        </div>
+
+                        <!-- 刷新列表 -->
+                        <div class="d-grid">
+                            <button class="btn btn-outline-secondary" onclick="loadSpotsWithoutCoordinates()">
+                                <i class="fas fa-refresh me-1"></i>刷新列表
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作結果 -->
+                <div id="operationResult" class="mt-3" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6><i class="fas fa-info-circle me-2"></i>操作結果</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="resultContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側：景點列表 -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-list me-2"></i>沒有座標的景點</h5>
+                        <span id="spotCount" class="badge bg-warning">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="spotsList">
+                            <div class="text-center py-4">
+                                <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                <p class="mt-2 text-muted">載入中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkServiceStatus();
+            loadSpotsWithoutCoordinates();
+        });
+
+        // 檢查服務狀態
+        function checkServiceStatus() {
+            fetch('/api/spot/geocode/status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusDiv = document.getElementById('serviceStatus');
+                    if (data.googleApiAvailable) {
+                        statusDiv.className = 'alert alert-success';
+                        statusDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + data.message;
+                    } else {
+                        statusDiv.className = 'alert alert-danger';
+                        statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>' + data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error('檢查服務狀態失敗:', error);
+                    const statusDiv = document.getElementById('serviceStatus');
+                    statusDiv.className = 'alert alert-danger';
+                    statusDiv.innerHTML = '<i class="fas fa-times-circle me-2"></i>服務檢查失敗';
+                });
+        }
+
+        // 載入沒有座標的景點
+        function loadSpotsWithoutCoordinates() {
+            fetch('/api/spot/geocode/without-coordinates')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displaySpots(data.data);
+                        document.getElementById('spotCount').textContent = data.count;
+                    } else {
+                        showError('載入景點列表失敗: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('載入景點列表失敗:', error);
+                    showError('載入景點列表失敗');
+                });
+        }
+
+        // 顯示景點列表
+        function displaySpots(spots) {
+            const container = document.getElementById('spotsList');
+            
+            if (spots.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                        <p class="mt-2 text-success">太好了！所有景點都已有座標</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const spotsHtml = spots.map(spot => `
+                <div class="card mb-2">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${spot.spotName}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i>${spot.spotLoc}
+                                </small>
+                            </div>
+                            <div>
+                                <span class="badge bg-secondary me-2">ID: ${spot.spotId}</span>
+                                <button class="btn btn-sm btn-primary" onclick="updateSingleSpotById(${spot.spotId})">
+                                    <i class="fas fa-sync me-1"></i>更新座標
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = spotsHtml;
+        }
+
+        // 更新單個景點座標
+        function updateSingleSpot() {
+            const spotId = document.getElementById('singleSpotId').value;
+            if (!spotId) {
+                alert('請輸入景點ID');
+                return;
+            }
+            updateSingleSpotById(spotId);
+        }
+
+        // 根據ID更新單個景點座標
+        function updateSingleSpotById(spotId) {
+            showOperationResult('處理中...', 'info');
+            
+            fetch(`/api/spot/geocode/update/${spotId}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showOperationResult(data.message, 'success');
+                        if (data.coordinates) {
+                            showOperationResult(
+                                data.message + `<br><small>座標: [${data.coordinates[0].toFixed(6)}, ${data.coordinates[1].toFixed(6)}]</small>`, 
+                                'success'
+                            );
+                        }
+                        // 刷新列表
+                        setTimeout(() => {
+                            loadSpotsWithoutCoordinates();
+                        }, 1000);
+                    } else {
+                        showOperationResult(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('更新座標失敗:', error);
+                    showOperationResult('更新失敗', 'danger');
+                });
+        }
+
+        // 批量更新景點座標
+        function batchUpdateSpots() {
+            const limit = document.getElementById('batchLimit').value || 5;
+            
+            if (!confirm(`確定要批量更新最多 ${limit} 個景點的座標嗎？\n\n注意：此操作會消耗 Google API 配額`)) {
+                return;
+            }
+
+            showOperationResult('批量更新中，請稍候...', 'info');
+            
+            fetch(`/api/spot/geocode/batch-update?limit=${limit}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const resultHtml = `
+                            ${data.message}<br>
+                            <small>
+                                成功: ${data.successCount || 0}，
+                                失敗: ${data.errorCount || 0}，
+                                剩餘: ${data.remainingCount || 0}
+                            </small>
+                        `;
+                        showOperationResult(resultHtml, 'success');
+                        // 刷新列表
+                        setTimeout(() => {
+                            loadSpotsWithoutCoordinates();
+                        }, 2000);
+                    } else {
+                        showOperationResult(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('批量更新失敗:', error);
+                    showOperationResult('批量更新失敗', 'danger');
+                });
+        }
+
+        // 顯示操作結果
+        function showOperationResult(message, type) {
+            const resultDiv = document.getElementById('operationResult');
+            const contentDiv = document.getElementById('resultContent');
+            
+            contentDiv.innerHTML = `<div class="alert alert-${type} mb-0">${message}</div>`;
+            resultDiv.style.display = 'block';
+            
+            // 3秒後自動隱藏（除非是錯誤訊息）
+            if (type !== 'danger') {
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // 顯示錯誤訊息
+        function showError(message) {
+            const container = document.getElementById('spotsList');
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html> 

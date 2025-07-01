@@ -1,0 +1,1671 @@
+/* =================
+   景點首頁樣式
+   使用 spot-index- 前綴
+   依賴 style.css 基礎層
+   ================= */
+
+/* 1. 自定義變數 */
+:root {
+    --spot-hero-height: 240px;
+    --spot-card-radius: 16px;
+    --spot-grid-gap: 1.25rem;
+    --spot-transition: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    --spot-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --spot-shadow-hover: 0 8px 32px rgba(25, 118, 210, 0.2);
+    --spot-shadow-primary: 0 4px 20px rgba(25, 118, 210, 0.3);
+    --spot-title-radius: 30px;
+    --spot-search-radius: 25px;
+    --spot-filter-radius: 20px;
+    --section-spacing: 1.25rem;
+}
+
+/* 2. 英雄區塊 - 修復版面問題 */
+.spot-index-hero {
+    background: linear-gradient(135deg, 
+        var(--md-sys-color-primary) 0%, 
+        var(--md-sys-color-secondary) 100%);
+    height: var(--spot-hero-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    margin: 1rem 1.5rem;
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-index-hero__illustration {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 2.2rem;
+    color: rgba(255, 255, 255, 0.25);
+    z-index: 1;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+.spot-index-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
+    opacity: 0.4;
+}
+
+.spot-index-hero__content {
+    text-align: center;
+    color: var(--md-sys-color-on-primary);
+    position: relative;
+    z-index: 2;
+    max-width: 650px;
+    padding: 2rem 1.25rem 2.5rem;
+    width: 100%;
+}
+
+.spot-index-hero__title {
+    font-size: clamp(1.6rem, 3.5vw, 2rem);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+
+.spot-index-hero__title .material-icons {
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    color: var(--md-sys-color-secondary);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.spot-index-hero__subtitle {
+    font-size: clamp(0.9rem, 2.2vw, 1rem);
+    margin-bottom: 2rem;
+    opacity: 0.92;
+    line-height: 1.4;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.spot-index-hero__search {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    align-items: center;
+    max-width: 480px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.spot-index-search-input {
+    flex: 1;
+    min-width: 280px;
+    padding: 0.85rem 1.1rem;
+    border: none;
+    border-radius: var(--spot-search-radius);
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.95rem;
+    box-shadow: var(--spot-shadow);
+    transition: all var(--spot-transition);
+}
+
+.spot-index-search-input::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.65;
+}
+
+.spot-index-search-input:focus {
+    outline: none;
+    background: var(--md-sys-color-surface);
+    box-shadow: var(--spot-shadow-hover);
+    transform: scale(1.01);
+    border: 2px solid var(--md-sys-color-primary);
+}
+
+.spot-index-search-btn {
+    padding: 0.85rem 1.4rem;
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    border: none;
+    border-radius: var(--spot-search-radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all var(--spot-transition);
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-index-search-btn:hover {
+    background: color-mix(in srgb, var(--md-sys-color-secondary) 90%, black 10%);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--spot-shadow-hover);
+}
+
+.spot-index-search-btn:active {
+    transform: translateY(0) scale(0.98);
+    transition: all 0.1s ease;
+}
+
+/* 3. 按鈕樣式 */
+.spot-index-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.8rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all var(--spot-transition);
+    border: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-index-btn--primary {
+    background: var(--md-sys-color-on-primary);
+    color: var(--md-sys-color-primary);
+}
+
+.spot-index-btn--primary:hover {
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow-hover);
+}
+
+.spot-index-btn--secondary {
+    background: transparent;
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-on-primary);
+}
+
+.spot-index-btn--secondary:hover {
+    background: var(--md-sys-color-on-primary);
+    color: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+}
+
+/* 4. 區塊標題樣式 - 簡化設計 */
+.spot-index-section-title {
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    position: relative;
+    overflow: visible;
+}
+
+.spot-index-section-title .material-icons {
+    font-size: 1.6rem;
+    color: var(--md-sys-color-primary);
+}
+
+/* 5. 快速操作區 - 緊湊設計 */
+.spot-index-quick-actions {
+    background: var(--md-sys-color-surface);
+    padding: var(--section-spacing) 0;
+    margin: 0;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-index-quick-actions__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.8rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.spot-index-quick-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem 0.6rem;
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface);
+    transition: all var(--spot-transition);
+    box-shadow: var(--spot-shadow);
+    position: relative;
+    overflow: hidden;
+    min-height: 85px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-index-quick-action::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent);
+    transition: left var(--spot-transition);
+}
+
+.spot-index-quick-action:hover::before {
+    left: 100%;
+}
+
+.spot-index-quick-action:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: var(--spot-shadow-hover);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-index-quick-action .material-icons {
+    font-size: clamp(1.6rem, 2.8vw, 2rem);
+    color: var(--md-sys-color-primary);
+    transition: all var(--spot-transition);
+    transform-origin: center;
+}
+
+.spot-index-quick-action:hover .material-icons {
+    color: var(--md-sys-color-on-primary-container);
+    transform: scale(1.1) rotate(3deg);
+}
+
+.spot-index-quick-action span {
+    font-weight: 600;
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+    text-align: center;
+    line-height: 1.2;
+    transition: all var(--spot-transition);
+}
+
+/* 6. 地區選擇區 - 緊湊設計 */
+.spot-index-regions {
+    background: var(--md-sys-color-surface-container-low);
+    padding: var(--section-spacing) 0;
+    margin: 0;
+}
+
+.spot-index-regions__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0 1.5rem;
+}
+
+.spot-index-regions__title {
+    font-size: clamp(1.15rem, 2.8vw, 1.4rem);
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-index-regions__link {
+    color: var(--md-sys-color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: color var(--spot-transition);
+}
+
+.spot-index-regions__link:hover {
+    color: var(--md-sys-color-secondary);
+}
+
+.spot-index-regions__grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+    padding: 0 1.5rem;
+}
+
+.spot-index-region-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 12px 24px;
+    background: var(--md-sys-color-surface);
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: 16px;
+    color: var(--md-sys-color-on-surface);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin: 6px;
+}
+
+.spot-index-region-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.spot-index-region-item:hover::before {
+    left: 100%;
+}
+
+.spot-index-region-item:hover {
+    background-color: #f3f4f6;
+    border-color: var(--md-sys-color-primary);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-index-region-item.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow-primary);
+}
+
+.spot-index-region-item:hover .material-icons,
+.spot-index-region-item.active .material-icons {
+    color: var(--md-sys-color-on-primary);
+    transform: scale(1.1);
+}
+
+/* 新的篩選和排序區域 */
+.spot-index-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.spot-index-category-filters {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.spot-index-category-item {
+    padding: 0.7rem 1.4rem;
+    background: var(--md-sys-color-surface);
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: 25px;
+    color: var(--md-sys-color-on-surface);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    white-space: nowrap;
+}
+
+.spot-index-category-item:hover {
+    background: var(--md-sys-color-surface-container);
+    border-color: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-index-category-item.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--spot-shadow-primary);
+}
+
+.spot-index-sort-area {
+    margin-left: auto;
+}
+
+.spot-index-sort-select {
+    padding: 0.7rem 1.2rem 0.7rem 1rem;
+    background: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    min-width: 140px;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+}
+
+.spot-index-sort-select:hover,
+.spot-index-sort-select:focus {
+    background-color: var(--md-sys-color-surface);
+    border-color: var(--md-sys-color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(41, 171, 194, 0.2);
+    transform: translateY(-1px);
+}
+
+/* 新的篩選區域設計 */
+.spot-index-filter-area {
+    margin: var(--section-spacing) 0;
+}
+
+.spot-index-filter-section {
+    max-width: 100%;
+}
+
+.spot-index-filter-card {
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--spot-shadow);
+    transition: all var(--spot-transition);
+}
+
+.spot-index-filter-card:hover {
+    box-shadow: var(--spot-shadow-hover);
+    transform: translateY(-2px);
+}
+
+.spot-index-filter-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: end;
+}
+
+.spot-index-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.spot-index-filter-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 0.25rem;
+}
+
+.spot-index-filter-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.9rem;
+    height: 40px;
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+}
+
+.spot-index-filter-select:hover,
+.spot-index-filter-select:focus {
+    border-color: var(--md-sys-color-primary);
+    background-color: var(--md-sys-color-surface);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(41, 171, 194, 0.15);
+    transform: translateY(-1px);
+}
+
+.spot-index-filter-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    padding-top: 1rem;
+}
+
+.spot-index-apply-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    white-space: nowrap;
+}
+
+.spot-index-apply-btn:hover {
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow-primary);
+}
+
+.spot-index-reset-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    white-space: nowrap;
+}
+
+.spot-index-reset-btn:hover {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    border-color: var(--md-sys-color-error);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow);
+}
+
+/* 篩選標籤樣式 */
+.spot-index-filter-tags {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: 12px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-index-filter-tags__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 0.75rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-index-filter-tags__title .material-icons {
+    font-size: 1rem;
+    color: var(--md-sys-color-primary);
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.filter-tag button {
+    background: none;
+    border: none;
+    color: var(--md-sys-color-on-primary-container);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    margin-left: 0.25rem;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.filter-tag button:hover {
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+    transform: scale(1.1);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 7. 無障礙設計 */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* 8. 熱門景點區 - 重新設計標題和按鈕佈局 */
+.spot-index-popular {
+    background: var(--md-sys-color-surface);
+    padding: calc(var(--section-spacing) * 1.5) 0;
+    margin: 0;
+}
+
+.spot-index-popular__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: calc(var(--section-spacing) * 1.2);
+    padding: 0 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.spot-index-popular__header .spot-index-section-title {
+    flex-shrink: 0;
+}
+
+.spot-index-popular__header .spot-index-category-filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+}
+
+.spot-index-popular__header .spot-index-advanced-filters {
+    margin: 0;
+    padding: 0;
+}
+
+.spot-index-view-all {
+    display: none; /* 隱藏原來的查看更多按鈕 */
+}
+
+.spot-index-popular__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    padding: 0 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.spot-index-spot-card {
+    background: var(--md-sys-color-surface);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all var(--spot-transition);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    position: relative;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-index-spot-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(41, 171, 194, 0.08) 0%, 
+        rgba(255, 179, 71, 0.08) 100%);
+    opacity: 0;
+    transition: opacity var(--spot-transition);
+    pointer-events: none;
+}
+
+.spot-index-spot-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.2);
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-index-spot-card:active {
+    transform: translateY(-1px) scale(0.99);
+    transition: all 0.1s ease;
+}
+
+.spot-index-spot-card:hover::after {
+    opacity: 1;
+}
+
+.spot-index-spot-card__image {
+    position: relative;
+    height: 180px;
+    background: linear-gradient(135deg, 
+        var(--md-sys-color-primary) 0%, 
+        var(--md-sys-color-secondary) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.spot-index-spot-card__category-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.spot-index-spot-card__favorite {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    z-index: 2;
+}
+
+.spot-index-spot-card__favorite:hover {
+    background: var(--md-sys-color-error-container);
+    transform: scale(1.1);
+}
+
+.spot-index-spot-card__favorite .material-icons {
+    font-size: 1.1rem;
+    color: var(--md-sys-color-outline);
+    transition: all var(--spot-transition);
+}
+
+.spot-index-spot-card__favorite.active .material-icons {
+    color: var(--md-sys-color-error);
+}
+
+.spot-index-spot-card__favorite:hover .material-icons {
+    color: var(--md-sys-color-error);
+}
+
+.spot-index-spot-card__icon {
+    font-size: 3.5rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.spot-index-spot-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--spot-transition);
+}
+
+.spot-index-spot-card:hover .spot-index-spot-card__image img {
+    transform: scale(1.05);
+}
+
+.spot-index-spot-card__placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface-variant);
+    gap: 0.5rem;
+}
+
+.spot-index-spot-card__placeholder .material-icons {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+.spot-index-spot-card__placeholder span:last-child {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.spot-index-spot-card__content {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    background: var(--md-sys-color-surface);
+    position: relative;
+    z-index: 1;
+}
+
+.spot-index-spot-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.6rem;
+}
+
+.spot-index-spot-card__name {
+    font-size: clamp(0.95rem, 2.2vw, 1.05rem);
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+    line-height: 1.3;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    transition: all var(--spot-transition);
+}
+
+.spot-index-spot-card:hover .spot-index-spot-card__name {
+    color: var(--md-sys-color-primary);
+    white-space: normal;
+    text-overflow: unset;
+}
+
+.spot-index-spot-card__rating {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--md-sys-color-secondary);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    backdrop-filter: blur(4px);
+}
+
+.spot-index-spot-card__rating .material-icons {
+    font-size: 16px;
+    color: var(--md-sys-color-secondary);
+}
+
+.spot-index-spot-card__location {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-index-spot-card__location .material-icons {
+    font-size: 0.9rem;
+    color: var(--md-sys-color-outline);
+}
+
+.spot-index-spot-card__desc {
+    font-size: 0.8rem;
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.4;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.spot-index-spot-card__desc.collapsed {
+    -webkit-line-clamp: 2;
+}
+
+.spot-index-spot-card__desc.expanded {
+    -webkit-line-clamp: unset;
+}
+
+.spot-index-spot-card__actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    gap: 0.6rem;
+}
+
+.spot-index-spot-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.1rem;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8rem;
+    border-radius: 18px;
+    transition: all var(--spot-transition);
+    flex: 1;
+    justify-content: center;
+}
+
+.spot-index-spot-card__link:hover {
+    background: var(--md-sys-color-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-index-spot-card__action-btns {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.spot-index-spot-card__action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: var(--md-sys-color-surface-container);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--spot-transition);
+}
+
+.spot-index-spot-card__action-btn:hover {
+    background: var(--md-sys-color-primary-container);
+    transform: scale(1.05);
+}
+
+.spot-index-spot-card__action-btn .material-icons {
+    font-size: 1rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-index-spot-card__action-btn:hover .material-icons {
+    color: var(--md-sys-color-primary);
+}
+
+.spot-index-spot-card__expand-btn {
+    background: none;
+    border: none;
+    color: var(--md-sys-color-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.4rem;
+    transition: all var(--spot-transition);
+    align-self: flex-start;
+}
+
+.spot-index-spot-card__expand-btn:hover {
+    color: var(--md-sys-color-secondary);
+    transform: translateY(-1px);
+}
+
+/* 9. 統計資訊和內嵌查看更多按鈕 */
+.spot-index-stats {
+    text-align: center;
+    margin: 2rem 1.5rem 1.5rem;
+    padding: 1.75rem;
+    background: var(--md-sys-color-surface-container);
+    border-radius: 16px;
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-index-stats__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.spot-index-stats__text {
+    margin: 0;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* 統計資訊內的查看更多按鈕 */
+.spot-index-stats .spot-index-view-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2.25rem;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 50px;
+    transition: all var(--spot-transition);
+    box-shadow: var(--spot-shadow);
+    border: 2px solid var(--md-sys-color-primary);
+}
+
+.spot-index-stats .spot-index-view-all-btn:hover {
+    background: var(--md-sys-color-secondary);
+    border-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--spot-shadow-hover);
+}
+
+.spot-index-stats .spot-index-view-all-btn:active {
+    transform: translateY(0) scale(0.98);
+    transition: all 0.1s ease;
+}
+
+.spot-index-stats .spot-index-view-all-btn .material-icons {
+    font-size: 1.1rem;
+}
+
+.spot-index-empty {
+    text-align: center;
+    padding: 2.5rem 1.2rem;
+    background: var(--md-sys-color-surface-container);
+    border-radius: 16px;
+    margin: 1.5rem;
+}
+
+.spot-index-empty__icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1.2rem;
+    background: var(--md-sys-color-error-container);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spot-index-empty__icon .material-icons {
+    font-size: 2.2rem;
+    color: var(--md-sys-color-on-error-container);
+}
+
+.spot-index-empty__title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 0.6rem;
+}
+
+.spot-index-empty__desc {
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 1.2rem;
+    line-height: 1.4;
+    font-size: 0.9rem;
+}
+
+/* 10. 響應式設計 */
+/* 大螢幕優化 - 確保8個景點整齊排列 */
+@media (min-width: 1400px) {
+    .spot-index-popular__grid {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 1400px;
+        margin: 0 auto 2rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .spot-index-popular__grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .spot-index-quick-actions__grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.6rem;
+    }
+    
+    .spot-index-popular__header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.8rem;
+    }
+    
+    .spot-index-popular__header .spot-index-category-filters {
+        order: 2;
+    }
+    
+    .spot-index-popular__header .spot-index-advanced-filters {
+        order: 3;
+    }
+}
+
+@media (max-width: 992px) {
+    :root {
+        --spot-hero-height: 200px;
+        --section-spacing: 1rem;
+    }
+    
+    .spot-index-hero {
+        margin: 0.8rem 1rem;
+    }
+    
+    .spot-index-hero__title {
+        font-size: clamp(1.4rem, 3.8vw, 1.7rem);
+    }
+    
+    .spot-index-hero__title .material-icons {
+        font-size: clamp(1.6rem, 4.5vw, 1.9rem);
+    }
+    
+    .spot-index-section-title {
+        font-size: clamp(1.25rem, 3.8vw, 1.5rem);
+    }
+    
+    .spot-index-popular__grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    
+    .spot-index-regions__grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .spot-index-popular__header {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .spot-index-popular__header .spot-index-section-title {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 0.8rem;
+    }
+    
+    .spot-index-popular__header .spot-index-category-filters {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --spot-hero-height: 180px;
+        --section-spacing: 0.8rem;
+    }
+    
+    .spot-index-hero {
+        margin: 0.5rem;
+        border-radius: 16px;
+    }
+    
+    .spot-index-hero__content {
+        padding: 1rem;
+    }
+    
+    .spot-index-hero__title {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    
+    .spot-index-hero__title .material-icons {
+        order: -1;
+    }
+    
+    .spot-index-hero__subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+    
+    .spot-index-hero__search {
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+    
+    .spot-index-search-input {
+        min-width: 240px;
+    }
+    
+    .spot-index-search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .spot-index-quick-actions__grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        padding: 0 1rem;
+    }
+    
+    .spot-index-quick-action {
+        padding: 0.8rem 0.4rem;
+        min-height: 75px;
+    }
+    
+    .spot-index-regions__grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem;
+        padding: 0 1rem;
+    }
+    
+    .spot-index-regions__header,
+    .spot-index-category-filters,
+    .spot-index-advanced-filters {
+        padding: 0 1rem;
+    }
+    
+         .spot-index-popular__header {
+         flex-direction: column;
+         text-align: center;
+         gap: 0.8rem;
+         padding: 0 1rem;
+         align-items: center;
+     }
+     
+     .spot-index-popular__header .spot-index-category-filters {
+         order: 2;
+         justify-content: center;
+     }
+     
+     .spot-index-popular__header .spot-index-advanced-filters {
+         order: 3;
+     }
+     
+     .spot-index-header-actions {
+         flex-direction: column;
+         align-items: stretch;
+         gap: 1rem;
+     }
+     
+     .spot-index-category-filters {
+         justify-content: center;
+     }
+     
+     .spot-index-sort-area {
+         margin-left: 0;
+         text-align: center;
+     }
+     
+     .spot-index-filter-groups {
+         grid-template-columns: 1fr;
+         gap: 1rem;
+     }
+     
+     .spot-index-filter-actions {
+         flex-direction: column;
+         gap: 0.75rem;
+         justify-content: center;
+     }
+     
+     .spot-index-filter-tags {
+         margin: 0 1rem 1rem;
+     }
+     
+     .tags-list {
+         justify-content: center;
+     }
+    
+    .spot-index-popular__grid {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+    }
+    
+    .spot-index-spot-card__content {
+        padding: 1rem;
+    }
+    
+    .spot-index-spot-card__actions {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    
+    .spot-index-spot-card__action-btns {
+        justify-content: center;
+    }
+    
+         .spot-index-stats {
+         margin: 1.5rem 1rem 1rem;
+         padding: 1.5rem;
+     }
+     
+     .spot-index-stats__content {
+         gap: 1rem;
+     }
+     
+     .spot-index-stats .spot-index-view-all-btn {
+         padding: 0.75rem 1.75rem;
+         font-size: 0.95rem;
+     }
+}
+
+@media (max-width: 576px) {
+    .spot-index-spot-card {
+        height: 340px;
+    }
+    
+    .spot-index-quick-actions__grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+    }
+    
+    .spot-index-quick-action {
+        padding: 0.7rem 0.3rem;
+        min-height: 70px;
+    }
+    
+    .spot-index-regions__grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .spot-index-region-item {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .spot-index-popular__header .spot-index-category-filters {
+        gap: 0.4rem;
+        width: 100%;
+    }
+    
+    .spot-index-category-item {
+        padding: 0.35rem 0.9rem;
+        font-size: 0.8rem;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .spot-index-filter-toggle {
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+    
+    .spot-index-filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.3rem;
+        width: 100%;
+    }
+    
+    .spot-index-filter-label {
+        text-align: left;
+        font-size: 0.8rem;
+    }
+    
+    .spot-index-filter-select {
+        width: 100%;
+        padding: 0.5rem;
+    }
+    
+    .spot-index-spot-card__image {
+        height: 150px;
+    }
+    
+    .spot-index-spot-card__favorite,
+    .spot-index-spot-card__category-badge {
+        transform: scale(0.9);
+    }
+}
+
+/* 11. 無障礙和動畫偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .spot-index-spot-card,
+    .spot-index-quick-action,
+    .spot-index-region-item,
+    .spot-index-category-item,
+    .spot-index-search-btn,
+    .spot-index-btn,
+    .spot-index-view-all-btn {
+        transition: none;
+        animation: none;
+        transform: none;
+    }
+    
+    .spot-index-quick-action::before,
+    .spot-index-region-item::before {
+        display: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .spot-index-spot-card,
+    .spot-index-quick-action,
+    .spot-index-region-item {
+        border: 2px solid var(--md-sys-color-outline);
+    }
+    
+    .spot-index-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* 12. 列印樣式 */
+@media print {
+    .spot-index-hero,
+    .spot-index-quick-actions,
+    .spot-index-advanced-filters {
+        display: none !important;
+    }
+    
+    .spot-index-spot-card {
+        background: white !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        margin-bottom: 1rem;
+    }
+    
+    .spot-index-section-title {
+        color: #000 !important;
+        background: none !important;
+        border-bottom: 2px solid #000;
+    }
+}
+
+/* 13. 通用按鈕動畫效果 */
+.spot-index-btn,
+.spot-index-search-btn,
+.spot-index-view-all-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-index-btn::after,
+.spot-index-search-btn::after,
+.spot-index-view-all-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.spot-index-btn:active::after,
+.spot-index-search-btn:active::after,
+.spot-index-view-all-btn:active::after {
+    width: 200px;
+    height: 200px;
+}
+
+/* Toast 通知樣式 */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: var(--md-sys-elevation-level3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 10000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    max-width: 300px;
+}
+
+.toast--show {
+    transform: translateX(0);
+}
+
+.toast--success {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.toast--error {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
+.toast--warning {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+
+.toast--info {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.toast .material-icons {
+    font-size: 18px;
+}
+
+/* 漣漪效果動畫 */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* 鍵盤導航樣式 */
+.keyboard-navigation *:focus {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
+/* 動畫進入效果 */
+.animate-in {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* 篩選標籤樣式更新 */
+.spot-index-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    padding: 0.4rem 0.8rem;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    animation: fadeInUp 0.3s ease;
+    border: none;
+    cursor: default;
+}
+
+
+
+.spot-index-filter-tag__label {
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.spot-index-filter-tag__value {
+    font-weight: 500;
+}
+
+.spot-index-filter-tag__remove {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--spot-transition);
+    margin-left: 0.2rem;
+}
+
+.spot-index-filter-tag__remove:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);
+}
+
+.spot-index-filter-tag__remove .material-icons {
+    font-size: 16px;
+}
+
+/* 空狀態樣式更新 */
+.spot-index-filter-empty {
+    margin: 2rem 0;
+}
+
+/* 響應式Toast */
+@media (max-width: 768px) {
+    .toast {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        top: 10px;
+    }
+}

@@ -1,0 +1,454 @@
+/* =============================
+   景點表單專用樣式 - 符合 Material Design 3
+   ============================= */
+
+/* 表單頁面容器 - 統一使用 back_style.css 標準設定 */
+/* 移除所有覆蓋樣式，使用 .content-area-main 標準 padding: 20px */
+
+
+
+.header-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+}
+
+.header-icon {
+    font-size: 36px !important;
+    color: white;
+}
+
+/* 表單內容區域 */
+.content-container {
+    background: var(--md-sys-color-surface);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    min-height: calc(100vh - 100px);
+}
+
+
+
+/* 表單本體 */
+.spot-form {
+    max-width: none;
+}
+
+/* 表單區塊 */
+.form-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* 區塊標題 */
+.section-header {
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title .material-icons {
+    font-size: 20px;
+    color: var(--md-sys-color-primary);
+}
+
+.section-desc {
+    font-size: var(--font-size-sm);
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+}
+
+/* 表單網格布局 */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 24px;
+}
+
+.form-group-full {
+    grid-column: 1 / -1;
+}
+
+/* 表單組件 */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.required {
+    color: var(--md-sys-color-error);
+    font-weight: 600;
+}
+
+/* 輸入框容器 */
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    font-size: 20px !important;
+    color: var(--md-sys-color-on-surface-variant);
+    z-index: 1;
+}
+
+/* 表單控件 */
+.form-control {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: var(--font-size-base);
+    color: var(--md-sys-color-on-surface);
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.input-container .form-control {
+    padding-left: 44px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px rgba(41, 171, 194, 0.1);
+}
+
+.form-control:focus + .input-icon,
+.form-control:focus ~ .input-icon {
+    color: var(--md-sys-color-primary);
+}
+
+.form-control::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.7;
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.helper-text {
+    font-size: var(--font-size-sm);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 6px;
+    line-height: 1.4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.char-count {
+    font-weight: 500;
+    color: var(--md-sys-color-primary);
+}
+
+/* 狀態卡片 */
+.status-card {
+    padding: 16px;
+    background: var(--md-sys-color-surface-container);
+    border-radius: 8px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* 狀態開關 */
+.status-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.status-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 32px;
+}
+
+.status-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--md-sys-color-outline);
+    transition: all 0.3s ease;
+    border-radius: 16px;
+}
+
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--md-sys-color-surface);
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.status-switch input:checked + .switch-slider {
+    background-color: var(--md-sys-color-primary);
+}
+
+.status-switch input:checked + .switch-slider:before {
+    transform: translateX(20px);
+    background-color: var(--md-sys-color-on-primary);
+}
+
+.status-switch input:focus + .switch-slider {
+    box-shadow: 0 0 0 2px rgba(41, 171, 194, 0.2);
+}
+
+.status-text {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.badge-success {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+}
+
+.badge-secondary {
+    background: rgba(158, 158, 158, 0.1);
+    color: #9e9e9e;
+}
+
+.status-badge .material-icons {
+    font-size: 18px !important;
+}
+
+/* 操作按鈕區域 */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 20px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn .material-icons {
+    font-size: 18px;
+}
+
+/* 按鈕樣式 */
+.btn-primary {
+    background: linear-gradient(135deg, var(--md-sys-color-primary), rgba(41, 171, 194, 0.8));
+    color: var(--md-sys-color-on-primary);
+    box-shadow: 0 2px 8px rgba(41, 171, 194, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, rgba(41, 171, 194, 0.9), var(--md-sys-color-primary));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(41, 171, 194, 0.4);
+}
+
+.btn-primary:disabled {
+    background: var(--md-sys-color-outline);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-secondary {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.btn-secondary:hover {
+    background: var(--md-sys-color-surface-container-high);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .spot-form-page {
+        padding: 0 16px;
+    }
+    
+    .content-container {
+        padding: 20px 16px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .form-actions {
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .section-title {
+        font-size: var(--font-size-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .content-container {
+        padding: 20px 16px;
+    }
+    
+    .form-control {
+        padding: 10px 12px;
+    }
+    
+    .input-container .form-control {
+        padding-left: 40px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: var(--font-size-sm);
+    }
+    
+    .header-icon-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .header-icon {
+        font-size: 28px !important;
+    }
+}
+
+/* Toast 樣式 */
+.toast {
+    top: 60px !important;
+    right: 40px !important;
+    left: auto !important;
+    z-index: 99999 !important;
+}
+
+/* 動畫效果 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-section {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.form-section:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.form-section:nth-child(3) {
+    animation-delay: 0.2s;
+} 

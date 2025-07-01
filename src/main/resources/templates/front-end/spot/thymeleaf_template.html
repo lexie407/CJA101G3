@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, activeNavItem, pageCss, pageContent, pageScript)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title ?: '島遊Kha'}">島遊Kha</title>
+    
+    <!-- 必要資源引用 -->
+    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 頁面專用樣式 -->
+    <th:block th:replace="${pageCss} ?: ~{}"></th:block>
+</head>
+<body class="light">
+    <div class="app-container">
+        <!-- 左側主導覽列 -->
+        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        
+        <div class="main-content">
+            <!-- 頂部次導覽列 -->
+            <div th:replace="~{/front-end/spot/subnavSpotFront :: subnav(${activeNavItem})}"></div>
+            
+            <main class="content-area-main">
+                <!-- 使用基礎層的 container -->
+                <div class="container">
+                    <!-- 頁面主要內容 -->
+                    <th:block th:replace="${pageContent} ?: ~{}"></th:block>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- 必要腳本 -->
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="/js/notification/websocket.js"></script>
+    <!-- 頁面專用腳本 -->
+    <th:block th:replace="${pageScript} ?: ~{}"></th:block>
+</body>
+</html>

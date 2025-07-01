@@ -1,0 +1,7 @@
+# 這個目錄用於存放觀光景點資料
+# 
+# 支援的檔案格式：
+# 1. Attraction-json.zip (觀光署下載的ZIP檔案)
+# 2. scenic_spots.json (解壓後的JSON檔案)
+#
+# 將您下載的 Attraction-json.zip 放到這個目錄即可 
