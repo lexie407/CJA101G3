@@ -36,7 +36,7 @@ public class ArticlePicturesServiceImpl implements ArticlePicturesService {
     }
 
     // 根據圖片ID查詢圖片資料
-    // TODO: Optional可以在找不到圖片時返回空值(需要再研究)
+    //  Optional可以在找不到圖片時返回某個預設值，一般用來防止 NullPointerException ，但在這裡沒有作用
     public Optional<ArticlePictures> getArticlePicture(Integer picId) {
         // 使用articleRepository查詢文章圖片
         // 這裡返回Optional<ArticlePictures>，如果找不到則返回空值
