@@ -32,18 +32,17 @@ public class ArticleController {
     private final ArticleService articleService;
 //    private final ArticlePicturesServiceImpl apService;
 
+    private LikeService likeService;
+    private ArticleCollectionService articleCollectionService;
+
     // 使用建構子注入 ArticleService
     @Autowired
-    public ArticleController(ArticleService articleService) {
+    public ArticleController(ArticleService articleService, LikeService likeService, ArticleCollectionService articleCollectionService) {
         this.articleService = articleService;
+        this.likeService = likeService;
+        this.articleCollectionService = articleCollectionService;
 //        this.apService = apService;
     }
-
-    @Autowired
-    private LikeService likeService;
-    
-    @Autowired
-    private ArticleCollectionService articleCollectionService;
 
 // 取得單篇文章 DTO
     @GetMapping("/article/{artId:\\d+}")
@@ -51,7 +50,6 @@ public class ArticleController {
         Debug.log();
         return articleService.getDTOById(artId);
     }
-
 
 
 // 取得全部文章 DTO(自訂排序)
@@ -90,7 +88,7 @@ public class ArticleController {
     public Integer isLiked(
             @RequestParam("docId") Integer docId,
             @RequestParam("memId") Integer memId) {
-        LikeVO like = likeService.getOneLike(docId);
+        LikeVO like = likeService.getOneLike(docId, memId);
         if (like != null && like.getMemId().equals(memId) && like.getLikeSta() != null) {
             return like.getLikeSta().intValue(); // 1:已按讚, 0:未按讚
         }
@@ -117,7 +115,7 @@ public class ArticleController {
             Integer originalLikeCount = article.getArtLike() != null ? article.getArtLike() : 0;
             
             // 檢查用戶是否已經按過讚
-            LikeVO existingLike = likeService.getOneLike(docId);
+            LikeVO existingLike = likeService.getOneLike(docId, memId);
             boolean wasLiked = false;
             
             if (existingLike != null && existingLike.getMemId().equals(memId)) {
