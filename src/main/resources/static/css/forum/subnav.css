@@ -1,3 +1,8 @@
+/*統一為border-box*/
+* {
+    box-sizing: border-box;
+}
+
 /* 上方次導覽列修改 */
 header {
     position: sticky;
