@@ -58,6 +58,7 @@ public class shopCartController {
 	                             @RequestParam("memId") String memId,
 	                             @RequestParam("quantity") String quantityStr) {
 	    String redisKey = "cart:" + memId;
+	    System.out.println("1111");
 	    try {
 	        int quantity = Integer.parseInt(quantityStr);
 	        // 檢查是否已存在，存在則累加
