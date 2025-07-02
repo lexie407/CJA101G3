@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行程詳情 - 島遊Kha</title>
+    
+    <!-- 引用景點模組的樣式基礎 -->
+    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 行程詳情專用樣式 -->
+    <link rel="stylesheet" th:href="@{/css/itinerary/front-end/detail.css}">
+</head>
+<body class="light">
+    <div class="app-container">
+        <!-- 左側主導覽列 -->
+        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        
+        <div class="main-content">
+            <!-- 頂部次導覽列 -->
+            <div th:replace="~{subnavItnFront :: subnav('detail')}"></div>
+            
+            <main class="content-area-main">
+                <!-- 英雄區塊 - 統一樣式 -->
+                <section class="itinerary-detail-hero">
+                    <span class="itinerary-detail-hero__illustration material-icons" aria-hidden="true">map</span>
+                    <div class="itinerary-detail-hero__content">
+                        <h1 class="itinerary-detail-hero__title">
+                            <span class="material-icons" aria-hidden="true">visibility</span>
+                            行程詳情
+                        </h1>
+                        <p class="itinerary-detail-hero__subtitle">探索完整的行程內容，規劃您的精彩旅程</p>
+                    </div>
+                </section>
+
+                <!-- 返回按鈕 -->
+                <section class="itinerary-detail-breadcrumb">
+                    <div class="container">
+                        <a th:href="@{/itinerary/list}" class="itinerary-breadcrumb-link">
+                                    <span class="material-icons">arrow_back</span>
+                                    返回行程列表
+                                </a>
+                    </div>
+                </section>
+
+                <!-- 行程基本資訊 -->
+                <section class="itinerary-detail-info">
+                    <div class="container">
+                        <div class="itinerary-detail-card">
+                            <div class="itinerary-detail-header">
+                                <div class="itinerary-detail-title-section">
+                                    <h2 class="itinerary-detail-title" th:text="${itinerary != null ? itinerary.itnName : '台北一日遊'}">台北一日遊</h2>
+                                    <div class="itinerary-detail-status">
+                                        <span th:if="${itinerary != null and itinerary.isPublicItinerary()}" class="status-badge status-badge--public">
+                                            <span class="material-icons">public</span>
+                                            公開
+                                        </span>
+                                        <span th:unless="${itinerary != null and itinerary.isPublicItinerary()}" class="status-badge status-badge--private">
+                                            <span class="material-icons">lock</span>
+                                            私人
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="itinerary-detail-actions">
+                                    <button class="itinerary-action-btn itinerary-action-btn--favorite" title="加入收藏">
+                                        <span class="material-icons">favorite_border</span>
+                                    </button>
+                                    <button class="itinerary-action-btn itinerary-action-btn--share" title="分享行程">
+                                        <span class="material-icons">share</span>
+                                    </button>
+                                    <button class="itinerary-action-btn itinerary-action-btn--more" title="更多選項">
+                                        <span class="material-icons">more_vert</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="itinerary-detail-meta">
+                                <div class="itinerary-meta-item">
+                                    <span class="material-icons">person</span>
+                                    <span th:text="${itinerary != null and itinerary.crtId != null ? '會員 ' + itinerary.crtId : '匿名'}">會員 1</span>
+                                </div>
+                                <div class="itinerary-meta-item">
+                                    <span class="material-icons">schedule</span>
+                                    <span th:text="${itinerary != null and itinerary.itnCreateDat != null ? itinerary.itnCreateDat.toString().substring(0, 10) : '2024-01-01'}">2024-01-01</span>
+                                </div>
+                                <div class="itinerary-meta-item">
+                                    <span class="material-icons">place</span>
+                                    <span th:text="${itinerary != null and itinerary.itnSpots != null ? itinerary.itnSpots.size() + ' 個景點' : '3 個景點'}">3 個景點</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 行程描述 -->
+                <section class="itinerary-detail-description">
+                    <div class="container">
+                        <div class="itinerary-detail-card">
+                            <h3 class="itinerary-section-title">
+                                <span class="material-icons">description</span>
+                                行程描述
+                            </h3>
+                            <p class="itinerary-description-text" 
+                               th:text="${itinerary != null and itinerary.itnDesc != null ? itinerary.itnDesc : '這是一個精心規劃的台北一日遊行程，包含台北市區最熱門的景點。從台北101開始，到故宮博物院結束，讓您在一天內體驗台北的精華。適合初次來台北的遊客，也適合想要重新認識台北的在地人。'}">
+                                這是一個精心規劃的台北一日遊行程，包含台北市區最熱門的景點。
+                                從台北101開始，到故宮博物院結束，讓您在一天內體驗台北的精華。
+                                適合初次來台北的遊客，也適合想要重新認識台北的在地人。
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 行程景點列表 -->
+                <section class="itinerary-detail-spots">
+                    <div class="container">
+                        <div class="itinerary-detail-card">
+                            <h3 class="itinerary-section-title">
+                                <span class="material-icons">place</span>
+                                行程景點
+                                <span class="itinerary-spot-count" th:text="${itinerary != null and itinerary.itnSpots != null ? '(' + itinerary.itnSpots.size() + ' 個景點)' : '(3 個景點)'}">(3 個景點)</span>
+                            </h3>
+                            
+                            <div class="itinerary-spots-list">
+                                <!-- 如果有實際資料，使用Thymeleaf迴圈 -->
+                                <div th:if="${itinerary != null and itinerary.itnSpots != null and !itinerary.itnSpots.isEmpty()}">
+                                    <div th:each="itnSpot, iterStat : ${itinerary.itnSpots}" class="itinerary-spot-item">
+                                        <div class="itinerary-spot-number" th:text="${iterStat.count}">1</div>
+                                        <div class="itinerary-spot-content">
+                                            <div class="itinerary-spot-header">
+                                                <h4 class="itinerary-spot-name" th:text="${itnSpot.spot != null ? itnSpot.spot.spotName : '景點名稱'}">景點名稱</h4>
+                                                <div class="itinerary-spot-actions">
+                                                    <button class="itinerary-spot-btn" title="查看景點詳情" 
+                                                            th:data-spot-id="${itnSpot.spot != null ? itnSpot.spot.spotId : ''}">
+                                                        <span class="material-icons">visibility</span>
+                                                    </button>
+                                                    <button class="itinerary-spot-btn" title="在地圖上查看">
+                                                        <span class="material-icons">map</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <p class="itinerary-spot-location">
+                                                <span class="material-icons">place</span>
+                                                <span th:text="${itnSpot.spot != null ? itnSpot.spot.spotLoc : '景點地址'}">景點地址</span>
+                                            </p>
+                                            <p class="itinerary-spot-description" 
+                                               th:text="${itnSpot.spot != null ? itnSpot.spot.spotDesc : '景點描述'}">景點描述</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 如果沒有資料，顯示範例景點 -->
+                                <div th:unless="${itinerary != null and itinerary.itnSpots != null and !itinerary.itnSpots.isEmpty()}">
+                            <!-- 景點1 -->
+                            <div class="itinerary-spot-item">
+                                <div class="itinerary-spot-number">1</div>
+                                <div class="itinerary-spot-content">
+                                    <div class="itinerary-spot-header">
+                                                <h4 class="itinerary-spot-name">台北101</h4>
+                                        <div class="itinerary-spot-actions">
+                                            <button class="itinerary-spot-btn" title="查看景點詳情">
+                                                <span class="material-icons">visibility</span>
+                                            </button>
+                                            <button class="itinerary-spot-btn" title="在地圖上查看">
+                                                <span class="material-icons">map</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="itinerary-spot-location">
+                                        <span class="material-icons">place</span>
+                                        台北市信義區
+                                    </p>
+                                    <p class="itinerary-spot-description">
+                                        台灣著名地標，可登頂觀景，欣賞台北市全景。
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- 景點2 -->
+                            <div class="itinerary-spot-item">
+                                <div class="itinerary-spot-number">2</div>
+                                <div class="itinerary-spot-content">
+                                    <div class="itinerary-spot-header">
+                                                <h4 class="itinerary-spot-name">故宮博物院</h4>
+                                        <div class="itinerary-spot-actions">
+                                            <button class="itinerary-spot-btn" title="查看景點詳情">
+                                                <span class="material-icons">visibility</span>
+                                            </button>
+                                            <button class="itinerary-spot-btn" title="在地圖上查看">
+                                                <span class="material-icons">map</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="itinerary-spot-location">
+                                        <span class="material-icons">place</span>
+                                        台北市士林區
+                                    </p>
+                                    <p class="itinerary-spot-description">
+                                        收藏豐富的中國文物，是了解中華文化的重要場所。
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- 景點3 -->
+                            <div class="itinerary-spot-item">
+                                <div class="itinerary-spot-number">3</div>
+                                <div class="itinerary-spot-content">
+                                    <div class="itinerary-spot-header">
+                                                <h4 class="itinerary-spot-name">淡水老街</h4>
+                                        <div class="itinerary-spot-actions">
+                                            <button class="itinerary-spot-btn" title="查看景點詳情">
+                                                <span class="material-icons">visibility</span>
+                                            </button>
+                                            <button class="itinerary-spot-btn" title="在地圖上查看">
+                                                <span class="material-icons">map</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="itinerary-spot-location">
+                                        <span class="material-icons">place</span>
+                                        新北市淡水區
+                                    </p>
+                                    <p class="itinerary-spot-description">
+                                        著名的老街區，有許多傳統小吃和特色商店。
+                                    </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 操作按鈕區 -->
+                <section class="itinerary-detail-bottom-actions">
+                    <div class="container">
+                        <div class="itinerary-bottom-actions">
+                            <button class="itinerary-primary-btn">
+                                <span class="material-icons">favorite_border</span>
+                                加入收藏
+                            </button>
+                            <button class="itinerary-secondary-btn">
+                                <span class="material-icons">content_copy</span>
+                                複製行程
+                            </button>
+                            <button class="itinerary-secondary-btn">
+                                <span class="material-icons">share</span>
+                                分享行程
+                            </button>
+                            <button class="itinerary-outline-btn">
+                                <span class="material-icons">edit</span>
+                                編輯行程
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script th:src="@{/js/itinerary/front-end/detail.js}"></script>
+</body>
+</html>

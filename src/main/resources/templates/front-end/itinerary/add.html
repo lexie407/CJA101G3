@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建立行程 - 島遊Kha</title>
+    
+    <!-- 引用景點模組的樣式基礎 -->
+    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 建立行程專用樣式 -->
+    <link rel="stylesheet" th:href="@{/css/itinerary/front-end/add.css}">
+</head>
+<body class="light">
+    <div class="app-container">
+        <!-- 左側主導覽列 -->
+        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        
+        <div class="main-content">
+            <!-- 頂部次導覽列 -->
+            <div th:replace="~{subnavItnFront :: subnav('add')}"></div>
+            
+            <main class="content-area-main">
+                <!-- 英雄區塊 -->
+                <section class="itinerary-add-hero">
+                    <span class="itinerary-add-hero__illustration material-icons" aria-hidden="true">add_location</span>
+                    <div class="itinerary-add-hero__content">
+                        <h1 class="itinerary-add-hero__title">
+                            <span class="material-icons" aria-hidden="true">add_circle</span>
+                            建立新行程
+                        </h1>
+                        <p class="itinerary-add-hero__subtitle">規劃您的專屬旅遊行程，創造美好回憶</p>
+                    </div>
+                </section>
+
+                <!-- 建立行程表單 -->
+                <section class="itinerary-add-main">
+                    <div class="container">
+                        <!-- 錯誤訊息顯示區域 -->
+                        <div th:if="${errorMessage}" class="itinerary-error-message">
+                            <span class="material-icons">error</span>
+                            <span th:text="${errorMessage}">錯誤訊息</span>
+                        </div>
+                        
+                        <form class="itinerary-add-form" method="post" action="/itinerary/add">
+                            <!-- 基本資訊卡片 -->
+                            <div class="itinerary-add-card">
+                                <div class="itinerary-add-card__header">
+                                    <h2 class="itinerary-add-card__title">
+                                        <span class="material-icons">info</span>
+                                        基本資訊
+                                    </h2>
+                                    <p class="itinerary-add-card__subtitle">設定您的行程基本資料</p>
+                                </div>
+                                
+                                <div class="itinerary-add-card__content">
+                                    <div class="itinerary-form-group">
+                                        <label for="itnName" class="itinerary-form-label">
+                                            <span class="material-icons">title</span>
+                                            行程名稱 <span class="required">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               id="itnName" 
+                                               name="itnName" 
+                                               class="itinerary-form-input" 
+                                               placeholder="請輸入您的行程名稱..."
+                                               th:value="${itnName}"
+                                               required>
+                                    </div>
+
+                                    <div class="itinerary-form-group">
+                                        <label for="itnDesc" class="itinerary-form-label">
+                                            <span class="material-icons">description</span>
+                                            行程描述
+                                        </label>
+                                        <textarea id="itnDesc" 
+                                                  name="itnDesc" 
+                                                  class="itinerary-form-textarea" 
+                                                  placeholder="請描述您的行程內容、特色或注意事項..."
+                                                  th:text="${itnDesc}"
+                                                  rows="4"></textarea>
+                                    </div>
+
+                                    <div class="itinerary-form-group">
+                                        <label class="itinerary-form-label">
+                                            <span class="material-icons">visibility</span>
+                                            公開設定
+                                        </label>
+                                        <div class="itinerary-visibility-options">
+                                            <label class="itinerary-visibility-option">
+                                                <input type="radio" name="isPublic" value="1" th:checked="${isPublic == null || isPublic == 1}">
+                                                <div class="itinerary-visibility-card">
+                                                    <div class="itinerary-visibility-icon">
+                                                        <span class="material-icons">public</span>
+                                                    </div>
+                                                    <div class="itinerary-visibility-content">
+                                                        <h4>公開行程</h4>
+                                                        <p>其他人可以查看和收藏此行程</p>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                            <label class="itinerary-visibility-option">
+                                                <input type="radio" name="isPublic" value="0" th:checked="${isPublic == 0}">
+                                                <div class="itinerary-visibility-card">
+                                                    <div class="itinerary-visibility-icon">
+                                                        <span class="material-icons">lock</span>
+                                                    </div>
+                                                    <div class="itinerary-visibility-content">
+                                                        <h4>私人行程</h4>
+                                                        <p>只有您可以查看此行程</p>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 景點選擇卡片 -->
+                            <div class="itinerary-add-card">
+                                <div class="itinerary-add-card__header">
+                                    <h2 class="itinerary-add-card__title">
+                                        <span class="material-icons">place</span>
+                                        選擇景點
+                                    </h2>
+                                    <p class="itinerary-add-card__subtitle">為您的行程添加精彩景點</p>
+                                </div>
+                                
+                                <div class="itinerary-add-card__content">
+                                    <!-- 景點搜尋 -->
+                                    <div class="itinerary-spot-search">
+                                        <div class="itinerary-search-wrapper">
+                                            <div class="itinerary-search-input-group">
+                                                <span class="material-icons">search</span>
+                                                <input type="text" 
+                                                       id="spotSearch" 
+                                                       class="itinerary-search-input" 
+                                                       placeholder="搜尋景點名稱或地區...">
+                                                <button type="button" class="itinerary-search-btn">
+                                                    搜尋
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 可選景點列表 -->
+                                    <div class="itinerary-available-spots">
+                                        <h3 class="itinerary-section-subtitle">
+                                            <span class="material-icons">explore</span>
+                                            推薦景點
+                                        </h3>
+                                        <div class="itinerary-spots-grid">
+                                            <!-- 景點選項1 -->
+                                            <div class="itinerary-spot-card" data-spot-id="1">
+                                                <div class="itinerary-spot-card__image">
+                                                    <span class="material-icons">landscape</span>
+                                                </div>
+                                                <div class="itinerary-spot-card__content">
+                                                    <h4 class="itinerary-spot-card__name">台北101</h4>
+                                                    <p class="itinerary-spot-card__location">
+                                                        <span class="material-icons">location_on</span>
+                                                        台北市信義區
+                                                    </p>
+                                                    <div class="itinerary-spot-card__rating">
+                                                        <span class="material-icons">star</span>
+                                                        <span>4.5</span>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(1, '台北101', '台北市信義區')">
+                                                    <span class="material-icons">add</span>
+                                                </button>
+                                            </div>
+
+                                            <!-- 景點選項2 -->
+                                            <div class="itinerary-spot-card" data-spot-id="2">
+                                                <div class="itinerary-spot-card__image">
+                                                    <span class="material-icons">museum</span>
+                                                </div>
+                                                <div class="itinerary-spot-card__content">
+                                                    <h4 class="itinerary-spot-card__name">故宮博物院</h4>
+                                                    <p class="itinerary-spot-card__location">
+                                                        <span class="material-icons">location_on</span>
+                                                        台北市士林區
+                                                    </p>
+                                                    <div class="itinerary-spot-card__rating">
+                                                        <span class="material-icons">star</span>
+                                                        <span>4.7</span>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(2, '故宮博物院', '台北市士林區')">
+                                                    <span class="material-icons">add</span>
+                                                </button>
+                                            </div>
+
+                                            <!-- 景點選項3 -->
+                                            <div class="itinerary-spot-card" data-spot-id="3">
+                                                <div class="itinerary-spot-card__image">
+                                                    <span class="material-icons">water</span>
+                                                </div>
+                                                <div class="itinerary-spot-card__content">
+                                                    <h4 class="itinerary-spot-card__name">淡水老街</h4>
+                                                    <p class="itinerary-spot-card__location">
+                                                        <span class="material-icons">location_on</span>
+                                                        新北市淡水區
+                                                    </p>
+                                                    <div class="itinerary-spot-card__rating">
+                                                        <span class="material-icons">star</span>
+                                                        <span>4.3</span>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(3, '淡水老街', '新北市淡水區')">
+                                                    <span class="material-icons">add</span>
+                                                </button>
+                                            </div>
+
+                                            <!-- 景點選項4 -->
+                                            <div class="itinerary-spot-card" data-spot-id="4">
+                                                <div class="itinerary-spot-card__image">
+                                                    <span class="material-icons">temple_buddhist</span>
+                                                </div>
+                                                <div class="itinerary-spot-card__content">
+                                                    <h4 class="itinerary-spot-card__name">龍山寺</h4>
+                                                    <p class="itinerary-spot-card__location">
+                                                        <span class="material-icons">location_on</span>
+                                                        台北市萬華區
+                                                    </p>
+                                                    <div class="itinerary-spot-card__rating">
+                                                        <span class="material-icons">star</span>
+                                                        <span>4.4</span>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(4, '龍山寺', '台北市萬華區')">
+                                                    <span class="material-icons">add</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 已選景點列表 -->
+                                    <div class="itinerary-selected-spots">
+                                        <h3 class="itinerary-section-subtitle">
+                                            <span class="material-icons">playlist_add_check</span>
+                                            已選景點 <span id="selectedCount" class="itinerary-count-badge">(0)</span>
+                                        </h3>
+                                        <div id="selectedSpotsList" class="itinerary-selected-list">
+                                            <div class="itinerary-empty-state">
+                                                <span class="material-icons">info</span>
+                                                <p>尚未選擇任何景點</p>
+                                                <small>從上方推薦景點中選擇，或使用搜尋功能尋找更多景點</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 操作按鈕 -->
+                            <div class="itinerary-add-actions">
+                                <button type="button" class="itinerary-btn itinerary-btn--secondary" onclick="history.back()">
+                                    <span class="material-icons">arrow_back</span>
+                                    返回
+                                </button>
+                                <button type="submit" class="itinerary-btn itinerary-btn--primary">
+                                    <span class="material-icons">save</span>
+                                    建立行程
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script th:src="@{/js/itinerary/front-end/add.js}"></script>
+</body>
+</html>

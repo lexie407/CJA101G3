@@ -19,7 +19,7 @@
 </head>
 <body>
     <!-- This div will be passed as the 'subnav' parameter to the layout -->
-    <div id="subnav" th:replace="~{/back-end/spot/subnavSpotBack :: subnav(activeItem='list')}"></div>
+    <div id="subnav" th:replace="~{subnavSpotBack :: subnav(activeItem='list')}"></div>
 
     <main th:fragment="main" class="spot-list-page">
                 <!-- 頁面標題區域 -->

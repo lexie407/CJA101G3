@@ -90,52 +90,52 @@ public class SpotVO implements Serializable {
     private LocalDateTime spotCreateAt;
     
     // 新增欄位用於政府資料整合
-    @Column(name = "GOVT_ID", length = 50)
+    @Column(name = "SPOTGOVID", length = 50)
     private String govtId; // 政府資料ID (如 C1_313020000G_000026)
     
-    @Column(name = "ZONE", length = 100)
+    @Column(name = "SPOTZONE", length = 100)
     private String zone; // 區域分類
     
-    @Column(name = "REGION", length = 50) 
+    @Column(name = "SPOTREGION", length = 50) 
     private String region; // 縣市
     
-    @Column(name = "TOWN", length = 50)
+    @Column(name = "SPOTTOWN", length = 50)
     private String town; // 鄉鎮區
     
-    @Column(name = "ZIPCODE", length = 10)
+    @Column(name = "SPOTZIP", length = 10)
     private String zipcode; // 郵遞區號
     
-    @Column(name = "TEL", length = 50)
+    @Column(name = "SPOTTEL", length = 50)
     private String tel; // 電話
     
-    @Column(name = "EMAIL", length = 100)
+    @Column(name = "SPOTEMAIL", length = 100)
     private String email; // 電子郵件
     
-    @Column(name = "WEBSITE", length = 255)
+    @Column(name = "SPOTWEB", length = 255)
     private String website; // 官方網站
     
-    @Column(name = "TRAVELING_INFO", columnDefinition = "TEXT")
+    @Column(name = "SPOTTRAVELINFO", columnDefinition = "TEXT")
     private String travelingInfo; // 交通資訊
     
-    @Column(name = "OPENING_TIME", columnDefinition = "TEXT") 
+    @Column(name = "SPOTOPENTIME", columnDefinition = "TEXT") 
     private String openingTime; // 開放時間
     
-    @Column(name = "TICKET_INFO", columnDefinition = "TEXT")
+    @Column(name = "SPOTTICKETINFO", columnDefinition = "TEXT")
     private String ticketInfo; // 票價資訊
     
-    @Column(name = "PARKING_INFO", columnDefinition = "TEXT")
+    @Column(name = "SPOTPARKINFO", columnDefinition = "TEXT")
     private String parkingInfo; // 停車資訊
     
-    @Column(name = "GOOGLE_PLACE_ID", length = 255)
+    @Column(name = "SPOTGPLACEID", length = 255)
     private String googlePlaceId; // Google Places ID
     
-    @Column(name = "GOOGLE_RATING")
+    @Column(name = "SPOTGRATING")
     private Double googleRating; // Google 評分
     
-    @Column(name = "GOOGLE_TOTAL_RATINGS")
+    @Column(name = "SPOTGTOTALRT")
     private Integer googleTotalRatings; // Google 評分總數
     
-    @Column(name = "PICTURE_URLS", columnDefinition = "TEXT")
+    @Column(name = "SPOTPICURLS", columnDefinition = "TEXT")
     private String pictureUrls; // 圖片URL (JSON格式儲存)
 
     @Column(name = "spotauditremark")

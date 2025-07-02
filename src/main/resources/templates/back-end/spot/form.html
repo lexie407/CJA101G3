@@ -18,7 +18,7 @@
 </head>
 <body>
     <!-- 頂部導航 -->
-    <div id="subnav" th:replace="~{/back-end/spot/subnavSpotBack :: subnav(activeItem=${isEdit != null and isEdit ? 'edit' : 'add'})}"></div>
+    <div id="subnav" th:replace="~{subnavSpotBack :: subnav(activeItem=${isEdit != null and isEdit ? 'edit' : 'add'})}"></div>
         
     <!-- 主要內容 -->
     <main th:fragment="main">

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行程列表 - 島遊Kha</title>
+    
+    <!-- 引用景點模組的樣式基礎 -->
+    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 行程列表專用樣式 -->
+    <link rel="stylesheet" th:href="@{/css/itinerary/front-end/list.css}">
+</head>
+<body class="light">
+    <div class="app-container">
+        <!-- 左側主導覽列 -->
+        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        
+        <div class="main-content">
+            <!-- 頂部次導覽列 -->
+<div th:replace="~{subnavItnFront :: subnav('list')}"></div>            
+            <main class="content-area-main">
+                <!-- 英雄區塊 -->
+                <section class="itinerary-list-hero">
+                    <span class="itinerary-list-hero__illustration material-icons" aria-hidden="true">map</span>
+                    <div class="itinerary-list-hero__content">
+                        <h1 class="itinerary-list-hero__title">
+                            <span class="material-icons" aria-hidden="true">list</span>
+                            行程列表
+                        </h1>
+                        <p class="itinerary-list-hero__subtitle">探索精彩的旅遊行程，規劃您的完美旅程</p>
+                    </div>
+                </section>
+
+                <!-- 搜尋篩選區域 -->
+                <section class="itinerary-list-search">
+                    <div class="container">
+                        <div class="itinerary-list-search-card">
+                            <form class="itinerary-list-search-form" method="get" th:action="@{/itinerary/list}">
+                                <div class="itinerary-list-search-row">
+                                    <div class="itinerary-list-search-group">
+                                        <label for="keyword" class="itinerary-list-search-label">
+                                            <span class="material-icons">search</span>
+                                            搜尋關鍵字
+                                        </label>
+                                        <input type="text" 
+                                               id="keyword" 
+                                               name="keyword" 
+                                               class="itinerary-list-search-input" 
+                                               placeholder="輸入行程名稱或關鍵字..."
+                                               th:value="${param.keyword}">
+                                    </div>
+                                    <div class="itinerary-list-search-group">
+                                        <label for="isPublic" class="itinerary-list-search-label">
+                                            <span class="material-icons">visibility</span>
+                                            公開狀態
+                                        </label>
+                                        <select id="isPublic" name="isPublic" class="itinerary-list-search-select">
+                                            <option value="">全部</option>
+                                            <option value="1" th:selected="${param.isPublic == '1'}">公開</option>
+                                        </select>
+                                    </div>
+                                    <div class="itinerary-list-search-actions">
+                                        <button type="submit" class="itinerary-list-search-btn">
+                                            <span class="material-icons" aria-hidden="true">search</span>
+                                            搜尋
+                                        </button>
+                                        <button type="button" class="itinerary-list-reset-btn" onclick="resetSearchForm()">
+                                            <span class="material-icons" aria-hidden="true">refresh</span>
+                                            重置
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 工具列區域 -->
+                <section class="itinerary-list-toolbar">
+                    <div class="container">
+                        <div class="itinerary-list-toolbar__content">
+                            <div class="itinerary-list-toolbar__left">
+                                <div class="itinerary-list-stats">
+                                    <span class="material-icons">list</span>
+                                    <span class="itinerary-list-stats__text">
+                                        共 <strong th:text="${itineraryList != null ? itineraryList.size() : 0}">0</strong> 個行程
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="itinerary-list-toolbar__right">
+                                <a th:href="@{/itinerary/add}" class="itinerary-list-add-btn">
+                                    <span class="material-icons" aria-hidden="true">add</span>
+                                    建立行程
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 行程列表主要內容 -->
+                <section class="itinerary-list-main">
+                    <div class="container">
+                        <!-- 有資料時顯示行程網格 -->
+                        <div th:if="${itineraryList != null and !itineraryList.isEmpty()}" class="itinerary-list-grid" id="itineraryGrid">
+                            <div th:each="itinerary : ${itineraryList}" class="itinerary-list-item">
+                                <article class="itinerary-list-card">
+                                    <div class="itinerary-list-card__header">
+                                        <!-- 收藏按鈕 -->
+                                        <button class="itinerary-list-card__favorite" 
+                                                th:data-itinerary-id="${itinerary.itnId}"
+                                                onclick="toggleFavorite(this)"
+                                                title="加入收藏">
+                                            <span class="material-icons">favorite_border</span>
+                                        </button>
+                                        <!-- 公開狀態標籤 -->
+                                        <span th:if="${itinerary.isPublicItinerary()}" class="itinerary-list-card__status itinerary-list-card__status--public">
+                                            <span class="material-icons">public</span>
+                                            公開
+                                        </span>
+                                        <span th:unless="${itinerary.isPublicItinerary()}" class="itinerary-list-card__status itinerary-list-card__status--private">
+                                            <span class="material-icons">lock</span>
+                                            私人
+                                        </span>
+                                    </div>
+                                    <div class="itinerary-list-card__content">
+                                        <h3 class="itinerary-list-card__title" th:text="${itinerary.itnName}">行程名稱</h3>
+                                        <p class="itinerary-list-card__description" 
+                                           th:text="${itinerary.itnDesc != null ? (itinerary.itnDesc.length() > 100 ? itinerary.itnDesc.substring(0, 100) + '...' : itinerary.itnDesc) : '暫無描述'}">
+                                           行程描述...
+                                        </p>
+                                        <div class="itinerary-list-card__meta">
+                                            <div class="itinerary-list-card__author">
+                                                <span class="material-icons">person</span>
+                                                <span th:text="${itinerary.crtId != null ? '會員 ' + itinerary.crtId : '匿名'}">建立者</span>
+                                            </div>
+                                            <div class="itinerary-list-card__date">
+                                                <span class="material-icons">schedule</span>
+                                                <span th:text="${itinerary.itnCreateDat != null ? itinerary.itnCreateDat.toString().substring(0, 10) : ''}">2024-01-01</span>
+                                            </div>
+                                        </div>
+                                        <div class="itinerary-list-card__actions">
+                                            <a th:href="@{/itinerary/detail/{id}(id=${itinerary.itnId})}" class="itinerary-list-card__link">
+                                                <span class="material-icons" aria-hidden="true">visibility</span>
+                                                查看行程
+                                            </a>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                        
+                        <!-- 無資料時顯示 -->
+                        <div th:if="${itineraryList == null or itineraryList.isEmpty()}" class="itinerary-list-empty">
+                            <div class="itinerary-list-empty__content">
+                                <span class="material-icons">map</span>
+                                <h3>目前沒有行程</h3>
+                                <p>還沒有任何行程，快來建立您的第一個行程吧！</p>
+                                <a th:href="@{/itinerary/add}" class="itinerary-list-empty__action">
+                                    <span class="material-icons">add</span>
+                                    建立行程
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script th:src="@{/js/itinerary/front-end/list.js}"></script>
+</body>
+</html>
