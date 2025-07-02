@@ -31,9 +31,8 @@ public interface AdRepository extends JpaRepository<AdVO, Integer>{
 	    List<AdVO> findByAdStatus(Byte adStatus);
 	    
 	    // 根據狀態排序查詢廣告
-	    List<AdVO> findByAdStatusOrderByAdCreatedTimeDesc(Byte adStatus);	
-	    		
-}
+	    List<AdVO> findByAdStatusOrderByAdCreatedTimeDesc(Byte adStatus);
+	}
 
 	
 	// 有需要自訂查詢再往下補

@@ -106,6 +106,63 @@ public class AdController {
         AdVO ad = adSvc.getOneAd(adId);
         return ad != null && ad.getStoreId().equals(currentStoreId);
     }
+    
+    /**
+     * 檢查並自動下架過期廣告
+     * 只會處理狀態為「已審核通過」且結束時間已過的廣告
+     */
+    private void checkAndDeactivateExpiredAds(List<AdVO> adList) {
+        if (adList == null || adList.isEmpty()) {
+            return;
+        }
+        
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        
+        for (AdVO ad : adList) {
+            // 只檢查已審核通過的廣告
+            if (ad.getAdStatus() != null && 
+                ad.getAdStatus().equals(AdVO.STATUS_APPROVED) && 
+                ad.getAdEndTime() != null && 
+                ad.getAdEndTime().before(currentTime)) {
+                
+                try {
+                    // 自動下架過期廣告
+                    ad.setAdStatus(AdVO.STATUS_INACTIVE);
+                    adSvc.updateAd(ad);
+                    System.out.println("自動下架過期廣告：" + ad.getAdTitle() + " (ID: " + ad.getAdId() + ")");
+                } catch (Exception e) {
+                    System.err.println("下架過期廣告失敗 ID: " + ad.getAdId() + ", 錯誤: " + e.getMessage());
+                }
+            }
+        }
+    }
+    
+    /**
+     * 檢查單一廣告是否過期並自動下架
+     */
+    private void checkAndDeactivateExpiredAd(AdVO ad) {
+        if (ad == null) {
+            return;
+        }
+        
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        
+        // 只檢查已審核通過的廣告
+        if (ad.getAdStatus() != null && 
+            ad.getAdStatus().equals(AdVO.STATUS_APPROVED) && 
+            ad.getAdEndTime() != null && 
+            ad.getAdEndTime().before(currentTime)) {
+            
+            try {
+                // 自動下架過期廣告
+                ad.setAdStatus(AdVO.STATUS_INACTIVE);
+                adSvc.updateAd(ad);
+                System.out.println("自動下架過期廣告：" + ad.getAdTitle() + " (ID: " + ad.getAdId() + ")");
+            } catch (Exception e) {
+                System.err.println("下架過期廣告失敗 ID: " + ad.getAdId() + ", 錯誤: " + e.getMessage());
+            }
+        }
+    }
 	
 //	//放入StoreService後要改!!
 //	@Autowired(required = false)
@@ -475,6 +532,10 @@ public class AdController {
         System.out.println("商家ID: " + currentStoreId);
         
         List<AdVO> list = adSvc.getAllByStoreId(currentStoreId);
+        
+        // 檢查並自動下架過期廣告
+        checkAndDeactivateExpiredAds(list);
+        
         model.addAttribute("adListData", list);
         return "front-end/advertisment/myAds";
     }
@@ -484,6 +545,12 @@ public class AdController {
 	public String listAllAd(ModelMap model) {
 		// 只顯示已審核通過的廣告
 		List<AdVO> list = adSvc.getApprovedAds();
+		
+		// 檢查並自動下架過期廣告
+		checkAndDeactivateExpiredAds(list);
+		
+		// 重新獲取已審核通過的廣告（排除剛下架的）
+		list = adSvc.getApprovedAds();
 		model.addAttribute("adListData", list);
 		
 	    // 假資料寫死
@@ -507,6 +574,12 @@ public class AdController {
 			model.addAttribute("errorMessage", "查無此廣告資料");
 			return "error/404";
 		}
+		
+		// 檢查並自動下架過期廣告
+		checkAndDeactivateExpiredAd(adVO);
+		
+		// 重新獲取廣告資料（可能已被下架）
+		adVO = adSvc.getOneAd(adId);
 		
 		// 假資料寫死
 	    Map<Integer, String> storeNamesMap = new LinkedHashMap<>();
@@ -593,6 +666,41 @@ public class AdController {
 		return "測試頁面 - 應用程式正常運行";
 	}
 	
+	// 手動觸發過期廣告檢查（僅用於測試）
+	@GetMapping("/admin/checkExpiredAds")
+	public String checkExpiredAds(HttpSession session, RedirectAttributes redirectAttributes) {
+		// 檢查管理員登入狀態
+		if (!isAdminLoggedIn(session)) {
+			return "redirect:/admins/login";
+		}
+		
+		try {
+			// 獲取所有已審核通過的廣告進行檢查
+			List<AdVO> approvedAds = adSvc.getApprovedAds();
+			int originalCount = approvedAds.size();
+			
+			// 檢查並自動下架過期廣告
+			checkAndDeactivateExpiredAds(approvedAds);
+			
+			// 重新獲取已審核通過的廣告數量
+			List<AdVO> remainingAds = adSvc.getApprovedAds();
+			int deactivatedCount = originalCount - remainingAds.size();
+			
+			if (deactivatedCount > 0) {
+				redirectAttributes.addFlashAttribute("successMessage", 
+					"成功檢查過期廣告，共下架 " + deactivatedCount + " 個廣告");
+			} else {
+				redirectAttributes.addFlashAttribute("successMessage", 
+					"檢查完成，沒有發現過期廣告需要下架");
+			}
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("errorMessage", 
+				"檢查過期廣告時發生錯誤: " + e.getMessage());
+		}
+		
+		return "redirect:/advertisment/admin/dashboard";
+	}
+	
 	// ========== 後台管理功能 ==========
 	
 	// 後台管理主頁面
@@ -613,7 +721,7 @@ public class AdController {
 		model.addAttribute("totalMembersCount", 0); // 暫時設為 0
 		model.addAttribute("totalNotificationsCount", 0); // 暫時設為 0
 		
-		return "back-end/adminDashboard";
+		return "back-end/advertisment/adminDashboard";
 	}
 	
 	// 後台廣告審核列表頁面
@@ -625,6 +733,10 @@ public class AdController {
 		}
 		
 		List<AdVO> pendingAds = adSvc.getPendingAds();
+		
+		// 檢查並自動下架過期廣告
+		checkAndDeactivateExpiredAds(pendingAds);
+		
 		model.addAttribute("pendingAds", pendingAds);
 		
 		// 假資料寫死
@@ -647,6 +759,14 @@ public class AdController {
 		
 		List<AdVO> approvedAds = adSvc.getApprovedAds();
 		List<AdVO> rejectedAds = adSvc.getRejectedAds();
+		
+		// 檢查並自動下架過期廣告
+		checkAndDeactivateExpiredAds(approvedAds);
+		checkAndDeactivateExpiredAds(rejectedAds);
+		
+		// 重新獲取資料（因為可能有廣告已被下架）
+		approvedAds = adSvc.getApprovedAds();
+		rejectedAds = adSvc.getRejectedAds();
 		
 		model.addAttribute("approvedAds", approvedAds);
 		model.addAttribute("rejectedAds", rejectedAds);
