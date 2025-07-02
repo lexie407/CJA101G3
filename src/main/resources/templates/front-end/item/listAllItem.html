@@ -165,8 +165,8 @@
                     <th:block th:each="itemVO : ${itemListData_front}">
                         <div class="card"
                             th:attr="data-itemid=${itemVO.itemId},data-itemname=${itemVO.itemName},data-iteminfo=${itemVO.itemInfo},data-itemprice=${itemVO.itemPrice},data-discprice=${itemVO.discPrice},data-statime=${itemVO.staTime},data-endtime=${itemVO.endTime},data-imgsrc=@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}">
+                            <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
                             <h4 th:text="${itemVO.itemName}"></h4>
-                            <p>商品說明: <span th:text="${itemVO.itemInfo}"></span></p>
                             <p>
                                 <span
                                     th:if="${itemVO.discPrice != null} and ${itemVO.staTime != null} and ${itemVO.endTime != null} and ${#temporals.createNow().isAfter(itemVO.staTime)} and ${#temporals.createNow().isBefore(itemVO.endTime)}">
@@ -180,7 +180,6 @@
                                     商品價格: <span th:text="${itemVO.itemPrice}"></span>
                                 </span>
                             </p>
-                            <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
                             <form method="post" th:action="@{/item/add_to_shopCart}" class="shopping-cart-form"
                                 style="display: flex; align-items: center; justify-content: center; gap: 6px;">
                                 <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
