@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>島遊Kha</title>
     <th:block th:fragment="headResources">
+    	<link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}">
 	    <link rel="stylesheet" th:href="@{/css/light.css}">
 	    <link rel="stylesheet" th:href="@{/css/style.css}">
 	    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -30,7 +31,7 @@
                 <li th:classappend="${currentPage == 'store' ? 'active' : ''}"><a href="#"><span class="material-icons">store</span>商店</a></li>
                 <li th:classappend="${currentPage == 'forum' ? 'active' : ''}"><a href="#"><span class="material-icons">edit</span>討論區</a></li>
                 <hr>
-                <li th:classappend="${currentPage == 'account' ? 'active' : ''}"><a href="#"><span class="material-icons">account_circle</span>會員中心</a></li>
+                <li th:classappend="${currentPage == 'account' ? 'active' : ''}"><a th:href="@{/members/view}"><span class="material-icons">account_circle</span>會員中心</a></li>
                 <li th:classappend="${currentPage == 'bePartner' ? 'active' : ''}"><a href="#"><span class="material-icons">add_circle_outline</span>成為廠商</a></li>
             </ul>
 

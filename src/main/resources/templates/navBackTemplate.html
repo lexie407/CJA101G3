@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>島遊Kha後台管理</title>
     <th:block th:fragment="headResources">
+    	<link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}">
 	    <link rel="stylesheet" th:href="@{/css/back_light.css}">
 	    <link rel="stylesheet" th:href="@{/css/back_style.css}">
 	    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -24,25 +25,37 @@
 	                <li th:classappend="${currentPage == 'accounts' ? 'active' : ''}"><a href="#"><span class="material-icons">manage_accounts</span>人員</a></li>
 	                <li th:classappend="${currentPage == 'content' ? 'active' : ''}"><a href="#"><span class="material-icons">folder</span>內容管理</a></li>
 	                <li th:classappend="${currentPage == 'partner' ? 'active' : ''}"><a href="#"><span class="material-icons">group_work</span>廠商管理</a></li>
-	                <li th:classappend="${currentPage == 'notifications' ? 'active' : ''}"><a href="#"><span class="material-icons">notifications</span>通知管理</a></li>
-	                <li th:classappend="${currentPage == 'report' ? 'active' : ''}"><a href="#"><span class="material-icons">report</span>檢舉管理</a></li>
-	                <li th:classappend="${currentPage == 'support_agent' ? 'active' : ''}"><a href="#"><span class="material-icons">support_agent</span>與我聊聊</a></li>
+	                <li th:classappend="${currentPage == 'notifications' ? 'active' : ''}"><a th:href="@{/notification/unSendNotification}"><span class="material-icons">notifications</span>通知管理</a></li>
+	                <li th:classappend="${currentPage == 'report' ? 'active' : ''}"><a th:href="@{/Articlereport/allReportList}"><span class="material-icons">report</span>檢舉管理</a></li>
+	                <li th:classappend="${currentPage == 'support_agent' ? 'active' : ''}"><a th:href="@{/report/allReportList}"><span class="material-icons">support_agent</span>異常回報</a></li>
 	           
 	           		<hr>
 	           
 					<li>
-			            <div class="member-info-area">
-			                <img th:src="@{/images/user.png}" alt="User Avatar" class="member-avatar"> <span class="member-name">管理員名稱</span>
+			            <div class="member-info-area" th:if="${session.admin != null}">
+			                <span class="member-name" th:text="${session.admin.adminName}"></span>
 			            </div>
 		            </li>
 		            <li>
-			            <div class="logout-area">
-			                <button class="logout-btn material-button">
-			                    <span class="material-icons">logout</span> 登出
-			                </button>
+			            <div class="logout-area" th:if="${session.admin != null}" >
+			            		<button class="logout-btn material-button">
+			                    	<span class="material-icons">logout</span> 登出
+			                	</button>
 			            </div>
 		            </li>
 		       </ul>
+		       
+		       <script>
+		       		const loginBtn = document.getElementsByClassName("logout-btn")[0];
+		       		loginBtn.addEventListener("click", function(){
+			       		let form = document.createElement("form");
+			       		form.method = "post";
+			       		form.action = "/admins/logout";
+			       		document.body.appendChild(form);
+			       		form.submit();
+			       		});
+		       </script>
+		       
             </aside>
 
         <div class="main-content">
