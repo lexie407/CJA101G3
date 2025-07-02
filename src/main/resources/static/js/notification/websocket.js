@@ -162,3 +162,9 @@ var stompClient = null;
 	       setupHoverBubble('chatWithMe', 'chatWithMeHover');
 	       setupHoverBubble('notificationButton', 'notificationButtonHover');
 	   });
+	   
+	   //登入按鈕
+	   const loginBtn = document.getElementsByClassName("logout-btn")[0];
+	   loginBtn.addEventListener("click", function(){
+			window.location.href="/members/login"
+	   });
