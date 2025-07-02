@@ -16,7 +16,7 @@ import java.util.List;
  * @author CJA101G3 行程模組開發
  * @version 1.0
  */
-@Repository
+@Repository("itnSpotRepository")
 public interface ItnSpotRepository extends JpaRepository<ItnSpotVO, ItnSpotId> {
 
     /**

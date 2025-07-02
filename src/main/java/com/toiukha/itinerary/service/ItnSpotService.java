@@ -4,6 +4,7 @@ import com.toiukha.itinerary.model.ItnSpotVO;
 import com.toiukha.itinerary.model.ItnSpotId;
 import com.toiukha.itinerary.repository.ItnSpotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +18,11 @@ import java.util.Optional;
  * @author CJA101G3 行程模組開發
  * @version 1.0
  */
-@Service
+@Service("itnSpotService")
 public class ItnSpotService {
 
     @Autowired
+    @Qualifier("itnSpotRepository")
     private ItnSpotRepository itnSpotRepository;
 
     // ========== 基本 CRUD 操作 ==========
