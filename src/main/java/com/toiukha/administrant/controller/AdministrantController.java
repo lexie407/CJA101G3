@@ -40,12 +40,13 @@ public class AdministrantController {
 	// 管理員首頁
 	@GetMapping("/dashboard")
 	public String showDashboard() {
-		return "back-end/administrant/dashboard";
+		return "back-end/administrant/dashboard";	
 	}
 
 	// 搜尋頁面
 	@GetMapping("/selectPage")
-	public String showSelectPage() {
+	public String showSelectPage(Model model) {
+		model.addAttribute("currentPage", "accounts");
 		return "back-end/administrant/selectPage";
 	}
 
@@ -75,7 +76,7 @@ public class AdministrantController {
 		}
 
 		model.addAttribute("admins", results);
-//		model.addAttribute("currentPage", "admins");
+		model.addAttribute("currentPage", "accounts");
 		return "back-end/administrant/search";
 	}
 
@@ -85,7 +86,7 @@ public class AdministrantController {
 		List<AdministrantVO> admins = administrantService.getAll();
 
 		model.addAttribute("admins", admins);
-//	    model.addAttribute("currentPage", "admins");  
+	    model.addAttribute("currentPage", "accounts"); 
 		return "back-end/administrant/listAll";
 	}
 
@@ -94,7 +95,7 @@ public class AdministrantController {
 	public String showAddForm(Model model) {
 		model.addAttribute("form", new AdministrantDTO());
 		model.addAttribute("allFunctions", manageFunctionService.getAll());
-		model.addAttribute("currentPage", "add");
+		model.addAttribute("currentPage", "accounts");
 		return "back-end/administrant/add";
 	}
 
@@ -112,6 +113,7 @@ public class AdministrantController {
 			List<String> errorMsgs = result.getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
 			model.addAttribute("errorMsgs", errorMsgs);
 			model.addAttribute("allFunctions", manageFunctionService.getAll());
+			model.addAttribute("currentPage", "accounts");
 			return "back-end/administrant/add";
 		}
 
@@ -174,7 +176,7 @@ public class AdministrantController {
 		// 2. 把 DTO 和 allFunctions 放入 Model
 		model.addAttribute("form", form);
 		model.addAttribute("allFunctions", manageFunctionService.getAll());
-		// -------------------------------
+		model.addAttribute("currentPage", "accounts");
 
 		return "back-end/administrant/edit";
 	}
@@ -195,6 +197,7 @@ public class AdministrantController {
 	            .toList();
 	        model.addAttribute("errorMsgs", errorMsgs);
 	        model.addAttribute("allFunctions", manageFunctionService.getAll());
+	        model.addAttribute("currentPage", "accounts");
 	        return "back-end/administrant/edit";
 	    }
 

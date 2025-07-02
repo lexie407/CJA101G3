@@ -73,13 +73,15 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 						        "/member/itemList",			//我的票券
 						        "/order/listCompletedOrders",		//我的訂單
 						        
-						        "advertisment/listAllAd",                // 瀏覽所有廣告
-						        "advertisment/getOne_For_Display",        // 查看廣告詳情
-						        "item-report/form",                      // 顯示檢舉表單
-						        "item-report/submit",                    // 提交檢舉
-						        "item-report/my-orders",                 // 我的訂單列表
-						        "item-report/form-from-order",           // 從訂單檢舉表單
-						        "item-report/submit-from-order",          // 從訂單提交檢舉
+						        "item-report/form",             	      // 顯示檢舉表單
+						        "item-report/submit",            	      // 提交檢舉
+						        "item-report/my-orders",          	      // 我的訂單列表
+						        "item-report/form-from-order",   	      // 從訂單檢舉表單
+						        "item-report/submit-from-order",        // 從訂單提交檢舉
+						        "/productfav/add/*",           // 新增收藏
+						        "/productfav/remove/*",        // 移除收藏  
+						        "/productfav/toggle/*",        // 切換收藏狀態
+						        "/productfav/myFavorites",     // 收藏清單頁面
 
 						        
 						        
@@ -133,6 +135,7 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 						"/item/getOne_For_Update",  			//商品修改
 						"/item/getOne_For_Update_promo", 		//新增促銷           
 						"/coupon/getOne_For_Update_Coupon", 		//修改優惠券
+						
 						"advertisment/addAd",                    // 顯示新增廣告表單
 						"advertisment/insert",                   // 新增廣告處理
 						"advertisment/getOne_For_Update",        // 獲取廣告資料進行修改
@@ -155,7 +158,16 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 		
 		// 管理員攔截
 		registry.addInterceptor(administrantInterceptor)
-        .addPathPatterns("/admins/*",
+        .addPathPatterns("/members/selectPage",
+        		"/members/searchResults",
+        		"/members/listAll",
+        		"/members/editMembers",
+        		"/store/selectPage",
+        		"/store/reviewStore",
+        		"/store/listOne",
+        		"/store/listAll",
+        		"/store/editStore",
+        		"/admins/*",
         		"/manageFunction/*",	
         		
         		//景點模組
@@ -170,23 +182,9 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
         		//商城模組
         		"/item/listAllItem_admin", //商品列表審核
         		
-        		"advertisment/admin/dashboard",        // 管理員儀表板
-        		"advertisment/admin/pending",         // 待審核廣告列表
-        		"advertisment/admin/reviewed",        // 已審核廣告列表
-        		"advertisment/admin/approve",          // 審核通過廣告
-        		"advertisment/admin/reject",            // 駁回廣告
-        		"advertisment/admin/deactivate",          // 停用廣告
+        		"advertisment/admin/**",
+        		"admin/reports/**",
 
-        		"admin/reports/list",                    // 查看所有檢舉列表
-        		"admin/reports/detail",                  // 查看檢舉詳情
-        		"admin/reports/approve",                 // 通過檢舉
-        		"admin/reports/reject",                  // 駁回檢舉
-        		"admin/reports/pending",                 // 待處理檢舉列表
-        		"admin/reports/approved",                // 已通過檢舉列表
-        		"admin/reports/rejected",                // 已駁回檢舉列表
-        		"admin/reports/item/**",                 // 查看某商品的檢舉記錄
-        		"admin/reports/member/**",               // 查看某會員的檢舉記錄
-        		"admin/reports/image/**",                 // 查看檢舉圖片
 
 
         		//文章模組

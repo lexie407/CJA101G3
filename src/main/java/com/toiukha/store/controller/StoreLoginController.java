@@ -187,5 +187,11 @@ public class StoreLoginController {
         return "redirect:/store/login";
     }
     
+    @PostMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();      // 銷毀整個 session
+        return "redirect:/";       
+    }
+    
     
 }
