@@ -57,6 +57,7 @@ public class CouponController {
 		int storeId = store.getStoreId();
 		session.setAttribute("storeId", storeId);
 		
+		couponVO.setStoreId(storeId);
 		couponSvc.addCoupon(couponVO);
 		List<CouponVO> list = couponSvc.getAll();
 		model.addAttribute("couponListData",list);

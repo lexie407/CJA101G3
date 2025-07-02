@@ -80,6 +80,7 @@ public class ItemController {
 		int storeId = store.getStoreId();
 		session.setAttribute("storeId", storeId);
 		
+		itemVO.setStoreId(storeId);
 		itemVO.setItemStatus(0);
 		itemVO.setRepCount(0);
 		itemVO.setCreAt(new Timestamp(System.currentTimeMillis()));
