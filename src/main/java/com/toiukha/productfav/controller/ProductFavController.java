@@ -102,6 +102,7 @@ public class ProductFavController {
                 return "取消收藏";
             }
             
+            
             // 新增收藏
             productFavService.addFavorite(memIdInt, itemIdInt);
             return "success";
