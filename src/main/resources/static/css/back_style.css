@@ -493,6 +493,31 @@ body {
     box-shadow: none;
 }
 
+.material-button.error {
+    background-color: var(--md-sys-color-error);
+    color: var(--md-sys-color-error-container);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px var(--md-sys-color-shadow);
+}
+
+.material-button.error:hover {
+    background-color: var(--md-sys-color-on-error);
+    box-shadow: 0 4px 8px var(--md-sys-color-shadow);
+}
+
+.material-button.error:active {
+    background-color: var(--md-sys-color-primary-fixed);
+    box-shadow: none;
+}
+
 .material-button .material-icons {
     font-size: 20px;
 }

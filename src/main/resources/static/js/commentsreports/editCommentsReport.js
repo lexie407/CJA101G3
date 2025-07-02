@@ -4,10 +4,16 @@ document.addEventListener("DOMContentLoaded", function(){
 		window.location.href = "/CommentsReports/allReportList";
 	});
 	
-	console.log(document.getElementById("commRepId").value);
-	
 	let unDo_btn = document.getElementById("unDo");
 	unDo_btn.addEventListener("click", function(){
+		
+		console.log(document.getElementById("notificationContent").value);
+		
+		if(document.getElementById("notificationContent").value == ""){
+			alert("結案說明不能空白!");
+			return;
+		}
+		
 		let form = document.createElement("form");
 			form.method = "post";
 			form.action = "/CommentsReports/unEstablished";

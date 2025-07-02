@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>案件詳情 | 留言檢舉 | 檢舉管理 | 後台 | 島遊kha</title>
     
     <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
     
@@ -15,7 +15,7 @@
 		<div class="main-content">
 			<header class="secondary-nav">
                 <ul>
-
+					<th:block th:insert="~{/back-end/report/navBackEndReport :: secNavResources}"></th:block>
                 </ul>
             </header>
 			<main class="content-area-main">
@@ -47,11 +47,6 @@
 								<label for="notificationMemberId">回報會員 ID:</label> <input
 									type="text" id="notificationMemberId" name="memId"
 									th:value="${commentsReportVO.memId}" readonly>
-							</div>
-							<div class="form-group">
-<!-- 							記得放會員 -->
-								<label for="notificationMemberName">會員名稱:</label> <input
-									type="text" id="notificationMemberName" value="開發中..." readonly>
 							</div>
 							
 							<div class="form-group">
@@ -121,7 +116,7 @@
 							</div>
 
 							<div class="form-actions" th:if="${commentsReportVO.rptSta < 1}">
-								<button type="submit" class="material-button">
+								<button type="submit" class="material-button error">
 									<span class="material-icons">check</span> 檢舉成立
 								</button>
 								<button type="button" class="material-button" id="unDo" style="margin-left: 10px;">
