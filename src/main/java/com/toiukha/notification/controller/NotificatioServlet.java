@@ -48,7 +48,6 @@ public class NotificatioServlet {
 		List<NotificationVO> list = notificationService.getMemNoti(memId);
 		
 		//轉交資料
-		model.addAttribute("currentPage", "account");
 		model.addAttribute("list", list);
 		return "front-end/notification/memberNotification";
 	}
@@ -66,7 +65,6 @@ public class NotificatioServlet {
 		notificationService.updateNotiStatus(notiId, (byte)1);
 		
 		//轉交資料
-		model.addAttribute("currentPage", "account");
 		model.addAttribute("notificationVO", notificationVO);
 		return "front-end/notification/memberNotificationDetail";
 	}
