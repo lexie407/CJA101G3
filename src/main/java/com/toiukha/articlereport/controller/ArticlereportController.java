@@ -64,6 +64,8 @@ public class ArticlereportController {
 		public String allReportList(ModelMap model) {
 			List<ArticlereportVO> list = articlereportService.getAll();
 			model.addAttribute("list", list);
+			model.addAttribute("currentPage", "report");
+			model.addAttribute("currentPage2", "articlereport");
 			return "back-end/articlereport/allArticleReportList";
 		}
 		
@@ -77,7 +79,8 @@ public class ArticlereportController {
 			
 			model.addAttribute("articlereportVO", articlereportVO);
 			model.addAttribute("article", article);
-			model.addAttribute("currentPage", "account");
+			model.addAttribute("currentPage", "report");
+			model.addAttribute("currentPage2", "articlereport");
 			return "back-end/articlereport/editArticleReport";
 		}
 		
