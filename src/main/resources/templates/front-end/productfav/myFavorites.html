@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的收藏 - 商品收藏清單</title>
+    
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #e91e63;
+            --secondary-color: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-muted: #6c757d;
+            --danger-color: #dc3545;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), #ad1457);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+        }
+        
+        .favorite-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .favorite-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .remove-btn:hover {
+            background: var(--danger-color);
+            transform: scale(1.1);
+        }
+        
+        .product-info {
+            padding: 1rem;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .product-price {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .fav-date {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 1rem 0;
+            }
+            
+            .favorite-card {
+                margin-bottom: 1rem;
+            }
+            
+            .product-image {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body class="light">
+
+    <div class="app-container">
+        <div th:insert="~{/navTemplate :: navbar}"></div>
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+                    <!-- 頁面導航 -->
+                    <li><a href="/item/listAllItem">商品列表</a></li>
+                    <li><a href="/productfav/myFavorites" class="active">我的收藏</a></li>
+                </ul>
+            </header>
+            <main class="content-area-main">
+                <!-- 頁面標題 -->
+                <div class="page-header">
+                    <div class="container">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h1><i class="fas fa-heart me-2"></i>我的收藏</h1>
+                                <p class="mb-0">管理您喜愛的商品收藏</p>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <span class="badge bg-light text-dark fs-6" th:if="${favoriteCount > 0}">
+                                    共 [[${favoriteCount}]] 個收藏
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="container">
+                    <!-- 統計資訊卡片 -->
+                    <div class="stats-card" th:if="${favoriteCount > 0}">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-1">
+                                    <i class="fas fa-user me-2 text-primary"></i>
+                                    [[${member.memName}]]，您好！
+                                </h5>
+                                <p class="text-muted mb-0">您總共收藏了 [[${favoriteCount}]] 個商品</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 錯誤訊息 -->
+                    <div class="alert alert-danger" th:if="${errorMessage}">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        [[${errorMessage}]]
+                    </div>
+                    
+                    <!-- 收藏商品列表 -->
+                    <div class="row" id="favoritesContainer" th:if="${favorites != null and !favorites.isEmpty()}">
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" th:each="favorite : ${favorites}">
+                            <div class="favorite-card" th:data-item-id="${favorite.itemId}">
+                                <!-- 移除按鈕 -->
+                                <button class="remove-btn" th:onclick="'removeFavorite(' + ${favorite.itemId} + ')'">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                
+                                <!-- 商品圖片 -->
+                                <img th:src="@{'/item/DBGifReader/' + ${favorite.itemId}}" 
+                                     alt="商品圖片"
+                                     class="product-image"
+                                     onerror="this.src='/images/user.png'">
+                                
+                                <!-- 商品資訊 -->
+                                <div class="product-info">
+                                    <h6 class="product-name">
+                                        商品ID: [[${favorite.itemId}]]
+                                    </h6>
+                                    
+                                    <div class="product-price">
+                                        <!-- 可以透過 AJAX 或其他方式獲取商品價格 -->
+                                        <span class="item-price" th:data-item-id="${favorite.itemId}">載入中...</span>
+                                    </div>
+                                    
+                                    <div class="fav-date">
+                                        <i class="fas fa-clock me-1"></i>
+                                        收藏於 <span th:text="${#temporals.format(favorite.favAt, 'yyyy/MM/dd')}">2024/01/01</span>
+                                    </div>
+                                    
+                                    <!-- 商品動作按鈕 -->
+                                    <div class="mt-3">
+                                        <a href="/item/listAllItem" 
+                                           class="btn btn-outline-primary btn-sm me-2">
+                                            <i class="fas fa-shopping-cart me-1"></i>去購買
+                                        </a>
+                                        <button class="btn btn-outline-danger btn-sm" 
+                                                th:onclick="'removeFavorite(' + ${favorite.itemId} + ')'">
+                                            <i class="fas fa-heart-broken me-1"></i>移除
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 空狀態 -->
+                    <div class="empty-state" th:if="${favorites == null or favorites.isEmpty()}">
+                        <i class="fas fa-heart-broken"></i>
+                        <h3>目前沒有收藏的商品</h3>
+                        <p>趕快去逛逛，把喜歡的商品加入收藏吧！</p>
+                        <a href="/item/listAllItem" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            瀏覽商品
+                        </a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../js/notification/websocket.js"></script>
+    
+    <script>
+        // 移除單個收藏
+        function removeFavorite(itemId) {
+            Swal.fire({
+                title: '確認移除收藏？',
+                text: '此商品將從您的收藏清單中移除',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '確認移除',
+                cancelButtonText: '取消'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 添加載入效果
+                    const card = document.querySelector(`[data-item-id="${itemId}"]`);
+                    card.classList.add('loading');
+                    
+                    // 獲取會員ID（測試用）
+                    var memId = 1; // 暫時硬編碼，實際應從session或其他方式獲取
+                    
+                    fetch('/productfav/remove_from_favorite', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `itemId=${itemId}&memId=${memId}`
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data === 'success') {
+                            // 動畫移除卡片
+                            card.classList.add('fade-out');
+                            setTimeout(() => {
+                                card.remove();
+                                
+                                // 檢查是否需要顯示空狀態
+                                var remainingCards = document.querySelectorAll('.favorite-card');
+                                if (remainingCards.length === 0) {
+                                    location.reload();
+                                }
+                            }, 300);
+                            
+                            Swal.fire({
+                                title: '移除成功！',
+                                text: '已將商品從收藏清單中移除',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            card.classList.remove('loading');
+                            Swal.fire({
+                                title: '移除失敗',
+                                text: '請稍後再試',
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        card.classList.remove('loading');
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: '發生錯誤',
+                            text: '請稍後再試',
+                            icon: 'error'
+                        });
+                    });
+                }
+            });
+        }
+        
+
+        
+        // 更新收藏計數
+        function updateFavoriteCount(count) {
+            const badge = document.querySelector('.badge');
+            if (badge) {
+                badge.textContent = `共 ${count} 個收藏`;
+            }
+            
+            const statsText = document.querySelector('.stats-card p');
+            if (statsText) {
+                statsText.textContent = `您總共收藏了 ${count} 個商品`;
+            }
+        }
+        
+        // 頁面載入完成時的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加載入動畫
+            const cards = document.querySelectorAll('.favorite-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html> 
