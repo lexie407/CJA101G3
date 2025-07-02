@@ -44,7 +44,7 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 						
 						
 						//景點模組
-
+					    "/spot/add", //新增景點
 
 
 
@@ -171,7 +171,7 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
         		"/manageFunction/*",	
         		
         		//景點模組
-
+        		"/admin/spot/",		//管理員功能
 
 
 
