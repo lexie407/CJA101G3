@@ -5,22 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>景點首頁 - 島遊Kha</title>
     
-    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block> <!-- 改成大家的左側邊欄 -->
+    <!--  加入共用的css -->
+    <!-- 以上都可以改 -->
+    
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 景點首頁樣式 -->
     <link rel="stylesheet" th:href="@{/css/spot/front-end/index.css}">
 </head>
 <body class="light">
-    <div class="app-container">
+    <div class="app-container ">
         <!-- 左側主導覽列 -->
-        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside> <!-- 改成大家的左側邊欄 -->
         
         <div class="main-content">
             <!-- 頂部次導覽列 -->
-            <div th:replace="~{/front-end/spot/subnavSpotFront :: subnav('home')}"></div>
+            <div th:replace="~{subnavSpotFront :: subnav('home')}"></div> <!-- 可以移到跟大家一樣的位置 -->
             
-            <main class="content-area-main">
+            <!-- 以下可以放景點首頁-->
+            <main class="content-area-main XXX"> <!-- 如果怕有衝突,可以在後面追加別名 -->
                 <!-- 英雄區塊 -->
                 <section class="spot-index-hero">
                     <span class="spot-index-hero__illustration material-icons" aria-hidden="true">landscape</span>

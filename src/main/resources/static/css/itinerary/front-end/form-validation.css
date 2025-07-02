@@ -1,0 +1,323 @@
+/**
+ * 表單驗證樣式
+ */
+
+/* 表單欄位錯誤狀態 */
+.itinerary-form-input.error,
+.itinerary-form-textarea.error,
+.itinerary-form-select.error {
+    border-color: #f44336;
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+}
+
+.itinerary-form-input.error:focus,
+.itinerary-form-textarea.error:focus,
+.itinerary-form-select.error:focus {
+    border-color: #f44336;
+    box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.3);
+}
+
+/* 錯誤訊息 */
+.field-error {
+    color: #f44336;
+    font-size: 12px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    animation: fieldErrorSlideIn 0.3s ease-out;
+}
+
+.field-error::before {
+    content: '⚠';
+    font-size: 14px;
+    line-height: 1;
+}
+
+/* 成功狀態 */
+.itinerary-form-input.success,
+.itinerary-form-textarea.success,
+.itinerary-form-select.success {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.itinerary-form-input.success:focus,
+.itinerary-form-textarea.success:focus,
+.itinerary-form-select.success:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+/* 成功訊息 */
+.field-success {
+    color: #4caf50;
+    font-size: 12px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    animation: fieldSuccessSlideIn 0.3s ease-out;
+}
+
+.field-success::before {
+    content: '✓';
+    font-size: 14px;
+    line-height: 1;
+}
+
+/* 警告狀態 */
+.itinerary-form-input.warning,
+.itinerary-form-textarea.warning,
+.itinerary-form-select.warning {
+    border-color: #ff9800;
+    box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+.itinerary-form-input.warning:focus,
+.itinerary-form-textarea.warning:focus,
+.itinerary-form-select.warning:focus {
+    border-color: #ff9800;
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.3);
+}
+
+/* 警告訊息 */
+.field-warning {
+    color: #ff9800;
+    font-size: 12px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    animation: fieldWarningSlideIn 0.3s ease-out;
+}
+
+.field-warning::before {
+    content: '⚠';
+    font-size: 14px;
+    line-height: 1;
+}
+
+/* 必填欄位標示 */
+.itinerary-form-field--required .itinerary-form-label::after {
+    content: ' *';
+    color: #f44336;
+    font-weight: bold;
+}
+
+/* 字數計數器 */
+.itinerary-form-char-counter {
+    font-size: 11px;
+    color: #666;
+    text-align: right;
+    margin-top: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.itinerary-form-char-counter--error {
+    color: #f44336;
+}
+
+.itinerary-form-char-counter--warning {
+    color: #ff9800;
+}
+
+.itinerary-form-char-counter--success {
+    color: #4caf50;
+}
+
+/* 表單驗證狀態指示器 */
+.itinerary-form-validation-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.itinerary-form-validation-status--error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.itinerary-form-validation-status--warning {
+    background-color: #fff3e0;
+    color: #ef6c00;
+    border: 1px solid #ffcc02;
+}
+
+.itinerary-form-validation-status--success {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+/* 動畫效果 */
+@keyframes fieldErrorSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fieldSuccessSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fieldWarningSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 即時驗證指示器 */
+.itinerary-form-input:valid:not(:placeholder-shown),
+.itinerary-form-textarea:valid:not(:placeholder-shown) {
+    border-color: #4caf50;
+}
+
+.itinerary-form-input:invalid:not(:placeholder-shown),
+.itinerary-form-textarea:invalid:not(:placeholder-shown) {
+    border-color: #f44336;
+}
+
+/* 載入狀態 */
+.itinerary-form-field--loading {
+    position: relative;
+}
+
+.itinerary-form-field--loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e0e0e0;
+    border-top: 2px solid #2196f3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .field-error,
+    .field-success,
+    .field-warning {
+        font-size: 11px;
+        margin-top: 3px;
+    }
+    
+    .itinerary-form-char-counter {
+        font-size: 10px;
+    }
+    
+    .itinerary-form-validation-status {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}
+
+/* 深色模式支援 */
+@media (prefers-color-scheme: dark) {
+    .field-error {
+        color: #ff6b6b;
+    }
+    
+    .field-success {
+        color: #51cf66;
+    }
+    
+    .field-warning {
+        color: #ffd43b;
+    }
+    
+    .itinerary-form-char-counter {
+        color: #adb5bd;
+    }
+    
+    .itinerary-form-validation-status--error {
+        background-color: #2d1b1b;
+        color: #ff6b6b;
+        border-color: #4a2c2c;
+    }
+    
+    .itinerary-form-validation-status--warning {
+        background-color: #2d2a1b;
+        color: #ffd43b;
+        border-color: #4a4a2c;
+    }
+    
+    .itinerary-form-validation-status--success {
+        background-color: #1b2d1b;
+        color: #51cf66;
+        border-color: #2c4a2c;
+    }
+}
+
+/* 高對比度模式支援 */
+@media (prefers-contrast: high) {
+    .itinerary-form-input.error,
+    .itinerary-form-textarea.error,
+    .itinerary-form-select.error {
+        border-width: 2px;
+        border-color: #ff0000;
+    }
+    
+    .itinerary-form-input.success,
+    .itinerary-form-textarea.success,
+    .itinerary-form-select.success {
+        border-width: 2px;
+        border-color: #008000;
+    }
+    
+    .field-error {
+        font-weight: bold;
+        color: #ff0000;
+    }
+    
+    .field-success {
+        font-weight: bold;
+        color: #008000;
+    }
+}
+
+/* 減少動畫模式支援 */
+@media (prefers-reduced-motion: reduce) {
+    .field-error,
+    .field-success,
+    .field-warning {
+        animation: none;
+    }
+    
+    .itinerary-form-field--loading::after {
+        animation: none;
+    }
+} 

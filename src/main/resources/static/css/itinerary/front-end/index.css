@@ -1,0 +1,615 @@
+/**
+ * 行程首頁樣式
+ * 提供英雄區塊、精選行程、主題分類、熱門排行等區塊的樣式
+ */
+
+/* ========== CSS 變數 ========== */
+:root {
+    --itinerary-header-height: 200px;
+    --itinerary-card-radius: 16px;
+    --itinerary-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --itinerary-shadow-hover: 0 8px 24px rgba(0,0,0,0.15);
+    --itinerary-transition: all 0.3s ease;
+    --section-spacing: 2rem;
+}
+
+/* ========== 英雄區塊 ========== */
+.itinerary-hero {
+    background: linear-gradient(135deg, 
+        var(--md-sys-color-primary, #1976d2) 0%, 
+        var(--md-sys-color-secondary, #42a5f5) 100%);
+    height: var(--itinerary-header-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    margin: 1rem 1.5rem;
+    box-shadow: var(--itinerary-shadow);
+}
+
+.itinerary-hero__illustration {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 2.8rem;
+    color: rgba(255, 255, 255, 0.25);
+    z-index: 1;
+    animation: float 3s ease-in-out infinite, pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.25; }
+    100% { opacity: 0.4; }
+}
+
+.itinerary-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
+    opacity: 0.4;
+}
+
+.itinerary-hero__content {
+    text-align: center;
+    color: white;
+    position: relative;
+    z-index: 2;
+    max-width: 650px;
+    padding: 2rem 1.25rem;
+    width: 100%;
+}
+
+.itinerary-hero__title {
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+
+.itinerary-hero__title .material-icons {
+    font-size: clamp(2.2rem, 4.5vw, 2.8rem);
+    color: #ffd700;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.itinerary-hero__subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    opacity: 0.92;
+    line-height: 1.4;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    margin: 0;
+}
+
+/* ========== 精選行程區塊 ========== */
+.itinerary-featured {
+    padding: var(--section-spacing) 0;
+}
+
+.itinerary-featured .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.itinerary-featured__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    justify-content: center;
+}
+
+.itinerary-featured__title .material-icons {
+    color: #ffd700;
+    font-size: 2rem;
+}
+
+.itinerary-featured-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.itinerary-featured-card {
+    background: #fff;
+    border-radius: var(--itinerary-card-radius);
+    overflow: hidden;
+    box-shadow: var(--itinerary-shadow);
+    transition: var(--itinerary-transition);
+    position: relative;
+}
+
+.itinerary-featured-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--itinerary-shadow-hover);
+}
+
+.itinerary-featured-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 0%, rgba(25, 118, 210, 0.05) 100%);
+    opacity: 0;
+    transition: var(--itinerary-transition);
+    pointer-events: none;
+}
+
+.itinerary-featured-card:hover::before {
+    opacity: 1;
+}
+
+.itinerary-featured-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    transition: var(--itinerary-transition);
+}
+
+.itinerary-featured-card:hover img {
+    transform: scale(1.05);
+}
+
+.itinerary-featured-card .card-content {
+    padding: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.itinerary-featured-card h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.8rem;
+    line-height: 1.3;
+}
+
+.itinerary-featured-card p {
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 1.2rem;
+    font-size: 0.9rem;
+}
+
+.itinerary-featured-card .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: var(--itinerary-transition);
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+}
+
+.itinerary-featured-card .btn:hover {
+    background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+}
+
+/* ========== 主題分類區塊 ========== */
+.itinerary-categories {
+    padding: var(--section-spacing) 0;
+    background: #fff;
+}
+
+.itinerary-categories .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.itinerary-categories__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.6rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    justify-content: center;
+}
+
+.itinerary-categories__title .material-icons {
+    color: #1976d2;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.category-card {
+    background: #fff;
+    border-radius: var(--itinerary-card-radius);
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--itinerary-shadow);
+    transition: var(--itinerary-transition);
+    text-align: center;
+    border: 2px solid transparent;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--itinerary-shadow-hover);
+    border-color: #1976d2;
+}
+
+.category-card__icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    transition: var(--itinerary-transition);
+}
+
+.category-card:hover .category-card__icon {
+    background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+}
+
+.category-card__icon .material-icons {
+    font-size: 1.8rem;
+    color: #1976d2;
+    transition: var(--itinerary-transition);
+}
+
+.category-card:hover .category-card__icon .material-icons {
+    color: white;
+}
+
+.category-card__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem 0;
+}
+
+.category-card__desc {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* ========== 熱門排行區塊 ========== */
+.itinerary-hot {
+    padding: var(--section-spacing) 0;
+    background: #f8f9fa;
+}
+
+.itinerary-hot .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.itinerary-hot__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.6rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    justify-content: center;
+}
+
+.itinerary-hot__title .material-icons {
+    color: #ff5722;
+}
+
+.hot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.hot-card {
+    background: #fff;
+    border-radius: var(--itinerary-card-radius);
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--itinerary-shadow);
+    transition: var(--itinerary-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.hot-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--itinerary-shadow-hover);
+}
+
+.hot-card__rank {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.hot-card__rank--gold {
+    background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+}
+
+.hot-card__rank--silver {
+    background: linear-gradient(135deg, #c0c0c0 0%, #9e9e9e 100%);
+}
+
+.hot-card__rank--bronze {
+    background: linear-gradient(135deg, #cd7f32 0%, #8d5524 100%);
+}
+
+.hot-card__content {
+    padding-top: 1rem;
+}
+
+.hot-card__title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem 0;
+}
+
+.hot-card__desc {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+    margin: 0 0 1rem 0;
+}
+
+.hot-card__stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.hot-card__stats span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.hot-card__stats .material-icons {
+    font-size: 1rem;
+}
+
+/* ========== 快速入口區塊 ========== */
+.itinerary-quicklinks {
+    padding: var(--section-spacing) 0;
+    background: #fff;
+}
+
+.itinerary-quicklinks .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.itinerary-quicklinks__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.6rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    justify-content: center;
+}
+
+.itinerary-quicklinks__title .material-icons {
+    color: #4caf50;
+}
+
+.quicklink-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.quicklink-card {
+    background: #fff;
+    border-radius: var(--itinerary-card-radius);
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--itinerary-shadow);
+    transition: var(--itinerary-transition);
+    text-align: center;
+}
+
+.quicklink-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--itinerary-shadow-hover);
+}
+
+.quicklink-card__icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    transition: var(--itinerary-transition);
+}
+
+.quicklink-card__icon--blue {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.quicklink-card__icon--pink {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.quicklink-card__icon--cyan {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.quicklink-card__icon--green {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.quicklink-card:hover .quicklink-card__icon {
+    transform: scale(1.1);
+}
+
+.quicklink-card__icon .material-icons {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.quicklink-card__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem 0;
+}
+
+.quicklink-card__desc {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* ========== 響應式設計 ========== */
+@media (max-width: 768px) {
+    :root {
+        --itinerary-header-height: 160px;
+        --section-spacing: 1.5rem;
+    }
+    
+    .itinerary-hero {
+        margin: 1rem;
+    }
+    
+    .itinerary-hero__content {
+        padding: 1.5rem 1rem;
+    }
+    
+    .itinerary-hero__title {
+        font-size: 1.6rem;
+    }
+    
+    .itinerary-hero__illustration {
+        font-size: 2.2rem;
+        top: 15px;
+        right: 20px;
+    }
+    
+    .itinerary-featured__title,
+    .itinerary-categories__title,
+    .itinerary-hot__title,
+    .itinerary-quicklinks__title {
+        font-size: 1.4rem;
+    }
+    
+    .itinerary-featured-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .hot-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quicklink-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    :root {
+        --itinerary-header-height: 140px;
+    }
+    
+    .itinerary-hero {
+        margin: 0.5rem;
+    }
+    
+    .itinerary-hero__content {
+        padding: 1rem;
+    }
+    
+    .itinerary-hero__title {
+        font-size: 1.4rem;
+        gap: 0.5rem;
+    }
+    
+    .itinerary-hero__illustration {
+        font-size: 2rem;
+        top: 10px;
+        right: 15px;
+    }
+    
+    .category-grid,
+    .hot-grid,
+    .quicklink-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .itinerary-featured-card .card-content {
+        padding: 1rem;
+    }
+}
+
+/* ========== 通用容器樣式 ========== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+    }
+} 

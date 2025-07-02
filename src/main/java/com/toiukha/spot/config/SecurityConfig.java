@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestTemplate;
 
+
 @Configuration
 public class SecurityConfig {
     
@@ -33,10 +34,10 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/admin/spot/list", true)
                 .permitAll()
             )
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/admin/spot/login")
-                .defaultSuccessUrl("/admin/spot/list", true)
-            )
+            // .oauth2Login(oauth2 -> oauth2
+            //     .loginPage("/admin/spot/login")
+            //     .defaultSuccessUrl("/admin/spot/list", true)
+            // )
             .logout(logout -> logout
                 .logoutUrl("/admin/spot/logout")
                 .logoutSuccessUrl("/admin/spot/login?logout")
