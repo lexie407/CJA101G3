@@ -13,8 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 // 提供前端 AJAX 呼叫(送出表單、測試用api)
 @RestController
 @RequestMapping("/api/act")
@@ -62,7 +63,10 @@ public class ActApiController {
         // 2. 設定團主ID（從session獲取，避免前端偽造）
         actDto.setHostId(memberInfo.getMemId());
         
-        // 3. 檢查驗證錯誤
+        // 3. 移除圖片欄位的FieldError（避免MultipartFile與byte[]型別不符的錯誤）
+        bindingResult = removeFieldError(actDto, bindingResult, "actImg");
+        
+        // 4. 檢查驗證錯誤
         if (bindingResult.hasErrors()) {
             List<String> errorMessages = new ArrayList<>();
             for (FieldError error : bindingResult.getFieldErrors()) {
@@ -82,7 +86,7 @@ public class ActApiController {
             ));
         }
         
-        // 4. 處理圖片上傳
+        // 5. 處理圖片上傳
         if (actImg != null && !actImg.isEmpty()) {
             if (actImg.getSize() > 5 * 1024 * 1024) {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -93,7 +97,7 @@ public class ActApiController {
             actDto.setActImg(actImg.getBytes());
         }
         
-        // 5. 設定標籤
+        // 6. 設定標籤
         try {
             if (actDto.getActType() != null) {
                 actDto.setTypeTag(ActTag.valueOf(actDto.getActType()));
@@ -108,7 +112,7 @@ public class ActApiController {
             ));
         }
         
-        // 6. 執行新增
+        // 7. 執行新增
         try {
             actSvc.addAct(actDto);
             return ResponseEntity.ok(Map.of(
@@ -129,22 +133,8 @@ public class ActApiController {
     //修改活動
     @PutMapping("/update")
     public ResponseEntity<?> updateAct(
-            @RequestParam("actId") Integer actId,
-            @RequestParam("actName") String actName,
-            @RequestParam("actDesc") String actDesc,
-            @RequestParam("itnId") Integer itnId,
-            @RequestParam("hostId") Integer hostId,
-            @RequestParam("signupStart") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime signupStart,
-            @RequestParam("signupEnd") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime signupEnd,
-            @RequestParam("actStart") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime actStart,
-            @RequestParam("actEnd") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime actEnd,
-            @RequestParam("maxCap") Integer maxCap,
-            @RequestParam("signupCnt") Integer signupCnt,
-            @RequestParam(value = "isPublic", required = false, defaultValue = "0") Byte isPublic,
-            @RequestParam(value = "allowCancel", required = false, defaultValue = "1") Byte allowCancel,
-            @RequestParam(value = "recruitStatus", required = false, defaultValue = "0") Byte recruitStatus,
-            @RequestParam(value = "actType", required = false, defaultValue = "OUTDOOR") String actType,
-            @RequestParam(value = "actCity", required = false, defaultValue = "TAIPEI") String actCity,
+            @Valid @ModelAttribute ActDTO actDto,
+            BindingResult bindingResult,
             @RequestParam(value = "actImg", required = false) MultipartFile actImg,
             HttpServletRequest request) throws IOException {
         
@@ -159,8 +149,9 @@ public class ActApiController {
         }
         
         // === 權限檢查：檢查是否可以修改此活動 ===
-        if (actId != null) {
-            ActVO existingAct = actSvc.getOneAct(actId);
+        ActVO existingAct = null;
+        if (actDto.getActId() != null) {
+            existingAct = actSvc.getOneAct(actDto.getActId());
             if (existingAct == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
@@ -174,26 +165,37 @@ public class ActApiController {
                     "error", "您沒有權限修改此活動"
                 ));
             }
+            
+            // === 設定團主ID（從現有活動資料獲取，確保不會被前端偽造） ===
+            actDto.setHostId(existingAct.getHostId());
         }
         
-        // === 創建ActDTO物件 ===
-        ActDTO actDto = new ActDTO();
-        actDto.setActId(actId);
-        actDto.setActName(actName);
-        actDto.setActDesc(actDesc);
-        actDto.setItnId(itnId);
-        actDto.setHostId(hostId);
-        actDto.setSignupStart(signupStart);
-        actDto.setSignupEnd(signupEnd);
-        actDto.setActStart(actStart);
-        actDto.setActEnd(actEnd);
-        actDto.setMaxCap(maxCap);
-        actDto.setSignupCnt(signupCnt);
-        actDto.setIsPublic(isPublic);
-        actDto.setAllowCancel(allowCancel);
-        actDto.setRecruitStatus(recruitStatus);
-        actDto.setActType(actType);
-        actDto.setActCity(actCity);
+        // === 移除編輯時不適用的驗證錯誤 ===
+        // 移除圖片欄位的FieldError（避免MultipartFile與byte[]型別不符的錯誤）
+        bindingResult = removeFieldError(actDto, bindingResult, "actImg");
+        
+        // 移除時間相關的 @Future 驗證錯誤（編輯時允許過去時間）
+        bindingResult = removeTimeValidationErrors(actDto, bindingResult);
+        
+        // === 驗證錯誤處理 ===
+        if (bindingResult.hasErrors()) {
+            List<String> errorMessages = new ArrayList<>();
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                String message = error.getDefaultMessage();
+                // 過濾掉Spring框架的技術錯誤，只保留業務驗證錯誤
+                if (message != null && !isSpringTechnicalError(message)) {
+                    errorMessages.add(message);
+                }
+            }
+            // 如果沒有有效的業務錯誤訊息，回傳通用錯誤
+            if (errorMessages.isEmpty()) {
+                errorMessages.add("表單資料格式錯誤，請檢查輸入內容");
+            }
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "errors", errorMessages
+            ));
+        }
         
         // === 處理圖片上傳 ===
         if (actImg != null && !actImg.isEmpty()) {
@@ -206,6 +208,21 @@ public class ActApiController {
             actDto.setActImg(actImg.getBytes());
         }
         
+        // === 設定標籤 ===
+        try {
+            if (actDto.getActType() != null) {
+                actDto.setTypeTag(ActTag.valueOf(actDto.getActType()));
+            }
+            if (actDto.getActCity() != null) {
+                actDto.setCityTag(ActTag.valueOf(actDto.getActCity()));
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", "無效的活動類型或城市標籤"
+            ));
+        }
+        
         // === 業務邏輯處理 ===
         try {
             actSvc.updateAct(actDto);
@@ -213,7 +230,8 @@ public class ActApiController {
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "活動修改成功",
-                "actId", actDto.getActId()
+                "actId", actDto.getActId(),
+                "hostId", actDto.getHostId()
             ));
             
         } catch (Exception e) {
@@ -452,6 +470,7 @@ public class ActApiController {
                 )
         );
     }
+    
 
     // 將ActVO轉換為ActCardDTO
     private ActCardDTO convertToCardDTO(ActVO actVo) {
@@ -594,6 +613,57 @@ public class ActApiController {
         }
         
         return false;
+    }
+
+    /**
+     * 去除 BindingResult 中某個欄位的 FieldError 紀錄
+     * 用於解決 MultipartFile 與 byte[] 型別不符導致的驗證錯誤
+     * 
+     * @param actDto 活動DTO物件
+     * @param result 驗證結果
+     * @param removedFieldname 要移除錯誤的欄位名稱
+     * @return 移除指定欄位錯誤後的 BindingResult
+     */
+    private BindingResult removeFieldError(ActDTO actDto, BindingResult result, String removedFieldname) {
+        List<FieldError> errorsListToKeep = result.getFieldErrors().stream()
+                .filter(fieldError -> !fieldError.getField().equals(removedFieldname))
+                .collect(java.util.stream.Collectors.toList());
+
+        result = new BeanPropertyBindingResult(actDto, "actDTO");
+        for (FieldError fieldError : errorsListToKeep) {
+            result.addError(fieldError);
+        }
+        return result;
+    }
+
+    /**
+     * 移除編輯時不適用的時間驗證錯誤
+     * 編輯活動時允許過去的時間（例如已開始或已結束的活動）
+     * 
+     * @param actDto 活動DTO物件
+     * @param result 驗證結果
+     * @return 移除時間驗證錯誤後的 BindingResult
+     */
+    private BindingResult removeTimeValidationErrors(ActDTO actDto, BindingResult result) {
+        List<FieldError> errorsListToKeep = result.getFieldErrors().stream()
+                .filter(fieldError -> {
+                    String field = fieldError.getField();
+                    String message = fieldError.getDefaultMessage();
+                    
+                    // 移除時間欄位的 @Future 驗證錯誤
+                    if ((field.equals("actStart") || field.equals("actEnd")) && 
+                        message != null && message.contains("日期必須是在今日(不含)之後")) {
+                        return false;
+                    }
+                    return true;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        result = new BeanPropertyBindingResult(actDto, "actDTO");
+        for (FieldError fieldError : errorsListToKeep) {
+            result.addError(fieldError);
+        }
+        return result;
     }
 
 }

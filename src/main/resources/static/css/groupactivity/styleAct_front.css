@@ -557,3 +557,55 @@
 .hidden {
   display: none;
 }
+
+/*============= 標籤按鈕樣式 ===================*/
+
+/* 標籤按鈕基本樣式 */
+.tag-button {
+  background-color: #f3f4f6;
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 4px;
+  display: inline-block;
+}
+
+.tag-button:hover {
+  background-color: rgba(41, 171, 194, 0.1);
+  color: #29abc2;
+}
+
+.tag-button.selected {
+  background-color: #29abc2;
+  color: white;
+}
+
+.tag-button.selected:hover {
+  background-color: #208e9f;
+  color: white;
+}
+
+/* 標籤容器 */
+.tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* 標籤區塊 */
+.tag-section {
+  margin-bottom: 24px;
+}
+
+/* 標籤標題 */
+.tag-label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  display: block;
+}

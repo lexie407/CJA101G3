@@ -3,15 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>活動詳情 | 揪團系統</title>
+    <title>活動詳情 | 島遊kha</title>
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <!-- GroupActivity 模組 CSS -->
-    <link
-      rel="stylesheet"
-      th:href="@{/css/groupactivity/styleAct_common.css}"
-    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
   </head>
   <body class="light">
@@ -31,7 +28,6 @@
               >
                 活動編號: 1 | 團主: 1
               </p>
-              <!-- 使用ActService處理狀態邏輯 -->
               <span
                 class="act-status"
                 th:classappend="${@actService.getRecruitStatusCssClass(actVo)}"
