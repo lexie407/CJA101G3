@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>景點列表 - 島遊Kha</title>
+    
+    <!-- 必要資源引用 - 統一使用絕對路徑 -->
+    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 景點列表頁樣式 -->
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/list.css}">
+</head>
+<body class="light">
+    <div class="app-container">
+        <!-- 左側主導覽列 -->
+        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        
+        <div class="main-content">
+            <!-- 頂部次導覽列 -->
+            <div th:replace="~{/front-end/spot/subnavSpotFront :: subnav('list')}"></div>
+            
+            <main class="content-area-main">
+                <!-- 英雄區塊 -->
+                <section class="spot-list-hero">
+                    <span class="spot-list-hero__illustration material-icons" aria-hidden="true">landscape</span>
+                    <div class="spot-list-hero__content">
+                        <h1 class="spot-list-hero__title">
+                            <span class="material-icons" aria-hidden="true">list</span>
+                            景點列表
+                        </h1>
+                        <p class="spot-list-hero__subtitle">探索台灣各地的美麗景點，找到您的下一個旅遊目的地</p>
+                    </div>
+                </section>
+
+                <!-- 提示訊息區域 -->
+                <div th:if="${msg}" class="spot-list-alert spot-list-alert--success" role="alert">
+                    <span class="material-icons" aria-hidden="true">check_circle</span>
+                    <span th:text="${msg}">成功訊息</span>
+                    <button type="button" class="spot-list-alert__close" aria-label="關閉提示">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+
+                <div th:if="${errorMsgs != null and !errorMsgs.isEmpty()}" class="spot-list-alert spot-list-alert--error" role="alert">
+                    <span class="material-icons" aria-hidden="true">error</span>
+                    <div>
+                        <ul class="spot-list-error-list">
+                            <li th:each="error : ${errorMsgs}" th:text="${error}">錯誤訊息</li>
+                        </ul>
+                    </div>
+                    <button type="button" class="spot-list-alert__close" aria-label="關閉錯誤提示">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+
+                <!-- 搜尋篩選區域 -->
+                <section class="spot-list-search">
+                    <div class="container">
+                        <div class="spot-list-search-card">
+                            <form class="spot-list-search-form" method="get" th:action="@{/spot/list}">
+                                <div class="spot-list-search-row">
+                                    <div class="spot-list-search-group">
+                                        <label for="keyword" class="spot-list-search-label">
+                                            <span class="material-icons">search</span>
+                                            搜尋關鍵字
+                                        </label>
+                                        <input type="text" 
+                                               id="keyword" 
+                                               name="keyword" 
+                                               class="spot-list-search-input" 
+                                               placeholder="輸入景點名稱、地區或關鍵字..."
+                                               th:value="${param.keyword}">
+                                    </div>
+                                    <div class="spot-list-search-group">
+                                        <label for="region" class="spot-list-search-label">
+                                            <span class="material-icons">place</span>
+                                            地區
+                                        </label>
+                                        <select id="region" name="region" class="spot-list-search-select">
+                                            <option value="">所有地區</option>
+                                            <option value="北部" th:selected="${param.region == '北部'}">北部</option>
+                                            <option value="中部" th:selected="${param.region == '中部'}">中部</option>
+                                            <option value="南部" th:selected="${param.region == '南部'}">南部</option>
+                                            <option value="東部" th:selected="${param.region == '東部'}">東部</option>
+                                        </select>
+                                    </div>
+                                    <div class="spot-list-search-actions">
+                                        <button type="submit" class="spot-list-search-btn">
+                                            <span class="material-icons" aria-hidden="true">search</span>
+                                            搜尋
+                                        </button>
+                                        <button type="button" class="spot-list-reset-btn" onclick="resetSearchForm()">
+                                            <span class="material-icons" aria-hidden="true">refresh</span>
+                                            重置
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 工具列區域 -->
+                <section class="spot-list-toolbar">
+                    <div class="container">
+                        <div class="spot-list-toolbar__content">
+                            <div class="spot-list-toolbar__left">
+                                <div class="spot-list-stats">
+                                    <span class="material-icons">list</span>
+                                    <span class="spot-list-stats__text">
+                                        共 <strong th:text="${spotList != null ? spotList.size() : 0}">0</strong> 個景點
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="spot-list-toolbar__right">
+                                <div class="spot-list-view-controls">
+                                    <button class="spot-list-view-btn active" data-view="grid" title="網格檢視">
+                                        <span class="material-icons">grid_view</span>
+                                    </button>
+                                    <button class="spot-list-view-btn" data-view="list" title="列表檢視">
+                                        <span class="material-icons">view_list</span>
+                                    </button>
+                                </div>
+                                <div class="spot-list-sort-section">
+                                    <label for="sortBy" class="spot-list-sort-label">排序：</label>
+                                    <select id="sortBy" class="spot-list-sort-select" onchange="sortSpots(this.value)">
+                                        <option value="name">按名稱</option>
+                                        <option value="date">按時間</option>
+                                        <option value="location">按地區</option>
+                                        <option value="popular">按熱門</option>
+                                    </select>
+                                </div>
+                                <a th:href="@{/spot/add}" class="spot-list-add-btn">
+                                    <span class="material-icons" aria-hidden="true">add</span>
+                                    新增景點
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 景點列表主要內容 -->
+                <section class="spot-list-main">
+                    <div class="container">
+                        <!-- 有資料時顯示景點網格 -->
+                        <div th:if="${spotList != null and !spotList.isEmpty()}" class="spot-list-grid" id="spotGrid">
+                            <div th:each="spot, iterStat : ${spotList}" class="spot-list-item">
+                                <article class="spot-list-card">
+                                    <div class="spot-list-card__image">
+                                        <!-- 收藏按鈕 -->
+                                        <button class="spot-list-card__favorite" 
+                                                th:data-spot-id="${spot.spotId}"
+                                                onclick="toggleFavorite(this)"
+                                                title="加入收藏">
+                                            <span class="material-icons">favorite_border</span>
+                                        </button>
+                                        <!-- 狀態標籤 -->
+                                        <span class="spot-list-card__status spot-list-card__status--active">
+                                            <span class="material-icons">check</span>
+                                            上架中
+                                        </span>
+                                        <!-- 景點圖片 -->
+                                        <img th:if="${spot.firstPictureUrl}" 
+                                             th:src="${spot.firstPictureUrl}" 
+                                             th:alt="${spot.spotName}"
+                                             class="spot-list-card__img"
+                                             loading="lazy"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <!-- 預設圖片佔位符 -->
+                                        <div class="spot-list-card__placeholder" th:style="${spot.firstPictureUrl != null and spot.firstPictureUrl != '' ? 'display: none;' : 'display: flex;'}">
+                                            <span class="material-icons">image</span>
+                                            <span>暫無圖片</span>
+                                        </div>
+                                    </div>
+                                    <div class="spot-list-card__content">
+                                        <div class="spot-list-card__header">
+                                            <h3 class="spot-list-card__title" th:text="${spot.spotName}">景點名稱</h3>
+                                            <div class="spot-list-card__rating">
+                                                <span class="material-icons">star</span>
+                                                <span th:text="${4.5 + (iterStat.index % 5) * 0.1}">4.5</span>
+                                            </div>
+                                        </div>
+                                        <p class="spot-list-card__location">
+                                            <span class="material-icons">place</span>
+                                            <span th:text="${spot.spotLoc}">景點地址</span>
+                                        </p>
+                                        <p class="spot-list-card__description" 
+                                           th:text="${spot.spotDesc != null ? (spot.spotDesc.length() > 100 ? spot.spotDesc.substring(0, 100) + '...' : spot.spotDesc) : '暫無描述'}">
+                                           景點描述...
+                                        </p>
+                                        <div class="spot-list-card__meta">
+                                            <div class="spot-list-card__date">
+                                                <span class="material-icons">schedule</span>
+                                                <span th:text="${spot.spotCreateAt != null ? spot.spotCreateAt.toString().substring(0, 10) : ''}">2024-01-01</span>
+                                            </div>
+                                        </div>
+                                        <div class="spot-list-card__actions">
+                                            <a th:href="@{/spot/detail/{id}(id=${spot.spotId})}" class="spot-list-card__link">
+                                                <span class="material-icons">visibility</span>
+                                                查看詳情
+                                            </a>
+                                            <div class="spot-list-card__action-buttons">
+                                                <button class="spot-list-card__action-btn" title="分享景點">
+                                                    <span class="material-icons">share</span>
+                                                </button>
+                                                <button class="spot-list-card__action-btn spot-list-card__bookmark-btn" 
+                                                        th:data-spot-id="${spot.spotId}"
+                                                        onclick="toggleBookmark(this)"
+                                                        title="收藏景點">
+                                                    <span class="material-icons">bookmark_border</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+
+                        <!-- 載入更多按鈕 -->
+                        <div th:if="${spotList != null and spotList.size() >= 12}" class="spot-list-load-more">
+                            <button class="spot-list-load-more-btn" onclick="loadMoreSpots()">
+                                <span class="material-icons" aria-hidden="true">expand_more</span>
+                                載入更多景點
+                            </button>
+                        </div>
+
+                        <!-- 無資料時顯示空狀態 -->
+                        <div th:if="${spotList == null or spotList.isEmpty()}" class="spot-list-empty">
+                            <div class="spot-list-empty__icon">
+                                <span class="material-icons">explore_off</span>
+                            </div>
+                            <h3 class="spot-list-empty__title">暫無景點資料</h3>
+                            <p class="spot-list-empty__description">目前沒有可瀏覽的景點，請嘗試調整搜尋條件或新增景點</p>
+                            <div class="spot-list-empty__actions">
+                                <a th:href="@{/spot/add}" class="spot-list-btn spot-list-btn--primary">
+                                    <span class="material-icons">add</span>
+                                    新增景點
+                                </a>
+                                <a th:href="@{/spot/search}" class="spot-list-btn spot-list-btn--secondary">
+                                    <span class="material-icons">search</span>
+                                    進階搜尋
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 快速連結區域 -->
+                <section class="spot-list-quick-links">
+                    <div class="container">
+                        <div class="spot-list-quick-links__header">
+                            <h2 class="spot-list-quick-links__title">
+                                <span class="material-icons">link</span>
+                                相關功能
+                            </h2>
+                        </div>
+                        <div class="spot-list-quick-links__grid">
+                            <a th:href="@{/spot/search}" class="spot-list-quick-link" title="進階搜尋景點">
+                                <span class="material-icons">search</span>
+                                <span>進階搜尋</span>
+                            </a>
+                            <a th:href="@{/spot/add}" class="spot-list-quick-link" title="新增景點">
+                                <span class="material-icons">add_location</span>
+                                <span>新增景點</span>
+                            </a>
+                            <a th:href="@{/spot/favorites}" class="spot-list-quick-link" title="我的收藏">
+                                <span class="material-icons">favorite</span>
+                                <span>我的收藏</span>
+                            </a>
+                            <a th:href="@{/spot/map}" class="spot-list-quick-link" title="地圖瀏覽">
+                                <span class="material-icons">map</span>
+                                <span>地圖瀏覽</span>
+                            </a>
+                            <a th:href="@{/}" class="spot-list-quick-link" title="回到首頁">
+                                <span class="material-icons">home</span>
+                                <span>回到首頁</span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <!-- 必要腳本 -->
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="/js/notification/websocket.js"></script>
+    <!-- 景點列表頁專用腳本 -->
+    <script th:src="@{/js/spot/front-end/list.js}" defer></script>
+</body>
+</html>

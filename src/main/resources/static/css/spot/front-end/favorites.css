@@ -1,0 +1,818 @@
+/**
+ * 我的收藏頁面樣式
+ * @description 提供收藏景點卡片、空狀態、操作按鈕等組件的樣式
+ * @version 1.0
+ * 
+ * 遵循 Material Design 3 設計系統
+ * 使用 spot-favorites- 前綴避免樣式衝突
+ */
+
+/* =================
+   我的收藏頁面樣式
+   使用 spot-favorites- 前綴
+   依賴 style.css 基礎層
+   ================= */
+
+/* 1. 自定義變數 */
+:root {
+    --spot-favorites-card-radius: 16px;
+    --spot-favorites-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --spot-favorites-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --spot-favorites-transition: 0.2s ease;
+    --spot-favorites-grid-gap: 1.5rem;
+    --spot-favorites-image-height: 220px;
+    --spot-favorites-content-padding: 1.5rem;
+}
+
+/* 2. 英雄區塊 */
+.spot-favorites-hero {
+    background: linear-gradient(135deg, 
+        var(--md-sys-color-primary) 0%, 
+        var(--md-sys-color-secondary) 100%);
+    color: var(--md-sys-color-on-primary);
+    padding: 2.5rem 0;
+    margin: 1rem 1.5rem 2.5rem;
+    border-radius: 20px;
+    box-shadow: var(--spot-favorites-card-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-favorites-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
+    opacity: 0.4;
+}
+
+.spot-favorites-hero__content {
+    max-width: none;
+    position: relative;
+    z-index: 2;
+    padding: 0 2rem;
+    animation: spot-favorites-hero-fade-in 0.8s ease-out;
+}
+
+/* 麵包屑導航 */
+.spot-favorites-breadcrumb {
+    margin-bottom: 1.5rem;
+}
+
+.spot-favorites-breadcrumb__list {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+}
+
+.spot-favorites-breadcrumb__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.spot-favorites-breadcrumb__item:not(:last-child)::after {
+    content: 'chevron_right';
+    font-family: 'Material Icons';
+    color: rgba(255, 255, 255, 0.6);
+    margin-left: 0.5rem;
+}
+
+.spot-favorites-breadcrumb__link {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color var(--spot-favorites-transition);
+}
+
+.spot-favorites-breadcrumb__link:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+.spot-favorites-breadcrumb__item--active {
+    color: rgba(255, 255, 255, 1);
+    font-weight: 500;
+}
+
+/* 英雄區塊標題 */
+.spot-favorites-hero__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.spot-favorites-hero__info {
+    flex: 1;
+}
+
+.spot-favorites-hero__title {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    letter-spacing: -0.01em;
+}
+
+.spot-favorites-hero__subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+/* 特色標籤 */
+.spot-favorites-hero__features {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.spot-favorites-hero__feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.spot-favorites-hero__feature .material-icons {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* 英雄圖標 */
+.spot-favorites-hero__icon {
+    flex-shrink: 0;
+}
+
+.spot-favorites-hero__icon-container {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    animation: spot-favorites-icon-float 3s ease-in-out infinite;
+}
+
+.spot-favorites-hero__icon-container .material-icons {
+    font-size: 2.5rem;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* 統計資訊 */
+.spot-favorites-hero__stats {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.spot-favorites-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.95);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+}
+
+/* 3. 錯誤提示 */
+.spot-favorites-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: var(--spot-favorites-card-radius);
+    box-shadow: var(--spot-favorites-card-shadow);
+    position: relative;
+    animation: spot-favorites-alert-slide-in 0.3s ease-out;
+}
+
+.spot-favorites-alert--error {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    border: 1px solid var(--md-sys-color-error);
+}
+
+.spot-favorites-alert__icon .material-icons {
+    font-size: 1.5rem;
+    color: var(--md-sys-color-error);
+}
+
+.spot-favorites-alert__content {
+    flex: 1;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.spot-favorites-alert__close {
+    background: none;
+    border: none;
+    color: var(--md-sys-color-on-error-container);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: background-color var(--spot-favorites-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spot-favorites-alert__close:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.spot-favorites-alert__close .material-icons {
+    font-size: 1.25rem;
+}
+
+/* 4. 收藏卡片網格 */
+.spot-favorites-content {
+    margin-bottom: 3rem;
+}
+
+.spot-favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spot-favorites-grid-gap);
+    padding: 0;
+}
+
+/* 5. 收藏卡片 */
+.spot-favorites-card {
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--spot-favorites-card-radius);
+    overflow: hidden;
+    box-shadow: var(--spot-favorites-card-shadow);
+    transition: all var(--spot-favorites-transition);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.spot-favorites-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--spot-favorites-card-shadow-hover);
+}
+
+.spot-favorites-card:focus-within {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
+/* 移除收藏按鈕 */
+.spot-favorites-card__remove-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    color: var(--md-sys-color-error);
+    cursor: pointer;
+    transition: all var(--spot-favorites-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: var(--spot-favorites-card-shadow);
+    backdrop-filter: blur(10px);
+}
+
+.spot-favorites-card__remove-btn:hover {
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+    transform: scale(1.1);
+}
+
+.spot-favorites-card__remove-btn:focus {
+    outline: 2px solid var(--md-sys-color-error);
+    outline-offset: 2px;
+}
+
+.spot-favorites-card__remove-btn .material-icons {
+    font-size: 1.25rem;
+}
+
+/* 景點圖片 */
+.spot-favorites-card__image-container {
+    position: relative;
+    height: var(--spot-favorites-image-height);
+    overflow: hidden;
+    background: var(--md-sys-color-surface-container-low);
+}
+
+.spot-favorites-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--spot-favorites-transition);
+}
+
+.spot-favorites-card:hover .spot-favorites-card__image {
+    transform: scale(1.05);
+}
+
+.spot-favorites-card__image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-favorites-card__image-placeholder .material-icons {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.spot-favorites-card__image-placeholder span:last-child {
+    font-size: 0.9rem;
+}
+
+/* 卡片內容 */
+.spot-favorites-card__content {
+    padding: var(--spot-favorites-content-padding);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 1rem;
+}
+
+.spot-favorites-card__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.spot-favorites-card__description {
+    font-size: 0.95rem;
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.5;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+
+.spot-favorites-card__description--empty {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* 景點資訊 */
+.spot-favorites-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.spot-favorites-card__location,
+.spot-favorites-card__date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-favorites-card__location .material-icons,
+.spot-favorites-card__date .material-icons {
+    font-size: 1.1rem;
+    color: var(--md-sys-color-primary);
+}
+
+.spot-favorites-card__date time {
+    font-weight: 500;
+}
+
+/* 操作按鈕 */
+.spot-favorites-card__actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-favorites-card__view-btn,
+.spot-favorites-card__share-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--spot-favorites-transition);
+    cursor: pointer;
+    border: none;
+    flex: 1;
+    justify-content: center;
+}
+
+.spot-favorites-card__view-btn {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.spot-favorites-card__view-btn:hover {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.spot-favorites-card__share-btn {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.spot-favorites-card__share-btn:hover {
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.spot-favorites-card__view-btn .material-icons,
+.spot-favorites-card__share-btn .material-icons {
+    font-size: 1.1rem;
+}
+
+/* 6. 空狀態 */
+.spot-favorites-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: var(--spot-favorites-card-radius);
+    margin: 2rem 0;
+}
+
+.spot-favorites-empty__icon {
+    margin-bottom: 2rem;
+}
+
+.spot-favorites-empty__icon .material-icons {
+    font-size: 5rem;
+    color: var(--md-sys-color-outline);
+    animation: spot-favorites-heart-pulse 2s ease-in-out infinite;
+}
+
+.spot-favorites-empty__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 1rem;
+}
+
+.spot-favorites-empty__description {
+    font-size: 1rem;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 2.5rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+.spot-favorites-empty__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.spot-favorites-empty__action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--spot-favorites-transition);
+    min-width: 140px;
+    justify-content: center;
+}
+
+.spot-favorites-empty__action-btn--primary {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.spot-favorites-empty__action-btn--primary:hover {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-favorites-card-shadow-hover);
+}
+
+.spot-favorites-empty__action-btn--secondary {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.spot-favorites-empty__action-btn--secondary:hover {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-favorites-card-shadow-hover);
+}
+
+.spot-favorites-empty__action-btn .material-icons {
+    font-size: 1.2rem;
+}
+
+/* 7. 動畫效果 */
+@keyframes spot-favorites-alert-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spot-favorites-heart-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+@keyframes spot-favorites-hero-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spot-favorites-icon-float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.spot-favorites-card--fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: spot-favorites-fade-in 0.6s ease-out forwards;
+}
+
+@keyframes spot-favorites-fade-in {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 為每張卡片設定不同的動畫延遲 */
+.spot-favorites-card:nth-child(1) { animation-delay: 0.1s; }
+.spot-favorites-card:nth-child(2) { animation-delay: 0.2s; }
+.spot-favorites-card:nth-child(3) { animation-delay: 0.3s; }
+.spot-favorites-card:nth-child(4) { animation-delay: 0.4s; }
+.spot-favorites-card:nth-child(5) { animation-delay: 0.5s; }
+.spot-favorites-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* 8. 響應式設計 */
+
+/* 中型設備 (≥768px) */
+@media (min-width: 768px) {
+    .spot-favorites-grid {
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 2rem;
+    }
+    
+    .spot-favorites-hero__content {
+        padding: 0 2rem;
+    }
+    
+    .spot-favorites-hero__header {
+        flex-wrap: nowrap;
+    }
+    
+    .spot-favorites-empty__actions {
+        flex-wrap: nowrap;
+    }
+}
+
+/* 大型設備 (≥992px) */
+@media (min-width: 992px) {
+    :root {
+        --spot-favorites-grid-gap: 2rem;
+        --spot-favorites-image-height: 240px;
+    }
+    
+    .spot-favorites-grid {
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: var(--spot-favorites-grid-gap);
+    }
+    
+    .spot-favorites-hero__features {
+        gap: 2rem;
+    }
+}
+
+/* 超大設備 (≥1200px) */
+@media (min-width: 1200px) {
+    .spot-favorites-grid {
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 2.5rem;
+    }
+    
+    .spot-favorites-hero {
+        margin: 1rem 2rem 2.5rem;
+    }
+}
+
+/* 小型設備 (≤576px) */
+@media (max-width: 576px) {
+    :root {
+        --spot-favorites-grid-gap: 1rem;
+        --spot-favorites-content-padding: 1rem;
+        --spot-favorites-image-height: 180px;
+    }
+    
+    .spot-favorites-hero {
+        padding: 2rem 0;
+        margin: 0.5rem 0 2rem;
+        border-radius: 16px;
+    }
+    
+    .spot-favorites-hero__content {
+        padding: 0 1rem;
+    }
+    
+    .spot-favorites-hero__header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .spot-favorites-hero__title {
+        font-size: 1.8rem;
+    }
+    
+    .spot-favorites-hero__features {
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .spot-favorites-hero__feature {
+        font-size: 0.85rem;
+    }
+    
+    .spot-favorites-hero__icon-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .spot-favorites-hero__icon-container .material-icons {
+        font-size: 2rem;
+    }
+    
+    .spot-favorites-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spot-favorites-grid-gap);
+    }
+    
+    .spot-favorites-card__actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .spot-favorites-empty {
+        padding: 3rem 1rem;
+    }
+    
+    .spot-favorites-empty__actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .spot-favorites-empty__action-btn {
+        min-width: 200px;
+    }
+    
+    .spot-favorites-alert {
+        margin: 0 -1rem 2rem;
+        border-radius: 0;
+    }
+    
+    .spot-favorites-breadcrumb__list {
+        justify-content: center;
+    }
+}
+
+/* 9. 無障礙設計 */
+@media (prefers-reduced-motion: reduce) {
+    .spot-favorites-card,
+    .spot-favorites-card__image,
+    .spot-favorites-card__remove-btn,
+    .spot-favorites-card__view-btn,
+    .spot-favorites-card__share-btn,
+    .spot-favorites-empty__action-btn,
+    .spot-favorites-alert {
+        transition: none;
+        animation: none;
+        transform: none;
+    }
+    
+    .spot-favorites-empty__icon .material-icons {
+        animation: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .spot-favorites-card,
+    .spot-favorites-alert {
+        border-width: 2px;
+    }
+    
+    .spot-favorites-card__view-btn,
+    .spot-favorites-card__share-btn,
+    .spot-favorites-empty__action-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* 10. 列印樣式 */
+@media print {
+    .spot-favorites-card__remove-btn,
+    .spot-favorites-card__share-btn,
+    .spot-favorites-alert__close {
+        display: none;
+    }
+    
+    .spot-favorites-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .spot-favorites-grid {
+        display: block;
+    }
+    
+    .spot-favorites-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* 3. 頁面標題區域（舊版，已移除） */
+.spot-favorites-header {
+    display: none;
+}
+
+/* 4. 主要內容區域 */ 

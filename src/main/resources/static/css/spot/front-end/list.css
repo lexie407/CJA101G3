@@ -1,0 +1,1005 @@
+/* =================
+   景點列表樣式
+   使用 spot-list- 前綴
+   依賴 style.css 基礎層
+   ================= */
+
+/* 1. 自定義變數 */
+:root {
+    --spot-card-radius: 16px;
+    --spot-grid-gap: 1.25rem;
+    --spot-transition: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    --spot-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --spot-shadow-hover: 0 8px 32px rgba(25, 118, 210, 0.2);
+    --spot-shadow-primary: 0 4px 20px rgba(25, 118, 210, 0.3);
+    --section-spacing: 1.25rem;
+    --spot-header-height: 180px;
+}
+
+/* 2. 英雄區塊 - 參考首頁設計 */
+.spot-list-hero {
+    background: linear-gradient(135deg, 
+        var(--md-sys-color-primary) 0%, 
+        var(--md-sys-color-secondary) 100%);
+    height: var(--spot-header-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    margin: 1rem 1.5rem;
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-list-hero__illustration {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 2.8rem;
+    color: rgba(255, 255, 255, 0.25);
+    z-index: 1;
+    animation: float 3s ease-in-out infinite, pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.25; }
+    100% { opacity: 0.4; }
+}
+
+.spot-list-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
+    opacity: 0.4;
+}
+
+.spot-list-hero__content {
+    text-align: center;
+    color: var(--md-sys-color-on-primary);
+    position: relative;
+    z-index: 2;
+    max-width: 650px;
+    padding: 2rem 1.25rem;
+    width: 100%;
+}
+
+.spot-list-hero__title {
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+
+.spot-list-hero__title .material-icons {
+    font-size: clamp(2.2rem, 4.5vw, 2.8rem);
+    color: var(--md-sys-color-secondary);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.spot-list-hero__subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    opacity: 0.92;
+    line-height: 1.4;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    margin: 0;
+}
+
+/* 3. 搜尋區域 */
+.spot-list-search {
+    padding: var(--section-spacing) 0;
+}
+
+.spot-list-search-card {
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: var(--spot-card-radius);
+    padding: 1.5rem;
+    box-shadow: var(--spot-shadow);
+    transition: all var(--spot-transition);
+}
+
+.spot-list-search-card:hover {
+    box-shadow: var(--spot-shadow-hover);
+}
+
+.spot-list-search-form {
+    width: 100%;
+}
+
+.spot-list-search-row {
+    display: grid;
+    grid-template-columns: 1fr 200px auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.spot-list-search-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.spot-list-search-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-list-search-label .material-icons {
+    font-size: 1.1rem;
+    color: var(--md-sys-color-primary);
+}
+
+.spot-list-search-input,
+.spot-list-search-select {
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.9rem;
+    transition: all var(--spot-transition);
+}
+
+.spot-list-search-input:focus,
+.spot-list-search-select:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.spot-list-search-input::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.7;
+}
+
+.spot-list-search-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.spot-list-search-btn,
+.spot-list-reset-btn {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all var(--spot-transition);
+    white-space: nowrap;
+}
+
+.spot-list-search-btn {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-list-search-btn:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) 90%, black 10%);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow-hover);
+}
+
+.spot-list-reset-btn {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border: 2px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-list-reset-btn:hover {
+    background: var(--md-sys-color-surface-container-high);
+    transform: translateY(-1px);
+}
+
+/* 4. 工具列區域 */
+.spot-list-toolbar {
+    padding: var(--section-spacing) 0;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-list-toolbar__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.spot-list-toolbar__left {
+    flex: 1;
+}
+
+.spot-list-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.95rem;
+}
+
+.spot-list-stats .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: 1.2rem;
+}
+
+.spot-list-stats__text strong {
+    color: var(--md-sys-color-primary);
+    font-weight: 700;
+}
+
+.spot-list-toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.spot-list-view-controls {
+    display: flex;
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: 8px;
+    padding: 0.25rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.spot-list-view-btn {
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spot-list-view-btn:hover {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+}
+
+.spot-list-view-btn.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-list-sort-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-list-sort-label {
+    font-size: 0.9rem;
+    color: var(--md-sys-color-on-surface);
+    white-space: nowrap;
+}
+
+.spot-list-sort-select {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all var(--spot-transition);
+}
+
+.spot-list-sort-select:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-list-add-btn {
+    padding: 0.75rem 1.25rem;
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all var(--spot-transition);
+    box-shadow: var(--spot-shadow);
+    white-space: nowrap;
+}
+
+.spot-list-add-btn:hover {
+    background: color-mix(in srgb, var(--md-sys-color-secondary) 90%, black 10%);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow-hover);
+    text-decoration: none;
+}
+
+/* 5. 主要內容區域 */
+.spot-list-main {
+    padding: var(--section-spacing) 0 2rem;
+}
+
+.spot-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spot-grid-gap);
+    margin-bottom: 2rem;
+}
+
+/* 6. 景點卡片 */
+.spot-list-card {
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: var(--spot-card-radius);
+    overflow: hidden;
+    box-shadow: var(--spot-shadow);
+    transition: all var(--spot-transition);
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.spot-list-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.05) 50%, 
+        transparent 100%);
+    opacity: 0;
+    transition: opacity var(--spot-transition);
+    pointer-events: none;
+}
+
+.spot-list-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--spot-shadow-hover);
+}
+
+.spot-list-card:hover::after {
+    opacity: 1;
+}
+
+.spot-list-card__image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: var(--md-sys-color-surface-container);
+}
+
+.spot-list-card__favorite {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--spot-transition);
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.spot-list-card__favorite:hover {
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+    transform: scale(1.1);
+}
+
+.spot-list-card__status {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    z-index: 2;
+}
+
+.spot-list-card__status--active {
+    background: var(--md-sys-color-tertiary);
+    color: var(--md-sys-color-on-tertiary);
+}
+
+.spot-list-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--spot-transition);
+}
+
+.spot-list-card:hover .spot-list-card__img {
+    transform: scale(1.05);
+}
+
+.spot-list-card__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--md-sys-color-on-surface-variant);
+    background: var(--md-sys-color-surface-container);
+}
+
+.spot-list-card__placeholder .material-icons {
+    font-size: 2.5rem;
+    opacity: 0.5;
+}
+
+.spot-list-card__placeholder span:last-child {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.spot-list-card__content {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.spot-list-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.spot-list-card__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+    margin: 0;
+    line-height: 1.3;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.spot-list-card:hover .spot-list-card__title {
+    color: var(--md-sys-color-primary);
+}
+
+.spot-list-card__rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--md-sys-color-tertiary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.spot-list-card__rating .material-icons {
+    font-size: 1.1rem;
+    color: #FFB300;
+}
+
+.spot-list-card__location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.spot-list-card__location .material-icons {
+    font-size: 1rem;
+    color: var(--md-sys-color-primary);
+}
+
+.spot-list-card__description {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+
+.spot-list-card__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-list-card__date {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.75rem;
+}
+
+.spot-list-card__date .material-icons {
+    font-size: 0.9rem;
+}
+
+.spot-list-card__actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+}
+
+.spot-list-card__link {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: all var(--spot-transition);
+    text-align: center;
+}
+
+.spot-list-card__link:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) 90%, black 10%);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.spot-list-card__action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.spot-list-card__action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--spot-transition);
+}
+
+.spot-list-card__action-btn:hover {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    transform: scale(1.1);
+}
+
+.spot-list-card__action-btn .material-icons {
+    font-size: 1rem;
+}
+
+/* 7. 載入更多按鈕 */
+.spot-list-load-more {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.spot-list-load-more-btn {
+    padding: 0.75rem 2rem;
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all var(--spot-transition);
+}
+
+.spot-list-load-more-btn:hover {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow-hover);
+}
+
+/* 8. 空狀態 */
+.spot-list-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-list-empty__icon {
+    margin-bottom: 1.5rem;
+}
+
+.spot-list-empty__icon .material-icons {
+    font-size: 4rem;
+    color: var(--md-sys-color-outline);
+    opacity: 0.5;
+}
+
+.spot-list-empty__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 0.75rem;
+}
+
+.spot-list-empty__description {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.spot-list-empty__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.spot-list-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all var(--spot-transition);
+    border: 2px solid transparent;
+}
+
+.spot-list-btn--primary {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: var(--spot-shadow);
+}
+
+.spot-list-btn--primary:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) 90%, black 10%);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow-hover);
+    text-decoration: none;
+}
+
+.spot-list-btn--secondary {
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-list-btn--secondary:hover {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    text-decoration: none;
+}
+
+/* 9. 快速連結區域 */
+.spot-list-quick-links {
+    padding: 2rem 0;
+    background: var(--md-sys-color-surface-container-lowest);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-list-quick-links__header {
+    margin-bottom: 1.5rem;
+}
+
+.spot-list-quick-links__title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.spot-list-quick-links__title .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: 1.3rem;
+}
+
+.spot-list-quick-links__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.spot-list-quick-link {
+    padding: 1rem;
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all var(--spot-transition);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-list-quick-link:hover {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-shadow);
+    text-decoration: none;
+}
+
+.spot-list-quick-link .material-icons {
+    font-size: 1.5rem;
+    color: var(--md-sys-color-primary);
+}
+
+.spot-list-quick-link:hover .material-icons {
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.spot-list-quick-link span:last-child {
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* 10. 響應式設計 */
+@media (max-width: 1200px) {
+    .spot-list-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    
+    .spot-list-toolbar__content {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .spot-list-toolbar__right {
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .spot-list-search-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .spot-list-search-actions {
+        justify-content: center;
+    }
+    
+    .spot-list-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+    
+    .spot-list-toolbar__content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .spot-list-toolbar__right {
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --spot-header-height: 140px;
+        --section-spacing: 1rem;
+    }
+    
+    .spot-list-hero {
+        margin: 1rem;
+        border-radius: 20px;
+    }
+    
+    .spot-list-hero__content {
+        padding: 1.5rem 1rem;
+    }
+    
+    .spot-list-hero__title {
+        font-size: clamp(1.6rem, 5vw, 2rem);
+        margin-bottom: 0.75rem;
+        gap: 0.75rem;
+    }
+    
+    .spot-list-hero__title .material-icons {
+        font-size: clamp(1.8rem, 5.5vw, 2.2rem);
+    }
+    
+    .spot-list-hero__subtitle {
+        font-size: clamp(0.9rem, 3vw, 1.1rem);
+    }
+    
+    .spot-list-hero__illustration {
+        font-size: 2rem;
+        top: 15px;
+        right: 20px;
+    }
+    
+    .spot-list-search-card {
+        padding: 1.25rem;
+    }
+    
+    .spot-list-search-actions {
+        flex-direction: column;
+    }
+    
+    .spot-list-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .spot-list-toolbar__right {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .spot-list-card__content {
+        padding: 1rem;
+    }
+    
+    .spot-list-quick-links__grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    :root {
+        --spot-header-height: 120px;
+    }
+    
+    .spot-list-hero {
+        margin: 0.75rem;
+        border-radius: 16px;
+    }
+    
+    .spot-list-hero__content {
+        padding: 1.25rem 0.75rem;
+    }
+    
+    .spot-list-hero__title {
+        font-size: clamp(1.4rem, 6vw, 1.8rem);
+        margin-bottom: 0.5rem;
+        gap: 0.5rem;
+        flex-direction: column;
+    }
+    
+    .spot-list-hero__title .material-icons {
+        font-size: clamp(1.6rem, 6.5vw, 2rem);
+    }
+    
+    .spot-list-hero__subtitle {
+        font-size: clamp(0.85rem, 3.5vw, 1rem);
+    }
+    
+    .spot-list-hero__illustration {
+        display: none;
+    }
+    
+    .spot-list-card__image {
+        height: 160px;
+    }
+    
+    .spot-list-card__actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .spot-list-card__action-buttons {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .spot-list-empty__actions {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* 11. 無障礙設計 */
+@media (prefers-reduced-motion: reduce) {
+    .spot-list-card,
+    .spot-list-search-btn,
+    .spot-list-add-btn,
+    .spot-list-quick-link {
+        transition: none;
+    }
+    
+    .spot-list-card:hover {
+        transform: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .spot-list-card,
+    .spot-list-search-card {
+        border: 2px solid var(--md-sys-color-outline);
+    }
+    
+    .spot-list-btn {
+        border-width: 3px;
+    }
+}
+
+/* 12. 列印樣式 */
+@media print {
+    .spot-list-hero,
+    .spot-list-search,
+    .spot-list-toolbar,
+    .spot-list-quick-links {
+        display: none;
+    }
+    
+    .spot-list-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    
+    .spot-list-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+} 

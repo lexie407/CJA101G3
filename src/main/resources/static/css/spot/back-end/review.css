@@ -1,0 +1,496 @@
+/* Review 頁面專用樣式 */
+
+/* 審核頁面容器 - 統一使用 back_style.css 標準設定 */
+/* 移除所有覆蓋樣式，使用 .content-area-main 標準 padding: 20px */
+
+/* 頁面標題區域 - 使用 spot-common.css 中的 .page-header-section 樣式 */
+/* 已移除覆蓋樣式，統一使用 spot-common.css 中的樣式 */
+
+/* 表格容器樣式 */
+.spot-list-table-wrapper {
+    background: var(--md-sys-color-surface, #ffffff);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
+    overflow: hidden; /* 確保圓角效果 */
+}
+
+/* 表格樣式調整 */
+.admin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0;
+}
+
+.admin-table th {
+    background: var(--md-sys-color-surface-container, #f5f5f5);
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface, #1f1f1f);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
+    font-size: 14px;
+    vertical-align: middle;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.admin-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface, #1f1f1f);
+    vertical-align: middle;
+    line-height: 1.5;
+}
+
+.admin-table tr:hover {
+    background: var(--md-sys-color-surface-container, #f5f5f5);
+    transition: background-color 0.2s ease;
+}
+
+/* 勾選框樣式 */
+.admin-table #selectAll,
+.admin-table .spot-checkbox {
+    transform: scale(1.2);
+    margin: 0;
+}
+
+.admin-table #selectAll:indeterminate {
+    background-color: #1976d2;
+    opacity: 0.7;
+}
+
+/* 選中的行樣式 */
+.admin-table tr.selected {
+    background-color: rgba(33, 150, 243, 0.08) !important;
+    border-left: 4px solid #2196F3;
+}
+
+/* 滾動條樣式 - 使用 spot-common.css 中的通用滾動條樣式 */
+
+/* 確保內容區有足夠的最小高度來觸發拖拉條 */
+.content-container {
+    min-height: calc(100vh - 100px);
+}
+
+/* 自定義 Modal 樣式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-content h5 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.input-field {
+    margin-bottom: 20px;
+}
+
+.input-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.input-field select,
+.input-field input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.modal-footer {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.btn-flat {
+    padding: 8px 16px;
+    margin-left: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+}
+
+.btn-flat:first-child {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-flat:last-child {
+    background-color: #ccc;
+    color: #333;
+}
+
+/* 現代化按鈕和搜尋區樣式 */
+.search-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+}
+
+.action-buttons-left {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.modern-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.modern-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.modern-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.modern-btn.success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.modern-btn.warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.modern-btn.toggle-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.modern-btn.toggle-btn:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+.modern-btn.secondary {
+    background: #f8f9fa;
+    color: #6c757d;
+    border-color: #dee2e6;
+}
+
+.modern-btn.secondary:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* 圓形操作按鈕 */
+.round-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.round-btn:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.round-btn.success {
+    background: linear-gradient(135deg, #72d687 0%, #4ade80 100%);
+    color: white;
+}
+
+.round-btn.danger {
+    background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+    color: white;
+}
+
+/* 搜尋區域 */
+.search-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.search-input-wrapper {
+    position: relative;
+    min-width: 280px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 45px 12px 40px;
+    border: 2px solid #e5e7eb;
+    border-radius: 20px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+    position: relative;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 18px;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.clear-search {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 18px;
+    display: none;
+    transition: color 0.2s ease;
+}
+
+.clear-search:hover {
+    color: #6b7280;
+}
+
+.clear-search.show {
+    display: block;
+}
+
+/* 自定義 Toast 訊息 */
+.custom-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    padding: 16px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+}
+
+.custom-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.custom-toast.green {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.custom-toast.red {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.custom-toast.orange {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* 下拉選單樣式 */
+.batch-operation-dropdown,
+.filter-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle .dropdown-arrow {
+    margin-left: 4px;
+    transition: transform 0.3s ease;
+    font-size: 18px;
+}
+
+.dropdown-toggle.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 160px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: none;
+    margin-top: 4px;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+    color: #333;
+    border-radius: 0;
+}
+
+.dropdown-item:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.dropdown-item:last-child {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+
+.dropdown-item.active {
+    background-color: #e3f2fd;
+    color: var(--primary-color);
+}
+
+.dropdown-item.success:hover {
+    background-color: #e8f5e8;
+    color: var(--success-color);
+}
+
+.dropdown-item.danger:hover {
+    background-color: #ffeaea;
+    color: var(--danger-color);
+}
+
+.dropdown-item.warning:hover {
+    background-color: #fff3cd;
+    color: var(--warning-color);
+}
+
+
+
+.modern-btn.filter-btn {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+}
+
+.modern-btn.filter-btn:hover {
+    background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+.modern-btn.batch-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.modern-btn.batch-btn:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* 隱藏表格行的樣式 */
+.admin-table tr[data-status].hidden {
+    display: none;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .search-container {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .action-buttons-left {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .search-area {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .search-input-wrapper {
+        min-width: auto;
+        flex: 1;
+    }
+} 

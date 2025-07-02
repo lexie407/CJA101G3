@@ -1,0 +1,1520 @@
+/**
+ * 新增景點頁面樣式
+ * @description 提供表單組件、驗證狀態、幫助資訊等元素的樣式
+ * @version 1.0
+ * 
+ * 遵循 Material Design 3 設計系統
+ * 使用 spot-add- 前綴避免樣式衝突
+ */
+
+/* =================
+   新增景點頁面樣式
+   使用 spot-add- 前綴
+   依賴 style.css 基礎層
+   ================= */
+
+/* 1. 自定義變數 */
+:root {
+    --spot-add-border-radius: 16px;
+    --spot-add-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --spot-add-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --spot-add-transition: 0.2s ease;
+    --spot-add-hero-height: 200px;
+    --spot-add-sidebar-width: 360px;
+    --spot-add-gap: 2rem;
+    --spot-add-form-gap: 1.5rem;
+}
+
+/* ==========================================================================
+   主要佈局
+   ========================================================================== */
+.spot-add-content {
+    padding: var(--md-sys-spacing-large);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ==========================================================================
+   頁面標題
+   ========================================================================== */
+.spot-add-header {
+    text-align: center;
+    margin-bottom: var(--md-sys-spacing-extra-large);
+}
+
+.spot-add-title {
+    font-size: var(--md-sys-typescale-display-small-size);
+    font-weight: var(--md-sys-typescale-display-small-weight);
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--md-sys-spacing-medium);
+    margin-bottom: var(--md-sys-spacing-small);
+}
+
+.spot-add-title .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: 2.5rem;
+}
+
+.spot-add-subtitle {
+    font-size: var(--md-sys-typescale-title-large-size);
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+}
+
+/* ==========================================================================
+   表單卡片
+   ========================================================================== */
+.spot-add-form-card {
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-radius-large);
+    box-shadow: var(--md-sys-elevation-level2);
+    overflow: hidden;
+    margin-bottom: var(--md-sys-spacing-extra-large);
+}
+
+.spot-add-form-header {
+    background: var(--md-sys-color-surface-container);
+    padding: var(--md-sys-spacing-large);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-add-form-title {
+    font-size: var(--md-sys-typescale-headline-small-size);
+    font-weight: var(--md-sys-typescale-headline-small-weight);
+    color: var(--md-sys-color-on-surface);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-add-form-title .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: 1.5rem;
+}
+
+.spot-add-form-body {
+    padding: var(--md-sys-spacing-extra-large);
+}
+
+/* ==========================================================================
+   表單區塊
+   ========================================================================== */
+.spot-add-section {
+    margin-bottom: var(--md-sys-spacing-extra-large);
+}
+
+.spot-add-section-title {
+    font-size: var(--md-sys-typescale-title-medium-size);
+    font-weight: var(--md-sys-typescale-title-medium-weight);
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: var(--md-sys-spacing-large);
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-add-section-title .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: 1.25rem;
+}
+
+/* ==========================================================================
+   表單組件
+   ========================================================================== */
+.spot-add-form-group {
+    margin-bottom: var(--md-sys-spacing-large);
+    position: relative;
+}
+
+.spot-add-form-group:last-child {
+    margin-bottom: 0;
+}
+
+.spot-add-label {
+    display: block;
+    font-size: var(--md-sys-typescale-body-medium-size);
+    font-weight: var(--md-sys-typescale-body-medium-weight);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: var(--md-sys-spacing-small);
+    line-height: 1.5;
+}
+
+.spot-add-required {
+    color: var(--md-sys-color-error);
+    font-weight: bold;
+}
+
+/* 輸入框和文字區域 */
+.spot-add-input,
+.spot-add-textarea {
+    width: 100%;
+    padding: var(--md-sys-spacing-medium);
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-radius-small);
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: var(--md-sys-typescale-body-large-size);
+    font-family: inherit;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.spot-add-input::placeholder,
+.spot-add-textarea::placeholder {
+    color: var(--md-sys-color-outline);
+    opacity: 1;
+}
+
+.spot-add-input:focus,
+.spot-add-textarea:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--md-sys-color-primary-rgb, 98, 0, 238), 0.12);
+    background: var(--md-sys-color-surface-container-highest);
+}
+
+.spot-add-input:invalid,
+.spot-add-textarea:invalid {
+    border-color: var(--md-sys-color-error);
+}
+
+.spot-add-input.spot-add-input--error,
+.spot-add-textarea.spot-add-textarea--error {
+    border-color: var(--md-sys-color-error);
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
+.spot-add-input.spot-add-input--error:focus,
+.spot-add-textarea.spot-add-textarea--error:focus {
+    box-shadow: 0 0 0 3px rgba(var(--md-sys-color-error-rgb, 186, 26, 26), 0.12);
+}
+
+/* 表單提示文字 */
+.spot-add-form-text {
+    font-size: var(--md-sys-typescale-body-small-size);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: var(--md-sys-spacing-small);
+    line-height: 1.4;
+}
+
+/* ==========================================================================
+   提示訊息
+   ========================================================================== */
+.spot-add-alert {
+    border-radius: var(--md-sys-radius-medium);
+    border: none;
+    padding: var(--md-sys-spacing-medium) var(--md-sys-spacing-large);
+    margin-bottom: var(--md-sys-spacing-large);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-add-alert--error {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
+.spot-add-alert--info {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+
+.spot-add-alert .material-icons {
+    font-size: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.spot-add-alert__content {
+    flex: 1;
+}
+
+.spot-add-alert__title {
+    font-weight: var(--md-sys-typescale-label-large-weight);
+    margin-bottom: var(--md-sys-spacing-extra-small);
+}
+
+.spot-add-alert__list {
+    margin: var(--md-sys-spacing-small) 0 0 0;
+    padding-left: var(--md-sys-spacing-medium);
+}
+
+.spot-add-alert__list li {
+    margin-bottom: var(--md-sys-spacing-extra-small);
+}
+
+.spot-add-alert__close {
+    background: none;
+    border: none;
+    color: currentColor;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-left: auto;
+    opacity: 0.7;
+    transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    flex-shrink: 0;
+}
+
+.spot-add-alert__close:hover {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   按鈕組件
+   ========================================================================== */
+.spot-add-btn-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--md-sys-spacing-medium);
+    margin-top: var(--md-sys-spacing-extra-large);
+}
+
+.spot-add-btn {
+    padding: var(--md-sys-spacing-medium) var(--md-sys-spacing-extra-large);
+    border: none;
+    border-radius: var(--md-sys-radius-full);
+    font-size: var(--md-sys-typescale-label-large-size);
+    font-weight: var(--md-sys-typescale-label-large-weight);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--md-sys-spacing-small);
+    cursor: pointer;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    box-shadow: var(--md-sys-elevation-level1);
+    position: relative;
+    overflow: hidden;
+    min-width: 120px;
+}
+
+.spot-add-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+}
+
+.spot-add-btn:hover::before {
+    opacity: 0.08;
+}
+
+.spot-add-btn:focus {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
+.spot-add-btn:focus::before {
+    opacity: 0.12;
+}
+
+.spot-add-btn:active::before {
+    opacity: 0.16;
+}
+
+.spot-add-btn .material-icons {
+    font-size: 18px;
+}
+
+/* 主要按鈕 */
+.spot-add-btn--primary {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.spot-add-btn--primary:hover {
+    color: var(--md-sys-color-on-primary);
+    text-decoration: none;
+    box-shadow: var(--md-sys-elevation-level2);
+}
+
+/* 次要按鈕 */
+.spot-add-btn--secondary {
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+}
+
+.spot-add-btn--secondary:hover {
+    color: var(--md-sys-color-on-secondary);
+    text-decoration: none;
+    box-shadow: var(--md-sys-elevation-level2);
+}
+
+/* 載入狀態 */
+.spot-add-btn--loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.spot-add-btn--loading .material-icons {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   幫助資訊卡片
+   ========================================================================== */
+.spot-add-help-card {
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-radius-large);
+    box-shadow: var(--md-sys-elevation-level1);
+    overflow: hidden;
+}
+
+.spot-add-help-body {
+    padding: var(--md-sys-spacing-large);
+}
+
+.spot-add-help-title {
+    font-size: var(--md-sys-typescale-title-medium-size);
+    font-weight: var(--md-sys-typescale-title-medium-weight);
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: var(--md-sys-spacing-large);
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-add-help-title .material-icons {
+    color: var(--md-sys-color-tertiary);
+    font-size: 1.25rem;
+}
+
+.spot-add-help-section {
+    margin-bottom: var(--md-sys-spacing-large);
+}
+
+.spot-add-help-section:last-child {
+    margin-bottom: 0;
+}
+
+.spot-add-help-section-title {
+    font-size: var(--md-sys-typescale-title-small-size);
+    font-weight: var(--md-sys-typescale-title-small-weight);
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: var(--md-sys-spacing-small);
+}
+
+.spot-add-help-list {
+    margin: 0;
+    padding-left: var(--md-sys-spacing-medium);
+}
+
+.spot-add-help-list li {
+    font-size: var(--md-sys-typescale-body-medium-size);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: var(--md-sys-spacing-extra-small);
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   響應式設計
+   ========================================================================== */
+
+/* 小型螢幕 (≤576px) */
+@media (max-width: 576px) {
+    .spot-add-content {
+        padding: var(--md-sys-spacing-medium);
+    }
+    
+    .spot-add-title {
+        font-size: var(--md-sys-typescale-headline-medium-size);
+        flex-direction: column;
+        gap: var(--md-sys-spacing-small);
+    }
+    
+    .spot-add-title .material-icons {
+        font-size: 2rem;
+    }
+    
+    .spot-add-form-body,
+    .spot-add-help-body {
+        padding: var(--md-sys-spacing-medium);
+    }
+    
+    .spot-add-btn-group {
+        flex-direction: column;
+    }
+    
+    .spot-add-btn {
+        width: 100%;
+    }
+}
+
+/* 中型螢幕 (577px - 768px) */
+@media (min-width: 577px) and (max-width: 768px) {
+    .spot-add-form-body {
+        padding: var(--md-sys-spacing-large);
+    }
+}
+
+/* 大型螢幕 (≥992px) */
+@media (min-width: 992px) {
+    .spot-add-form-card {
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* ==========================================================================
+   無障礙設計
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .spot-add-input,
+    .spot-add-textarea,
+    .spot-add-btn,
+    .spot-add-alert__close {
+        transition: none;
+    }
+    
+    .spot-add-btn--loading .material-icons {
+        animation: none;
+    }
+}
+
+/* 高對比度模式 */
+@media (prefers-contrast: high) {
+    .spot-add-form-card,
+    .spot-add-help-card {
+        border-width: 2px;
+    }
+    
+    .spot-add-input,
+    .spot-add-textarea {
+        border-width: 2px;
+    }
+    
+    .spot-add-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* ==========================================================================
+   表單驗證狀態動畫
+   ========================================================================== */
+.spot-add-input.spot-add-shake,
+.spot-add-textarea.spot-add-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* ==========================================================================
+   列印樣式
+   ========================================================================== */
+@media print {
+    .spot-add-btn-group,
+    .spot-add-alert,
+    .spot-add-help-card {
+        display: none;
+    }
+    
+    .spot-add-form-card {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .spot-add-input,
+    .spot-add-textarea {
+        border: 1px solid #000;
+        background: white;
+        color: black;
+    }
+}
+
+/* ==========================================================================
+   工具類別
+   ========================================================================== */
+.spot-add-row {
+    display: flex;
+    gap: var(--md-sys-spacing-medium);
+}
+
+.spot-add-col {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .spot-add-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+/* 2. 英雄區塊 */
+.spot-add-hero {
+    background: linear-gradient(135deg, 
+        var(--md-sys-color-primary) 0%, 
+        var(--md-sys-color-secondary) 100%);
+    color: var(--md-sys-color-on-primary);
+    padding: 2.5rem 2rem;
+    margin: 1rem 1.5rem var(--spot-add-gap);
+    border-radius: 20px;
+    box-shadow: var(--spot-add-card-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-add-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
+    opacity: 0.4;
+}
+
+.spot-add-hero__content {
+    max-width: none;
+    position: relative;
+    z-index: 2;
+    padding: 0 1rem;
+    animation: spot-add-hero-fade-in 0.8s ease-out;
+}
+
+/* 麵包屑導航 */
+.spot-add-breadcrumb {
+    margin-bottom: 1.5rem;
+}
+
+.spot-add-breadcrumb__list {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+}
+
+.spot-add-breadcrumb__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.spot-add-breadcrumb__item:not(:last-child)::after {
+    content: 'chevron_right';
+    font-family: 'Material Icons';
+    color: rgba(255, 255, 255, 0.6);
+    margin-left: 0.5rem;
+}
+
+.spot-add-breadcrumb__link {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color var(--spot-add-transition);
+}
+
+.spot-add-breadcrumb__link:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+.spot-add-breadcrumb__item--active {
+    color: rgba(255, 255, 255, 1);
+    font-weight: 500;
+}
+
+/* 英雄區塊標題 */
+.spot-add-hero__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.spot-add-hero__info {
+    flex: 1;
+}
+
+.spot-add-hero__title {
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    letter-spacing: -0.01em;
+}
+
+.spot-add-hero__subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.spot-add-hero__features {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.spot-add-hero__feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.spot-add-hero__feature .material-icons {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.spot-add-hero__icon {
+    flex-shrink: 0;
+}
+
+.spot-add-hero__icon-container {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    animation: spot-add-icon-float 3s ease-in-out infinite;
+}
+
+.spot-add-hero__icon-container .material-icons {
+    font-size: 2.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* 3. 主要內容區域 */
+.spot-add-main {
+    padding: 0 1.5rem var(--spot-add-gap);
+}
+
+.spot-add-layout {
+    display: grid;
+    grid-template-columns: 1fr var(--spot-add-sidebar-width);
+    gap: var(--spot-add-gap);
+    align-items: start;
+}
+
+/* 4. 提示訊息 */
+.spot-add-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    margin-bottom: var(--spot-add-gap);
+    border-radius: var(--spot-add-border-radius);
+    position: relative;
+    animation: spot-add-slide-down 0.3s ease-out;
+}
+
+.spot-add-alert--error {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    border: 1px solid var(--md-sys-color-error);
+}
+
+.spot-add-alert--success {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border: 1px solid var(--md-sys-color-primary);
+}
+
+.spot-add-alert__icon {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.spot-add-alert__icon .material-icons {
+    font-size: 1.5rem;
+}
+
+.spot-add-alert__content {
+    flex: 1;
+}
+
+.spot-add-alert__title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.spot-add-alert__message {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.spot-add-alert__list {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.2rem;
+}
+
+.spot-add-alert__list li {
+    margin-bottom: 0.3rem;
+    line-height: 1.4;
+}
+
+.spot-add-alert__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: background-color var(--spot-add-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spot-add-alert__close:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.spot-add-alert__close .material-icons {
+    font-size: 1.2rem;
+}
+
+/* 5. 表單卡片 */
+.spot-add-card {
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--spot-add-border-radius);
+    box-shadow: var(--spot-add-card-shadow);
+    overflow: hidden;
+    transition: box-shadow var(--spot-add-transition);
+}
+
+.spot-add-card:hover {
+    box-shadow: var(--spot-add-card-shadow-hover);
+}
+
+.spot-add-card__header {
+    padding: 1.5rem 2rem 1rem;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface-container-low);
+}
+
+.spot-add-card__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.spot-add-card__title .material-icons {
+    font-size: 1.8rem;
+    color: var(--md-sys-color-primary);
+}
+
+.spot-add-card__subtitle {
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.spot-add-card__content {
+    padding: 2rem;
+}
+
+/* 6. 表單區塊 */
+.spot-add-section {
+    margin-bottom: 2.5rem;
+}
+
+.spot-add-section:last-child {
+    margin-bottom: 0;
+}
+
+.spot-add-section__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--md-sys-color-primary-container);
+}
+
+.spot-add-section__title .material-icons {
+    font-size: 1.4rem;
+    color: var(--md-sys-color-primary);
+}
+
+/* 7. 表單網格 */
+.spot-add-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spot-add-form-gap);
+    margin-bottom: var(--spot-add-form-gap);
+}
+
+.spot-add-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.spot-add-form-group--full {
+    grid-column: 1 / -1;
+}
+
+/* 8. 表單標籤 */
+.spot-add-label {
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.spot-add-required {
+    color: var(--md-sys-color-error);
+    font-weight: 600;
+}
+
+/* 9. 輸入框容器 */
+.spot-add-input-container,
+.spot-add-textarea-container {
+    position: relative;
+}
+
+.spot-add-input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 1.2rem;
+    z-index: 2;
+}
+
+/* 10. 輸入框樣式 */
+.spot-add-input,
+.spot-add-textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    font-size: 1rem;
+    color: var(--md-sys-color-on-surface);
+    background: var(--md-sys-color-surface);
+    transition: all var(--spot-add-transition);
+    font-family: inherit;
+}
+
+.spot-add-input {
+    height: 56px;
+    padding-left: 3rem;
+}
+
+.spot-add-textarea {
+    padding: 1rem;
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.5;
+}
+
+.spot-add-input::placeholder,
+.spot-add-textarea::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.7;
+}
+
+.spot-add-input:focus,
+.spot-add-textarea:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 3px rgba(41, 171, 194, 0.12);
+}
+
+.spot-add-input:invalid,
+.spot-add-textarea:invalid {
+    border-color: var(--md-sys-color-error);
+}
+
+.spot-add-input.error,
+.spot-add-textarea.error {
+    border-color: var(--md-sys-color-error);
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
+/* 11. 字元計數器 */
+.spot-add-char-count {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 1rem;
+    font-size: 0.8rem;
+    color: var(--md-sys-color-on-surface-variant);
+    background: var(--md-sys-color-surface);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* 12. 幫助文字 */
+.spot-add-help-text {
+    font-size: 0.85rem;
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.spot-add-error-text {
+    font-size: 0.85rem;
+    color: var(--md-sys-color-error);
+    font-weight: 500;
+    margin: 0;
+    display: none;
+}
+
+.spot-add-error-text.show {
+    display: block;
+    animation: spot-add-shake 0.5s ease-in-out;
+}
+
+/* 13. 提交須知 */
+.spot-add-notice {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-radius: var(--spot-add-border-radius);
+    border: 1px solid var(--md-sys-color-secondary);
+    margin-bottom: 2rem;
+}
+
+.spot-add-notice__icon {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.spot-add-notice__icon .material-icons {
+    font-size: 1.5rem;
+    color: var(--md-sys-color-secondary);
+}
+
+.spot-add-notice__content {
+    flex: 1;
+}
+
+.spot-add-notice__title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0 0 0.75rem 0;
+}
+
+.spot-add-notice__list {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.spot-add-notice__list li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+/* 14. 按鈕區域 */
+.spot-add-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    border-radius: var(--spot-add-border-radius);
+    font-weight: 500;
+    font-size: 1rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all var(--spot-add-transition);
+    position: relative;
+    overflow: hidden;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.spot-add-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: all 0.6s ease;
+    transform: translate(-50%, -50%);
+}
+
+.spot-add-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.spot-add-btn--primary {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: var(--spot-add-card-shadow);
+}
+
+.spot-add-btn--primary:hover {
+    background: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-add-card-shadow-hover);
+}
+
+.spot-add-btn--secondary {
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline);
+}
+
+.spot-add-btn--secondary:hover {
+    background: var(--md-sys-color-surface-container-highest);
+    transform: translateY(-2px);
+    box-shadow: var(--spot-add-card-shadow);
+}
+
+.spot-add-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.spot-add-btn__loading {
+    display: none;
+}
+
+.spot-add-btn.loading .spot-add-btn__text {
+    display: none;
+}
+
+.spot-add-btn.loading .spot-add-btn__loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-add-btn.loading .spot-add-btn__loading .material-icons {
+    animation: spot-add-spin 1s linear infinite;
+}
+
+/* 15. 側邊欄 */
+.spot-add-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 16. 幫助卡片 */
+.spot-add-help-card {
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--spot-add-border-radius);
+    box-shadow: var(--spot-add-card-shadow);
+    overflow: hidden;
+}
+
+.spot-add-help-card__header {
+    padding: 1.25rem 1.5rem 1rem;
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.spot-add-help-card__title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-add-help-card__title .material-icons {
+    font-size: 1.4rem;
+    color: var(--md-sys-color-primary);
+}
+
+.spot-add-help-card__content {
+    padding: 1.5rem;
+}
+
+.spot-add-help-section {
+    margin-bottom: 1.5rem;
+}
+
+.spot-add-help-section:last-child {
+    margin-bottom: 0;
+}
+
+.spot-add-help-section__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 0.75rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-add-help-section__title .material-icons {
+    font-size: 1.1rem;
+    color: var(--md-sys-color-primary);
+}
+
+.spot-add-help-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-add-help-list li {
+    margin-bottom: 0.4rem;
+    line-height: 1.4;
+    font-size: 0.9rem;
+}
+
+/* 17. 聯繫客服卡片 */
+.spot-add-contact-card {
+    background: linear-gradient(135deg, 
+        var(--md-sys-color-secondary-container) 0%, 
+        var(--md-sys-color-tertiary-container) 100%);
+    color: var(--md-sys-color-on-secondary-container);
+    border-radius: var(--spot-add-border-radius);
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-add-contact-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: spot-add-float 4s ease-in-out infinite;
+}
+
+.spot-add-contact-card__icon {
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.spot-add-contact-card__icon .material-icons {
+    font-size: 3rem;
+    color: var(--md-sys-color-secondary);
+    animation: spot-add-pulse 2s ease-in-out infinite;
+}
+
+.spot-add-contact-card__content {
+    position: relative;
+    z-index: 2;
+}
+
+.spot-add-contact-card__title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.spot-add-contact-card__text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0 0 1.5rem 0;
+    opacity: 0.9;
+}
+
+.spot-add-contact-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all var(--spot-add-transition);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.spot-add-contact-btn:hover {
+    background: var(--md-sys-color-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 18. 響應式設計 */
+@media (max-width: 1200px) {
+    :root {
+        --spot-add-sidebar-width: 320px;
+        --spot-add-gap: 1.5rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .spot-add-layout {
+        grid-template-columns: 1fr;
+        gap: var(--spot-add-gap);
+    }
+    
+    .spot-add-sidebar {
+        order: -1;
+    }
+    
+    .spot-add-hero__header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .spot-add-hero__features {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --spot-add-gap: 1rem;
+        --spot-add-form-gap: 1rem;
+    }
+    
+    .spot-add-hero {
+        margin: 0.5rem 1rem var(--spot-add-gap);
+        padding: 2rem 1.5rem;
+    }
+    
+    .spot-add-hero__content {
+        padding: 0;
+    }
+    
+    .spot-add-hero__title {
+        font-size: 1.75rem;
+    }
+    
+    .spot-add-hero__features {
+        gap: 1rem;
+    }
+    
+    .spot-add-form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .spot-add-actions {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+    }
+    
+    .spot-add-btn {
+        width: 100%;
+        padding: 1rem;
+    }
+    
+    .spot-add-breadcrumb__list {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .spot-add-hero {
+        margin: 0.5rem var(--spot-add-gap);
+        padding: 1.5rem 1rem;
+    }
+    
+    .spot-add-hero__content {
+        padding: 0;
+    }
+    
+    .spot-add-hero__header {
+        gap: 1rem;
+    }
+    
+    .spot-add-hero__title {
+        font-size: 1.5rem;
+    }
+    
+    .spot-add-breadcrumb {
+        margin-bottom: 1rem;
+    }
+    
+    .spot-add-card__content,
+    .spot-add-help-card__content {
+        padding: 1.25rem;
+    }
+    
+    .spot-add-main {
+        padding: 0 1rem var(--spot-add-gap);
+    }
+    
+    .spot-add-input,
+    .spot-add-textarea,
+    .spot-add-btn {
+        font-size: 16px; /* 防止iOS縮放 */
+    }
+}
+
+/* 19. 動畫效果 */
+@keyframes spot-add-hero-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spot-add-slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spot-add-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes spot-add-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spot-add-icon-float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes spot-add-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes spot-add-float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(10px, -10px) rotate(120deg); }
+    66% { transform: translate(-5px, 5px) rotate(240deg); }
+}
+
+/* 20. 無障礙和動畫偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .spot-add-card,
+    .spot-add-btn,
+    .spot-add-input,
+    .spot-add-textarea,
+    .spot-add-alert,
+    .spot-add-hero__content,
+    .spot-add-hero__icon-container,
+    .spot-add-contact-card__icon .material-icons {
+        animation: none;
+        transition: none;
+    }
+    
+    .spot-add-btn:hover,
+    .spot-add-card:hover {
+        transform: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .spot-add-card,
+    .spot-add-help-card,
+    .spot-add-input,
+    .spot-add-textarea {
+        border-width: 2px;
+    }
+    
+    .spot-add-btn,
+    .spot-add-contact-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* 21. 列印樣式 */
+@media print {
+    .spot-add-hero__icon,
+    .spot-add-actions,
+    .spot-add-sidebar,
+    .spot-add-alert__close {
+        display: none !important;
+    }
+    
+    .spot-add-hero {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
+    
+    .spot-add-card,
+    .spot-add-help-card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .spot-add-layout {
+        grid-template-columns: 1fr !important;
+    }
+} 

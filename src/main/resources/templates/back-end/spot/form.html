@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{/back-end/spot/navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+<head>
+    <title th:text="${isEdit != null and isEdit ? '編輯景點' : '新增景點'} + ' - 後台管理系統'"></title>
+    <th:block th:fragment="head">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <!-- 景點模組通用樣式 -->
+        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
+        <!-- 景點表單專用樣式 -->
+        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-form.css}">
+        <!-- CSRF Token -->
+        <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    </th:block>
+</head>
+<body>
+    <!-- 頂部導航 -->
+    <div id="subnav" th:replace="~{/back-end/spot/subnavSpotBack :: subnav(activeItem=${isEdit != null and isEdit ? 'edit' : 'add'})}"></div>
+        
+    <!-- 主要內容 -->
+    <main th:fragment="main">
+        <div class="spot-form-page">
+            <!-- 頁面標題與圖片區域 -->
+            <div class="page-header-section">
+                <div class="header-content">
+                    <div class="header-text">
+                        <h1 th:text="${isEdit != null and isEdit ? '編輯景點' : '新增景點'}">新增景點</h1>
+                        <p th:text="${isEdit != null and isEdit ? '修改景點資訊並儲存變更' : '填寫景點資訊以建立新項目'}">填寫景點資訊以建立新項目</p>
+
+                    </div>
+                    <div class="header-image">
+                        <div class="header-icon-container">
+                            <i class="material-icons header-icon" th:text="${isEdit != null and isEdit ? 'edit_location' : 'add_location'}">add_location</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 成功/錯誤訊息 -->
+            <div th:if="${successMessage}" class="alert alert-success">
+                <i class="material-icons">check_circle</i>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <i class="material-icons">error</i>
+                <span th:utext="${errorMessage}"></span>
+            </div>
+
+            <!-- 表單內容區域 -->
+            <div class="content-container">
+                <form th:action="${isEdit != null and isEdit ? '/admin/spot/edit/' + spotVO.spotId : '/admin/spot/add'}"
+                      method="post" th:object="${spotVO}" id="spotForm" class="spot-form">
+
+
+
+                    <!-- 基本資訊區塊 -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="material-icons">info</i>
+                                基本資訊
+                            </h2>
+                            <p class="section-desc">請填寫景點的基本資訊</p>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="spotName" class="form-label">
+                                    景點名稱 <span class="required">*</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="material-icons input-icon">place</i>
+                                    <input id="spotName" type="text" class="form-control" 
+                                           th:field="*{spotName}" required maxlength="50"
+                                           placeholder="請輸入景點名稱">
+                                </div>
+                                <div class="helper-text">請輸入景點的正式名稱，最多50個字元 <span class="char-count">(0/50)</span></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="spotLoc" class="form-label">
+                                    景點地址 <span class="required">*</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="material-icons input-icon">location_on</i>
+                                    <input id="spotLoc" type="text" class="form-control" 
+                                           th:field="*{spotLoc}" required maxlength="100"
+                                           placeholder="請輸入完整地址">
+                                </div>
+                                <div class="helper-text">請輸入完整的景點地址，最多100個字元 <span class="char-count">(0/100)</span></div>
+                            </div>
+
+                            <div class="form-group form-group-full">
+                                <label for="spotDesc" class="form-label">景點描述</label>
+                                <textarea id="spotDesc" class="form-control form-textarea" 
+                                          th:field="*{spotDesc}" maxlength="500" rows="4"
+                                          placeholder="詳細描述景點特色、歷史背景或遊覽重點..."></textarea>
+                                <div class="helper-text">詳細描述景點特色、歷史背景或遊覽重點，最多500個字元 <span class="char-count">(0/500)</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 狀態設定區塊 -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="material-icons">toggle_on</i>
+                                狀態設定
+                            </h2>
+                            <p class="section-desc">設定景點的顯示狀態</p>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">景點狀態</label>
+                                <div class="status-card">
+                                    <div class="status-switch-container">
+                                        <label class="status-switch">
+                                            <input type="checkbox" id="statusCheckbox" name="spotStatusEnabled" 
+                                                   th:checked="${spotVO.spotStatus != null and spotVO.spotStatus == 1}">
+                                            <span class="switch-slider"></span>
+                                        </label>
+                                        <div class="status-info">
+                                            <span class="status-text" th:text="${(spotVO.spotStatus != null and spotVO.spotStatus == 1) ? '上架' : '下架'}">下架</span>
+                                            <div class="status-badge" th:classappend="${(spotVO.spotStatus != null and spotVO.spotStatus == 1) ? 'badge-success' : 'badge-secondary'}">
+                                                <i class="material-icons" th:text="${(spotVO.spotStatus != null and spotVO.spotStatus == 1) ? 'visibility' : 'visibility_off'}">visibility_off</i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="helper-text">上架的景點會顯示於前台，下架的景點則會隱藏</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 隱藏欄位 -->
+                    <input type="hidden" th:field="*{spotId}" th:if="${isEdit != null and isEdit}">
+                    
+                    <!-- 建立者ID隱藏欄位 -->
+                    <input type="hidden" th:field="*{crtId}">
+                    
+                    <!-- 景點狀態隱藏欄位 - 與開關同步 -->
+                    <input type="hidden" th:field="*{spotStatus}">
+
+                    <!-- 操作按鈕區域 -->
+                    <div class="form-actions">
+                        <a th:href="@{/admin/spot/list}" class="btn btn-secondary">
+                            <i class="material-icons">arrow_back</i>
+                            返回列表
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="material-icons" th:text="${isEdit != null and isEdit ? 'save' : 'add'}">add</i>
+                            <span th:text="${isEdit != null and isEdit ? '儲存變更' : '新增景點'}">新增景點</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 表單頁面專用腳本 -->
+        <script th:src="@{/js/spot/back-end/form.js}" defer></script>
+    </main>
+</body>
+</html> 

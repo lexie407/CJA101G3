@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+     <!--後台CSS-->
+    <link rel="stylesheet" th:href="@{/css/light.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+  
+    
+</head>
+<body class="light">
+	<div class="app-container">
+		<!--後台:側邊攔，通用樣式，不用改-->
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		
+		<div class="main-content">		
+			<!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
+			<div th:insert="~{/back-end/spot/subnavSpotBack :: subnav('spotManagement')}"></div>
+			
+			<!--main 以下為頁面主要內容 -->
+			<main class="content-area-main">
+				<th:block th:replace="~{::content}"></th:block>
+			</main>
+		</div>
+	</div>
+    
+</body>
+</html>
