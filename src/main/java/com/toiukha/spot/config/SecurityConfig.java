@@ -23,7 +23,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain spotSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-//            .csrf(csrf -> csrf.disable())
+           .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/spot/login", "/oauth2/**", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/admin/spot/**").authenticated()
