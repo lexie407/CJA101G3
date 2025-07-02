@@ -56,9 +56,9 @@ public class OrderService {
 		return repository.findByMemId(memId);
 	}
 	
-	// 獲取會員的已完成訂單 (假設訂單狀態 1=已完成)
+	// 獲取會員的已完成訂單 (假設訂單狀態 2=已完成)
 	public List<OrderVO> findCompletedOrdersByMemId(Integer memId) {
-		return repository.findByMemIdAndOrdSta(memId, 1);
+		return repository.findByMemIdAndOrdSta(memId, 2);
 	}
 	
 	// 獲取訂單及其項目詳細資訊
@@ -89,7 +89,7 @@ public class OrderService {
 		return completedOrders.stream()
 			.map(order -> getOrderWithItems(order.getOrdId()))
 			.collect(Collectors.toList());
-	}
+	} 
 
 
 }

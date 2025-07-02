@@ -5,10 +5,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>島遊Kha - 商品列表</title>
-
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
-    <link rel="stylesheet" th:href="@{/css/header_style.css}"> <!-- header css -->
-
+    <link rel="stylesheet" th:href="@{/css/header_style.css}">
+    <style>
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .card {
+            width: 200px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+        .add-to-cart-btn {
+            background-color: #1976d2 !important;
+            color: white !important;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 2px 0;
+            transition: background 0.2s;
+            height: 32px;
+        }
+        .add-to-cart-btn:hover {
+            background-color: #1565c0 !important;
+        }
+        .add-to-favorite-btn {
+            height: 32px;
+            width: 32px;
+            background: none;
+            color: #FFD600;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Modal 樣式 */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px 32px 18px 32px;
+            max-width: 400px;
+            width: 90vw;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+            position: relative;
+            text-align: center;
+        }
+        .modal-content img {
+            width: 80%;
+            max-width: 300px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 24px;
+            color: #888;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .modal-content h4 {
+            margin: 0 0 8px 0;
+            color: #1976d2;
+        }
+        .modal-content p {
+            margin: 8px 0;
+        }
+        #cart-fab {
+            position: fixed;
+            right: 32px;
+            bottom: 32px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        #cart-fab:hover {
+            background: #1565c0;
+            box-shadow: 0 8px 24px rgba(25, 118, 210, 0.35);
+        }
+        #cart-fab .material-icons {
+            font-size: 32px;
+        }
+    </style>
 </head>
 
 <body class="light">
@@ -23,7 +145,8 @@
                 <input type="hidden" name="memId" th:value="${session.member != null ? session.member.memId : ''}">
                 <div class="container">
                     <th:block th:each="itemVO : ${itemListData_front}">
-                        <div class="card">
+                        <div class="card"
+                            th:attr="data-itemid=${itemVO.itemId},data-itemname=${itemVO.itemName},data-iteminfo=${itemVO.itemInfo},data-itemprice=${itemVO.itemPrice},data-discprice=${itemVO.discPrice},data-statime=${itemVO.staTime},data-endtime=${itemVO.endTime},data-imgsrc=@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}">
                             <h4 th:text="${itemVO.itemName}"></h4>
                             <p>商品說明: <span th:text="${itemVO.itemInfo}"></span></p>
                             <p>
@@ -40,7 +163,6 @@
                                 </span>
                             </p>
                             <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
-
                             <form method="post" th:action="@{/item/add_to_shopCart}" class="shopping-cart-form"
                                 style="display: flex; align-items: center; justify-content: center; gap: 6px;">
                                 <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
@@ -48,106 +170,43 @@
                                     th:value="${session.member != null ? session.member.memId : ''}">
                                 <input type="number" name="quantity" class="quantity-input" min="1" max="99" value="1"
                                     style="width: 50px; height: 28px; border-radius: 4px; border: 1px solid #ccc; text-align: center; margin-right: 4px;" />
-                                <button type="button" class="add-to-cart-btn" style="height: 32px;">加入購物車</button>
+                                <button type="button" class="add-to-cart-btn">加入購物車</button>
+                                <button type="button" class="add-to-favorite-btn"
+                                    th:attr="data-itemid=${itemVO.itemId},data-memid=${session.member != null ? session.member.memId : ''}">
+                                    <i class="fa-regular fa-star"></i>
+                                </button>
                             </form>
                         </div>
                     </th:block>
                 </div>
-
-                <style>
-                    .container {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 20px;
-                        justify-content: center;
-                    }
-
-                    .card {
-                        width: 200px;
-                        background-color: #f9f9f9;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                        padding: 8px;
-                        text-align: center;
-                        transition: transform 0.3s ease;
-                        font-size: 12px;
-                    }
-
-                    .card img {
-                        width: 100%;
-                        height: auto;
-                        border-radius: 8px;
-                    }
-
-                    .card:hover {
-                        transform: scale(1.05);
-                    }
-
-                    .card button {
-                        background-color: #1976d2;
-                        color: white;
-                        padding: 4px 8px;
-                        border: none;
-                        border-radius: 5px;
-                        cursor: pointer;
-                        font-size: 12px;
-                        margin: 2px 0;
-                        transition: background 0.2s;
-                    }
-
-                    .card button:hover {
-                        background-color: #1565c0;
-                    }
-                </style>
-
                 <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-                <script src="/webjars/sockjs-client/sockjs.min.js"></script>
-                <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-                <script src="../js/notification/websocket.js"></script>
                 <script>
                     $(document).ready(function () {
-                        // 處理加入購物車按鈕點擊事件
-                        $('.add-to-cart-btn').click(function (e) {
-                            e.preventDefault();
-                            var form = $(this).closest('form');
-                            var itemId = form.find('input[name="itemId"]').val();
-                            var memId = form.find('input[name="memId"]').val();
-                            var quantity = form.find('input[name="quantity"]').val();
-
+                        // 收藏功能
+                        $(document).on('click', '.add-to-favorite-btn', function (e) {
+                            e.stopPropagation();
+                            var itemId = $(this).data('itemid');
+                            var memId = $(this).data('memid');
                             if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
                                 window.location.href = window.location.origin + '/members/login';
                                 return;
                             }
-
-                            console.log('Sending request with:', { itemId: itemId, memId: memId, quantity: quantity });
-
                             $.ajax({
-                                url: form.attr('action'),
+                                url: '/productfav/add_to_favorite',
                                 type: 'POST',
-                                data: {
-                                    itemId: itemId,
-                                    memId: memId,
-                                    quantity: quantity
-                                },
+                                data: { itemId: itemId, memId: memId },
                                 success: function (response) {
-                                    console.log('Response:', response);
                                     if (response === 'success') {
-                                        alert('商品已成功加入購物車！');
+                                        alert('已加入收藏！');
                                     } else {
-                                        alert('加入購物車失敗：' + response);
+                                        alert('加入收藏失敗：' + response);
                                     }
                                 },
                                 error: function (xhr, status, error) {
-                                    console.error('Error details:', {
-                                        status: status,
-                                        error: error,
-                                        response: xhr.responseText
-                                    });
-                                    alert('加入購物車失敗，請稍後再試！\n錯誤信息：' + error);
+                                    alert('加入收藏失敗，請稍後再試！\n錯誤信息：' + error);
                                 }
                             });
                         });
-
                         $('#cart-fab').click(function () {
                             var memId = $('input[name="memId"]').val();
                             if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
@@ -271,7 +330,6 @@
                             // 綁定購物車內的各種事件
                             bindCartEvents(memId);
                         }
-
                         /**
                          * 更新購物車總金額顯示
                          * 此函數會重新計算商品總價，並減去已選擇的優惠券折扣
@@ -479,48 +537,107 @@
                                 });
                             });
                         }
+                        // 加入購物車功能
+                        $(document).on('click', '.add-to-cart-btn', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            var form = $(this).closest('form');
+                            var itemId = form.find('input[name="itemId"]').val();
+                            var memId = form.find('input[name="memId"]').val();
+                            var quantity = form.find('input[name="quantity"]').val();
+                            if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
+                                window.location.href = window.location.origin + '/members/login';
+                                return;
+                            }
+                            $.ajax({
+                                url: form.attr('action'),
+                                type: 'POST',
+                                data: { itemId: itemId, memId: memId, quantity: quantity },
+                                success: function (response) {
+                                    if (response === 'success') {
+                                        alert('商品已成功加入購物車！');
+                                    } else {
+                                        alert('加入購物車失敗：' + response);
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    alert('加入購物車失敗，請稍後再試！\n錯誤信息：' + error);
+                                }
+                            });
+                        });
+
+                        // 彈出商品詳細 modal
+                        $(document).on('click', '.card, .card img', function (e) {
+                            if ($(e.target).is('button') || $(e.target).is('input') || $(e.target).is('i')) return;
+                            var card = $(this).closest('.card');
+                            var itemId = card.find('input[name="itemId"]').val() || card.data('itemid');
+                            var itemName = card.find('h4').text() || card.data('itemname');
+                            var itemInfo = card.find('span[th\\:text="${itemVO.itemInfo}"]').text() || card.data('iteminfo');
+                            var itemPrice = card.data('itemprice');
+                            var discPrice = card.data('discprice');
+                            var staTime = card.data('statime');
+                            var endTime = card.data('endtime');
+                            var imgSrc = card.find('img').attr('src') || card.data('imgsrc');
+                            var memId = $('input[name="memId"]').val();
+
+                            var now = new Date();
+                            var showDisc = false;
+                            if (discPrice && staTime && endTime) {
+                                var start = new Date(staTime);
+                                var end = new Date(endTime);
+                                if (now > start && now < end) showDisc = true;
+                            }
+
+                            var modalHtml = `
+                                <div class="modal-backdrop" id="item-modal-backdrop">
+                                    <div class="modal-content">
+                                        <button class="modal-close" id="modal-close-btn">&times;</button>
+                                        <img src="${imgSrc}" alt="商品圖片">
+                                        <h4 style="color:#1976d2;">${itemName}</h4>
+                                        <p style="color:#666;">${itemInfo ? itemInfo : ''}</p>
+                                        <p>
+                                            ${showDisc ?
+                                                `<span style="text-decoration: line-through; color: #888;">原價: ${itemPrice}</span>
+                                                <span style="color: #d32f2f; font-weight: bold; margin-left: 6px;">促銷價: ${discPrice}</span>`
+                                                :
+                                                `商品價格: ${itemPrice}`
+                                            }
+                                        </p>
+                                        <form method="post" action="/item/add_to_shopCart" class="shopping-cart-form modal-cart-form"
+                                            style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px;">
+                                            <input type="hidden" name="itemId" value="${itemId}">
+                                            <input type="hidden" name="memId" value="${memId}">
+                                            <input type="number" name="quantity" class="quantity-input" min="1" max="99" value="1"
+                                                style="width: 50px; height: 28px; border-radius: 4px; border: 1px solid #ccc; text-align: center; margin-right: 4px;" />
+                                            <button type="button" class="add-to-cart-btn">加入購物車</button>
+                                            <button type="button" class="add-to-favorite-btn"
+                                                data-itemid="${itemId}" data-memid="${memId}">
+                                                <i class="fa-regular fa-star"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            `;
+                            $('#item-modal-backdrop').remove();
+                            $('body').append(modalHtml);
+
+                            // 關閉 modal
+                            $('#modal-close-btn').on('click', function () {
+                                $('#item-modal-backdrop').remove();
+                            });
+                            $('#item-modal-backdrop').on('click', function (e) {
+                                if (e.target === this) $('#item-modal-backdrop').remove();
+                            });
+                        });
                     });
                 </script>
             </main>
         </div>
     </div>
-
+ 
     <!-- 右下角購物車浮動按鈕 -->
     <button id="cart-fab" title="查看購物車">
         <span class="material-icons">shopping_cart</span>
     </button>
-
-    <style>
-        #cart-fab {
-            position: fixed;
-            right: 32px;
-            bottom: 32px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: #1976d2;
-            color: #fff;
-            border: none;
-            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            cursor: pointer;
-            z-index: 1000;
-            transition: background 0.2s, box-shadow 0.2s;
-        }
-
-        #cart-fab:hover {
-            background: #1565c0;
-            box-shadow: 0 8px 24px rgba(25, 118, 210, 0.35);
-        }
-
-        #cart-fab .material-icons {
-            font-size: 32px;
-        }
-    </style>
-
 </body>
-
 </html>

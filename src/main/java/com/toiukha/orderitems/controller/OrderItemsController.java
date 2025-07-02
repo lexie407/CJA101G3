@@ -31,6 +31,7 @@ import com.toiukha.sentitem.model.SentItemService;
 import com.toiukha.sentitem.model.SentItemVO;
 import com.toiukha.item.model.ItemService;
 import com.toiukha.item.model.ItemVO;
+import com.toiukha.members.model.MembersVO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -97,8 +98,13 @@ public class OrderItemsController {
 
 		// 創建一筆新的訂單紀錄 (OrderVO)
 		OrderVO orderVO = new OrderVO();
-		Object memIdObj = session.getAttribute("memId");
-		int memberId = Integer.parseInt(memIdObj.toString());
+		MembersVO member = (MembersVO) session.getAttribute("member");
+		 if (member == null) {
+		        return "redirect:/login"; // 如果沒有登入，重定向到登入頁
+		    }
+		int memberId = member.getMemId();
+		session.setAttribute("memId", memberId);
+		
 		orderVO.setMemId(memberId);
 		orderVO.setCreDate(new Timestamp(System.currentTimeMillis()));
 		orderVO.setOrdSta(1); // 設定訂單狀態為 1 (處理中/未付款)
