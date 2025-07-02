@@ -117,8 +117,7 @@ public class AdController {
 	public String addAd(HttpSession session, ModelMap model) {
 		// 檢查商家是否已登入
 		if (!isStoreLoggedIn(session)) {
-			model.addAttribute("errorMessage", "請先登入商家帳號");
-			return "error/403";
+			return "redirect:/store/login";
 		}
 		
 		Map<Integer, String> storeNamesMap = new LinkedHashMap<>();
@@ -153,8 +152,7 @@ public class AdController {
 		
 		// 檢查商家是否已登入
 		if (!isStoreLoggedIn(session)) {
-			model.addAttribute("errorMessage", "請先登入商家帳號");
-			return "error/403";
+			return "redirect:/store/login";
 		}
 		
 		Integer currentStoreId = getCurrentStoreId(session);
@@ -238,8 +236,7 @@ public class AdController {
 	private String prepareUpdateForm(Integer adId, HttpSession session, ModelMap model) {
 		// 檢查商家是否已登入
 		if (!isStoreLoggedIn(session)) {
-			model.addAttribute("errorMessage", "請先登入商家帳號");
-			return "error/403";
+			return "redirect:/store/login";
 		}
 		
 		// 檢查是否有權限修改此廣告
@@ -283,8 +280,7 @@ public class AdController {
 		
 		// 檢查商家是否已登入
 		if (!isStoreLoggedIn(session)) {
-			model.addAttribute("errorMessage", "請先登入商家帳號");
-			return "error/403";
+			return "redirect:/store/login";
 		}
 		
 		// 檢查是否有權限修改此廣告
@@ -438,8 +434,7 @@ public class AdController {
 		
 		// 檢查商家是否已登入
 		if (!isStoreLoggedIn(session)) {
-			model.addAttribute("errorMessage", "請先登入商家帳號");
-			return "error/403";
+			return "redirect:/store/login";
 		}
 		
 		// 檢查是否有權限刪除此廣告
@@ -472,8 +467,7 @@ public class AdController {
     public String viewMyAds(HttpSession session, Model model) {
         // 檢查商家是否已登入
         if (!isStoreLoggedIn(session)) {
-            model.addAttribute("errorMessage", "請先登入商家帳號");
-            return "error/403";
+            return "redirect:/store/login";
         }
         
         Integer currentStoreId = getCurrentStoreId(session);
@@ -594,7 +588,11 @@ public class AdController {
 		return "index";
 	}
 	
-
+	@GetMapping("/test")
+	public String test() {
+		return "測試頁面 - 應用程式正常運行";
+	}
+	
 	// ========== 後台管理功能 ==========
 	
 	// 後台管理主頁面
@@ -602,7 +600,7 @@ public class AdController {
 	public String adminDashboard(HttpSession session, ModelMap model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		// 獲取統計資料
@@ -623,7 +621,7 @@ public class AdController {
 	public String adminPendingAds(HttpSession session, ModelMap model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		List<AdVO> pendingAds = adSvc.getPendingAds();
@@ -644,7 +642,7 @@ public class AdController {
 	public String adminReviewedAds(HttpSession session, ModelMap model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		List<AdVO> approvedAds = adSvc.getApprovedAds();
@@ -668,7 +666,7 @@ public class AdController {
 	public String approveAd(@RequestParam("adId") Integer adId, HttpSession session, RedirectAttributes redirectAttributes) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		try {
@@ -685,7 +683,7 @@ public class AdController {
 	public String rejectAd(@RequestParam("adId") Integer adId, HttpSession session, RedirectAttributes redirectAttributes) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		try {
@@ -702,7 +700,7 @@ public class AdController {
 	public String deactivateAd(@RequestParam("adId") Integer adId, HttpSession session, RedirectAttributes redirectAttributes) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		try {
