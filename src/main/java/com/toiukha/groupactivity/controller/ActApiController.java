@@ -262,7 +262,7 @@ public class ActApiController {
     @GetMapping("/all")
     public List<ActCardDTO> getAllAct() {
         List<ActVO> allActs = actSvc.getAll();
-        return allActs.stream().map(this::convertToCardDTO).toList();
+        return allActs.stream().map(ActCardDTO::fromVO).toList();
     }
 
     //多條件查詢（限公開活動）
@@ -272,8 +272,14 @@ public class ActApiController {
                                          @RequestParam(required = false) Integer hostId,
                                          @RequestParam(required = false) LocalDateTime actStart,
                                          @RequestParam(required = false) Integer maxCap,
+                                         HttpServletRequest request,
                                          @PageableDefault(size = 9, sort = {"actStart"}, direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<ActCardDTO> page = actSvc.searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, pageable);
+        // 取得當前用戶
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
+        Integer currentUserId = memberInfo.isLoggedIn() ? memberInfo.getMemId() : null;
+        
+        // 呼叫新的搜尋方法
+        Page<ActCardDTO> page = actSvc.searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, currentUserId, pageable);
         return PageResDTO.of(page);
     }
 
@@ -356,7 +362,7 @@ public class ActApiController {
         }
         
         List<ActVO> myActs = actSvc.getByHost(authorizedHostId);
-        List<ActCardDTO> result = myActs.stream().map(this::convertToCardDTO).toList();
+        List<ActCardDTO> result = myActs.stream().map(ActCardDTO::fromVO).toList();
         
         return ResponseEntity.ok(Map.of(
             "success", true,
@@ -398,6 +404,46 @@ public class ActApiController {
             "data", result,
             "memId", authorizedMemId
         ));
+    }
+
+    // 會員刪除活動（僅限未公開活動）
+    @DeleteMapping("/member/delete/{actId}")
+    public ResponseEntity<Map<String, Object>> memberDeleteActivity(@PathVariable Integer actId, HttpServletRequest request) {
+        try {
+            // 權限驗證
+            AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
+            
+            if (!memberInfo.isLoggedIn()) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "error", "請先登入"
+                ));
+            }
+            
+            // 執行刪除
+            actSvc.memDelete(actId, memberInfo.getMemId());
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "活動刪除成功"
+            ));
+            
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", "系統錯誤，請稍後再試"
+            ));
+        }
     }
 
     //================其他方法=================
@@ -472,19 +518,7 @@ public class ActApiController {
     }
     
 
-    // 將ActVO轉換為ActCardDTO
-    private ActCardDTO convertToCardDTO(ActVO actVo) {
-        ActCardDTO cardDTO = new ActCardDTO();
-        cardDTO.setActId(actVo.getActId());
-        cardDTO.setActName(actVo.getActName());
-        cardDTO.setActDesc(actVo.getActDesc());
-        cardDTO.setActStart(actVo.getActStart());
-        cardDTO.setSignupCnt(actVo.getSignupCnt() != null ? actVo.getSignupCnt() : 0);
-        cardDTO.setMaxCap(actVo.getMaxCap());
-        cardDTO.setRecruitStatus(actVo.getRecruitStatus());
-        cardDTO.setHostId(actVo.getHostId());
-        return cardDTO;
-    }
+
 
 
     // ========================================

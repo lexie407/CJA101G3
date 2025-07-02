@@ -99,7 +99,11 @@
     <script th:src="@{/js/groupactivity/groupactivity-ui.js}"></script>
     <script th:src="@{/js/groupactivity/groupactivity-api.js}"></script>
 
-    <script>
+    <script th:inline="javascript">
+      // 會員ID注入
+      const currentMemId = /*[[${currentMemId}]]*/ null;
+      window.currentMemId = currentMemId;
+
       // 頁面變數
       const searchForm = document.getElementById("searchForm");
       const searchResults = document.getElementById("searchResults");
@@ -174,10 +178,8 @@
 
       // 頁面載入時自動載入公開活動（最新優先）
       document.addEventListener("DOMContentLoaded", () => {
-        // 自動載入公開活動（透過 hidden input 設定 isPublic=1）
-        const formData = new FormData(searchForm);
-        const searchUrl = buildSearchUrl(formData, 0);
-        fetchActivities(searchUrl, true);
+        // 直接呼叫 searchActivities(true) 來載入公開活動
+        searchActivities(true);
 
         // 隱藏初始狀態，以立即載入資料
         initialState.style.display = "none";

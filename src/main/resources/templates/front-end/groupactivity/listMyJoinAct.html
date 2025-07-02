@@ -14,10 +14,6 @@
     />
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
 
-    <!-- GroupActivity 模組 -->
-    <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
-    <script th:src="@{/js/groupactivity/groupactivity-ui.js}"></script>
-
     <style>
       /* 日期區間樣式 */
       .act-date-range-container {
@@ -81,7 +77,7 @@
       <div class="main-content act-page">
         <div th:insert="~{/subnavActFront :: subnav('myJoin')}"></div>
 
-        <main class="content-area-main act-area">
+        <main class="content-area-main act-area listMyJoin">
           <h3 class="act-front-title">我參加的活動...</h3>
 
           <!-- 篩選區域 -->
@@ -142,6 +138,21 @@
                 </select>
               </div>
 
+              <div class="act-search-group">
+                <label for="publicSelect" class="act-search-label"
+                  >公開狀態</label
+                >
+                <select
+                  id="publicSelect"
+                  name="isPublic"
+                  class="act-search-input"
+                >
+                  <option value="">全部狀態</option>
+                  <option value="1">公開</option>
+                  <option value="0">未公開</option>
+                </select>
+              </div>
+
               <div class="act-search-actions">
                 <button type="submit" class="act-btn act-btn-primary">
                   篩選
@@ -173,7 +184,16 @@
       </div>
     </div>
 
-    <script>
+    <!-- GroupActivity 模組 -->
+    <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
+    <script th:src="@{/js/groupactivity/groupactivity-ui.js}"></script>
+    <script th:src="@{/js/groupactivity/groupactivity-api.js}"></script>
+
+    <script th:inline="javascript">
+      // 會員ID注入
+      const currentMemId = /*[[${currentMemId}]]*/ null;
+      window.currentMemId = currentMemId;
+
       // 載入參加的活動列表
       const listEl = document.getElementById("myJoinActList");
       const memId = listEl.dataset.memId;
@@ -187,6 +207,7 @@
         const dateStart = formData.get("dateRangeStart");
         const dateEnd = formData.get("dateRangeEnd");
         const recruitStatus = formData.get("recruitStatus");
+        const isPublic = formData.get("isPublic");
 
         let filtered = allActivities;
 
@@ -216,6 +237,11 @@
           );
         }
 
+        // 按公開狀態篩選
+        if (isPublic && isPublic !== "") {
+          filtered = filtered.filter((act) => act.isPublic == isPublic);
+        }
+
         displayActivities(filtered);
       }
 
@@ -241,27 +267,19 @@
         }
       }
 
-      // 取消報名函數
+      // 取消報名函數（使用 GroupActivityAPI）
       function cancelParticipation(actId) {
         if (!confirm("確定要取消報名嗎？")) {
           return;
         }
 
-        const currentMemId = memId; // 使用頁面載入時的memId
-
-        fetch(`/api/participate/${actId}/signup/${currentMemId}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
+        GroupActivityAPI.leaveActivity(actId, memId)
+          .then((response) => {
+            if (response.success) {
               alert("取消報名成功");
               loadActivities(); // 重新載入活動列表
             } else {
-              alert("取消報名失敗：" + data.error);
+              alert("取消報名失敗：" + response.error);
             }
           })
           .catch((error) => {
@@ -336,6 +354,28 @@
       // 頁面載入時執行
       document.addEventListener("DOMContentLoaded", function () {
         loadActivities();
+      });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          const groupHomeButtons = document.querySelectorAll('.group-home-btn');
+          groupHomeButtons.forEach(button => {
+              const iconElement = button.querySelector('i');
+              if (iconElement) {
+                  const defaultIconClass = iconElement.dataset.defaultIcon;
+                  const hoverIconClass = iconElement.dataset.hoverIcon;
+                  button.addEventListener('mouseenter', () => {
+                      iconElement.classList.remove(...defaultIconClass.split(' '));
+                      iconElement.classList.add(...hoverIconClass.split(' '));
+                      iconElement.style.transform = 'scale(1.1)';
+                  });
+                  button.addEventListener('mouseleave', () => {
+                      iconElement.classList.remove(...hoverIconClass.split(' '));
+                      iconElement.classList.add(...defaultIconClass.split(' '));
+                      iconElement.style.transform = 'scale(1)';
+                  });
+              }
+          });
       });
     </script>
   </body>

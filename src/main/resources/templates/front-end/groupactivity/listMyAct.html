@@ -21,7 +21,7 @@
       <div class="main-content act-page">
         <div th:insert="~{/subnavActFront :: subnav('my')}"></div>
 
-        <main class="content-area-main act-area">
+        <main class="content-area-main act-area listMyAct">
           <h3 class="act-front-title">我揪的團</h3>
 
           <!-- 篩選區域 -->
@@ -82,6 +82,21 @@
                 </select>
               </div>
 
+              <div class="act-search-group">
+                <label for="publicSelect" class="act-search-label"
+                  >公開狀態</label
+                >
+                <select
+                  id="publicSelect"
+                  name="isPublic"
+                  class="act-search-input"
+                >
+                  <option value="">全部狀態</option>
+                  <option value="1">公開</option>
+                  <option value="0">未公開</option>
+                </select>
+              </div>
+
               <div class="act-search-actions">
                 <button type="submit" class="act-btn act-btn-primary">
                   篩選
@@ -118,7 +133,9 @@
     <script th:src="@{/js/groupactivity/groupactivity-ui.js}"></script>
     <script th:src="@{/js/groupactivity/groupactivity-api.js}"></script>
 
-    <script>
+    <script th:inline="javascript">
+
+
       // 頁面變數
       const listEl = document.getElementById("myActList");
       const hostId = listEl.dataset.hostId;
@@ -195,6 +212,7 @@
         const dateStart = formData.get("dateRangeStart") || "";
         const dateEnd = formData.get("dateRangeEnd") || "";
         const status = formData.get("recruitStatus") || "";
+        const publicStatus = formData.get("isPublic") || "";
 
         const filtered = allActivities.filter((activity) => {
           // 關鍵字篩選
@@ -204,6 +222,14 @@
 
           // 狀態篩選
           if (status !== "" && activity.recruitStatus.toString() !== status) {
+            return false;
+          }
+
+          // 公開狀態篩選
+          if (
+            publicStatus !== "" &&
+            activity.isPublic.toString() !== publicStatus
+          ) {
             return false;
           }
 
@@ -236,6 +262,32 @@
 
       // 初始載入
       loadActivities();
+
+      // 會員ID注入
+      const currentMemId = /*[[${currentMemId}]]*/ null;
+      window.currentMemId = currentMemId;
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          const groupHomeButtons = document.querySelectorAll('.group-home-btn');
+          groupHomeButtons.forEach(button => {
+              const iconElement = button.querySelector('i');
+              if (iconElement) {
+                  const defaultIconClass = iconElement.dataset.defaultIcon;
+                  const hoverIconClass = iconElement.dataset.hoverIcon;
+                  button.addEventListener('mouseenter', () => {
+                      iconElement.classList.remove(...defaultIconClass.split(' '));
+                      iconElement.classList.add(...hoverIconClass.split(' '));
+                      iconElement.style.transform = 'scale(1.1)';
+                  });
+                  button.addEventListener('mouseleave', () => {
+                      iconElement.classList.remove(...hoverIconClass.split(' '));
+                      iconElement.classList.add(...defaultIconClass.split(' '));
+                      iconElement.style.transform = 'scale(1)';
+                  });
+              }
+          });
+      });
     </script>
   </body>
 </html>

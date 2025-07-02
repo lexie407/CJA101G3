@@ -14,6 +14,8 @@ public class ActCardDTO implements Serializable {
     private Integer maxCap;
     private Byte recruitStatus;
     private Integer hostId; // 雖然卡片沒顯示，但未來可能需要
+    private Byte isPublic; // 公開狀態
+    private Boolean isCurrentUserParticipant; // 當前用戶是否已參與
 
     public Integer getActId() {
         return actId;
@@ -131,5 +133,41 @@ public class ActCardDTO implements Serializable {
     public boolean canSignUp() {
         ActStatus status = getRecruitStatusEnum();
         return status != null && status.canSignUp();
+    }
+
+    public Byte getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Byte isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public Boolean getIsCurrentUserParticipant() {
+        return isCurrentUserParticipant;
+    }
+
+    public void setIsCurrentUserParticipant(Boolean isCurrentUserParticipant) {
+        this.isCurrentUserParticipant = isCurrentUserParticipant;
+    }
+
+    // ===== Utility Methods =====
+    
+    /**
+     * 從 ActVO 轉換為 ActCardDTO
+     */
+    public static ActCardDTO fromVO(ActVO actVO) {
+        ActCardDTO dto = new ActCardDTO();
+        dto.setActId(actVO.getActId());
+        dto.setActName(actVO.getActName());
+        dto.setActDesc(actVO.getActDesc());
+        dto.setActStart(actVO.getActStart());
+        dto.setSignupCnt(actVO.getSignupCnt() != null ? actVO.getSignupCnt() : 0);
+        dto.setMaxCap(actVO.getMaxCap());
+        dto.setRecruitStatus(actVO.getRecruitStatus());
+        dto.setHostId(actVO.getHostId());
+        dto.setIsPublic(actVO.getIsPublic());
+        dto.setIsCurrentUserParticipant(null); // 預設為 null，需要時另外設定
+        return dto;
     }
 } 

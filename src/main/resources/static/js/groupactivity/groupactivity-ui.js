@@ -84,55 +84,72 @@ window.GroupActivityUI = (function () {
     // 操作按鈕
     let actionsHtml = "";
     if (showActions) {
-      const actions = [];
+      let actions = [];
 
       if (template === "myJoin") {
-        // 我跟的團：特定按鈕組合
+        // 我跟的團：icon 按鈕設計
         actions.push(
-          `<a href="/act/member/view/${activity.actId}" class="act-btn act-btn-primary">查看詳情</a>`
+          `<button class="btn btn-icon-zoom" title="查看詳情" onclick="window.location.href='/act/member/view/${activity.actId}'"><i class="fas fa-eye"></i></button>`
         );
-
-        // 只有成團的公開活動才顯示「進入揪團主頁」按鈕
-        if (activity.isPublic == 1 && activity.recruitStatus == 1) {
+        actions.push(
+          `<button class="btn btn-icon-zoom secondary group-home-btn" title="前往揪團主頁" onclick="window.location.href='/act/group/${activity.actId}/home'"><i class="fas fa-users" data-default-icon="fas fa-users" data-hover-icon="fas fa-arrow-right"></i></button>`
+        );
+        actions.push(
+          `<button class="btn btn-icon-zoom error" title="取消報名" onclick="cancelParticipation(${activity.actId})"><i class="fas fa-trash"></i></button>`
+        );
+      } else if (showHostActions) {
+        // 我揪的團：icon 按鈕設計
+        actions.push(
+          `<button class="btn btn-icon-zoom" title="查看詳情" onclick="viewAct(${activity.actId})"><i class="fas fa-eye"></i></button>`
+        );
+        actions.push(
+          `<button class="btn btn-icon-zoom secondary group-home-btn" title="前往揪團主頁" onclick="window.location.href='/act/group/${activity.actId}/home'"><i class="fas fa-users" data-default-icon="fas fa-users" data-hover-icon="fas fa-arrow-right"></i></button>`
+        );
+        actions.push(
+          `<button class="btn btn-icon-zoom tertiary" title="編輯" onclick="editAct(${activity.actId})"><i class="fas fa-pen"></i></button>`
+        );
+        if (activity.isPublic != 1) {
           actions.push(
-            `<a href="/act/group/${activity.actId}/home" class="act-btn act-btn-success">進入揪團主頁</a>`
+            `<button class="btn btn-icon-zoom error" title="刪除" onclick="memberDeleteAct(${activity.actId})"><i class="fas fa-trash"></i></button>`
           );
         }
-
-        actions.push(
-          `<button onclick="cancelParticipation(${activity.actId})" class="act-btn act-btn-danger">取消報名</button>`
-        );
       } else {
-        // 預設：基本操作
+        // 搜尋頁面或其他：永遠顯示檢視詳情
         actions.push(
-          `<button onclick="viewAct(${activity.actId})" class="act-btn act-btn-primary">查看詳情</button>`
+          `<button onclick="viewAct(${activity.actId})" class="act-btn act-btn-primary">檢視詳情</button>`
         );
-
-        // 團主操作
-        if (showHostActions) {
-          // 只有成團的公開活動才顯示「進入揪團主頁」按鈕
-          if (activity.isPublic == 1 && activity.recruitStatus == 1) {
-            actions.push(
-              `<a href="/act/group/${activity.actId}/home" class="act-btn act-btn-success">進入揪團主頁</a>`
-            );
-          }
+        if (
+          activity.isCurrentUserParticipant === true &&
+          activity.hostId != window.currentMemId
+        ) {
           actions.push(
-            `<button onclick="editAct(${activity.actId})" class="act-btn act-btn-secondary">編輯</button>`
+            `<button onclick="cancelParticipation(${activity.actId})" class="act-btn act-btn-danger">取消報名</button>`
           );
-          // 只有狀態為招募中或成團時才顯示刪除按鈕
-          if (activity.recruitStatus === 0 || activity.recruitStatus === 1) {
-            actions.push(
-              `<button onclick="deleteAct(${activity.actId}, ${activity.hostId})" class="act-btn act-btn-danger">刪除</button>`
-            );
-          }
+        } else if (
+          activity.isCurrentUserParticipant === false &&
+          activity.recruitStatus === 0
+        ) {
+          actions.push(
+            `<button onclick="joinActivity(${activity.actId})" class="act-btn act-btn-primary">報名參加</button>`
+          );
         }
       }
 
       // 自訂操作
       actions.push(...customActions);
 
+      // 安全檢查：確保"我跟的團"不會顯示刪除或編輯按鈕
+      if (template === "myJoin") {
+        actions = actions.filter(
+          (action) =>
+            !action.includes('onclick="memberDeleteAct') &&
+            !action.includes('onclick="editAct') &&
+            !action.includes('onclick="deleteAct')
+        );
+      }
+
       if (actions.length > 0) {
-        actionsHtml = `<div class="act-card-actions">${actions.join("")}</div>`;
+        actionsHtml = `<div class="act-card-actions btn-group">${actions.join("")}</div>`;
       }
     }
 

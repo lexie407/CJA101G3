@@ -555,3 +555,69 @@
     min-width: unset;
   }
 }
+
+/* ===================== 新增：我揪的團/我跟的團 icon 按鈕樣式 ===================== */
+.listMyAct .btn-group,
+.listMyJoin .btn-group {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.listMyAct .btn,
+.listMyJoin .btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1.25rem;
+    background: transparent;
+    border: 2px solid transparent;
+}
+
+.listMyAct .btn-icon-zoom,
+.listMyJoin .btn-icon-zoom {
+    background-color: transparent;
+    color: var(--color-primary, #29ABC2);
+    border: 2px solid transparent;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.listMyAct .btn-icon-zoom i,
+.listMyJoin .btn-icon-zoom i {
+    transition: transform 0.3s ease-in-out;
+}
+
+.listMyAct .btn-icon-zoom:hover,
+.listMyJoin .btn-icon-zoom:hover {
+    background-color: var(--color-primary-light, #A7E6F0);
+    color: var(--color-primary-dark, #1E7887);
+    border-color: var(--color-primary, #29ABC2);
+    transform: translateY(-2px);
+}
+.listMyAct .btn-icon-zoom:hover i,
+.listMyJoin .btn-icon-zoom:hover i {
+    transform: scale(1.2);
+}
+
+/* 針對不同功能按鈕顏色 */
+.listMyAct .btn-icon-zoom.secondary,
+.listMyJoin .btn-icon-zoom.secondary { color: var(--color-secondary, #FFB347); }
+.listMyAct .btn-icon-zoom.secondary:hover,
+.listMyJoin .btn-icon-zoom.secondary:hover { background-color: var(--color-secondary-light, #FFE0B8); color: var(--color-secondary-dark, #C88C32); border-color: var(--color-secondary, #FFB347); }
+.listMyAct .btn-icon-zoom.tertiary,
+.listMyJoin .btn-icon-zoom.tertiary { color: var(--color-tertiary, #815512); }
+.listMyAct .btn-icon-zoom.tertiary:hover,
+.listMyJoin .btn-icon-zoom.tertiary:hover { background-color: var(--color-tertiary-dark, #643C0A); color: var(--color-on-tertiary, #FFF); border-color: var(--color-tertiary, #815512); }
+.listMyAct .btn-icon-zoom.error,
+.listMyJoin .btn-icon-zoom.error { color: var(--color-error, #BA1A1A); border-color: transparent; }
+.listMyAct .btn-icon-zoom.error:hover,
+.listMyJoin .btn-icon-zoom.error:hover { background-color: var(--color-error-dark, #961414); color: var(--color-on-error, #FFF); border-color: var(--color-error, #BA1A1A); }

@@ -249,9 +249,11 @@ window.GroupActivityAPI = (function () {
    * @returns {Promise} 參加結果
    */
   function joinActivity(actId, memberId) {
-    return request(`${API_BASE}/${actId}/join`, {
+    return request(`/api/participate/${actId}/signup/${memberId}`, {
       method: "POST",
-      body: JSON.stringify({ memberId }),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
   }
 
@@ -262,9 +264,22 @@ window.GroupActivityAPI = (function () {
    * @returns {Promise} 退出結果
    */
   function leaveActivity(actId, memberId) {
-    return request(`${API_BASE}/${actId}/leave`, {
+    return request(`/api/participate/${actId}/signup/${memberId}`, {
       method: "DELETE",
-      body: JSON.stringify({ memberId }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  /**
+   * 會員刪除活動（僅限未公開活動）
+   * @param {number} actId - 活動 ID
+   * @returns {Promise} 刪除結果
+   */
+  function memberDeleteActivity(actId) {
+    return request(`${API_BASE}/member/delete/${actId}`, {
+      method: "DELETE",
     });
   }
 
@@ -390,6 +405,7 @@ window.GroupActivityAPI = (function () {
     updateActivity,
     updateActivityStatus,
     deleteActivity,
+    memberDeleteActivity,
 
     // 成員相關
     getActivityMembers,
