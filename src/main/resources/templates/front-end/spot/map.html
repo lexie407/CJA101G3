@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地圖瀏覽 - 島遊Kha</title>
+    
+    <!-- 必要資源引用 - 使用相對路徑 -->
+    <th:block th:replace="~{front-end/spot/navTemplate :: headResources}"></th:block>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 地圖頁面樣式 -->
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/map.css}">
+</head>
+<body class="light">
+    <div class="app-container">
+        <!-- 左側主導覽列 -->
+        <aside th:replace="~{front-end/spot/navTemplate :: navbar}"></aside>
+        
+        <div class="main-content">
+            <!-- 頂部次導覽列 - 地圖頁面高亮 -->
+            <div th:replace="~{subnavSpotFront :: subnav('map')}"></div>
+            
+            <main class="content-area-main">
+                <!-- 英雄區塊 -->
+                <section class="spot-map-hero">
+                    <div class="container">
+                        <div class="spot-map-hero__content">
+                            <!-- 麵包屑導航 -->
+                            <nav class="spot-map-breadcrumb" aria-label="breadcrumb">
+                                <ol class="spot-map-breadcrumb__list">
+                                    <li class="spot-map-breadcrumb__item">
+                                        <a th:href="@{/}" class="spot-map-breadcrumb__link">
+                                            <span class="material-icons">home</span>
+                                            首頁
+                                        </a>
+                                    </li>
+                                    <li class="spot-map-breadcrumb__item">
+                                        <a th:href="@{/spot/list}" class="spot-map-breadcrumb__link">
+                                            <span class="material-icons">list</span>
+                                            景點列表
+                                        </a>
+                                    </li>
+                                    <li class="spot-map-breadcrumb__item spot-map-breadcrumb__item--active">
+                                        <span class="material-icons">map</span>
+                                        <span>地圖瀏覽</span>
+                                    </li>
+                                </ol>
+                            </nav>
+
+                            <!-- 頁面標題 -->
+                            <div class="spot-map-hero__header">
+                                <div class="spot-map-hero__info">
+                                    <h1 class="spot-map-hero__title">地圖瀏覽</h1>
+                                    <p class="spot-map-hero__subtitle">探索台灣美景，用地圖發現更多精彩景點</p>
+                                    <div class="spot-map-hero__features">
+                                        <div class="spot-map-hero__feature">
+                                            <span class="material-icons">location_on</span>
+                                            <span>精準定位</span>
+                                        </div>
+                                        <div class="spot-map-hero__feature">
+                                            <span class="material-icons">filter_list</span>
+                                            <span>智能篩選</span>
+                                        </div>
+                                        <div class="spot-map-hero__feature">
+                                            <span class="material-icons">explore</span>
+                                            <span>互動探索</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="spot-map-hero__icon">
+                                    <div class="spot-map-hero__icon-container">
+                                        <span class="material-icons">map</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 統計資訊 -->
+                            <div class="spot-map-hero__stats">
+                                <div class="spot-map-stats-item">
+                                    <div class="spot-map-stats-value" id="totalSpots">載入中...</div>
+                                    <div class="spot-map-stats-label">總景點數</div>
+                                </div>
+                                <div class="spot-map-stats-item">
+                                    <div class="spot-map-stats-value" id="mapSpots">載入中...</div>
+                                    <div class="spot-map-stats-label">地圖顯示</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 主要內容區域 -->
+                <section class="spot-map-main">
+                    <div class="container">
+                        <div class="spot-map-layout">
+                            <!-- 左側功能面板 -->
+                            <div class="spot-map-sidebar">
+
+                                <!-- 搜尋框 (移至頂部) -->
+                                <div class="spot-map-search-wrapper">
+                                    <div class="spot-map-search-container">
+                                        <span class="material-icons spot-map-search-icon">search</span>
+                                        <input type="text" class="spot-map-search-input" id="searchInput" placeholder="搜尋景點名稱、地址...">
+                                    </div>
+                                </div>
+
+                                <!-- Tab 結構 -->
+                                <div class="spot-map-tabs">
+                                    <!-- Tab 按鈕 -->
+                                    <div class="spot-map-tab-header">
+                                        <button class="spot-map-tab-link active" data-tab="tab-list">
+                                            <span class="material-icons">list_alt</span> 景點列表
+                                            <span id="spotCount" class="spot-map-count-badge">0</span>
+                                        </button>
+                                        <button class="spot-map-tab-link" data-tab="tab-filters">
+                                            <span class="material-icons">filter_alt</span> 進階篩選
+                                        </button>
+                                    </div>
+                                    <!-- Tab 內容 -->
+                                    <div class="spot-map-tab-content">
+                                        <!-- 景點列表面板 -->
+                                        <div id="tab-list" class="spot-map-tab-pane active">
+                                            <div id="spotList" class="spot-map-list">
+                                                <!-- JS 動態載入 -->
+                                            </div>
+                                        </div>
+                                        <!-- 篩選面板 -->
+                                        <div id="tab-filters" class="spot-map-tab-pane">
+                                            <!-- 縣市篩選 -->
+                                            <div class="spot-map-filter-group">
+                                                <label class="spot-map-filter-label">縣市地區</label>
+                                                <div class="spot-map-region-filters" id="regionFilters">
+                                                    <button class="spot-map-region-badge active" data-region="all">全部</button>
+                                                </div>
+                                            </div>
+                                            <!-- 評分篩選 -->
+                                            <div class="spot-map-filter-group">
+                                                <label class="spot-map-filter-label">Google 評分</label>
+                                                <select class="spot-map-select" id="ratingFilter">
+                                                    <option value="all">不限</option>
+                                                    <option value="4.5">4.5分以上</option>
+                                                    <option value="4.0">4.0分以上</option>
+                                                    <option value="3.5">3.5分以上</option>
+                                                </select>
+                                            </div>
+                                            <!-- 篩選按鈕 -->
+                                            <div class="spot-map-filter-actions">
+                                                <button class="spot-map-btn spot-map-btn--secondary" onclick="clearFilters()">
+                                                    <span class="material-icons">refresh</span>
+                                                    清除所有篩選
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 右側地圖區域 -->
+                            <div class="spot-map-content">
+                                <!-- 地圖控制區 -->
+                                <div class="spot-map-controls">
+                                    <h3 class="spot-map-controls__title">
+                                        <span class="material-icons">map</span>
+                                        台灣景點地圖
+                                    </h3>
+                                    <div class="spot-map-controls__buttons">
+                                        <button class="spot-map-control-btn" onclick="fitMapToBounds()" title="顯示全部景點">
+                                            <span class="material-icons">zoom_out_map</span>
+                                            顯示全部
+                                        </button>
+                                        <button class="spot-map-control-btn spot-map-control-btn--secondary" onclick="getCurrentLocation()" title="定位到我的位置">
+                                            <span class="material-icons">my_location</span>
+                                            我的位置
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 地圖容器 -->
+                                <div class="spot-map-container">
+                                    <div id="map" class="spot-map-canvas"></div>
+                                    <div class="spot-map-loading-overlay" id="mapLoadingOverlay">
+                                        <div class="spot-map-loading__spinner">
+                                            <span class="material-icons">map</span>
+                                        </div>
+                                        <p>載入地圖中...</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- 地圖說明 -->
+                                <div class="spot-map-legend">
+                                    <div class="spot-map-legend__content">
+                                        <span class="material-icons">info</span>
+                                        <div class="spot-map-legend__text">
+                                            <p>點擊地圖標記查看景點詳情，或在左側列表中選擇景點。</p>
+                                            <div class="spot-map-legend__colors">
+                                                <span class="spot-map-legend__item">
+                                                    <span class="spot-map-legend__color spot-map-legend__color--primary"></span>
+                                                    一般景點
+                                                </span>
+                                                <span class="spot-map-legend__item">
+                                                    <span class="spot-map-legend__color spot-map-legend__color--success"></span>
+                                                    高評分景點 (4.0分以上)
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- WebSocket 通知 -->
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script th:src="@{/js/notification/websocket.js}"></script>
+    
+    <!-- 地圖頁面功能 -->
+    <script th:src="@{/js/spot/front-end/map.js}"></script>
+</body>
+</html> 

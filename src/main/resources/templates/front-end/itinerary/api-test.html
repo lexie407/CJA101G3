@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行程 API 測試頁面</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section h2 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 行程 API 測試頁面</h1>
+        
+        <div class="grid">
+            <!-- 基本 CRUD 操作 -->
+            <div class="section">
+                <h2>📝 基本 CRUD 操作</h2>
+                
+                <div class="form-group">
+                    <label>查詢所有行程</label>
+                    <button onclick="getAllItineraries()">查詢所有行程</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>根據 ID 查詢行程</label>
+                    <input type="number" id="itnId" placeholder="輸入行程 ID">
+                    <button onclick="getItineraryById()">查詢行程</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>新增行程</label>
+                    <input type="text" id="itnName" placeholder="行程名稱">
+                    <input type="number" id="crtId" placeholder="建立者 ID">
+                    <textarea id="itnDesc" placeholder="行程描述"></textarea>
+                    <button onclick="createItinerary()">新增行程</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>刪除行程</label>
+                    <input type="number" id="deleteItnId" placeholder="要刪除的行程 ID">
+                    <button onclick="deleteItinerary()">刪除行程</button>
+                </div>
+            </div>
+
+            <!-- 查詢功能 -->
+            <div class="section">
+                <h2>🔍 查詢功能</h2>
+                
+                <div class="form-group">
+                    <label>分頁查詢</label>
+                    <input type="number" id="page" placeholder="頁碼 (0開始)" value="0">
+                    <input type="number" id="size" placeholder="每頁數量" value="5">
+                    <button onclick="getItinerariesByPage()">分頁查詢</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>查詢公開行程</label>
+                    <button onclick="getPublicItineraries()">查詢公開行程</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>根據建立者查詢</label>
+                    <input type="number" id="creatorId" placeholder="建立者 ID">
+                    <button onclick="getItinerariesByCreator()">查詢建立者行程</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>搜尋行程</label>
+                    <input type="text" id="searchKeyword" placeholder="搜尋關鍵字">
+                    <button onclick="searchItineraries()">搜尋行程</button>
+                </div>
+            </div>
+
+            <!-- 統計功能 -->
+            <div class="section">
+                <h2>📊 統計功能</h2>
+                
+                <div class="form-group">
+                    <button onclick="getStats()">取得統計資訊</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>建立者統計</label>
+                    <input type="number" id="statsCreatorId" placeholder="建立者 ID">
+                    <button onclick="getCreatorStats()">取得建立者統計</button>
+                </div>
+            </div>
+
+            <!-- 景點管理 -->
+            <div class="section">
+                <h2>📍 景點管理</h2>
+                
+                <div class="form-group">
+                    <label>查詢行程景點</label>
+                    <input type="number" id="spotsItnId" placeholder="行程 ID">
+                    <button onclick="getSpotsByItinerary()">查詢景點</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>添加景點到行程</label>
+                    <input type="number" id="addSpotItnId" placeholder="行程 ID">
+                    <input type="number" id="addSpotSpotId" placeholder="景點 ID">
+                    <button onclick="addSpotToItinerary()">添加景點</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>從行程移除景點</label>
+                    <input type="number" id="removeSpotItnId" placeholder="行程 ID">
+                    <input type="number" id="removeSpotSpotId" placeholder="景點 ID">
+                    <button onclick="removeSpotFromItinerary()">移除景點</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 結果顯示區域 -->
+        <div class="section">
+            <h2>📋 結果</h2>
+            <div id="result" class="result">
+                <p>請選擇上方功能進行測試...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/itinerary';
+        
+        function showResult(data, isError = false) {
+            const resultDiv = document.getElementById('result');
+            const className = isError ? 'result error' : 'result success';
+            resultDiv.className = className;
+            resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        
+        function showError(error) {
+            showResult({ error: error.message || error }, true);
+        }
+        
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                showResult(data);
+                return data;
+            } catch (error) {
+                showError(error);
+                throw error;
+            }
+        }
+        
+        // 基本 CRUD 操作
+        async function getAllItineraries() {
+            await makeRequest(`${API_BASE}/getAllItineraries`, { method: 'POST' });
+        }
+        
+        async function getItineraryById() {
+            const itnId = document.getElementById('itnId').value;
+            if (!itnId) {
+                showError('請輸入行程 ID');
+                return;
+            }
+            await makeRequest(`${API_BASE}/${itnId}`);
+        }
+        
+        async function createItinerary() {
+            const itnName = document.getElementById('itnName').value;
+            const crtId = document.getElementById('crtId').value;
+            const itnDesc = document.getElementById('itnDesc').value;
+            
+            if (!itnName || !crtId) {
+                showError('請填寫行程名稱和建立者 ID');
+                return;
+            }
+            
+            await makeRequest(`${API_BASE}/createItinerary`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    itnName,
+                    crtId: parseInt(crtId),
+                    itnDesc
+                })
+            });
+        }
+        
+        async function deleteItinerary() {
+            const itnId = document.getElementById('deleteItnId').value;
+            if (!itnId) {
+                showError('請輸入要刪除的行程 ID');
+                return;
+            }
+            await makeRequest(`${API_BASE}/${itnId}`, { method: 'DELETE' });
+        }
+        
+        // 查詢功能
+        async function getItinerariesByPage() {
+            const page = document.getElementById('page').value || 0;
+            const size = document.getElementById('size').value || 5;
+            await makeRequest(`${API_BASE}/page?page=${page}&size=${size}`);
+        }
+        
+        async function getPublicItineraries() {
+            await makeRequest(`${API_BASE}/public`);
+        }
+        
+        async function getItinerariesByCreator() {
+            const crtId = document.getElementById('creatorId').value;
+            if (!crtId) {
+                showError('請輸入建立者 ID');
+                return;
+            }
+            await makeRequest(`${API_BASE}/creator/${crtId}`);
+        }
+        
+        async function searchItineraries() {
+            const keyword = document.getElementById('searchKeyword').value;
+            if (!keyword) {
+                showError('請輸入搜尋關鍵字');
+                return;
+            }
+            await makeRequest(`${API_BASE}/search/public?keyword=${encodeURIComponent(keyword)}`);
+        }
+        
+        // 統計功能
+        async function getStats() {
+            await makeRequest(`${API_BASE}/stats`);
+        }
+        
+        async function getCreatorStats() {
+            const crtId = document.getElementById('statsCreatorId').value;
+            if (!crtId) {
+                showError('請輸入建立者 ID');
+                return;
+            }
+            await makeRequest(`${API_BASE}/creator/${crtId}/stats`);
+        }
+        
+        // 景點管理
+        async function getSpotsByItinerary() {
+            const itnId = document.getElementById('spotsItnId').value;
+            if (!itnId) {
+                showError('請輸入行程 ID');
+                return;
+            }
+            await makeRequest(`${API_BASE}/${itnId}/spots`);
+        }
+        
+        async function addSpotToItinerary() {
+            const itnId = document.getElementById('addSpotItnId').value;
+            const spotId = document.getElementById('addSpotSpotId').value;
+            
+            if (!itnId || !spotId) {
+                showError('請輸入行程 ID 和景點 ID');
+                return;
+            }
+            
+            await makeRequest(`${API_BASE}/${itnId}/spots/${spotId}`, { method: 'POST' });
+        }
+        
+        async function removeSpotFromItinerary() {
+            const itnId = document.getElementById('removeSpotItnId').value;
+            const spotId = document.getElementById('removeSpotSpotId').value;
+            
+            if (!itnId || !spotId) {
+                showError('請輸入行程 ID 和景點 ID');
+                return;
+            }
+            
+            await makeRequest(`${API_BASE}/${itnId}/spots/${spotId}`, { method: 'DELETE' });
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,351 @@
+/* ==========================================================================
+   景點詳情頁面 (後台) - spot-detail.css
+   遵循 CSS 架構規範：僅定義頁面專用功能樣式
+   ========================================================================== */
+
+/* 詳情頁面容器 */
+.spot-detail-page {
+    /* 不覆蓋 .content-area-main 的 padding，在其內部定義樣式 */
+}
+
+/* 內容容器 */
+.content-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ==========================================================================
+   詳情卡片樣式
+   ========================================================================== */
+
+.detail-card {
+    background: var(--md-sys-color-surface);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    overflow: hidden;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: var(--md-sys-color-surface-container);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+}
+
+.card-title .material-icons {
+    font-size: 20px;
+    color: var(--md-sys-color-primary);
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-content {
+    padding: 24px;
+}
+
+/* ==========================================================================
+   基本資訊區域
+   ========================================================================== */
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.detail-image-section {
+    position: sticky;
+    top: 20px;
+}
+
+.image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 2px solid var(--md-sys-color-outline-variant);
+}
+
+.detail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.detail-image:hover {
+    transform: scale(1.02);
+}
+
+.detail-info-section {
+    flex: 1;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-label .material-icons {
+    font-size: 16px;
+    color: var(--md-sys-color-primary);
+}
+
+.info-value {
+    font-size: var(--font-size-base);
+    color: var(--md-sys-color-on-surface);
+    line-height: 1.5;
+    word-wrap: break-word;
+    padding: 12px 16px;
+    background: var(--md-sys-color-surface-container);
+    border-radius: 8px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.website-link {
+    color: var(--md-sys-color-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.website-link:hover {
+    color: var(--md-sys-color-secondary);
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   描述區域
+   ========================================================================== */
+
+.description-content {
+    background: var(--md-sys-color-surface-container);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.description-text {
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--md-sys-color-on-surface);
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* ==========================================================================
+   系統資訊區域
+   ========================================================================== */
+
+.system-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.system-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    background: var(--md-sys-color-surface-container);
+    border-radius: 8px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.system-info-item .info-label {
+    margin-bottom: 0;
+}
+
+.system-info-item .info-value {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   操作按鈕區域
+   ========================================================================== */
+
+.action-section {
+    margin-top: 8px;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 24px;
+    background: var(--md-sys-color-surface-container);
+    border-radius: 12px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.delete-form {
+    display: inline-flex;
+}
+
+/* 按鈕樣式使用 spot-common.css 中的 .btn 類別 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.btn .material-icons {
+    font-size: 18px;
+}
+
+.btn-primary {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.btn-primary:hover {
+    background: var(--md-sys-color-primary);
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(41, 171, 194, 0.3);
+}
+
+.btn-secondary {
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline);
+}
+
+.btn-secondary:hover {
+    background: var(--md-sys-color-surface-container);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.btn-danger {
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+}
+
+.btn-danger:hover {
+    background: var(--md-sys-color-error);
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(186, 26, 26, 0.3);
+}
+
+/* ==========================================================================
+   響應式設計
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .detail-image-section {
+        position: static;
+    }
+    
+    .image-container {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px 20px;
+    }
+    
+    .card-content {
+        padding: 20px;
+    }
+    
+    .detail-grid {
+        gap: 20px;
+    }
+    
+    .system-info-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 12px;
+        padding: 20px;
+    }
+    
+    .btn {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .info-label {
+        font-size: var(--font-size-xs);
+    }
+    
+    .info-value {
+        font-size: var(--font-size-sm);
+        padding: 10px 12px;
+    }
+    
+    .card-title {
+        font-size: var(--font-size-base);
+    }
+} 

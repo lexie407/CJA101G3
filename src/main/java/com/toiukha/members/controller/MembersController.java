@@ -232,6 +232,7 @@ public class MembersController {
 			List<String> errorMsgs = result.getFieldErrors().stream().map(FieldError::getDefaultMessage)
 					.collect(Collectors.toList());
 			model.addAttribute("errorMsgs", errorMsgs);
+			model.addAttribute("currentPage", "accounts");
 			return "front-end/members/update";
 		}
 
@@ -345,6 +346,7 @@ public class MembersController {
 				errorMsgs.add(error.getDefaultMessage());
 			}
 			model.addAttribute("errorMsgs", errorMsgs);
+			model.addAttribute("currentPage", "accounts");
 			return "back-end/members/editMembers";
 		}
 

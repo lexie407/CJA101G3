@@ -1,0 +1,621 @@
+/* =================
+   行程詳情樣式
+   使用 itinerary-detail- 前綴
+   依賴 style.css 基礎層
+   ================= */
+
+/* 1. 自定義變數 */
+:root {
+    --itinerary-detail-radius: 16px;
+    --itinerary-detail-transition: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    --itinerary-detail-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --itinerary-detail-shadow-hover: 0 8px 32px rgba(25, 118, 210, 0.2);
+    --section-spacing: 1.25rem;
+    --itinerary-hero-height: 180px;
+}
+
+/* 2. 英雄區塊 - 統一樣式 */
+.itinerary-detail-hero {
+    background: linear-gradient(135deg, 
+        var(--md-sys-color-primary) 0%, 
+        var(--md-sys-color-tertiary) 100%);
+    height: var(--itinerary-hero-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    margin: 1rem 1.5rem;
+    box-shadow: var(--itinerary-detail-shadow);
+}
+
+.itinerary-detail-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
+    opacity: 0.6;
+}
+
+.itinerary-detail-hero__illustration {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.15);
+    transform: rotate(15deg);
+    z-index: 1;
+}
+
+.itinerary-detail-hero__content {
+    position: relative;
+    z-index: 2;
+    color: var(--md-sys-color-on-primary);
+    text-align: center;
+    max-width: 600px;
+    padding: 0 2rem;
+}
+
+.itinerary-detail-hero__title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+
+.itinerary-detail-hero__title .material-icons {
+    font-size: 1.2em;
+    color: var(--md-sys-color-tertiary);
+}
+
+.itinerary-detail-hero__subtitle {
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    opacity: 0.9;
+    font-weight: 500;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* 3. 返回按鈕 */
+.itinerary-detail-breadcrumb {
+    padding: 1rem 0 0.5rem 0;
+}
+
+.itinerary-breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--md-sys-color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    transition: all var(--itinerary-detail-transition);
+    background: transparent;
+}
+
+.itinerary-breadcrumb-link:hover {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    transform: translateX(-2px);
+}
+
+.itinerary-breadcrumb-link .material-icons {
+    font-size: 1.1rem;
+}
+
+/* 4. 主要內容區域 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.itinerary-detail-card {
+    background: var(--md-sys-color-surface);
+    border-radius: var(--itinerary-detail-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--itinerary-detail-shadow);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    transition: all var(--itinerary-detail-transition);
+}
+
+.itinerary-detail-card:hover {
+    box-shadow: var(--itinerary-detail-shadow-hover);
+}
+
+/* 5. 行程基本資訊 */
+.itinerary-detail-info {
+    margin-bottom: 1.5rem;
+}
+
+.itinerary-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+}
+
+.itinerary-detail-title-section {
+    flex: 1;
+}
+
+.itinerary-detail-title {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.3;
+}
+
+.itinerary-detail-status {
+    margin-bottom: 1rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge--public {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+
+.status-badge--private {
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.status-badge .material-icons {
+    font-size: 1rem;
+}
+
+.itinerary-detail-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.itinerary-action-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--itinerary-detail-transition);
+}
+
+.itinerary-action-btn:hover {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    transform: translateY(-1px);
+}
+
+.itinerary-action-btn .material-icons {
+    font-size: 1.2rem;
+}
+
+.itinerary-detail-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.itinerary-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.itinerary-meta-item .material-icons {
+    font-size: 1.1rem;
+    color: var(--md-sys-color-primary);
+}
+
+/* 6. 區段標題 */
+.itinerary-section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.itinerary-section-title .material-icons {
+    font-size: 1.5rem;
+    color: var(--md-sys-color-primary);
+}
+
+.itinerary-spot-count {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-left: 0.5rem;
+}
+
+/* 7. 行程描述 */
+.itinerary-detail-description {
+    margin-bottom: 1.5rem;
+}
+
+.itinerary-description-text {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* 8. 行程景點列表 */
+.itinerary-detail-spots {
+    margin-bottom: 2rem;
+}
+
+.itinerary-spots-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.itinerary-spot-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 12px;
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    transition: all var(--itinerary-detail-transition);
+}
+
+.itinerary-spot-item:hover {
+    background: var(--md-sys-color-surface-container);
+    box-shadow: var(--itinerary-detail-shadow);
+    transform: translateY(-1px);
+}
+
+.itinerary-spot-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.itinerary-spot-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.itinerary-spot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
+}
+
+.itinerary-spot-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.itinerary-spot-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.itinerary-spot-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--itinerary-detail-transition);
+}
+
+.itinerary-spot-btn:hover {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    transform: scale(1.05);
+}
+
+.itinerary-spot-btn .material-icons {
+    font-size: 1.1rem;
+}
+
+.itinerary-spot-location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.9rem;
+    margin: 0 0 0.75rem 0;
+    font-weight: 500;
+}
+
+.itinerary-spot-location .material-icons {
+    font-size: 1rem;
+    color: var(--md-sys-color-tertiary);
+}
+
+.itinerary-spot-description {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* 9. 底部操作按鈕 */
+.itinerary-detail-bottom-actions {
+    margin-bottom: 2rem;
+}
+
+.itinerary-bottom-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.5rem;
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: var(--itinerary-detail-radius);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.itinerary-primary-btn,
+.itinerary-secondary-btn,
+.itinerary-outline-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all var(--itinerary-detail-transition);
+    text-decoration: none;
+    border: none;
+}
+
+.itinerary-primary-btn {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: var(--itinerary-detail-shadow);
+}
+
+.itinerary-primary-btn:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) 90%, black 10%);
+    transform: translateY(-1px);
+    box-shadow: var(--itinerary-detail-shadow-hover);
+}
+
+.itinerary-secondary-btn {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+
+.itinerary-secondary-btn:hover {
+    background: color-mix(in srgb, var(--md-sys-color-tertiary-container) 90%, black 10%);
+    transform: translateY(-1px);
+}
+
+.itinerary-outline-btn {
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    border: 2px solid var(--md-sys-color-outline);
+}
+
+.itinerary-outline-btn:hover {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-color: var(--md-sys-color-primary);
+}
+
+/* 10. 響應式設計 */
+@media (max-width: 992px) {
+    .itinerary-detail-meta {
+        gap: 1.5rem;
+    }
+    
+    .itinerary-bottom-actions {
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .itinerary-detail-hero {
+        margin: 0.5rem 1rem;
+        height: 160px;
+    }
+    
+    .itinerary-detail-hero__content {
+        padding: 0 1.5rem;
+    }
+    
+    .itinerary-detail-hero__title {
+        font-size: 1.8rem;
+        gap: 0.5rem;
+    }
+    
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .itinerary-detail-card {
+        padding: 1.25rem;
+    }
+    
+    .itinerary-detail-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.5rem;
+    }
+    
+    .itinerary-detail-actions {
+        align-self: flex-end;
+    }
+    
+    .itinerary-detail-meta {
+        gap: 1rem;
+        flex-direction: column;
+    }
+    
+    .itinerary-spot-item {
+        padding: 1rem;
+    }
+    
+    .itinerary-spot-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .itinerary-spot-actions {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 576px) {
+    .itinerary-detail-hero {
+        margin: 0.5rem;
+        height: 140px;
+        border-radius: 16px;
+    }
+    
+    .itinerary-detail-hero__content {
+        padding: 0 1rem;
+    }
+    
+    .itinerary-detail-hero__title {
+        font-size: 1.5rem;
+        gap: 0.5rem;
+        flex-direction: column;
+    }
+    
+    .itinerary-detail-hero__illustration {
+        font-size: 3rem;
+        top: 15px;
+        right: 20px;
+    }
+    
+    .container {
+        padding: 0 0.75rem;
+    }
+    
+    .itinerary-detail-card {
+        padding: 1rem;
+    }
+    
+    .itinerary-spot-item {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+    
+    .itinerary-spot-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    
+    .itinerary-bottom-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .itinerary-primary-btn,
+    .itinerary-secondary-btn,
+    .itinerary-outline-btn {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* 11. 可訪問性和偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    .itinerary-spot-item,
+    .itinerary-spot-btn,
+    .itinerary-action-btn,
+    .itinerary-primary-btn,
+    .itinerary-secondary-btn,
+    .itinerary-outline-btn {
+        transition: none;
+    }
+    
+    .itinerary-spot-item:hover,
+    .itinerary-spot-btn:hover,
+    .itinerary-action-btn:hover {
+        transform: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .itinerary-detail-card,
+    .itinerary-spot-item {
+        border-width: 2px;
+    }
+    
+    .itinerary-primary-btn,
+    .itinerary-secondary-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* 12. 列印樣式 */
+@media print {
+    .itinerary-detail-hero,
+    .itinerary-detail-actions,
+    .itinerary-spot-actions,
+    .itinerary-bottom-actions {
+        display: none;
+    }
+    
+    .itinerary-detail-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+} 

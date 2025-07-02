@@ -71,33 +71,6 @@
                 <button type="submit" class="act-btn act-btn-primary">
                   搜尋活動
                 </button>
-                <!--                <button-->
-                <!--                  type="button"-->
-                <!--                  onclick="loadAllActivities()"-->
-                <!--                  class="act-btn act-btn-secondary"-->
-                <!--                >-->
-                <!--                  顯示全部-->
-                <!--                </button>-->
-
-                <!--                &lt;!&ndash; ======================================== &ndash;&gt;-->
-                <!--                &lt;!&ndash; 測試相關按鈕 - 開發完成後可移除 &ndash;&gt;-->
-                <!--                &lt;!&ndash; ======================================== &ndash;&gt;-->
-                <!--                <button-->
-                <!--                  type="button"-->
-                <!--                  onclick="testApi()"-->
-                <!--                  class="act-btn act-btn-secondary"-->
-                <!--                  style="background-color: #ff9800"-->
-                <!--                >-->
-                <!--                  測試 API-->
-                <!--                </button>-->
-                <!--                <button-->
-                <!--                  type="button"-->
-                <!--                  onclick="testImageResponse()"-->
-                <!--                  class="act-btn act-btn-secondary"-->
-                <!--                  style="background-color: #ff9800"-->
-                <!--                >-->
-                <!--                  測試圖片回傳-->
-                <!--                </button>-->
               </div>
             </form>
           </div>
@@ -206,7 +179,7 @@
         const searchUrl = buildSearchUrl(formData, 0);
         fetchActivities(searchUrl, true);
 
-        // 隱藏初始狀態，因為我們要立即載入資料
+        // 隱藏初始狀態，以立即載入資料
         initialState.style.display = "none";
       });
 

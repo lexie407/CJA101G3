@@ -1,0 +1,92 @@
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    padding: 40px;
+    max-width: 400px;
+    width: 100%;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo h2 {
+    color: #667eea;
+    font-weight: bold;
+}
+
+.google-btn {
+    width: 100%;
+    padding: 12px;
+    background: #dd4b39;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.google-btn:hover {
+    background: #c23321;
+    color: white;
+}
+
+.divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.divider:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #ddd;
+}
+
+.divider span {
+    background: white;
+    padding: 0 15px;
+    color: #666;
+}
+
+.error-message {
+    color: #dc3545;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background-color: #d1edff;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.back-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.back-link a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.back-link a:hover {
+    text-decoration: underline;
+} 

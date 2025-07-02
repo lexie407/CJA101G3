@@ -13,14 +13,8 @@
       th:href="@{/css/groupactivity/styleAct_common.css}"
     />
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
-    <!-- Bootstrap CSS (只用於Floating Labels) -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Select2 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
       rel="stylesheet"
     />
   </head>
@@ -41,7 +35,6 @@
             >
               <input type="hidden" name="actId" th:value="${actVo.actId}" />
 
-              <!-- 基本資訊 -->
               <div class="act-detail-info">
                 <div class="form-floating">
                   <input
@@ -88,7 +81,6 @@
 
               <br />
 
-              <!-- 時間設定 -->
               <div class="act-detail-info">
                 <div class="form-floating">
                   <input
@@ -121,191 +113,295 @@
               </div>
 
               <!-- 活動類型和地區 -->
-              <div class="act-detail-info">
-                <div>
-                  <label class="act-detail-label"></label>
-                  <select
-                    name="actType"
-                    id="actTypeSelect"
-                    class="js-tags act-search-input full-width"
-                    multiple="multiple"
-                    title="選擇活動類型"
+              <div class="act-detail-info" style="display: block">
+                <!-- 活動類型標籤選擇 -->
+                <div class="tag-section">
+                  <label class="tag-label"
+                    >活動類型 <span class="required-mark">*</span></label
                   >
-                    <option
-                      value="ARTS"
-                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'ARTS')}"
+                  <div class="tag-container" id="actTypeContainer">
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="ARTS"
+                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'ARTS')} ? 'selected' : ''"
                     >
                       藝文
-                    </option>
-                    <option
-                      value="ECOLOGY"
-                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'ECOLOGY')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="ECOLOGY"
+                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'ECOLOGY')} ? 'selected' : ''"
                     >
                       生態
-                    </option>
-                    <option
-                      value="OUTDOOR"
-                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'OUTDOOR')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="OUTDOOR"
+                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'OUTDOOR')} ? 'selected' : ''"
                     >
                       戶外
-                    </option>
-                    <option
-                      value="SPORTS"
-                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'SPORTS')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="SPORTS"
+                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'SPORTS')} ? 'selected' : ''"
                     >
                       運動
-                    </option>
-                    <option
-                      value="FOOD"
-                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'FOOD')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="FOOD"
+                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'FOOD')} ? 'selected' : ''"
                     >
                       美食
-                    </option>
-                    <option
-                      value="FAMILY"
-                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'FAMILY')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="FAMILY"
+                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'FAMILY')} ? 'selected' : ''"
                     >
                       親子
-                    </option>
-                    <option
-                      value="SENIOR"
-                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'SENIOR')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="SENIOR"
+                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'SENIOR')} ? 'selected' : ''"
                     >
                       銀髮
-                    </option>
-                    <option
-                      value="PET"
-                      th:selected="${actVo.actType != null and #strings.contains(actVo.actType, 'PET')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="PET"
+                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'PET')} ? 'selected' : ''"
                     >
                       寵物
-                    </option>
-                  </select>
+                    </button>
+                  </div>
+                  <input
+                    type="hidden"
+                    name="actType"
+                    id="actTypeInput"
+                    th:value="${actVo.actType}"
+                  />
                 </div>
-                <div>
-                  <label class="act-detail-label"></label>
-                  <select
-                    name="actCity"
-                    id="actCitySelect"
-                    class="js-tags act-search-input full-width"
-                    multiple="multiple"
-                    title="選擇活動地區"
+
+                <!-- 活動地區標籤選擇 -->
+                <div class="tag-section">
+                  <label class="tag-label"
+                    >活動地區 <span class="required-mark">*</span></label
                   >
-                    <option
-                      value="TAIPEI"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAIPEI')}"
+                  <div class="tag-container" id="actCityContainer">
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAIPEI"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAIPEI')} ? 'selected' : ''"
                     >
                       台北
-                    </option>
-                    <option
-                      value="NEW_TAIPEI"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NEW_TAIPEI')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="NEW_TAIPEI"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NEW_TAIPEI')} ? 'selected' : ''"
                     >
                       新北
-                    </option>
-                    <option
-                      value="TAOYUAN"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAOYUAN')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAOYUAN"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAOYUAN')} ? 'selected' : ''"
                     >
                       桃園
-                    </option>
-                    <option
-                      value="TAICHUNG"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAICHUNG')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAICHUNG"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAICHUNG')} ? 'selected' : ''"
                     >
                       台中
-                    </option>
-                    <option
-                      value="TAINAN"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAINAN')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAINAN"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAINAN')} ? 'selected' : ''"
                     >
                       台南
-                    </option>
-                    <option
-                      value="KAOHSIUNG"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KAOHSIUNG')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="KAOHSIUNG"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KAOHSIUNG')} ? 'selected' : ''"
                     >
                       高雄
-                    </option>
-                    <option
-                      value="KEELUNG"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KEELUNG')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="KEELUNG"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KEELUNG')} ? 'selected' : ''"
                     >
                       基隆
-                    </option>
-                    <option
-                      value="HSINCHU"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HSINCHU')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="HSINCHU"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HSINCHU')} ? 'selected' : ''"
                     >
                       新竹
-                    </option>
-                    <option
-                      value="MIAOLI"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'MIAOLI')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="MIAOLI"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'MIAOLI')} ? 'selected' : ''"
                     >
                       苗栗
-                    </option>
-                    <option
-                      value="CHANGHUA"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHANGHUA')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="CHANGHUA"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHANGHUA')} ? 'selected' : ''"
                     >
                       彰化
-                    </option>
-                    <option
-                      value="NANTOU"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NANTOU')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="NANTOU"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NANTOU')} ? 'selected' : ''"
                     >
                       南投
-                    </option>
-                    <option
-                      value="YUNLIN"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YUNLIN')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="YUNLIN"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YUNLIN')} ? 'selected' : ''"
                     >
                       雲林
-                    </option>
-                    <option
-                      value="CHIAYI"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHIAYI')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="CHIAYI"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHIAYI')} ? 'selected' : ''"
                     >
                       嘉義
-                    </option>
-                    <option
-                      value="PINGTUNG"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'PINGTUNG')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="PINGTUNG"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'PINGTUNG')} ? 'selected' : ''"
                     >
                       屏東
-                    </option>
-                    <option
-                      value="YILAN"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YILAN')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="YILAN"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YILAN')} ? 'selected' : ''"
                     >
                       宜蘭
-                    </option>
-                    <option
-                      value="HUALIEN"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HUALIEN')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="HUALIEN"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HUALIEN')} ? 'selected' : ''"
                     >
                       花蓮
-                    </option>
-                    <option
-                      value="TAITUNG"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAITUNG')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAITUNG"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAITUNG')} ? 'selected' : ''"
                     >
                       台東
-                    </option>
-                    <option
-                      value="ISLANDS"
-                      th:selected="${actVo.actCity != null and #strings.contains(actVo.actCity, 'ISLANDS')}"
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="ISLANDS"
+                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'ISLANDS')} ? 'selected' : ''"
                     >
                       離島
-                    </option>
-                  </select>
+                    </button>
+                  </div>
+                  <input
+                    type="hidden"
+                    name="actCity"
+                    id="actCityInput"
+                    th:value="${actVo.actCity}"
+                  />
                 </div>
               </div>
 
-              <!-- 圖片上傳區域 -->
+              <!-- 圖片上傳 -->
               <div class="act-detail-info">
                 <div>
-                  <label class="act-detail-label"></label>
+                  <label class="act-detail-label">活動圖片</label>
+
+                  <!-- 現有圖片顯示 -->
+                  <div
+                    class="current-image"
+                    th:if="${actVo.actImg != null and actVo.actImg.length > 0}"
+                    style="margin-bottom: 16px"
+                  >
+                    <label
+                      style="
+                        font-weight: bold;
+                        color: #333;
+                        display: block;
+                        margin-bottom: 8px;
+                      "
+                      >目前圖片：</label
+                    >
+                    <img
+                      th:src="@{'/api/act/image/' + ${actVo.actId}}"
+                      alt="目前圖片"
+                      style="
+                        max-width: 200px;
+                        max-height: 150px;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;
+                        object-fit: cover;
+                      "
+                    />
+                    <small style="color: #666; display: block; margin-top: 8px">
+                      ※ 如果不上傳新圖片，將保留原有圖片
+                    </small>
+                  </div>
+
+                  <div
+                    th:if="${actVo.actImg == null or actVo.actImg.length == 0}"
+                    style="
+                      margin-bottom: 16px;
+                      padding: 12px;
+                      background-color: #f8f9fa;
+                      border: 1px solid #dee2e6;
+                      border-radius: 8px;
+                      color: #666;
+                    "
+                  >
+                    <strong>目前狀態：</strong> 使用預設圖片
+                  </div>
 
                   <!-- 隱藏的檔案輸入框 -->
                   <input
@@ -525,9 +621,7 @@
       </div>
     </div>
 
-    <!-- jQuery & Select2 JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- 標籤按鈕不需要額外的JavaScript庫 -->
 
     <!-- GroupActivity 模組 JavaScript -->
     <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
@@ -539,8 +633,8 @@
         const form = document.getElementById("editActForm");
         if (!form) return;
 
-        // 初始化Select2多標籤選擇器
-        initializeSelect2();
+        // 初始化標籤按鈕選擇器
+        initializeTagButtons();
 
         // 初始化拖拽上傳功能
         initializeDragDrop();
@@ -556,41 +650,44 @@
         });
       }
 
-      // 初始化Select2多標籤選擇器
-      function initializeSelect2() {
-        // 活動類型選擇器
-        $("#actTypeSelect").select2({
-          placeholder: "選擇活動類型",
-          allowClear: false,
-          width: "100%",
-          containerCssClass: "select2-container-custom",
-          dropdownCssClass: "select2-dropdown-custom",
+      // 初始化標籤按鈕選擇器
+      function initializeTagButtons() {
+        // 處理活動類型標籤按鈕
+        const actTypeContainer = document.getElementById("actTypeContainer");
+        const actTypeInput = document.getElementById("actTypeInput");
+
+        actTypeContainer.addEventListener("click", function (e) {
+          if (e.target.classList.contains("tag-button")) {
+            e.target.classList.toggle("selected");
+            updateHiddenInput("actType");
+          }
         });
 
-        // 活動地區選擇器
-        $("#actCitySelect").select2({
-          placeholder: "選擇活動地區",
-          allowClear: false,
-          width: "100%",
-          containerCssClass: "select2-container-custom",
-          dropdownCssClass: "select2-dropdown-custom",
-        });
+        // 處理活動地區標籤按鈕
+        const actCityContainer = document.getElementById("actCityContainer");
+        const actCityInput = document.getElementById("actCityInput");
 
-        // 添加select2-label
-        addSelect2Labels();
+        actCityContainer.addEventListener("click", function (e) {
+          if (e.target.classList.contains("tag-button")) {
+            e.target.classList.toggle("selected");
+            updateHiddenInput("actCity");
+          }
+        });
       }
 
-      // 添加Select2標籤
-      function addSelect2Labels() {
-        const typeContainer = $("#actTypeSelect").next(".select2-container");
-        const cityContainer = $("#actCitySelect").next(".select2-container");
+      // 更新隱藏輸入框的值
+      function updateHiddenInput(type) {
+        const container = document.getElementById(type + "Container");
+        const input = document.getElementById(type + "Input");
+        const selectedButtons = container.querySelectorAll(
+          ".tag-button.selected"
+        );
 
-        if (!typeContainer.prev(".select2-label").length) {
-          typeContainer.before('<label class="select2-label">活動類型</label>');
-        }
-
-        if (!cityContainer.prev(".select2-label").length) {
-          cityContainer.before('<label class="select2-label">活動地區</label>');
+        if (selectedButtons.length > 0) {
+          // 只取第一個選中的值（與後端相容）
+          input.value = selectedButtons[0].dataset.value;
+        } else {
+          input.value = "";
         }
       }
 
@@ -666,11 +763,8 @@
             return;
           }
 
-          // 使用GroupActivityForm的共用函數
-          const { compressImage } = GroupActivityForm;
-          compressImage(file, (compressedFile) => {
-            showImagePreview(compressedFile);
-          });
+          // 直接顯示圖片預覽（簡化版本）
+          showImagePreview(file);
         }
 
         function showImagePreview(file) {
@@ -680,19 +774,11 @@
             dragDropArea.classList.add("hidden");
             imagePreview.classList.remove("hidden");
 
-            // 顯示壓縮資訊
-            const originalSize = (file.originalSize / 1024).toFixed(1);
-            const compressedSize = (file.size / 1024).toFixed(1);
-            const compressionRatio = (
-              ((file.originalSize - file.size) / file.originalSize) *
-              100
-            ).toFixed(1);
-
+            // 顯示檔案資訊
+            const fileSize = (file.size / 1024).toFixed(1);
             compressionInfo.innerHTML = `
               <div class="compression-stats">
-                <span>原始大小: ${originalSize} KB</span>
-                <span>壓縮後: ${compressedSize} KB</span>
-                <span>節省: ${compressionRatio}%</span>
+                <span>檔案大小: ${fileSize} KB</span>
               </div>
             `;
           };
@@ -710,8 +796,6 @@
 
       // 初始化實時驗證
       function initializeRealTimeValidation() {
-        const { validateField } = GroupActivityForm;
-
         // 設置實時驗證
         [
           "actName",
@@ -734,34 +818,213 @@
         });
       }
 
+      // 簡單的欄位驗證
+      function validateField(field) {
+        const value = field.value.trim();
+        const isRequired = field.hasAttribute("required");
+
+        if (isRequired && !value) {
+          field.classList.add("is-invalid");
+          const feedback = field.parentNode.querySelector(".invalid-feedback");
+          if (feedback) {
+            feedback.textContent = "此欄位為必填";
+          }
+          return false;
+        } else {
+          field.classList.remove("is-invalid");
+          const feedback = field.parentNode.querySelector(".invalid-feedback");
+          if (feedback) {
+            feedback.textContent = "";
+          }
+          return true;
+        }
+      }
+
       // 清除所有欄位錯誤
       function clearAllFieldErrors() {
-        const { clearFieldError } = GroupActivityForm;
+        // 1. 清除 is-invalid 樣式
+        document.querySelectorAll(".is-invalid").forEach(function (field) {
+          field.classList.remove("is-invalid");
+        });
+        // 2. 清空所有 .invalid-feedback 內容
         document
-          .querySelectorAll(".form-control, .form-select")
-          .forEach(clearFieldError);
+          .querySelectorAll(".invalid-feedback")
+          .forEach(function (element) {
+            element.textContent = "";
+          });
       }
 
       // 處理編輯表單提交
       async function handleEditFormSubmission(form) {
-        const { updateActivity } = GroupActivityAPI;
-
         try {
           const formData = new FormData(form);
-          const result = await updateActivity(formData);
 
-          alert("活動更新成功！");
+          // 標籤選擇的值已經通過隱藏輸入框自動包含在 FormData 中
+          // 不需要額外處理，因為 updateHiddenInput 函數已經處理了值的設定
 
-          // 自動返回上一頁
-          if (document.referrer) {
-            window.location.href = document.referrer;
+          // 顯示提交中的狀態
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+          submitBtn.textContent = "儲存中...";
+          submitBtn.disabled = true;
+
+          // 使用直接的 fetch API，與新增表單邏輯一致
+          const response = await fetch("/api/act/update", {
+            method: "PUT",
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            // 處理錯誤回應
+            let errorMessages = [];
+            if (
+              result.success === false &&
+              result.errors &&
+              Array.isArray(result.errors)
+            ) {
+              errorMessages = result.errors;
+            } else if (result.success === false && result.error) {
+              errorMessages = [result.error];
+            } else if (result.message) {
+              errorMessages = [result.message];
+            } else if (result.error) {
+              errorMessages = [result.error];
+            } else {
+              errorMessages = ["儲存失敗，請檢查輸入內容"];
+            }
+
+            // 顯示錯誤訊息並標記相應欄位
+            // showErrorMessages(errorMessages); // 暫時註解統一錯誤訊息
+            errorMessages.forEach((msg) => {
+              const lowerMsg = msg.toLowerCase();
+              if (msg.includes("活動名稱") || lowerMsg.includes("actname")) {
+                markFieldAsInvalid("actName", msg);
+              }
+              if (msg.includes("行程編號") || lowerMsg.includes("itnid")) {
+                markFieldAsInvalid("itnId", msg);
+              }
+              if (
+                msg.includes("報名開始時間") ||
+                lowerMsg.includes("signupstart")
+              ) {
+                markFieldAsInvalid("signupStart", msg);
+              }
+              if (
+                msg.includes("報名截止時間") ||
+                lowerMsg.includes("signupend")
+              ) {
+                markFieldAsInvalid("signupEnd", msg);
+              }
+              if (
+                msg.includes("活動開始時間") ||
+                lowerMsg.includes("actstart")
+              ) {
+                markFieldAsInvalid("actStart", msg);
+              }
+              if (msg.includes("活動結束時間") || lowerMsg.includes("actend")) {
+                markFieldAsInvalid("actEnd", msg);
+              }
+              if (msg.includes("人數需求") || lowerMsg.includes("maxcap")) {
+                markFieldAsInvalid("maxCap", msg);
+              }
+            });
           } else {
-            window.history.back();
+            // 成功情況
+            showSuccessMessage("活動更新成功！正在跳轉...");
+            // 跳轉到我的活動列表
+            setTimeout(() => {
+              if (result.data?.hostId || result.hostId) {
+                window.location.href = `/act/member/listMy/${
+                  result.data?.hostId || result.hostId
+                }`;
+              } else {
+                window.history.back();
+              }
+            }, 1500);
           }
         } catch (error) {
           console.error("更新活動失敗:", error);
-          alert("更新活動失敗，請檢查網路連線或稍後再試");
+          // showErrorMessages("網路錯誤，請稍後再試"); // 暫時註解統一錯誤訊息
+        } finally {
+          // 恢復提交按鈕狀態
+          const submitBtn = form.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.textContent = "儲存修改";
+            submitBtn.disabled = false;
+          }
         }
+      }
+
+      // 顯示錯誤訊息（與新增表單一致）
+      function showErrorMessages(errors) {
+        // 暫時註解統一錯誤訊息顯示功能
+        /*
+        clearAllFieldErrors();
+        // 清除已存在的錯誤容器
+        const existingErrorContainer = document.getElementById("errorMessages");
+        if (existingErrorContainer) existingErrorContainer.remove();
+        
+        const errorContainer = document.createElement("div");
+        errorContainer.id = "errorMessages";
+        errorContainer.className = "alert alert-danger";
+        errorContainer.style.margin = "16px 0";
+
+        if (Array.isArray(errors)) {
+          const errorList = document.createElement("ul");
+          errorList.style.margin = "0";
+          errorList.style.paddingLeft = "20px";
+          errors.forEach((error) => {
+            const listItem = document.createElement("li");
+            listItem.textContent = error;
+            errorList.appendChild(listItem);
+          });
+          errorContainer.appendChild(errorList);
+        } else {
+          errorContainer.textContent = errors;
+        }
+
+        const form = document.getElementById("editActForm");
+        form.parentNode.insertBefore(errorContainer, form);
+        errorContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+        */
+
+        // 只清除欄位錯誤，不顯示頂部統一錯誤訊息
+        clearAllFieldErrors();
+      }
+
+      // 標記欄位為無效
+      function markFieldAsInvalid(fieldName, errorMessage = "") {
+        const field = document.querySelector(`[name="${fieldName}"]`);
+        if (field) {
+          field.classList.add("is-invalid");
+          const feedbackElement =
+            field.parentNode.querySelector(".invalid-feedback");
+          if (feedbackElement && errorMessage) {
+            feedbackElement.textContent = errorMessage;
+          }
+        }
+      }
+
+      // 顯示成功訊息
+      function showSuccessMessage(message) {
+        // 清除已存在的錯誤或成功訊息
+        const errorContainer = document.getElementById("errorMessages");
+        if (errorContainer) errorContainer.remove();
+
+        const successDiv = document.createElement("div");
+        successDiv.className = "alert alert-success";
+        successDiv.textContent = message;
+        successDiv.style.margin = "16px 0";
+
+        const form = document.getElementById("editActForm");
+        form.parentNode.insertBefore(successDiv, form);
+        successDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        setTimeout(() => {
+          successDiv.remove();
+        }, 3000);
       }
 
       // 頁面載入時初始化

@@ -1,0 +1,26 @@
+<!-- 景點後台專用 subnav fragment -->
+<!-- 次導覽列 -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+<div th:fragment="subnav(activeItem)">
+    <header class="secondary-nav">
+        <ul>
+            <li><a th:href="@{/admin/spot/list}" th:classappend="${activeItem == 'list' ? 'active' : ''}">景點列表</a></li>
+            <li><a th:href="@{/admin/spot/review}" th:classappend="${activeItem == 'review' ? 'active' : ''}">審核管理</a></li>
+            <li class="dropdown">
+                <a th:href="@{/admin/spot/add}" th:classappend="${activeItem == 'add' or activeItem == 'api-import' ? 'active' : ''}">新增景點</a>
+                <div class="dropdown-content">
+                    <a th:href="@{/admin/spot/api-import}">
+                        <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 8px;">cloud_download</i>
+                        API資料匯入
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </header>
+</div>
+</body>
+</html> 

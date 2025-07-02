@@ -8,7 +8,7 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-@Entity
+@Entity(name = "ItnSpotManagement")
 @Table(name = "itnspot")
 public class ItnSpotVO implements Serializable{
 

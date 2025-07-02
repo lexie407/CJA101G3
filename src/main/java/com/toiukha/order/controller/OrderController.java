@@ -148,7 +148,9 @@ public class OrderController {
 	@ModelAttribute("orderListData_mem")
 	protected List<OrderVO> referenceListData1(Model model,HttpSession session) {
 		MembersVO member = (MembersVO) session.getAttribute("member");
-
+		if (member == null) {
+			return new ArrayList<>(); // 或回傳 null，看你需求
+		}
 		int memId = member.getMemId();
 		session.setAttribute("memId", memId);
 
@@ -173,7 +175,9 @@ public class OrderController {
 	@ModelAttribute("completedOrdersWithItems")
 	protected List<OrderWithItemsDTO> referenceCompletedOrdersData(Model model, HttpSession session) {
 		MembersVO member = (MembersVO) session.getAttribute("member");
-
+		if (member == null) {
+			return new ArrayList<>(); // 或回傳 null，看你需求
+		}
 		int memId = member.getMemId();
 		session.setAttribute("memId", memId);
 		

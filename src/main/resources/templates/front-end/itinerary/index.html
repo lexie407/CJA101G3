@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行程首頁 - 島遊Kha</title>
+    
+    <!-- 引用景點模組的樣式基礎 -->
+    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 行程首頁專用樣式 -->
+    <link rel="stylesheet" th:href="@{/css/itinerary/front-end/index.css}">
+</head>
+<body class="light">
+    <div class="app-container">
+        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        <div class="main-content">
+            <div th:replace="~{subnavItnFront :: subnav('home')}"></div>
+            <main class="content-area-main">
+                <!-- 英雄區塊 -->
+                <section class="itinerary-hero">
+                    <span class="itinerary-hero__illustration material-icons" aria-hidden="true">map</span>
+                    <div class="itinerary-hero__content">
+                        <h1 class="itinerary-hero__title">
+                            <span class="material-icons" aria-hidden="true">explore</span>
+                            探索台灣美麗景點
+                        </h1>
+                        <p class="itinerary-hero__subtitle">發現台灣各地精選景點，規劃您的完美旅程</p>
+                    </div>
+                </section>
+
+                <!-- 精選行程區塊 -->
+                <section class="itinerary-featured">
+                    <div class="container">
+                        <h2 class="itinerary-featured__title">
+                            <span class="material-icons">star</span>
+                            精選行程
+                        </h2>
+                        <div class="itinerary-featured-list">
+                            <div class="itinerary-featured-card">
+                                <img src="/images/featured1.jpg" alt="精選行程1" />
+                                <div class="card-content">
+                                    <h3>台北一日遊</h3>
+                                    <p>暢遊台北熱門景點，適合親子與好友同遊。</p>
+                                    <a th:href="@{/itinerary/detail/1}" class="btn">查看行程</a>
+                                </div>
+                            </div>
+                            <div class="itinerary-featured-card">
+                                <img src="/images/featured2.jpg" alt="精選行程2" />
+                                <div class="card-content">
+                                    <h3>美食之旅</h3>
+                                    <p>品嚐台灣各地美食，吃貨必備行程！</p>
+                                    <a th:href="@{/itinerary/detail/3}" class="btn">查看行程</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 主題分類 -->
+                <section class="itinerary-categories">
+                    <div class="container">
+                        <h2 class="itinerary-categories__title">
+                            <span class="material-icons">category</span>
+                            主題分類
+                        </h2>
+                        <div class="category-grid">
+                            <a href="#" class="category-card">
+                                <div class="category-card__icon">
+                                    <span class="material-icons">family_restroom</span>
+                                </div>
+                                <h3 class="category-card__title">親子旅遊</h3>
+                                <p class="category-card__desc">適合全家大小的溫馨行程</p>
+                            </a>
+                            <a href="#" class="category-card">
+                                <div class="category-card__icon">
+                                    <span class="material-icons">restaurant</span>
+                                </div>
+                                <h3 class="category-card__title">美食探索</h3>
+                                <p class="category-card__desc">品嚐台灣在地特色美食</p>
+                            </a>
+                            <a href="#" class="category-card">
+                                <div class="category-card__icon">
+                                    <span class="material-icons">hiking</span>
+                                </div>
+                                <h3 class="category-card__title">戶外冒險</h3>
+                                <p class="category-card__desc">挑戰自然，享受戶外樂趣</p>
+                            </a>
+                            <a href="#" class="category-card">
+                                <div class="category-card__icon">
+                                    <span class="material-icons">museum</span>
+                                </div>
+                                <h3 class="category-card__title">文化巡禮</h3>
+                                <p class="category-card__desc">深度體驗台灣文化之美</p>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- 熱門排行 -->
+                <section class="itinerary-hot">
+                    <div class="container">
+                        <h2 class="itinerary-hot__title">
+                            <span class="material-icons">whatshot</span>
+                            熱門排行
+                        </h2>
+                        <div class="hot-grid">
+                            <a th:href="@{/itinerary/detail/1}" class="hot-card">
+                                <div class="hot-card__rank hot-card__rank--gold">1</div>
+                                <div class="hot-card__content">
+                                    <h3 class="hot-card__title">台北一日遊</h3>
+                                    <p class="hot-card__desc">暢遊台北熱門景點</p>
+                                    <div class="hot-card__stats">
+                                        <span><i class="material-icons">visibility</i> 1,234</span>
+                                        <span><i class="material-icons">favorite</i> 89</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a th:href="@{/itinerary/detail/10}" class="hot-card">
+                                <div class="hot-card__rank hot-card__rank--silver">2</div>
+                                <div class="hot-card__content">
+                                    <h3 class="hot-card__title">清境踏青趣</h3>
+                                    <p class="hot-card__desc">高山美景與新鮮空氣</p>
+                                    <div class="hot-card__stats">
+                                        <span><i class="material-icons">visibility</i> 987</span>
+                                        <span><i class="material-icons">favorite</i> 76</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a th:href="@{/itinerary/detail/3}" class="hot-card">
+                                <div class="hot-card__rank hot-card__rank--bronze">3</div>
+                                <div class="hot-card__content">
+                                    <h3 class="hot-card__title">美食之旅</h3>
+                                    <p class="hot-card__desc">品嚐台灣各地美食</p>
+                                    <div class="hot-card__stats">
+                                        <span><i class="material-icons">visibility</i> 756</span>
+                                        <span><i class="material-icons">favorite</i> 65</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- 快速入口 -->
+                <section class="itinerary-quicklinks">
+                    <div class="container">
+                        <h2 class="itinerary-quicklinks__title">
+                            <span class="material-icons">rocket_launch</span>
+                            快速入口
+                        </h2>
+                        <div class="quicklink-grid">
+                            <a th:href="@{/itinerary/list}" class="quicklink-card">
+                                <div class="quicklink-card__icon quicklink-card__icon--blue">
+                                    <span class="material-icons">list</span>
+                                </div>
+                                <h3 class="quicklink-card__title">行程列表</h3>
+                                <p class="quicklink-card__desc">瀏覽所有精彩行程</p>
+                            </a>
+                            <a th:href="@{/itinerary/add}" class="quicklink-card">
+                                <div class="quicklink-card__icon quicklink-card__icon--pink">
+                                    <span class="material-icons">add</span>
+                                </div>
+                                <h3 class="quicklink-card__title">建立行程</h3>
+                                <p class="quicklink-card__desc">規劃您的專屬旅程</p>
+                            </a>
+                            <a th:href="@{/itinerary/my}" class="quicklink-card">
+                                <div class="quicklink-card__icon quicklink-card__icon--cyan">
+                                    <span class="material-icons">person</span>
+                                </div>
+                                <h3 class="quicklink-card__title">我的行程</h3>
+                                <p class="quicklink-card__desc">管理個人行程規劃</p>
+                            </a>
+                            <a th:href="@{/itinerary/favorites}" class="quicklink-card">
+                                <div class="quicklink-card__icon quicklink-card__icon--green">
+                                    <span class="material-icons">favorite</span>
+                                </div>
+                                <h3 class="quicklink-card__title">我的收藏</h3>
+                                <p class="quicklink-card__desc">查看收藏的行程</p>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html> 

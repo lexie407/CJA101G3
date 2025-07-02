@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>島遊Kha</title>
+    <th:block th:fragment="headResources">
+	    <link rel="stylesheet" th:href="@{/css/light.css}">
+	    <link rel="stylesheet" th:href="@{/css/style.css}">
+	    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    </th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <aside th:fragment="navbar" class="left-nav">
+            <div class="logo-area">
+                <img th:src="@{/images/logo.png}" alt="島遊 kak"> <p class="site-name">島遊<span class="site-name2">kha</span></p>
+            </div>
+
+            <ul>
+                <li th:classappend="${currentPage == 'home' ? 'active' : ''}"><a th:href="@{/spot/}"><span class="material-icons">home</span>首頁</a></li>
+                <li th:classappend="${currentPage == 'travel' ? 'active' : ''}"><a th:href="@{/itinerary/}"><span class="material-icons">card_travel</span>行程</a></li>
+                <li th:classappend="${currentPage == 'groups' ? 'active' : ''}"><a href="#"><span class="material-icons">groups</span>揪團</a></li>
+                <li th:classappend="${currentPage == 'store' ? 'active' : ''}"><a href="#"><span class="material-icons">store</span>商店</a></li>
+                <li th:classappend="${currentPage == 'forum' ? 'active' : ''}"><a href="#"><span class="material-icons">edit</span>討論區</a></li>
+                <hr>
+                <li th:classappend="${currentPage == 'account' ? 'active' : ''}"><a href="#"><span class="material-icons">account_circle</span>會員中心</a></li>
+                <li th:classappend="${currentPage == 'bePartner' ? 'active' : ''}"><a href="#"><span class="material-icons">add_circle_outline</span>成為廠商</a></li>
+            </ul>
+
+            <div class="bottom-notification">
+            	<a th:classappend="${currentPage == 'chatWithMe' ? 'active' : ''}" th:href="@{/report/chat}" id="chatWithMe"><span class="material-icons">support_agent</span>與我聊聊</a>
+                <a th:href="@{/notification/getMemNoti}" id="notificationButton"><span class="material-icons">notifications</span>通知</a>
+            </div>
+
+        </aside>
+
+        <div class="main-content">
+            <header class="secondary-nav">
+                <ul>
+<!--                     <li><a href="#" class="active">Tab1</a></li> -->
+<!--                     <li><a href="#">Tab2</a></li> -->
+<!--                     <li><a href="#">Tab3</a></li> -->
+<!--                     <li><a href="#">Tab4</a></li> -->
+<!--                     <li><a href="#">Tab5</a></li> -->
+<!--                     <li><a href="#">Tab6</a></li> -->
+
+<!--                     <li> -->
+<!--                         <div class="member-info-area"> -->
+<!--                             <img src="./images/user.png" alt="User Avatar" class="member-avatar"> <span class="member-name">會員名稱</span> -->
+<!--                         </div> -->
+<!--                     </li> -->
+<!--                     <li> -->
+<!--                         <div class="logout-area"> -->
+<!--                             <button class="logout-btn material-button"> -->
+<!--                                 <span class="material-icons">logout</span> 登出 -->
+<!--                             </button> -->
+<!--                         </div> -->
+<!--                     </li> -->
+                </ul>
+            </header>
+
+            <main class="content-area-main">
+                <section class="spot-overview">
+                    <h2 class="section-title">景點模組功能總覽</h2>
+                    <div class="overview-grid">
+                        <div class="mdc-card overview-card">
+                            <span class="material-icons overview-icon">star</span>
+                            <h3>熱門景點推薦</h3>
+                            <p>探索本週最受歡迎的景點，發現更多旅遊靈感！</p>
+                            <a th:href="@{/spot/list}" class="mdc-button mdc-button--raised">前往推薦</a>
+                        </div>
+                        <div class="mdc-card overview-card">
+                            <span class="material-icons overview-icon">favorite</span>
+                            <h3>我的收藏</h3>
+                            <p>快速瀏覽你收藏的所有景點，隨時規劃行程。</p>
+                            <a th:href="@{/spot/favorites}" class="mdc-button mdc-button--raised">查看收藏</a>
+                        </div>
+                        <div class="mdc-card overview-card">
+                            <span class="material-icons overview-icon">search</span>
+                            <h3>景點搜尋</h3>
+                            <p>輸入關鍵字，輕鬆找到你想去的景點。</p>
+                            <a th:href="@{/spot/search}" class="mdc-button mdc-button--raised">立即搜尋</a>
+                        </div>
+                        <div class="mdc-card overview-card">
+                            <span class="material-icons overview-icon">map</span>
+                            <h3>地圖探索</h3>
+                            <p>用互動地圖瀏覽所有景點，規劃最佳路線。</p>
+                            <a th:href="@{/spot/map}" class="mdc-button mdc-button--raised">開啟地圖</a>
+                        </div>
+                    </div>
+                </section>
+                <style>
+                    .spot-overview {
+                        padding: 2rem;
+                    }
+                    .section-title {
+                        font-size: 2rem;
+                        margin-bottom: 2rem;
+                        color: #1976d2;
+                        text-align: center;
+                    }
+                    .overview-grid {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 2rem;
+                        justify-content: center;
+                    }
+                    .overview-card {
+                        width: 260px;
+                        border-radius: 16px;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                        background: #fff;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        padding: 2rem 1rem 1.5rem 1rem;
+                        transition: box-shadow 0.2s;
+                        text-align: center;
+                    }
+                    .overview-card:hover {
+                        box-shadow: 0 4px 16px rgba(25,118,210,0.18);
+                    }
+                    .overview-icon {
+                        font-size: 3rem;
+                        color: #1976d2;
+                        margin-bottom: 1rem;
+                    }
+                    .mdc-button {
+                        margin-top: 1.5rem;
+                    }
+                </style>
+            </main>
+        </div>
+        
+    </div>
+
+    <script src="#"></script>
+
+</body>
+
+</html> 

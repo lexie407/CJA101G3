@@ -39,11 +39,14 @@
 							class="member-name">廠商名稱</span>
 					</div>
 				</li>
+				
 				<li>
 					<div class="logout-area">
-						<button class="logout-btn material-button">
+					<form th:action="@{/store/logout}" method="post">
+						<button type="submit" class="logout-btn material-button">
 							<span class="material-icons">logout</span> 登出
 						</button>
+						</form>
 					</div>
 				</li>
 			</ul>

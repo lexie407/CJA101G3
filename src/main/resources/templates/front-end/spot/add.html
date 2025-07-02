@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增景點 - 島遊Kha</title>
+    
+    <!-- 必要資源引用 - 統一使用絕對路徑 -->
+    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 新增景點頁面樣式 -->
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/add.css}">
+</head>
+<body class="light">
+    <div class="app-container">
+        <!-- 左側主導覽列 -->
+        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        
+        <div class="main-content">
+            <!-- 頂部次導覽列 - 新增頁面高亮 -->
+            <div th:replace="~{subnavSpotFront :: subnav('add')}"></div>
+            
+            <main class="content-area-main">
+                <!-- 英雄區塊 -->
+                <section class="spot-add-hero">
+                    <div class="container">
+                        <div class="spot-add-hero__content">
+                            <!-- 麵包屑導航 -->
+                            <nav class="spot-add-breadcrumb" aria-label="breadcrumb">
+                                <ol class="spot-add-breadcrumb__list">
+                                    <li class="spot-add-breadcrumb__item">
+                                        <a th:href="@{/}" class="spot-add-breadcrumb__link">
+                                            <span class="material-icons">home</span>
+                                            首頁
+                                        </a>
+                                    </li>
+                                    <li class="spot-add-breadcrumb__item">
+                                        <a th:href="@{/spot/list}" class="spot-add-breadcrumb__link">
+                                            <span class="material-icons">list</span>
+                                            景點列表
+                                        </a>
+                                    </li>
+                                    <li class="spot-add-breadcrumb__item spot-add-breadcrumb__item--active">
+                                        <span class="material-icons">add_location</span>
+                                        <span>新增景點</span>
+                                    </li>
+                                </ol>
+                            </nav>
+
+                            <!-- 頁面標題 -->
+                            <div class="spot-add-hero__header">
+                                <div class="spot-add-hero__info">
+                                    <h1 class="spot-add-hero__title">新增景點</h1>
+                                    <p class="spot-add-hero__subtitle">分享你發現的美麗景點，與更多旅人一起探索</p>
+                                    <div class="spot-add-hero__features">
+                                        <div class="spot-add-hero__feature">
+                                            <span class="material-icons">verified</span>
+                                            <span>審核制度</span>
+                                        </div>
+                                        <div class="spot-add-hero__feature">
+                                            <span class="material-icons">public</span>
+                                            <span>公開分享</span>
+                                        </div>
+                                        <div class="spot-add-hero__feature">
+                                            <span class="material-icons">favorite</span>
+                                            <span>收藏推薦</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="spot-add-hero__icon">
+                                    <div class="spot-add-hero__icon-container">
+                                        <span class="material-icons">add_location</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 主要內容區域 -->
+                <section class="spot-add-main">
+                    <div class="container">
+                        <!-- 錯誤訊息 -->
+                        <div th:if="${errorMsgs != null and !errorMsgs.isEmpty()}" 
+                             class="spot-add-alert spot-add-alert--error" 
+                             role="alert"
+                             id="errorAlert">
+                            <div class="spot-add-alert__icon">
+                                <span class="material-icons">error</span>
+                            </div>
+                            <div class="spot-add-alert__content">
+                                <div class="spot-add-alert__title">請修正以下錯誤：</div>
+                                <ul class="spot-add-alert__list">
+                                    <li th:each="error : ${errorMsgs}" th:text="${error}">錯誤訊息</li>
+                                </ul>
+                            </div>
+                            <button type="button" class="spot-add-alert__close" aria-label="關閉提示" onclick="closeAlert('errorAlert')">
+                                <span class="material-icons">close</span>
+                            </button>
+                        </div>
+
+                        <!-- 成功訊息 -->
+                        <div th:if="${msg}" 
+                             class="spot-add-alert spot-add-alert--success" 
+                             role="alert"
+                             id="successAlert">
+                            <div class="spot-add-alert__icon">
+                                <span class="material-icons">check_circle</span>
+                            </div>
+                            <div class="spot-add-alert__content">
+                                <div class="spot-add-alert__title">提交成功！</div>
+                                <p class="spot-add-alert__message" th:text="${msg}">景點已成功提交</p>
+                            </div>
+                            <button type="button" class="spot-add-alert__close" aria-label="關閉提示" onclick="closeAlert('successAlert')">
+                                <span class="material-icons">close</span>
+                            </button>
+                        </div>
+
+                        <div class="spot-add-layout">
+                            <!-- 左側主要內容 -->
+                            <div class="spot-add-content">
+                                <!-- 表單卡片 -->
+                                <div class="spot-add-card">
+                                    <div class="spot-add-card__header">
+                                        <h2 class="spot-add-card__title">
+                                            <span class="material-icons">edit_location</span>
+                                            景點資訊
+                                        </h2>
+                                        <p class="spot-add-card__subtitle">請填寫完整的景點資訊</p>
+                                    </div>
+                                    <div class="spot-add-card__content">
+                                        <form id="spotAddForm" method="post" th:action="@{/spot/add}" th:object="${spotVO}" novalidate>
+                                            <!-- 基本資訊區塊 -->
+                                            <div class="spot-add-section">
+                                                <h3 class="spot-add-section__title">
+                                                    <span class="material-icons">info</span>
+                                                    基本資訊
+                                                </h3>
+                                                
+                                                <div class="spot-add-form-grid">
+                                                    <!-- 景點名稱 -->
+                                                    <div class="spot-add-form-group">
+                                                        <label for="spotName" class="spot-add-label">
+                                                            景點名稱 <span class="spot-add-required">*</span>
+                                                        </label>
+                                                        <div class="spot-add-input-container">
+                                                            <span class="material-icons spot-add-input-icon">place</span>
+                                                            <input type="text" 
+                                                                   id="spotName" 
+                                                                   name="spotName" 
+                                                                   class="spot-add-input" 
+                                                                   th:field="*{spotName}"
+                                                                   placeholder="請輸入景點名稱"
+                                                                   maxlength="100"
+                                                                   required
+                                                                   aria-describedby="spotNameHelp">
+                                                        </div>
+                                                        <div id="spotNameHelp" class="spot-add-help-text">
+                                                            請使用正式或廣為人知的名稱，最多100個字元
+                                                        </div>
+                                                        <div class="spot-add-error-text" id="spotNameError"></div>
+                                                    </div>
+
+                                                    <!-- 景點地點 -->
+                                                    <div class="spot-add-form-group">
+                                                        <label for="spotLoc" class="spot-add-label">
+                                                            景點地點 <span class="spot-add-required">*</span>
+                                                        </label>
+                                                        <div class="spot-add-input-container">
+                                                            <span class="material-icons spot-add-input-icon">location_on</span>
+                                                            <input type="text" 
+                                                                   id="spotLoc" 
+                                                                   name="spotLoc" 
+                                                                   class="spot-add-input" 
+                                                                   th:field="*{spotLoc}"
+                                                                   placeholder="例：台北市中正區、花蓮縣秀林鄉..."
+                                                                   maxlength="100"
+                                                                   required
+                                                                   aria-describedby="spotLocHelp">
+                                                        </div>
+                                                        <div id="spotLocHelp" class="spot-add-help-text">
+                                                            請輸入詳細地址或地區，最多100個字元
+                                                        </div>
+                                                        <div class="spot-add-error-text" id="spotLocError"></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- 景點描述 -->
+                                                <div class="spot-add-form-group spot-add-form-group--full">
+                                                    <label for="spotDesc" class="spot-add-label">
+                                                        景點描述 <span class="spot-add-required">*</span>
+                                                    </label>
+                                                    <div class="spot-add-textarea-container">
+                                                        <textarea id="spotDesc" 
+                                                                  name="spotDesc" 
+                                                                  class="spot-add-textarea" 
+                                                                  th:field="*{spotDesc}"
+                                                                  rows="6" 
+                                                                  placeholder="請詳細描述這個景點的特色、美景、歷史背景、適合的遊覽時間、交通方式等資訊..."
+                                                                  maxlength="1000"
+                                                                  required
+                                                                  aria-describedby="spotDescHelp"></textarea>
+                                                        <div class="spot-add-char-count">
+                                                            <span id="descCharCount">0</span>/1000
+                                                        </div>
+                                                    </div>
+                                                    <div id="spotDescHelp" class="spot-add-help-text">
+                                                        詳細的描述能幫助其他旅客更了解這個景點，建議包含特色、交通、最佳遊覽時間等資訊
+                                                    </div>
+                                                    <div class="spot-add-error-text" id="spotDescError"></div>
+                                                </div>
+                                            </div>
+
+                                            <!-- 提交須知 -->
+                                            <div class="spot-add-notice">
+                                                <div class="spot-add-notice__icon">
+                                                    <span class="material-icons">info</span>
+                                                </div>
+                                                <div class="spot-add-notice__content">
+                                                    <h4 class="spot-add-notice__title">提交須知</h4>
+                                                    <ul class="spot-add-notice__list">
+                                                        <li>景點提交後將進入審核階段，審核通過後才會公開顯示</li>
+                                                        <li>請確保提供的資訊真實準確，避免重複提交相同景點</li>
+                                                        <li>建議提供詳細的景點描述，幫助其他旅客了解</li>
+                                                        <li>如有疑問，請透過「與我聊聊」功能聯繫客服人員</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                            <!-- 按鈕區域 -->
+                                            <div class="spot-add-actions">
+                                                <a th:href="@{/spot/list}" class="spot-add-btn spot-add-btn--secondary">
+                                                    <span class="material-icons">arrow_back</span>
+                                                    返回列表
+                                                </a>
+                                                <button type="submit" class="spot-add-btn spot-add-btn--primary" id="submitBtn">
+                                                    <span class="material-icons">add_location</span>
+                                                    <span class="spot-add-btn__text">提交景點</span>
+                                                    <span class="spot-add-btn__loading">
+                                                        <span class="material-icons">refresh</span>
+                                                        提交中...
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 右側幫助資訊 -->
+                            <div class="spot-add-sidebar">
+                                <!-- 幫助提示卡片 -->
+                                <div class="spot-add-help-card">
+                                    <div class="spot-add-help-card__header">
+                                        <h3 class="spot-add-help-card__title">
+                                            <span class="material-icons">lightbulb</span>
+                                            新增景點小貼士
+                                        </h3>
+                                    </div>
+                                    <div class="spot-add-help-card__content">
+                                        <div class="spot-add-help-section">
+                                            <h4 class="spot-add-help-section__title">
+                                                <span class="material-icons">edit</span>
+                                                命名建議
+                                            </h4>
+                                            <ul class="spot-add-help-list">
+                                                <li>使用正式或廣為人知的名稱</li>
+                                                <li>避免使用個人化的暱稱</li>
+                                                <li>如有多個名稱可在描述中補充</li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <div class="spot-add-help-section">
+                                            <h4 class="spot-add-help-section__title">
+                                                <span class="material-icons">description</span>
+                                                描述撰寫
+                                            </h4>
+                                            <ul class="spot-add-help-list">
+                                                <li>描述景點的特色和亮點</li>
+                                                <li>提及適合的遊覽時間和季節</li>
+                                                <li>說明交通方式或停車資訊</li>
+                                                <li>分享個人體驗和推薦理由</li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="spot-add-help-section">
+                                            <h4 class="spot-add-help-section__title">
+                                                <span class="material-icons">verified</span>
+                                                審核流程
+                                            </h4>
+                                            <ul class="spot-add-help-list">
+                                                <li>提交後會進入待審核狀態</li>
+                                                <li>管理員會在3-5個工作天內審核</li>
+                                                <li>審核通過後會自動上架顯示</li>
+                                                <li>如被退回會收到通知說明原因</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 聯繫客服卡片 -->
+                                <div class="spot-add-contact-card">
+                                    <div class="spot-add-contact-card__icon">
+                                        <span class="material-icons">support_agent</span>
+                                    </div>
+                                    <div class="spot-add-contact-card__content">
+                                        <h4 class="spot-add-contact-card__title">需要協助？</h4>
+                                        <p class="spot-add-contact-card__text">
+                                            如果在新增景點過程中遇到任何問題，歡迎聯繫我們的客服團隊
+                                        </p>
+                                        <a th:href="@{/report/chat}" class="spot-add-contact-btn">
+                                            <span class="material-icons">chat</span>
+                                            與我聊聊
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <!-- WebSocket 通知功能 -->
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="/js/notification/websocket.js"></script>
+    <!-- 新增景點頁面腳本 -->
+    <script th:src="@{/js/spot/front-end/add.js}"></script>
+</body>
+</html> 

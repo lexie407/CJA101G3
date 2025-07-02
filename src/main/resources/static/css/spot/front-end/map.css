@@ -1,0 +1,1956 @@
+/**
+ * 景點地圖頁面樣式
+ * @description 提供地圖顯示、側邊欄篩選、景點卡片等組件的樣式
+ * @version 1.0
+ * 
+ * 遵循 Material Design 3 設計系統
+ * 使用 spot-map- 前綴避免樣式衝突
+ */
+
+/* ==========================================================================
+   地圖容器
+   ========================================================================== */
+.spot-map-container {
+    height: 600px;
+    width: 100%;
+    border-radius: var(--md-sys-radius-large);
+    box-shadow: var(--md-sys-elevation-level2);
+    background-color: var(--md-sys-color-surface-container-low);
+    overflow: hidden;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+    border-radius: var(--md-sys-radius-large);
+}
+
+/* ==========================================================================
+   側邊欄
+   ========================================================================== */
+.spot-map-sidebar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--md-sys-color-surface-container-lowest);
+    border-radius: var(--md-sys-radius-large);
+    padding: var(--md-sys-spacing-medium);
+    box-shadow: var(--md-sys-elevation-level1);
+    overflow: visible;
+}
+
+.spot-map-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.spot-map-sidebar::-webkit-scrollbar-track {
+    background: var(--md-sys-color-surface-variant);
+    border-radius: 3px;
+}
+
+.spot-map-sidebar::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline);
+    border-radius: 3px;
+}
+
+.spot-map-sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--md-sys-color-outline-variant);
+}
+
+/* ==========================================================================
+   統計卡片
+   ========================================================================== */
+.spot-map-stats-card {
+    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-secondary) 100%);
+    color: var(--md-sys-color-on-primary);
+    border-radius: var(--md-sys-radius-extra-large);
+    padding: var(--md-sys-spacing-extra-large);
+    margin-bottom: var(--md-sys-spacing-large);
+    box-shadow: var(--md-sys-elevation-level3);
+}
+
+.spot-map-stats-card h5 {
+    font-size: var(--md-sys-typescale-title-medium-size);
+    font-weight: var(--md-sys-typescale-title-medium-weight);
+    margin-bottom: var(--md-sys-spacing-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-map-stats-card .material-icons {
+    font-size: 1.25rem;
+}
+
+.spot-map-stats-numbers {
+    display: flex;
+    text-align: center;
+}
+
+.spot-map-stats-item {
+    flex: 1;
+}
+
+.spot-map-stats-value {
+    font-size: var(--md-sys-typescale-headline-medium-size);
+    font-weight: var(--md-sys-typescale-headline-medium-weight);
+    line-height: 1;
+    margin-bottom: var(--md-sys-spacing-extra-small);
+}
+
+.spot-map-stats-label {
+    font-size: var(--md-sys-typescale-body-small-size);
+    opacity: 0.8;
+}
+
+/* ==========================================================================
+   篩選區塊
+   ========================================================================== */
+.spot-map-filter-section {
+    background: var(--md-sys-color-surface);
+    border-radius: var(--md-sys-radius-large);
+    padding: var(--md-sys-spacing-large);
+    margin-bottom: var(--md-sys-spacing-large);
+    box-shadow: var(--md-sys-elevation-level1);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-map-filter-section h5 {
+    font-size: var(--md-sys-typescale-title-medium-size);
+    font-weight: var(--md-sys-typescale-title-medium-weight);
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: var(--md-sys-spacing-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-map-filter-group {
+    margin-bottom: var(--md-sys-spacing-medium);
+}
+
+.spot-map-filter-label {
+    font-size: var(--md-sys-typescale-body-medium-size);
+    font-weight: var(--md-sys-typescale-body-medium-weight);
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: var(--md-sys-spacing-small);
+    display: block;
+}
+
+/* 地區標籤篩選 */
+.spot-map-region-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--md-sys-spacing-small);
+    margin-bottom: var(--md-sys-spacing-medium);
+}
+
+.spot-map-region-badge {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border: 2px solid var(--md-sys-color-outline-variant);
+    padding: var(--md-sys-spacing-small) var(--md-sys-spacing-medium);
+    border-radius: var(--md-sys-radius-full);
+    font-size: var(--md-sys-typescale-label-medium-size);
+    font-weight: var(--md-sys-typescale-label-medium-weight);
+    cursor: pointer;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    white-space: nowrap;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.spot-map-region-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+}
+
+.spot-map-region-badge:hover {
+    background: var(--md-sys-color-surface-container-high);
+    border-color: var(--md-sys-color-outline);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.spot-map-region-badge:hover::before {
+    opacity: 0.08;
+}
+
+.spot-map-region-badge:focus::before {
+    opacity: 0.12;
+}
+
+.spot-map-region-badge:active {
+    transform: translateY(0);
+}
+
+.spot-map-region-badge:active::before {
+    opacity: 0.16;
+}
+
+.spot-map-region-badge.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 4px 12px rgba(98, 0, 238, 0.3);
+    transform: translateY(-2px);
+}
+
+/* 篩選按鈕 */
+.spot-map-filter-btn {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    border-radius: var(--md-sys-radius-full);
+    padding: var(--md-sys-spacing-medium) var(--md-sys-spacing-large);
+    font-size: var(--md-sys-typescale-label-large-size);
+    font-weight: var(--md-sys-typescale-label-large-weight);
+    cursor: pointer;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    width: 100%;
+    margin-bottom: var(--md-sys-spacing-small);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--md-sys-spacing-small);
+    box-shadow: var(--md-sys-elevation-level1);
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-map-filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+}
+
+.spot-map-filter-btn:hover::before {
+    opacity: 0.08;
+}
+
+.spot-map-filter-btn:focus::before {
+    opacity: 0.12;
+}
+
+.spot-map-filter-btn:active::before {
+    opacity: 0.16;
+}
+
+.spot-map-filter-btn--secondary {
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-primary);
+    border: 1px solid var(--md-sys-color-outline);
+}
+
+/* ==========================================================================
+   景點卡片
+   ========================================================================== */
+.spot-map-card {
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-radius-medium);
+    box-shadow: var(--md-sys-elevation-level1);
+    margin-bottom: var(--md-sys-spacing-medium);
+    overflow: hidden;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    cursor: pointer;
+    position: relative;
+}
+
+.spot-map-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    pointer-events: none;
+}
+
+.spot-map-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--md-sys-elevation-level3);
+}
+
+.spot-map-card:hover::before {
+    opacity: 0.04;
+}
+
+.spot-map-card:focus {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+}
+
+.spot-map-card__content {
+    padding: var(--md-sys-spacing-small);
+}
+
+.spot-map-card__title {
+    font-size: var(--md-sys-typescale-title-small-size);
+    font-weight: var(--md-sys-typescale-title-small-weight);
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: var(--md-sys-spacing-extra-small);
+    line-height: 1.3;
+}
+
+.spot-map-card__location {
+    font-size: var(--md-sys-typescale-body-small-size);
+    color: var(--md-sys-color-on-surface-variant);
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-extra-small);
+    margin-bottom: var(--md-sys-spacing-small);
+}
+
+.spot-map-card__rating {
+    color: var(--md-sys-color-tertiary);
+    font-size: var(--md-sys-typescale-body-small-size);
+}
+
+.spot-map-card__rating .material-icons {
+    font-size: 16px;
+}
+
+/* 圖片卡片變體 */
+.spot-map-card--with-image .spot-map-card__image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+/* ==========================================================================
+   景點列表
+   ========================================================================== */
+.spot-map-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--md-sys-spacing-medium);
+}
+
+.spot-map-list-title {
+    font-size: var(--md-sys-typescale-title-medium-size);
+    font-weight: var(--md-sys-typescale-title-medium-weight);
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-map-count-badge {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    padding: var(--md-sys-spacing-extra-small) var(--md-sys-spacing-small);
+    border-radius: var(--md-sys-radius-full);
+    font-size: var(--md-sys-typescale-label-small-size);
+    font-weight: var(--md-sys-typescale-label-small-weight);
+}
+
+.spot-map-loading {
+    text-align: center;
+    padding: var(--md-sys-spacing-extra-large);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-map-loading .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 3px solid var(--md-sys-color-outline-variant);
+    border-top: 3px solid var(--md-sys-color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--md-sys-spacing-medium);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.spot-map-empty {
+    text-align: center;
+    padding: var(--md-sys-spacing-extra-large);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-map-empty .material-icons {
+    font-size: 3rem;
+    color: var(--md-sys-color-outline);
+    margin-bottom: var(--md-sys-spacing-medium);
+}
+
+/* ==========================================================================
+   地圖控制項
+   ========================================================================== */
+.spot-map-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--md-sys-spacing-medium);
+}
+
+.spot-map-title {
+    font-size: var(--md-sys-typescale-headline-small-size);
+    font-weight: var(--md-sys-typescale-headline-small-weight);
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-map-control-buttons {
+    display: flex;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-map-control-btn {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    border-radius: var(--md-sys-radius-medium);
+    padding: var(--md-sys-spacing-small) var(--md-sys-spacing-medium);
+    font-size: var(--md-sys-typescale-label-medium-size);
+    cursor: pointer;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+    box-shadow: var(--md-sys-elevation-level1);
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-map-control-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+}
+
+.spot-map-control-btn:hover::before {
+    opacity: 0.08;
+}
+
+.spot-map-control-btn:focus::before {
+    opacity: 0.12;
+}
+
+.spot-map-control-btn:active::before {
+    opacity: 0.16;
+}
+
+.spot-map-control-btn--secondary {
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+}
+
+/* ==========================================================================
+   地圖說明
+   ========================================================================== */
+.spot-map-legend {
+    margin-top: var(--md-sys-spacing-medium);
+    padding: var(--md-sys-spacing-medium);
+    background: var(--md-sys-color-surface-container-highest);
+    border-radius: var(--md-sys-radius-medium);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-map-legend-text {
+    font-size: var(--md-sys-typescale-body-small-size);
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.spot-map-legend-text .material-icons {
+    font-size: 16px;
+    vertical-align: middle;
+    margin-right: var(--md-sys-spacing-extra-small);
+}
+
+.spot-map-legend-color {
+    font-weight: var(--md-sys-typescale-label-medium-weight);
+}
+
+.spot-map-legend-color--primary {
+    color: var(--md-sys-color-primary);
+}
+
+.spot-map-legend-color--success {
+    color: var(--md-sys-color-tertiary);
+}
+
+/* ==========================================================================
+   星級評分
+   ========================================================================== */
+.spot-map-rating-stars {
+    color: var(--md-sys-color-tertiary);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-extra-small);
+}
+
+.spot-map-rating-stars .material-icons {
+    font-size: 16px;
+}
+
+.spot-map-rating-stars--small .material-icons {
+    font-size: 14px;
+}
+
+.spot-map-rating-value {
+    font-size: var(--md-sys-typescale-body-small-size);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-left: var(--md-sys-spacing-extra-small);
+}
+
+/* ==========================================================================
+   資訊窗口內容
+   ========================================================================== */
+.spot-map-info-window {
+    max-width: 350px;
+    padding: var(--md-sys-spacing-medium);
+}
+
+.spot-map-info-window h6 {
+    font-size: var(--md-sys-typescale-title-medium-size);
+    font-weight: var(--md-sys-typescale-title-medium-weight);
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: var(--md-sys-spacing-small);
+}
+
+.spot-map-info-window p {
+    font-size: var(--md-sys-typescale-body-small-size);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: var(--md-sys-spacing-small);
+    display: flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+}
+
+.spot-map-info-window p:last-of-type {
+    margin-bottom: var(--md-sys-spacing-medium);
+}
+
+.spot-map-info-window .material-icons {
+    font-size: 16px;
+    color: var(--md-sys-color-outline);
+}
+
+.spot-map-info-window a {
+    color: var(--md-sys-color-primary);
+    text-decoration: none;
+}
+
+.spot-map-info-window a:hover {
+    text-decoration: underline;
+}
+
+.spot-map-info-btn {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    border-radius: var(--md-sys-radius-small);
+    padding: var(--md-sys-spacing-small) var(--md-sys-spacing-medium);
+    font-size: var(--md-sys-typescale-label-small-size);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md-sys-spacing-small);
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+}
+
+.spot-map-info-btn:hover {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    text-decoration: none;
+}
+
+/* ==========================================================================
+   響應式設計
+   ========================================================================== */
+
+/* 小型螢幕 (≤576px) */
+@media (max-width: 576px) {
+    .spot-map-container,
+    .spot-map-sidebar {
+        height: 400px;
+    }
+    
+    .spot-map-sidebar {
+        padding: var(--md-sys-spacing-medium);
+    }
+    
+    .spot-map-stats-card {
+        padding: var(--md-sys-spacing-medium);
+    }
+    
+    .spot-map-filter-section {
+        padding: var(--md-sys-spacing-medium);
+    }
+    
+    .spot-map-region-filters {
+        gap: var(--md-sys-spacing-extra-small);
+    }
+    
+    .spot-map-region-badge {
+        font-size: var(--md-sys-typescale-label-small-size);
+        padding: var(--md-sys-spacing-extra-small) var(--md-sys-spacing-small);
+    }
+    
+    .spot-map-controls {
+        flex-direction: column;
+        gap: var(--md-sys-spacing-small);
+        align-items: stretch;
+    }
+    
+    .spot-map-control-buttons {
+        justify-content: center;
+    }
+}
+
+/* 中型螢幕 (577px - 768px) */
+@media (min-width: 577px) and (max-width: 768px) {
+    .spot-map-container,
+    .spot-map-sidebar {
+        height: 500px;
+    }
+}
+
+/* 大型螢幕 (≥1200px) */
+@media (min-width: 1200px) {
+    .spot-map-container,
+    .spot-map-sidebar {
+        height: 700px;
+    }
+}
+
+/* ==========================================================================
+   無障礙設計
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .spot-map-card,
+    .spot-map-region-badge,
+    .spot-map-filter-btn,
+    .spot-map-control-btn {
+        transition: none;
+    }
+    
+    .spot-map-card:hover {
+        transform: none;
+    }
+    
+    .spinner {
+        animation: none;
+    }
+}
+
+/* 高對比度模式 */
+@media (prefers-contrast: high) {
+    .spot-map-card,
+    .spot-map-filter-section,
+    .spot-map-legend {
+        border-width: 2px;
+    }
+    
+    .spot-map-region-badge,
+    .spot-map-filter-btn,
+    .spot-map-control-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* ==========================================================================
+   列印樣式
+   ========================================================================== */
+@media print {
+    .spot-map-sidebar,
+    .spot-map-controls,
+    .spot-map-filter-section {
+        display: none;
+    }
+    
+    .spot-map-container {
+        height: auto;
+        page-break-inside: avoid;
+    }
+}
+
+/* ==========================================================================
+   自定義地圖標記 (Leaflet)
+   ========================================================================== */
+.custom-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* ==========================================================================
+   動畫效果
+   ========================================================================== */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.spot-map-card {
+    animation: slideInUp var(--md-motion-duration-short4) var(--md-motion-easing-standard);
+}
+
+/* 錯誤狀態顯示 */
+.spot-map-error {
+    text-align: center;
+    padding: var(--md-sys-spacing-extra-large);
+    color: var(--md-sys-color-error);
+}
+
+.spot-map-error .material-icons {
+    font-size: 3rem;
+    margin-bottom: var(--md-sys-spacing-medium);
+}
+
+/* =================
+   地圖瀏覽頁面樣式
+   使用 spot-map- 前綴
+   依賴 style.css 基礎層
+   ================= */
+
+/* 1. 自定義變數 */
+:root {
+    --spot-map-border-radius: 16px;
+    --spot-map-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --spot-map-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --spot-map-transition: 0.2s ease;
+    --spot-map-hero-height: 200px;
+    --spot-map-sidebar-width: 400px;
+    --spot-map-gap: 2rem;
+}
+
+/* ==========================================================================
+   英雄區塊
+   ========================================================================== */
+.spot-map-hero {
+    background: linear-gradient(135deg, 
+        var(--md-sys-color-primary) 0%, 
+        var(--md-sys-color-secondary) 100%);
+    color: var(--md-sys-color-on-primary);
+    padding: 2.5rem 0;
+    margin: 1rem 1.5rem 2.5rem;
+    border-radius: 20px;
+    box-shadow: var(--spot-map-card-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-map-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
+    opacity: 0.4;
+}
+
+.spot-map-hero__content {
+    max-width: none;
+    position: relative;
+    z-index: 2;
+    padding: 0 2rem;
+    animation: spot-map-hero-fade-in 0.8s ease-out;
+}
+
+/* 麵包屑導航 */
+.spot-map-breadcrumb {
+    margin-bottom: 1.5rem;
+}
+
+.spot-map-breadcrumb__list {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+}
+
+.spot-map-breadcrumb__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.spot-map-breadcrumb__item:not(:last-child)::after {
+    content: 'chevron_right';
+    font-family: 'Material Icons';
+    color: rgba(255, 255, 255, 0.6);
+    margin-left: 0.5rem;
+}
+
+.spot-map-breadcrumb__link {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color var(--spot-map-transition);
+}
+
+.spot-map-breadcrumb__link:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+.spot-map-breadcrumb__item--active {
+    color: rgba(255, 255, 255, 1);
+    font-weight: 500;
+}
+
+/* 英雄區塊標題 */
+.spot-map-hero__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.spot-map-hero__info {
+    flex: 1;
+}
+
+.spot-map-hero__title {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    letter-spacing: -0.01em;
+}
+
+.spot-map-hero__subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+/* 特色標籤 */
+.spot-map-hero__features {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.spot-map-hero__feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.spot-map-hero__feature .material-icons {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* 英雄圖標 */
+.spot-map-hero__icon {
+    flex-shrink: 0;
+}
+
+.spot-map-hero__icon-container {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    animation: spot-map-icon-float 3s ease-in-out infinite;
+}
+
+.spot-map-hero__icon-container .material-icons {
+    font-size: 2.5rem;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* 統計資訊 */
+.spot-map-hero__stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.spot-map-stats-item {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.95);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    text-align: center;
+    min-width: 120px;
+}
+
+.spot-map-stats-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.spot-map-stats-label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+/* ==========================================================================
+   主要佈局
+   ========================================================================== */
+.spot-map-main {
+    padding: 0;
+}
+
+.spot-map-layout {
+    display: grid;
+    grid-template-columns: var(--spot-map-sidebar-width) 1fr;
+    gap: var(--spot-map-gap);
+    min-height: 700px;
+}
+
+/* ==========================================================================
+   側邊欄
+   ========================================================================== */
+.spot-map-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-height: 700px;
+    overflow-y: auto;
+}
+
+.spot-map-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.spot-map-sidebar::-webkit-scrollbar-track {
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: 10px;
+}
+
+.spot-map-sidebar::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline);
+    border-radius: 10px;
+}
+
+.spot-map-sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--md-sys-color-outline-variant);
+}
+
+/* ==========================================================================
+   卡片組件
+   ========================================================================== */
+.spot-map-card {
+    background: var(--md-sys-color-surface);
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-radius-large);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    cursor: pointer;
+    margin-bottom: var(--md-sys-spacing-medium);
+}
+
+.spot-map-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px);
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface-container-lowest);
+}
+
+.spot-map-card.active {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    box-shadow: 0 4px 16px rgba(98, 0, 238, 0.2);
+    transform: translateY(-2px);
+}
+
+.spot-map-card__header {
+    background: var(--md-sys-color-surface-container);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.spot-map-card__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-map-card__title .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: 1.25rem;
+}
+
+.spot-map-card__content {
+    padding: 1.5rem;
+}
+
+/* ==========================================================================
+   篩選組件
+   ========================================================================== */
+.spot-map-filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.spot-map-filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.spot-map-filter-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 0.5rem;
+}
+
+/* 地區標籤篩選 */
+.spot-map-region-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.spot-map-region-badge {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--spot-map-transition);
+    white-space: nowrap;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-map-region-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--spot-map-transition);
+}
+
+.spot-map-region-badge:hover::before {
+    opacity: 0.08;
+}
+
+.spot-map-region-badge:focus::before {
+    opacity: 0.12;
+}
+
+.spot-map-region-badge:active::before {
+    opacity: 0.16;
+}
+
+.spot-map-region-badge.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: var(--spot-map-card-shadow);
+}
+
+/* 選擇框 */
+.spot-map-filter-group .spot-map-select,
+select.spot-map-select {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: 20px;
+    background: var(--md-sys-color-surface-container-lowest);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.95rem;
+    font-weight: 400;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+}
+
+.spot-map-select:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface);
+    box-shadow: 0 0 0 3px rgba(98, 0, 238, 0.12), 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.spot-map-select:hover:not(:focus) {
+    border-color: var(--md-sys-color-outline);
+    background: var(--md-sys-color-surface-container);
+}
+
+/* 搜尋框 */
+.spot-map-search-wrapper .spot-map-search-container {
+    position: relative;
+    margin-bottom: var(--md-sys-spacing-small);
+    padding: 0 4px;
+    overflow: visible;
+}
+
+.spot-map-search-wrapper .spot-map-search-icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--md-sys-color-outline);
+    font-size: 1.25rem;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.spot-map-search-wrapper .spot-map-search-input,
+.spot-map-search-wrapper input.spot-map-search-input {
+    width: 100%;
+    padding: 1rem 1.25rem 1rem 3.5rem;
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: 50px;
+    background: var(--md-sys-color-surface-container-lowest);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.95rem;
+    font-weight: 400;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.spot-map-search-input::placeholder {
+    color: var(--md-sys-color-outline);
+    font-style: italic;
+}
+
+.spot-map-search-input:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface);
+    box-shadow: 0 0 0 3px rgba(98, 0, 238, 0.12), 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.spot-map-search-input:hover:not(:focus) {
+    border-color: var(--md-sys-color-outline);
+    background: var(--md-sys-color-surface-container);
+}
+
+/* 篩選按鈕 */
+.spot-map-filter-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.spot-map-filter-actions .spot-map-btn,
+button.spot-map-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.spot-map-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+}
+
+.spot-map-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.spot-map-btn:hover::before {
+    opacity: 0.08;
+}
+
+.spot-map-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.spot-map-btn--primary {
+    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, #7c3aed 100%);
+    color: var(--md-sys-color-on-primary);
+}
+
+.spot-map-btn--primary:hover {
+    box-shadow: 0 4px 16px rgba(98, 0, 238, 0.3);
+}
+
+.spot-map-btn--secondary {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border: 2px solid var(--md-sys-color-outline-variant);
+}
+
+/* 計數徽章 */
+.spot-map-count-badge {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 2rem;
+    text-align: center;
+}
+
+/* ==========================================================================
+   景點列表
+   ========================================================================== */
+.spot-map-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: var(--md-sys-spacing-small);
+}
+
+.spot-map-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.spot-map-list::-webkit-scrollbar-track {
+    background: var(--md-sys-color-surface-container);
+    border-radius: 2px;
+}
+
+.spot-map-list::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline);
+    border-radius: 2px;
+}
+
+/* 景點列表項目 */
+.spot-map-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    cursor: pointer;
+    transition: all var(--spot-map-transition);
+}
+
+.spot-map-list-item:last-child {
+    border-bottom: none;
+}
+
+.spot-map-list-item:hover {
+    background: var(--md-sys-color-surface-container-low);
+}
+
+.spot-map-list-item__image {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--md-sys-radius-small);
+    background: var(--md-sys-color-surface-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.spot-map-list-item__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.spot-map-list-item__image .material-icons {
+    color: var(--md-sys-color-outline);
+    font-size: 1.5rem;
+}
+
+.spot-map-list-item__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.spot-map-list-item__name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spot-map-list-item__location {
+    font-size: 0.8rem;
+    color: var(--md-sys-color-on-surface-variant);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.spot-map-list-item__location .material-icons {
+    font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   地圖區域
+   ========================================================================== */
+.spot-map-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* 地圖控制區 */
+.spot-map-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--md-sys-color-surface);
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--spot-map-border-radius);
+    box-shadow: var(--spot-map-card-shadow);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-map-controls__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-map-controls__title .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: 1.5rem;
+}
+
+.spot-map-controls__buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.spot-map-control-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-radius-small);
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--spot-map-transition);
+    white-space: nowrap;
+}
+
+.spot-map-control-btn:hover {
+    background: var(--md-sys-color-surface-container-low);
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-map-control-btn--secondary {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-color: var(--md-sys-color-secondary);
+}
+
+.spot-map-control-btn--secondary:hover {
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+}
+
+/* 地圖容器 */
+.spot-map-container {
+    position: relative;
+    height: 500px;
+    border-radius: var(--spot-map-border-radius);
+    box-shadow: var(--spot-map-card-shadow);
+    overflow: hidden;
+    background: var(--md-sys-color-surface-container-low);
+}
+
+.spot-map-canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--spot-map-border-radius);
+}
+
+/* 地圖載入覆蓋 */
+.spot-map-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--md-sys-color-surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 10;
+    transition: opacity var(--spot-map-transition);
+}
+
+.spot-map-loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   載入狀態
+   ========================================================================== */
+.spot-map-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.spot-map-loading__spinner {
+    width: 40px;
+    height: 40px;
+    color: var(--md-sys-color-primary);
+    animation: spot-map-spin 2s linear infinite;
+}
+
+.spot-map-loading__spinner .material-icons {
+    font-size: 40px;
+}
+
+.spot-map-loading__text {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* ==========================================================================
+   地圖說明
+   ========================================================================== */
+.spot-map-legend {
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--spot-map-border-radius);
+    padding: 1rem 1.25rem;
+}
+
+.spot-map-legend__content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.spot-map-legend__content .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: 1.25rem;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+}
+
+.spot-map-legend__text {
+    flex: 1;
+}
+
+.spot-map-legend__text p {
+    font-size: 0.85rem;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+}
+
+.spot-map-legend__colors {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.spot-map-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-map-legend__color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.spot-map-legend__color--primary {
+    background: var(--md-sys-color-primary);
+}
+
+.spot-map-legend__color--success {
+    background: var(--md-sys-color-tertiary);
+}
+
+/* ==========================================================================
+   動畫效果
+   ========================================================================== */
+@keyframes spot-map-hero-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spot-map-icon-float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes spot-map-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================================================================
+   響應式設計
+   ========================================================================== */
+
+/* 小型設備 (≤768px) */
+@media (max-width: 768px) {
+    :root {
+        --spot-map-sidebar-width: 100%;
+        --spot-map-gap: 1rem;
+    }
+    
+    .spot-map-hero {
+        padding: 2rem 0;
+        margin: 0.5rem 0 2rem;
+        border-radius: 16px;
+    }
+    
+    .spot-map-hero__content {
+        padding: 0 1rem;
+    }
+    
+    .spot-map-hero__header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .spot-map-hero__title {
+        font-size: 1.8rem;
+    }
+    
+    .spot-map-hero__features {
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .spot-map-hero__feature {
+        font-size: 0.85rem;
+    }
+    
+    .spot-map-hero__icon-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .spot-map-hero__icon-container .material-icons {
+        font-size: 2rem;
+    }
+    
+    .spot-map-hero__stats {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .spot-map-layout {
+        grid-template-columns: 1fr;
+        gap: var(--spot-map-gap);
+    }
+    
+    .spot-map-sidebar {
+        order: 2;
+        max-height: none;
+    }
+    
+    .spot-map-content {
+        order: 1;
+    }
+    
+    .spot-map-container {
+        height: 400px;
+    }
+    
+    .spot-map-controls {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .spot-map-controls__buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .spot-map-filter-actions {
+        flex-direction: column;
+    }
+    
+    .spot-map-breadcrumb__list {
+        justify-content: center;
+    }
+}
+
+/* 中型設備 (≥768px) */
+@media (min-width: 768px) {
+    .spot-map-hero__content {
+        padding: 0 2rem;
+    }
+    
+    .spot-map-hero__header {
+        flex-wrap: nowrap;
+    }
+}
+
+/* 大型設備 (≥992px) */
+@media (min-width: 992px) {
+    :root {
+        --spot-map-sidebar-width: 420px;
+        --spot-map-gap: 2.5rem;
+    }
+    
+    .spot-map-hero__features {
+        gap: 2rem;
+    }
+    
+    .spot-map-container {
+        height: 600px;
+    }
+}
+
+/* 超大設備 (≥1200px) */
+@media (min-width: 1200px) {
+    .spot-map-hero {
+        margin: 1rem 2rem 2.5rem;
+    }
+    
+    .spot-map-layout {
+        gap: 3rem;
+    }
+}
+
+/* ==========================================================================
+   無障礙和性能優化
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .spot-map-card,
+    .spot-map-btn,
+    .spot-map-region-badge,
+    .spot-map-control-btn,
+    .spot-map-list-item {
+        transition: none;
+        animation: none;
+        transform: none;
+    }
+    
+    .spot-map-loading__spinner {
+        animation: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .spot-map-card,
+    .spot-map-btn,
+    .spot-map-region-badge,
+    .spot-map-control-btn {
+        border: 2px solid var(--md-sys-color-outline);
+    }
+}
+
+@media print {
+    .spot-map-sidebar,
+    .spot-map-controls,
+    .spot-map-legend {
+        display: none;
+    }
+    
+    .spot-map-container {
+        background: white !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .spot-map-layout {
+        display: block;
+    }
+}
+
+/* ==========================================================================
+   新版 Tab 介面樣式
+   ========================================================================== */
+
+/* 搜尋框容器 */
+.spot-map-search-wrapper {
+    padding: var(--md-sys-spacing-large) var(--md-sys-spacing-large);
+    background: var(--md-sys-color-surface);
+    border-radius: var(--md-sys-radius-large) var(--md-sys-radius-large) 0 0;
+    margin: calc(var(--md-sys-spacing-medium) * -1) calc(var(--md-sys-spacing-medium) * -1) var(--md-sys-spacing-medium);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: visible;
+}
+
+/* Tab 結構 */
+.spot-map-tabs {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+    background: var(--md-sys-color-surface);
+    border-radius: var(--md-sys-radius-large);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab 按鈕列 */
+.spot-map-tab-header {
+    display: flex;
+    background: var(--md-sys-color-surface-container-lowest);
+    border-radius: var(--md-sys-radius-large) var(--md-sys-radius-large) 0 0;
+    padding: var(--md-sys-spacing-small);
+    gap: var(--md-sys-spacing-small);
+    margin-bottom: var(--md-sys-spacing-medium);
+}
+
+.spot-map-tab-link {
+    flex: 1;
+    padding: var(--md-sys-spacing-medium) var(--md-sys-spacing-large);
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    border-radius: var(--md-sys-radius-medium);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: var(--md-sys-typescale-title-small-size);
+    font-weight: var(--md-sys-typescale-title-small-weight);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--md-sys-spacing-small);
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.spot-map-tab-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+}
+
+.spot-map-tab-link:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.spot-map-tab-link:hover::before {
+    opacity: 0.08;
+}
+
+.spot-map-tab-link.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: 0 4px 12px rgba(98, 0, 238, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Tab 內容 */
+.spot-map-tab-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.spot-map-tab-pane {
+    display: none;
+    animation: fadeIn var(--md-motion-duration-short2) ease-in-out;
+    padding: var(--md-sys-spacing-medium);
+    height: 100%;
+    overflow-y: auto;
+}
+
+.spot-map-tab-pane.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 篩選面板的內邊距 */
+#tab-filters {
+    padding: var(--md-sys-spacing-large);
+    gap: var(--md-sys-spacing-large);
+}
+
+/* 景點列表面板 */
+#tab-list {
+    padding: var(--md-sys-spacing-small);
+}
+
+/* 移除景點列表的額外卡片樣式 */
+#spotList.spot-map-list {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   強制圓角樣式覆蓋 (使用更高優先級選擇器)
+   ========================================================================== */
+
+/* 搜尋框圓角強制覆蓋 */
+#searchInput {
+    border-radius: 50px;
+    padding: 1rem 1.25rem 1rem 3.5rem;
+    border: 2px solid #e0e0e0;
+    background: #fafafa;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+/* 確保搜尋框容器有足夠空間 */
+.spot-map-search-wrapper {
+    box-sizing: border-box;
+}
+
+.spot-map-search-wrapper .spot-map-search-container {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* 下拉選單圓角強制覆蓋 */
+#ratingFilter {
+    border-radius: 20px;
+    padding: 0.875rem 1.25rem;
+    border: 2px solid #e0e0e0;
+    background: #fafafa;
+}
+
+/* 按鈕圓角強制覆蓋 */
+.spot-map-filter-actions button {
+    border-radius: 50px;
+    padding: 0.875rem 1.25rem;
+}
+
+/* Tab 按鈕圓角強制覆蓋 */
+.spot-map-tab-link {
+    border-radius: 15px;
+}
+
+/* 區域篩選標籤圓角強制覆蓋 */
+.spot-map-region-badge {
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    border: 2px solid #e0e0e0;
+} 

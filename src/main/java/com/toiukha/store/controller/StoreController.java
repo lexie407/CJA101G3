@@ -236,6 +236,7 @@ public class StoreController {
 				errorMsgs.add(error.getDefaultMessage());
 			}
 			model.addAttribute("errorMsgs", errorMsgs);
+			model.addAttribute("currentPage", "partner");
 			return "back-end/store/editStore";
 		}
 

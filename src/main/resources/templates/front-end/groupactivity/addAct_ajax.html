@@ -16,10 +16,6 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link
-      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
-      rel="stylesheet"
-    />
   </head>
   <body class="light">
     <div class="app-container">
@@ -114,54 +110,192 @@
                   <div class="invalid-feedback"></div>
                 </div>
               </div>
-              <div class="act-detail-info">
-                <div>
-                  <label class="act-detail-label"></label>
-                  <select
-                    name="actType"
-                    id="actTypeSelect"
-                    class="js-tags act-search-input full-width"
-                    multiple="multiple"
-                    title="選擇活動類型"
+              <!-- 活動類型和地區標籤選擇 -->
+              <div class="act-detail-info" style="display: block">
+                <!-- 活動類型標籤選擇 -->
+                <div class="tag-section">
+                  <label class="tag-label"
+                    >活動類型 <span class="required-mark">*</span></label
                   >
-                    <option value="ARTS">藝文</option>
-                    <option value="ECOLOGY">生態</option>
-                    <option value="OUTDOOR">戶外</option>
-                    <option value="SPORTS">運動</option>
-                    <option value="FOOD">美食</option>
-                    <option value="FAMILY">親子</option>
-                    <option value="SENIOR">銀髮</option>
-                    <option value="PET">寵物</option>
-                  </select>
+                  <div class="tag-container" id="actTypeContainer">
+                    <button type="button" class="tag-button" data-value="ARTS">
+                      藝文
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="ECOLOGY"
+                    >
+                      生態
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="OUTDOOR"
+                    >
+                      戶外
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="SPORTS"
+                    >
+                      運動
+                    </button>
+                    <button type="button" class="tag-button" data-value="FOOD">
+                      美食
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="FAMILY"
+                    >
+                      親子
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="SENIOR"
+                    >
+                      銀髮
+                    </button>
+                    <button type="button" class="tag-button" data-value="PET">
+                      寵物
+                    </button>
+                  </div>
+                  <input type="hidden" name="actType" id="actTypeInput" />
                 </div>
-                <div>
-                  <label class="act-detail-label"></label>
-                  <select
-                    name="actCity"
-                    id="actCitySelect"
-                    class="js-tags act-search-input full-width"
-                    multiple="multiple"
-                    title="選擇活動地區"
+
+                <!-- 活動地區標籤選擇 -->
+                <div class="tag-section">
+                  <label class="tag-label"
+                    >活動地區 <span class="required-mark">*</span></label
                   >
-                    <option value="TAIPEI">台北</option>
-                    <option value="NEW_TAIPEI">新北</option>
-                    <option value="TAOYUAN">桃園</option>
-                    <option value="TAICHUNG">台中</option>
-                    <option value="TAINAN">台南</option>
-                    <option value="KAOHSIUNG">高雄</option>
-                    <option value="KEELUNG">基隆</option>
-                    <option value="HSINCHU">新竹</option>
-                    <option value="MIAOLI">苗栗</option>
-                    <option value="CHANGHUA">彰化</option>
-                    <option value="NANTOU">南投</option>
-                    <option value="YUNLIN">雲林</option>
-                    <option value="CHIAYI">嘉義</option>
-                    <option value="PINGTUNG">屏東</option>
-                    <option value="YILAN">宜蘭</option>
-                    <option value="HUALIEN">花蓮</option>
-                    <option value="TAITUNG">台東</option>
-                    <option value="ISLANDS">離島</option>
-                  </select>
+                  <div class="tag-container" id="actCityContainer">
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAIPEI"
+                    >
+                      台北
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="NEW_TAIPEI"
+                    >
+                      新北
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAOYUAN"
+                    >
+                      桃園
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAICHUNG"
+                    >
+                      台中
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAINAN"
+                    >
+                      台南
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="KAOHSIUNG"
+                    >
+                      高雄
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="KEELUNG"
+                    >
+                      基隆
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="HSINCHU"
+                    >
+                      新竹
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="MIAOLI"
+                    >
+                      苗栗
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="CHANGHUA"
+                    >
+                      彰化
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="NANTOU"
+                    >
+                      南投
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="YUNLIN"
+                    >
+                      雲林
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="CHIAYI"
+                    >
+                      嘉義
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="PINGTUNG"
+                    >
+                      屏東
+                    </button>
+                    <button type="button" class="tag-button" data-value="YILAN">
+                      宜蘭
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="HUALIEN"
+                    >
+                      花蓮
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="TAITUNG"
+                    >
+                      台東
+                    </button>
+                    <button
+                      type="button"
+                      class="tag-button"
+                      data-value="ISLANDS"
+                    >
+                      離島
+                    </button>
+                  </div>
+                  <input type="hidden" name="actCity" id="actCityInput" />
                 </div>
               </div>
               <div class="act-detail-info">
@@ -333,22 +467,17 @@
       </div>
     </div>
 
-    <!-- jQuery & Select2 JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <!-- GroupActivity 模組 JavaScript -->
-    <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
-    <script th:src="@{/js/groupactivity/groupactivity-form.js}"></script>
-    <script th:src="@{/js/groupactivity/groupactivity-api.js}"></script>
+    <!-- 不再需要外部依賴 -->
 
     <script>
       function initializeForm() {
         const form = document.getElementById("addActForm");
-        if (!form) return;
+        if (!form) {
+          return;
+        }
 
-        // 初始化Select2多標籤選擇器
-        initializeSelect2();
+        // 初始化標籤按鈕選擇器
+        initializeTagButtons();
 
         // 初始化拖拽上傳功能
         initializeDragDrop();
@@ -484,51 +613,54 @@
         }
       }
 
-      // 初始化Select2標籤選擇器
-      function initializeSelect2() {
-        // 活動類型標籤選擇器
-        $("#actTypeSelect").select2({
-          placeholder: "選擇活動類型（可多選）",
-          allowClear: true,
-          tags: true,
-          tokenSeparators: [",", " "],
-          maximumSelectionLength: 3, // 最多選3個
-          language: {
-            maximumSelected: function (e) {
-              return "最多只能選擇 " + e.maximum + " 個標籤";
-            },
-            noResults: function () {
-              return "沒有找到相關標籤";
-            },
-            searching: function () {
-              return "搜尋中...";
-            },
-          },
+      // 初始化標籤按鈕
+      function initializeTagButtons() {
+        // 初始化活動類型標籤按鈕
+        const actTypeButtons = document.querySelectorAll(
+          "#actTypeContainer .tag-button"
+        );
+        actTypeButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            // 清除其他按鈕的選中狀態（只允許選一個）
+            actTypeButtons.forEach((btn) => btn.classList.remove("selected"));
+            // 設置當前按鈕為選中狀態
+            this.classList.add("selected");
+            // 更新隱藏input的值
+            document.getElementById("actTypeInput").value = this.dataset.value;
+          });
         });
 
-        // 活動地區標籤選擇器
-        $("#actCitySelect").select2({
-          placeholder: "選擇活動地區（可多選）",
-          allowClear: true,
-          tags: true,
-          tokenSeparators: [",", " "],
-          maximumSelectionLength: 2, // 最多選2個地區
-          language: {
-            maximumSelected: function (e) {
-              return "最多只能選擇 " + e.maximum + " 個地區";
-            },
-            noResults: function () {
-              return "沒有找到相關地區";
-            },
-            searching: function () {
-              return "搜尋中...";
-            },
-          },
+        // 初始化活動地區標籤按鈕
+        const actCityButtons = document.querySelectorAll(
+          "#actCityContainer .tag-button"
+        );
+        actCityButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            // 清除其他按鈕的選中狀態（只允許選一個）
+            actCityButtons.forEach((btn) => btn.classList.remove("selected"));
+            // 設置當前按鈕為選中狀態
+            this.classList.add("selected");
+            // 更新隱藏input的值
+            document.getElementById("actCityInput").value = this.dataset.value;
+          });
         });
 
         // 設定預設選項（用於測試）
-        $("#actTypeSelect").val(["OUTDOOR"]).trigger("change");
-        $("#actCitySelect").val(["TAIPEI"]).trigger("change");
+        const defaultTypeButton = document.querySelector(
+          '#actTypeContainer .tag-button[data-value="OUTDOOR"]'
+        );
+        if (defaultTypeButton) {
+          defaultTypeButton.classList.add("selected");
+          document.getElementById("actTypeInput").value = "OUTDOOR";
+        }
+
+        const defaultCityButton = document.querySelector(
+          '#actCityContainer .tag-button[data-value="TAIPEI"]'
+        );
+        if (defaultCityButton) {
+          defaultCityButton.classList.add("selected");
+          document.getElementById("actCityInput").value = "TAIPEI";
+        }
       }
 
       // 清除所有欄位錯誤
@@ -605,6 +737,18 @@
           markFieldAsInvalid("maxCap", "請輸入人數需求");
         } else if (parseInt(maxCap) <= 0) {
           markFieldAsInvalid("maxCap", "人數需求必須大於0");
+        }
+
+        // 檢查活動類型
+        const actType = document.getElementById("actTypeInput").value;
+        if (!actType) {
+          markFieldAsInvalid("actType", "請選擇活動類型");
+        }
+
+        // 檢查活動地區
+        const actCity = document.getElementById("actCityInput").value;
+        if (!actCity) {
+          markFieldAsInvalid("actCity", "請選擇活動地區");
         }
 
         // 時間邏輯驗證
@@ -685,9 +829,9 @@
           }
         }
 
-        // 保存Select2的值
-        formData.actTypeSelect = $("#actTypeSelect").val() || [];
-        formData.actCitySelect = $("#actCitySelect").val() || [];
+        // 保存標籤按鈕的值
+        formData.actType = document.getElementById("actTypeInput").value || "";
+        formData.actCity = document.getElementById("actCityInput").value || "";
 
         return formData;
       }
@@ -696,17 +840,35 @@
       function restoreFormData(savedData) {
         Object.keys(savedData).forEach((name) => {
           const element = document.querySelector(`[name="${name}"]`);
-          if (element && name !== "actTypeSelect" && name !== "actCitySelect") {
+          if (element) {
             element.value = savedData[name];
           }
         });
 
-        // 恢復Select2的值
-        if (savedData.actTypeSelect) {
-          $("#actTypeSelect").val(savedData.actTypeSelect).trigger("change");
+        // 恢復標籤按鈕的選中狀態
+        if (savedData.actType) {
+          const typeButton = document.querySelector(
+            `#actTypeContainer .tag-button[data-value="${savedData.actType}"]`
+          );
+          if (typeButton) {
+            document
+              .querySelectorAll("#actTypeContainer .tag-button")
+              .forEach((btn) => btn.classList.remove("selected"));
+            typeButton.classList.add("selected");
+            document.getElementById("actTypeInput").value = savedData.actType;
+          }
         }
-        if (savedData.actCitySelect) {
-          $("#actCitySelect").val(savedData.actCitySelect).trigger("change");
+        if (savedData.actCity) {
+          const cityButton = document.querySelector(
+            `#actCityContainer .tag-button[data-value="${savedData.actCity}"]`
+          );
+          if (cityButton) {
+            document
+              .querySelectorAll("#actCityContainer .tag-button")
+              .forEach((btn) => btn.classList.remove("selected"));
+            cityButton.classList.add("selected");
+            document.getElementById("actCityInput").value = savedData.actCity;
+          }
         }
       }
 
@@ -718,19 +880,16 @@
           // 保存表單數據（用於錯誤時恢復）
           const savedFormData = saveFormData(form);
 
-          // 前端表單驗證（顯示錯誤但不阻止提交）
-          validateForm(formData);
+          // 從隱藏的input中獲取選中的標籤值
+          const selectedType = document.getElementById("actTypeInput").value;
+          const selectedCity = document.getElementById("actCityInput").value;
 
-          // 處理多選標籤 - 暫時只取第一個選中的值（保持後端相容性）
-          const selectedTypes = $("#actTypeSelect").val();
-          const selectedCities = $("#actCitySelect").val();
-
-          if (selectedTypes && selectedTypes.length > 0) {
-            formData.set("actType", selectedTypes[0]); // 目前後端只支持單一類型
+          if (selectedType) {
+            formData.set("actType", selectedType);
           }
 
-          if (selectedCities && selectedCities.length > 0) {
-            formData.set("actCity", selectedCities[0]); // 目前後端只支持單一城市
+          if (selectedCity) {
+            formData.set("actCity", selectedCity);
           }
 
           formData.set("recruitStatus", "0");
@@ -750,28 +909,13 @@
           const result = await response.json();
 
           if (!response.ok) {
-            let errorMessages = [];
-
-            if (
-              result.success === false &&
-              result.errors &&
-              Array.isArray(result.errors)
-            ) {
-              errorMessages = result.errors;
-            } else if (result.success === false && result.error) {
-              errorMessages = [result.error];
-            } else if (result.message) {
-              errorMessages = [result.message];
-            } else if (result.error) {
-              errorMessages = [result.error];
-            } else {
-              errorMessages = ["提交失敗，請檢查輸入內容"];
-            }
-
             // 恢復用戶輸入的數據
             restoreFormData(savedFormData);
 
             // 根據錯誤訊息內容為相應欄位標記錯誤
+            const errorMessages = result.errors || [
+              result.error || result.message || "提交失敗，請檢查輸入內容",
+            ];
             errorMessages.forEach((msg) => {
               const lowerMsg = msg.toLowerCase();
 
@@ -829,11 +973,12 @@
             });
           } else {
             showSuccessMessage("活動新增成功！正在跳轉...");
-            setTimeout(() => {
-              window.location.href = `/act/member/listMy/${
-                result.data?.hostId || "current"
-              }`;
-            }, 1500);
+            // 跳轉時直接取 result.hostId，若無則顯示錯誤
+            if (result.hostId) {
+              window.location.href = `/act/member/listMy/${result.hostId}`;
+            } else {
+              alert("找不到會員ID，請重新登入或聯絡管理員");
+            }
           }
         } catch (error) {
           alert("網絡錯誤，請稍後再試: " + error.message);

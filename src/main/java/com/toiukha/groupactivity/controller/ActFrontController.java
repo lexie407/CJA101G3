@@ -1,5 +1,7 @@
 package com.toiukha.groupactivity.controller;
 
+import com.toiukha.groupactivity.model.ActDTO;
+import com.toiukha.groupactivity.model.ActTag;
 import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.groupactivity.security.AuthService;
 import com.toiukha.groupactivity.service.ActService;
@@ -12,12 +14,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 /*
  * 前端轉送用controller
@@ -43,7 +47,13 @@ public class ActFrontController {
     public String addActPage(HttpServletRequest request) {
         HttpSession session = request.getSession();
         AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
-        
+        // 在 addAct 方法開始處增加
+        System.out.println("=== 新增活動除錯資訊 ===");
+        System.out.println("Session ID: " + session.getId());
+        System.out.println("Member Info: " + memberInfo);
+        System.out.println("Member ID: " + memberInfo.getMemId());
+        System.out.println("Is Logged In: " + memberInfo.isLoggedIn());
+
         return "front-end/groupactivity/addAct_ajax";
     }
 
@@ -73,16 +83,43 @@ public class ActFrontController {
             }
         }
         
-        model.addAttribute("actVo", actVo);
+        // 將 ActVO 轉換為 ActDTO，並從 Redis 取得標籤資訊
+        ActDTO actDto = new ActDTO();
+        actDto.setActId(actVo.getActId());
+        actDto.setActName(actVo.getActName());
+        actDto.setActDesc(actVo.getActDesc());
+        actDto.setActImg(actVo.getActImg());
+        actDto.setItnId(actVo.getItnId());
+        actDto.setHostId(actVo.getHostId());
+        actDto.setSignupStart(actVo.getSignupStart());
+        actDto.setSignupEnd(actVo.getSignupEnd());
+        actDto.setMaxCap(actVo.getMaxCap());
+        actDto.setSignupCnt(actVo.getSignupCnt());
+        actDto.setActStart(actVo.getActStart());
+        actDto.setActEnd(actVo.getActEnd());
+        actDto.setIsPublic(actVo.getIsPublic());
+        actDto.setAllowCancel(actVo.getAllowCancel());
+        actDto.setRecruitStatus(actVo.getRecruitStatus());
+        
+        // 從 Redis 取得活動標籤並設定到 DTO 中
+        Map<String, ActTag> tags = actSvc.getActTags(id);
+        if (tags.containsKey("type")) {
+            actDto.setActType(tags.get("type").name());
+        }
+        if (tags.containsKey("city")) {
+            actDto.setActCity(tags.get("city").name());
+        }
+        
+        model.addAttribute("actVo", actDto);
         return "front-end/groupactivity/editAct_ajax";
     }
 
     //搜尋所有揪團活動
     @GetMapping("/search")
-    public String searchActPage(HttpServletRequest request) {
+    public String searchActPage(ModelMap model, HttpServletRequest request) {
         HttpSession session = request.getSession();
         AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
-        
+        model.addAttribute("currentPage", "groups");
         return "front-end/groupactivity/searchAct";
     }
 
@@ -91,6 +128,7 @@ public class ActFrontController {
     public String viewAct(@PathVariable Integer id, Model model, HttpServletRequest request) {
         ActVO actVo = actSvc.getOneAct(id);
         model.addAttribute("actVo", actVo);
+        model.addAttribute("currentPage", "groups");
 
         boolean isParticipant = false;
         boolean isHost = false;
@@ -146,6 +184,7 @@ public class ActFrontController {
         
         model.addAttribute("actList", actSvc.getByHost(authorizedHostId));
         model.addAttribute("hostId", authorizedHostId);
+        model.addAttribute("currentPage", "groups");
         return "front-end/groupactivity/listMyAct";
     }
     
@@ -171,6 +210,7 @@ public class ActFrontController {
         }
         
         model.addAttribute("memId", authorizedMemId);
+        model.addAttribute("currentPage", "groups");
         return "front-end/groupactivity/listMyJoinAct";
     }
 
