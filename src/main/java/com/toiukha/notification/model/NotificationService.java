@@ -70,43 +70,47 @@ public class NotificationService {
 	//複式查詢
 	public List<NotificationVO> getByCriteria(Map map){
 		Map<String, String> query = new HashMap<>();
-		// Map.Entry即代表一組key-value，回傳一個Set裡面就是一組key-value
-		Set<Map.Entry<String, String[]>> entry = map.entrySet();
 		
-		for (Map.Entry<String, String[]> row : entry) {
-			String key = row.getKey();
+		for (Object obj : map.entrySet()) {
+			Map.Entry row = (Map.Entry) obj;
+			
+			String key = (String) row.getKey();
+			Object rawValue = row.getValue();
+			String finalValue = null;
+
 			// 因為請求參數裡包含了action，做個去除動作
-			if ("action".equals(key)) {
+			if ("action".equals(key) || rawValue == null) {
+				continue;
+			}
+
+			// 根據值的類型進行處理
+			// Spring對於多選(如checkbox)會傳入String[], 對於單選(如text input)會傳入String
+			if (rawValue instanceof String[]) {
+				String[] valueArray = (String[]) rawValue;
+				if (valueArray.length == 0 || (valueArray.length == 1 && valueArray[0].isEmpty())) {
+					continue; // 跳過空陣列或只有一個空字串的陣列
+				}
+				
+				if ("memIds".equals(key)) {
+					finalValue = String.join(",", valueArray);
+				} else {
+					finalValue = valueArray[0];
+				}
+			} else if (rawValue instanceof String) {
+				finalValue = (String) rawValue;
+			}
+
+			// 如果處理後的值是空的，就跳過
+			if (finalValue == null || finalValue.isEmpty()) {
 				continue;
 			}
 			
-			if("memIds".equals(key)) {
-				
-				String[] valueArray = row.getValue();
-				if(valueArray == null || valueArray.length == 0) {
-					continue;
-				}
-				
-				String value = String.join(",", valueArray);
-				
-				
-				query.put(key, value);
-				
-			}else {
-				// 若是value為空即代表沒有查詢條件，做個去除動作
-				String value = row.getValue()[0]; // getValue拿到一個String陣列, 接著[0]取得第一個元素檢查
-				
-				if (value == null || value.isEmpty()) {
-					continue;
-				}
-				
-				if("notiSendAtStart".equals(key) || "notiSendAtEnd".equals(key)) {
-					value = value.replace("T", " ");
-				}
-				
-				query.put(key, value);
+			// 特別處理日期時間格式
+			if("notiSendAtStart".equals(key) || "notiSendAtEnd".equals(key)) {
+				finalValue = finalValue.replace("T", " ");
 			}
 			
+			query.put(key, finalValue);
 		}
 		
 		System.out.println(query);
