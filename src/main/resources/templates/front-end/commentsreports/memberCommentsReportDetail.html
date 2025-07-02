@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Document</title>
+<title th:text="${commentsReportVO.commRepId} + '號檢舉詳情 | 留言檢舉 | 檢舉進度 | 會員中心 | 島遊kha'"></title>
 
 <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
 <link rel="stylesheet" th:href="@{/css/report/memberReportDetail.css}">
@@ -39,6 +39,7 @@
 								th:classappend="${commentsReportVO.rptSta >= 1 ? 'completed' : ''}">
 								<div class="step-dot"></div>
 								<div class="step-label" th:switch="${commentsReportVO.rptSta}">
+									<span th:case="0">結案</span>
 									<span th:case="1">檢舉成立</span>
 									<span th:case="2">檢舉不成立</span>
 								</div>
