@@ -4,6 +4,7 @@ import com.toiukha.itnSpot.model.ItnSpotId;
 import com.toiukha.itnSpot.model.ItnSpotService;
 import com.toiukha.itnSpot.model.ItnSpotVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
 public class ItnSpotController {
 
     @Autowired
+    @Qualifier("itnSpotManagementService")
     private ItnSpotService itnSpotService;
 
     //查全部

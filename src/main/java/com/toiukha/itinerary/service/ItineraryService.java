@@ -3,6 +3,7 @@ package com.toiukha.itinerary.service;
 import com.toiukha.itinerary.model.ItineraryVO;
 import com.toiukha.itinerary.repository.ItineraryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class ItineraryService {
     private ItineraryRepository itineraryRepository;
 
     @Autowired
+    @Qualifier("itnSpotService")
     private ItnSpotService itnSpotService;
 
     // ========== 1. 行程基本 CRUD 操作 ==========
