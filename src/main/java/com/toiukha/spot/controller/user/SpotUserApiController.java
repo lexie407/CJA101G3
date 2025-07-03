@@ -7,9 +7,11 @@ import com.toiukha.spot.dto.SpotSearchRequest;
 import com.toiukha.spot.dto.SpotDTO;
 import com.toiukha.spot.dto.SpotMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -174,11 +176,21 @@ public class SpotUserApiController {
      * 用戶新增景點 (前台用)
      * 用戶新增的景點預設為待審核狀態，需要管理員審核後才能上架
      * @param spotDTO 景點資料傳輸物件
+     * @param session HTTP Session
      * @return API回應
      */
     @PostMapping("/submit")
-    public ResponseEntity<ApiResponse<SpotVO>> submitSpot(@Valid @RequestBody SpotDTO spotDTO) {
+    public ResponseEntity<ApiResponse<SpotVO>> submitSpot(
+            @Valid @RequestBody SpotDTO spotDTO, 
+            HttpSession session) {
         try {
+            // 檢查會員是否已登入
+            Integer currentUserId = getCurrentUserId(session);
+            if (currentUserId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("請先登入"));
+            }
+            
             // 檢查名稱是否重複
             if (spotService.existsBySpotName(spotDTO.getSpotName())) {
                 return ResponseEntity.ok(ApiResponse.error("景點名稱已存在，請使用其他名稱"));
@@ -188,7 +200,7 @@ public class SpotUserApiController {
             SpotVO spotVO = spotMapper.toVO(spotDTO);
             
             // 設定前台新增的特殊屬性
-            spotVO.setCrtId(getCurrentUserId()); // 設定建立者ID
+            spotVO.setCrtId(currentUserId);      // 設定建立者ID
             spotVO.setSpotStatus((byte) 0);      // 預設為待審核狀態
             
             // 新增景點
@@ -204,12 +216,16 @@ public class SpotUserApiController {
 
     /**
      * 取得當前登入用戶ID
-     * 實際實作時應從 Session 或 JWT Token 中取得
-     * @return 用戶ID
+     * 整合會員模組的登入系統
+     * @param session HTTP Session
+     * @return 用戶ID，如果未登入則返回null
      */
-    private Integer getCurrentUserId() {
-        // TODO: 實際實作時應從認證系統取得當前用戶ID
-        // 目前回傳預設值，實際使用時需要整合認證機制
-        return 1; // 暫時回傳測試用ID
+    private Integer getCurrentUserId(HttpSession session) {
+        Object memberObj = session.getAttribute("member");
+        if (memberObj instanceof com.toiukha.members.model.MembersVO) {
+            com.toiukha.members.model.MembersVO member = (com.toiukha.members.model.MembersVO) memberObj;
+            return member.getMemId();
+        }
+        return null;
     }
 } 

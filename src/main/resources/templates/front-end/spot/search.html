@@ -6,7 +6,7 @@
     <title>景點搜尋 - 島遊Kha</title>
     
     <!-- 必要資源引用 - 統一使用絕對路徑 -->
-    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 景點搜尋頁樣式 -->
@@ -15,7 +15,7 @@
 <body class="light">
     <div class="app-container">
         <!-- 左側主導覽列 -->
-        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        <aside th:replace="~{/navTemplate :: navbar}"></aside>
         
         <div class="main-content">
             <!-- 頂部次導覽列 -->
@@ -148,7 +148,7 @@
                                 快速探索
                             </h3>
                             <div class="spot-search-quick-grid">
-                                <a th:href="@{/spot/list}" class="spot-search-quick-card">
+                                <a th:href="@{/spot/spotlist}" class="spot-search-quick-card">
                                     <span class="material-icons">list</span>
                                     <span class="spot-search-quick-card__title">所有景點</span>
                                     <span class="spot-search-quick-card__desc">瀏覽全部景點</span>
@@ -285,7 +285,7 @@
                                         <span class="material-icons">refresh</span>
                                         重新搜尋
                                     </button>
-                                    <a th:href="@{/spot/list}" class="spot-search-empty__btn spot-search-empty__btn--secondary">
+                                    <a th:href="@{/spot/spotlist}" class="spot-search-empty__btn spot-search-empty__btn--secondary">
                                         <span class="material-icons">list</span>
                                         瀏覽所有景點
                                     </a>

@@ -1,7 +1,7 @@
 /**
- * 我的收藏頁面 JavaScript
+ * 景點收藏頁面 JavaScript
  * @description 處理收藏景點的移除、分享、動畫效果和用戶互動
- * @version 2.0
+ * @version 2.1
  * 
  * 功能包含：
  * - 收藏移除功能
@@ -10,6 +10,7 @@
  * - 卡片動畫效果
  * - 鍵盤快捷鍵
  * - 無障礙功能增強
+ * - 配合會員模組佈局
  */
 
 (function() {
@@ -31,27 +32,91 @@
             removeSuccessMessage: '已成功取消收藏',
             removeErrorMessage: '取消收藏失敗，請稍後再試',
             shareSuccessMessage: '連結已複製到剪貼簿',
-            shareErrorMessage: '分享功能暫時無法使用'
+            shareErrorMessage: '分享功能暫時無法使用',
+            // 配合會員模組的佈局配置
+            memberLayout: {
+                sidebarWidth: 200,
+                breakpoint: 768
+            }
         },
 
         // 狀態管理
         state: {
             isRemoving: false,
             favoriteCount: 0,
-            toastTimeout: null
+            toastTimeout: null,
+            isMemberLayout: false
         },
 
         /**
          * 初始化
          */
         init() {
+            this.detectLayout();
             this.bindEvents();
             this.initializeCards();
             this.updateFavoriteCount();
             this.setupKeyboardShortcuts();
             this.setupAccessibility();
             this.initializeAnimations();
-            console.log('我的收藏頁面已初始化');
+            this.setupMemberLayoutIntegration();
+            console.log('景點收藏頁面已初始化');
+        },
+
+        /**
+         * 檢測佈局類型
+         */
+        detectLayout() {
+            // 檢查是否在會員模組的佈局中
+            const memberNav = document.querySelector('.left-nav');
+            const memberContent = document.querySelector('.content-area-main');
+            this.state.isMemberLayout = !!(memberNav && memberContent);
+            
+            if (this.state.isMemberLayout) {
+                console.log('檢測到會員模組佈局');
+            }
+        },
+
+        /**
+         * 設定會員模組佈局整合
+         */
+        setupMemberLayoutIntegration() {
+            if (!this.state.isMemberLayout) return;
+
+            // 監聽會員模組的側邊欄切換事件
+            this.handleMemberSidebarToggle();
+            
+            // 調整容器寬度
+            this.adjustContainerForMemberLayout();
+        },
+
+        /**
+         * 處理會員模組側邊欄切換
+         */
+        handleMemberSidebarToggle() {
+            // 監聽視窗大小變化，處理側邊欄響應式切換
+            window.addEventListener('resize', this.debounce(() => {
+                this.adjustContainerForMemberLayout();
+            }, 250));
+        },
+
+        /**
+         * 調整容器以配合會員模組佈局
+         */
+        adjustContainerForMemberLayout() {
+            const container = document.querySelector('.spot-favorites-container');
+            if (!container) return;
+
+            const isDesktop = window.innerWidth >= this.config.memberLayout.breakpoint;
+            const sidebarVisible = isDesktop; // 在桌面版側邊欄總是可見
+
+            if (sidebarVisible) {
+                container.style.marginLeft = '0';
+                container.style.width = `calc(100% - ${this.config.memberLayout.sidebarWidth}px)`;
+            } else {
+                container.style.marginLeft = '0';
+                container.style.width = '100%';
+            }
         },
 
         /**
@@ -139,6 +204,47 @@
             if (countElement) {
                 countElement.textContent = this.state.favoriteCount;
             }
+
+            // 如果是在會員模組中，可能需要更新會員中心的收藏數量顯示
+            this.updateMemberCenterFavoriteCount();
+        },
+
+        /**
+         * 更新會員中心的收藏數量顯示
+         */
+        updateMemberCenterFavoriteCount() {
+            if (!this.state.isMemberLayout) return;
+
+            // 尋找會員中心側邊欄中的收藏數量顯示
+            const memberFavoritesLink = document.querySelector('.left-nav a[href*="favorites"]');
+            if (memberFavoritesLink) {
+                // 移除舊的數量標籤
+                const oldBadge = memberFavoritesLink.querySelector('.favorite-count-badge');
+                if (oldBadge) {
+                    oldBadge.remove();
+                }
+
+                // 如果有收藏，添加數量標籤
+                if (this.state.favoriteCount > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'favorite-count-badge';
+                    badge.textContent = this.state.favoriteCount;
+                    badge.style.cssText = `
+                        background: var(--md-sys-color-primary);
+                        color: var(--md-sys-color-on-primary);
+                        border-radius: 50%;
+                        width: 20px;
+                        height: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 0.75rem;
+                        font-weight: bold;
+                        margin-left: auto;
+                    `;
+                    memberFavoritesLink.appendChild(badge);
+                }
+            }
         },
 
         /**
@@ -199,61 +305,51 @@
          * 處理分享景點
          */
         async handleShareSpot(spotId, spotName) {
-            const shareData = {
-                title: `${spotName} - 島遊Kha`,
-                text: `來看看這個很棒的景點：${spotName}`,
-                url: `${window.location.origin}/spot/detail/${spotId}`
-            };
-
+            const shareUrl = `${window.location.origin}/spot/detail/${spotId}`;
+            const shareText = `推薦景點：${spotName}`;
+            
             try {
-                if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                    // 使用原生分享 API
-                    await navigator.share(shareData);
+                // 嘗試使用 Web Share API
+                if (navigator.share) {
+                    await navigator.share({
+                        title: spotName,
+                        text: shareText,
+                        url: shareUrl
+                    });
                     this.showToast('分享成功', 'success');
                 } else {
-                    // 備用方案：複製到剪貼簿
-                    await this.copyToClipboard(shareData.url);
+                    // 回退到複製連結
+                    await this.copyToClipboard(shareUrl);
                     this.showToast(this.config.shareSuccessMessage, 'success');
                 }
             } catch (error) {
-                if (error.name !== 'AbortError') {
-                    console.error('分享失敗:', error);
-                    // 嘗試複製到剪貼簿作為備用
-                    try {
-                        await this.copyToClipboard(shareData.url);
-                        this.showToast(this.config.shareSuccessMessage, 'success');
-                    } catch (clipboardError) {
-                        console.error('複製到剪貼簿失敗:', clipboardError);
-                        this.showToast(this.config.shareErrorMessage, 'error');
-                    }
-                }
+                console.error('分享失敗:', error);
+                this.showToast(this.config.shareErrorMessage, 'error');
             }
         },
 
         /**
-         * 複製到剪貼簿
+         * 複製文字到剪貼簿
          */
         async copyToClipboard(text) {
-            if (navigator.clipboard && window.isSecureContext) {
-                return navigator.clipboard.writeText(text);
-            } else {
-                // 備用方案
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                textArea.style.position = 'fixed';
-                textArea.style.left = '-999999px';
-                textArea.style.top = '-999999px';
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                
-                try {
+            try {
+                if (navigator.clipboard) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    // 回退方法
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
                     document.execCommand('copy');
-                    textArea.remove();
-                } catch (error) {
-                    textArea.remove();
-                    throw error;
+                    document.body.removeChild(textArea);
                 }
+            } catch (error) {
+                throw new Error('複製失敗');
             }
         },
 
@@ -262,133 +358,91 @@
          */
         resetRemoveButton(button, originalContent) {
             button.disabled = false;
-            button.innerHTML = originalContent || '<span class="material-icons">close</span>';
+            button.innerHTML = originalContent;
         },
 
         /**
          * 移除卡片動畫
          */
         async removeCardWithAnimation(card) {
-            return new Promise((resolve) => {
-                if (prefersReducedMotion) {
-                    card.remove();
-                    resolve();
-                    return;
-                }
-
-                card.style.transition = 'all 0.3s ease-out';
-                card.style.transform = 'translateX(-100%)';
+            if (!prefersReducedMotion) {
+                card.style.transform = 'scale(0.8)';
                 card.style.opacity = '0';
-                
-                setTimeout(() => {
-                    card.remove();
-                    resolve();
-                }, 300);
-            });
+                await new Promise(resolve => setTimeout(resolve, this.config.animationDuration));
+            }
+            card.remove();
         },
 
         /**
          * 顯示空狀態
          */
         showEmptyState() {
-            const container = document.querySelector('.container');
-            if (!container) return;
-
-            // 移除現有的收藏列表
-            const favoritesContent = container.querySelector('.spot-favorites-content');
-            if (favoritesContent) {
-                favoritesContent.remove();
+            const container = document.querySelector('.spot-favorites-container');
+            if (container) {
+                const emptyState = document.querySelector('.spot-favorites-empty');
+                if (emptyState) {
+                    emptyState.style.display = 'block';
+                }
             }
-
-            // 檢查是否已經有空狀態
-            if (container.querySelector('.spot-favorites-empty')) {
-                return;
-            }
-
-            // 創建空狀態 HTML
-            const emptyStateHtml = `
-                <section class="spot-favorites-empty" role="status" aria-live="polite">
-                    <div class="spot-favorites-empty__icon">
-                        <span class="material-icons" aria-hidden="true">heart_broken</span>
-                    </div>
-                    <h2 class="spot-favorites-empty__title">還沒有收藏任何景點</h2>
-                    <p class="spot-favorites-empty__description">
-                        快去探索精彩的台灣景點，加入您的收藏清單吧！
-                    </p>
-                    <div class="spot-favorites-empty__actions">
-                        <a href="/spot/list" class="spot-favorites-empty__action-btn spot-favorites-empty__action-btn--primary">
-                            <span class="material-icons" aria-hidden="true">search</span>
-                            探索景點
-                        </a>
-                        <a href="/spot/" class="spot-favorites-empty__action-btn spot-favorites-empty__action-btn--secondary">
-                            <span class="material-icons" aria-hidden="true">home</span>
-                            回到首頁
-                        </a>
-                    </div>
-                </section>
-            `;
-
-            container.insertAdjacentHTML('beforeend', emptyStateHtml);
         },
 
         /**
-         * 顯示 Toast 通知
+         * 顯示提示訊息
          */
         showToast(message, type = 'info') {
-            // 清除現有的 Toast
+            // 清除現有的提示
             if (this.state.toastTimeout) {
                 clearTimeout(this.state.toastTimeout);
             }
 
+            // 移除現有的提示
             const existingToast = document.querySelector('.spot-favorites-toast');
             if (existingToast) {
                 existingToast.remove();
             }
 
-            // 創建 Toast
+            // 創建新的提示
             const toast = document.createElement('div');
             toast.className = `spot-favorites-toast spot-favorites-toast--${type}`;
             toast.innerHTML = `
                 <div class="spot-favorites-toast__icon">
                     <span class="material-icons">${this.getToastIcon(type)}</span>
                 </div>
-                <div class="spot-favorites-toast__message">${message}</div>
-                <button class="spot-favorites-toast__close" aria-label="關閉通知">
+                <div class="spot-favorites-toast__content">
+                    <span>${message}</span>
+                </div>
+                <button class="spot-favorites-toast__close" aria-label="關閉提示">
                     <span class="material-icons">close</span>
                 </button>
             `;
 
-            // 添加樣式
+            // 添加樣式 - 配合會員模組佈局調整位置
+            const toastPosition = this.state.isMemberLayout ? 
+                `top: 20px; right: ${this.config.memberLayout.sidebarWidth + 20}px;` : 
+                'top: 20px; right: 20px;';
+
             toast.style.cssText = `
                 position: fixed;
-                top: 20px;
-                right: 20px;
-                background: var(--md-sys-color-surface);
-                color: var(--md-sys-color-on-surface);
+                ${toastPosition}
+                background: ${this.getToastColor(type)};
+                color: white;
                 padding: 1rem 1.5rem;
-                border-radius: 12px;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-                z-index: 1000;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                 display: flex;
                 align-items: center;
                 gap: 0.75rem;
+                z-index: 1000;
                 max-width: 400px;
-                transform: translateX(100%);
-                transition: transform 0.3s ease-out;
-                border-left: 4px solid ${this.getToastColor(type)};
+                animation: spot-favorites-toast-slide-in 0.3s ease-out;
             `;
 
+            // 關閉按鈕事件
+            const closeBtn = toast.querySelector('.spot-favorites-toast__close');
+            closeBtn.addEventListener('click', () => this.hideToast(toast));
+
+            // 添加到頁面
             document.body.appendChild(toast);
-
-            // 動畫顯示
-            requestAnimationFrame(() => {
-                toast.style.transform = 'translateX(0)';
-            });
-
-            // 綁定關閉事件
-            toast.querySelector('.spot-favorites-toast__close').addEventListener('click', () => {
-                this.hideToast(toast);
-            });
 
             // 自動隱藏
             this.state.toastTimeout = setTimeout(() => {
@@ -397,21 +451,21 @@
         },
 
         /**
-         * 隱藏 Toast
+         * 隱藏提示訊息
          */
         hideToast(toast) {
-            if (!toast || !toast.parentElement) return;
-            
-            toast.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.remove();
-                }
-            }, 300);
+            if (toast && toast.parentNode) {
+                toast.style.animation = 'spot-favorites-toast-slide-out 0.3s ease-in';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }
         },
 
         /**
-         * 獲取 Toast 圖標
+         * 取得提示圖標
          */
         getToastIcon(type) {
             const icons = {
@@ -424,35 +478,28 @@
         },
 
         /**
-         * 獲取 Toast 顏色
+         * 取得提示顏色
          */
         getToastColor(type) {
             const colors = {
-                success: 'var(--md-sys-color-primary)',
-                error: 'var(--md-sys-color-error)',
-                warning: 'var(--md-sys-color-secondary)',
-                info: 'var(--md-sys-color-outline)'
+                success: '#4caf50',
+                error: '#f44336',
+                warning: '#ff9800',
+                info: '#2196f3'
             };
             return colors[type] || colors.info;
         },
 
         /**
-         * 隱藏提示訊息
+         * 隱藏警告訊息
          */
         hideAlert(alert) {
-            if (!alert) return;
-            
-            if (prefersReducedMotion) {
-                alert.style.display = 'none';
-            } else {
-                alert.style.transition = 'all 0.3s ease-out';
-                alert.style.transform = 'translateY(-20px)';
-                alert.style.opacity = '0';
-                
-                setTimeout(() => {
-                    alert.style.display = 'none';
-                }, 300);
-            }
+            alert.style.animation = 'spot-favorites-alert-slide-out 0.3s ease-in';
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 300);
         },
 
         /**
@@ -461,12 +508,12 @@
         addRippleEffect(element, event) {
             if (prefersReducedMotion) return;
 
+            const ripple = document.createElement('span');
             const rect = element.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);
             const x = event.clientX - rect.left - size / 2;
             const y = event.clientY - rect.top - size / 2;
 
-            const ripple = document.createElement('span');
             ripple.style.cssText = `
                 position: absolute;
                 width: ${size}px;
@@ -476,7 +523,7 @@
                 background: rgba(255, 255, 255, 0.3);
                 border-radius: 50%;
                 transform: scale(0);
-                animation: ripple 0.6s linear;
+                animation: spot-favorites-ripple 0.6s ease-out;
                 pointer-events: none;
             `;
 
@@ -484,23 +531,10 @@
             element.style.overflow = 'hidden';
             element.appendChild(ripple);
 
-            // 添加動畫樣式
-            if (!document.querySelector('#ripple-keyframes')) {
-                const style = document.createElement('style');
-                style.id = 'ripple-keyframes';
-                style.textContent = `
-                    @keyframes ripple {
-                        to {
-                            transform: scale(2);
-                            opacity: 0;
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-
             setTimeout(() => {
-                ripple.remove();
+                if (ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
             }, 600);
         },
 
@@ -510,17 +544,26 @@
         initializeAnimations() {
             if (prefersReducedMotion) return;
 
-            // 為頁面元素添加進入動畫
-            const header = document.querySelector('.spot-favorites-header');
-            if (header) {
-                header.style.opacity = '0';
-                header.style.transform = 'translateY(-20px)';
-                setTimeout(() => {
-                    header.style.transition = 'all 0.6s ease-out';
-                    header.style.opacity = '1';
-                    header.style.transform = 'translateY(0)';
-                }, 100);
-            }
+            // 添加動畫樣式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spot-favorites-toast-slide-in {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes spot-favorites-toast-slide-out {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+                @keyframes spot-favorites-alert-slide-out {
+                    from { transform: translateY(0); opacity: 1; }
+                    to { transform: translateY(-10px); opacity: 0; }
+                }
+                @keyframes spot-favorites-ripple {
+                    to { transform: scale(4); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
         },
 
         /**
@@ -528,31 +571,20 @@
          */
         setupKeyboardShortcuts() {
             document.addEventListener('keydown', (e) => {
-                // Ctrl + Shift + R: 重新載入
-                if (e.ctrlKey && e.shiftKey && e.key === 'R') {
-                    e.preventDefault();
-                    location.reload();
-                }
-
-                // Ctrl + H: 回到首頁
-                if (e.ctrlKey && e.key === 'h') {
-                    e.preventDefault();
-                    window.location.href = '/spot/';
-                }
-
-                // Ctrl + L: 前往景點列表
-                if (e.ctrlKey && e.key === 'l') {
-                    e.preventDefault();
-                    window.location.href = '/spot/list';
-                }
-
-                // Escape: 關閉提示訊息
+                // ESC 鍵關閉提示
                 if (e.key === 'Escape') {
-                    const alerts = document.querySelectorAll('.spot-favorites-alert');
-                    alerts.forEach(alert => this.hideAlert(alert));
-                    
-                    const toasts = document.querySelectorAll('.spot-favorites-toast');
-                    toasts.forEach(toast => this.hideToast(toast));
+                    const toast = document.querySelector('.spot-favorites-toast');
+                    if (toast) {
+                        this.hideToast(toast);
+                    }
+                }
+
+                // Enter 鍵在卡片上時查看詳情
+                if (e.key === 'Enter' && e.target.classList.contains('spot-favorites-card')) {
+                    const viewBtn = e.target.querySelector('.spot-favorites-card__view-btn');
+                    if (viewBtn) {
+                        viewBtn.click();
+                    }
                 }
             });
         },
@@ -561,29 +593,21 @@
          * 設定無障礙功能
          */
         setupAccessibility() {
-            // 為卡片添加鍵盤導覽
-            document.addEventListener('keydown', (e) => {
-                const focusedCard = document.activeElement;
-                if (!focusedCard.classList.contains('spot-favorites-card')) return;
-
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    const viewBtn = focusedCard.querySelector('.spot-favorites-card__view-btn');
-                    if (viewBtn) {
-                        viewBtn.click();
+            // 為卡片添加鍵盤導航
+            const cards = document.querySelectorAll('.spot-favorites-card');
+            cards.forEach(card => {
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        const viewBtn = card.querySelector('.spot-favorites-card__view-btn');
+                        if (viewBtn) {
+                            viewBtn.click();
+                        }
                     }
-                }
-
-                if (e.key === 'Delete' || e.key === 'Backspace') {
-                    e.preventDefault();
-                    const removeBtn = focusedCard.querySelector('.spot-favorites-card__remove-btn');
-                    if (removeBtn) {
-                        removeBtn.click();
-                    }
-                }
+                });
             });
 
-            // 動態更新 ARIA 標籤
+            // 更新 ARIA 標籤
             this.updateAriaLabels();
         },
 
@@ -593,7 +617,10 @@
         updateAriaLabels() {
             const cards = document.querySelectorAll('.spot-favorites-card');
             cards.forEach((card, index) => {
-                card.setAttribute('aria-label', `收藏景點 ${index + 1}，共 ${cards.length} 個`);
+                const title = card.querySelector('.spot-favorites-card__title');
+                if (title) {
+                    card.setAttribute('aria-label', `收藏的景點：${title.textContent}，第 ${index + 1} 個`);
+                }
             });
         },
 
@@ -601,26 +628,26 @@
          * 處理視窗大小變化
          */
         handleResize() {
-            // 更新卡片布局
             this.updateCardLayout();
+            this.adjustContainerForMemberLayout();
         },
 
         /**
-         * 更新卡片布局
+         * 更新卡片佈局
          */
         updateCardLayout() {
             const grid = document.querySelector('.spot-favorites-grid');
-            if (!grid) return;
-
-            const cards = grid.querySelectorAll('.spot-favorites-card');
-            const containerWidth = grid.offsetWidth;
-            const cardMinWidth = 350;
-            const gap = 24;
-            const columns = Math.floor((containerWidth + gap) / (cardMinWidth + gap));
-            
-            if (columns !== this.state.currentColumns) {
-                this.state.currentColumns = columns;
-                // 可以在這裡添加布局變化的處理邏輯
+            if (grid) {
+                const cards = grid.querySelectorAll('.spot-favorites-card');
+                cards.forEach(card => {
+                    // 重新計算卡片高度
+                    const imageContainer = card.querySelector('.spot-favorites-card__image-container');
+                    const content = card.querySelector('.spot-favorites-card__content');
+                    if (imageContainer && content) {
+                        const imageHeight = imageContainer.offsetHeight;
+                        content.style.height = `calc(100% - ${imageHeight}px)`;
+                    }
+                });
             }
         },
 
@@ -640,18 +667,14 @@
         }
     };
 
-    /**
-     * DOM 載入完成後初始化
-     */
+    // 當 DOM 載入完成後初始化
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            SpotFavorites.init();
-        });
+        document.addEventListener('DOMContentLoaded', () => SpotFavorites.init());
     } else {
         SpotFavorites.init();
     }
 
-    // 導出模組供其他腳本使用
+    // 暴露到全域（可選）
     window.SpotFavorites = SpotFavorites;
 
 })(); 

@@ -128,4 +128,23 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
      */
     @Query("SELECT i FROM ItineraryVO i WHERE i.crtId = :crtId AND i.isPublic = 0 ORDER BY i.itnCreateDat DESC")
     List<ItineraryVO> findPrivateItinerariesByCrtId(@Param("crtId") Integer crtId);
+
+    /**
+     * 根據條件查詢行程（後台管理用）
+     * @param keyword 搜尋關鍵字
+     * @param status 狀態篩選
+     * @param isPublic 公開狀態篩選
+     * @param pageable 分頁資訊
+     * @return 符合條件的行程分頁結果
+     */
+    @Query("SELECT i FROM ItineraryVO i WHERE " +
+           "(:keyword IS NULL OR i.itnName LIKE %:keyword%) AND " +
+           "(:status IS NULL OR i.itnStatus = :status) AND " +
+           "(:isPublic IS NULL OR i.isPublic = :isPublic)")
+    Page<ItineraryVO> findWithFilters(@Param("keyword") String keyword, 
+                                     @Param("status") Integer status, 
+                                     @Param("isPublic") Integer isPublic, 
+                                     Pageable pageable);
+
+
 } 

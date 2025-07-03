@@ -383,7 +383,7 @@
             // Ctrl/Cmd + Enter: 查看所有景點
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 e.preventDefault();
-                window.location.href = '/spot/list';
+                window.location.href = '/spot/spotlist';
             }
             
             // Alt + A: 切換進階搜尋

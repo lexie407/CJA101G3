@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+<head>
+    <title>行程管理 - 後台管理系統</title>
+    <th:block th:fragment="head">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <!-- 行程模組通用樣式 -->
+        <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-common.css}">
+        <!-- 行程表單專用樣式 - 包含英雄區塊 -->
+        <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-form.css}">
+        <!-- 行程列表專用樣式 -->
+        <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-list.css}">
+        <script th:src="@{/js/itinerary/back-end/list.js?v=1}" defer></script>
+        <!-- CSRF Token 暫時註解
+        <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        -->
+    </th:block>
+</head>
+<body>
+    <!-- This div will be passed as the 'subnav' parameter to the layout -->
+    <div id="subnav" th:replace="~{subnavItinerary :: subnav('list')}"></div>
+
+    <main th:fragment="main" class="itinerary-review-page">
+        <!-- 英雄區塊全寬 -->
+        <div class="page-header-section">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>行程管理</h1>
+                    <p>管理系統中的所有行程資料</p>
+                </div>
+                <div class="header-image">
+                    <img src="/images/logo.png" alt="行程管理系統" class="header-logo">
+                </div>
+            </div>
+        </div>
+        <div class="itinerary-list-page">
+
+        <!-- 篩選控制區 -->
+        <div class="filter-section">
+            <div class="filter-controls">
+                <div class="search-box">
+                    <input type="text" placeholder="搜尋行程名稱..." id="searchInput" th:value="${param.keyword}">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <!-- 篩選按鈕群組 -->
+                <div class="filter-dropdown-group">
+                    <!-- 狀態篩選 -->
+                    <div class="filter-dropdown" data-filter="status">
+                        <button class="filter-btn" id="statusBtn">
+                            <span>狀態篩選</span>
+                            <span class="filter-arrow">▼</span>
+                        </button>
+                        <div class="dropdown-menu" id="statusDropdown">
+                            <div class="dropdown-content">
+                                <div class="option-item">
+                                    <input type="radio" name="status" value="all" id="status-all" checked>
+                                    <label for="status-all">全部狀態</label>
+                                </div>
+                                <div class="option-item">
+                                    <input type="radio" name="status" value="1" id="status-public">
+                                    <label for="status-public">公開</label>
+                                </div>
+                                <div class="option-item">
+                                    <input type="radio" name="status" value="0" id="status-private">
+                                    <label for="status-private">私人</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 清除按鈕 -->
+                    <button type="button" class="clear-btn">清除</button>
+                </div>
+                
+                <!-- 右側控制項 -->
+                <div class="right-controls">
+                    <!-- 分頁控制 -->
+                    <div class="pagination-control">
+                        <span>每頁顯示</span>
+                        <select id="pageSizeSelect">
+                            <option value="3">3 筆</option>
+                            <option value="5">5 筆</option>
+                            <option value="10" selected>10 筆</option>
+                            <option value="20">20 筆</option>
+                            <option value="30">30 筆</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 成功/錯誤訊息 -->
+        <div th:if="${successMessage}" class="alert alert-success">
+            <i class="material-icons">check_circle</i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <i class="material-icons">error</i>
+            <span th:utext="${errorMessage}"></span> <!-- 使用utext以支持HTML換行 -->
+        </div>
+        
+        <!-- 表格區域 -->
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-title-group">
+                    <button type="button" class="sort-btn active" id="sortBtn" title="排序">
+                        <span class="sort-icon">↕</span>
+                        <span class="sort-text">排序</span>
+                    </button>
+                    <h2 class="table-title">
+                        行程列表 <span class="count-badge" id="countBadge" 
+                            th:text="|共 ${#lists.size(itineraries)} 筆|">共 0 筆</span>
+                    </h2>
+                </div>
+                <div class="table-actions">
+                    <span class="selected-info hidden" id="selectedInfo">已選擇 <span id="selectedCount">0</span> 個項目</span>
+                    <div class="batch-actions">
+                        <button type="button" class="batch-btn hidden" id="batchBtn">
+                            批量操作 <span class="batch-btn-small">▼</span>
+                        </button>
+                        <div id="batchMenu" class="batch-menu">
+                            <div class="dropdown-item" data-action="activate">
+                                <i class="material-icons">visibility</i>
+                                <span>批量公開</span>
+                            </div>
+                            <div class="dropdown-item" data-action="deactivate">
+                                <i class="material-icons">visibility_off</i>
+                                <span>批量私人</span>
+                            </div>
+                            <div class="dropdown-item danger" data-action="delete">
+                                <i class="material-icons">delete</i>
+                                <span>批量刪除</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form id="batchForm" method="post">
+            <table class="sample-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>ID</th>
+                        <th>行程資訊</th>
+                        <th>景點數</th>
+                        <th>狀態</th>
+                        <th>建立時間</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(itineraries)}">
+                        <td colspan="7">
+                            <div class="empty-state-container">
+                                <div class="icon">📭</div>
+                                <div class="title">目前沒有符合條件的行程資料</div>
+                                <div class="subtitle">請調整篩選條件或清除篩選</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:each="itinerary : ${itineraries}">
+                        <td data-label="選擇"><input type="checkbox" name="itineraryIds" th:value="${itinerary.itnId}" class="itinerary-checkbox"></td>
+                        <td data-label="ID"><span class="itinerary-id" th:text="'#' + ${itinerary.itnId}">#1</span></td>
+                        <td data-label="行程資訊">
+                            <div class="itinerary-info">
+                                <div class="itinerary-text-info">
+                                    <div class="itinerary-name" th:text="${itinerary.itnName}">行程名稱</div>
+                                    <div class="itinerary-desc" th:text="${#strings.abbreviate(itinerary.itnDesc, 50)}">行程描述...</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="景點數"><span class="itinerary-days" th:text="${itinerary.spotCount} + ' 個'">3 個</span></td>
+                        <td data-label="狀態">
+                            <span th:switch="${itinerary.isPublic}">
+                                <span th:case="0" class="status-badge status-private">私人</span>
+                                <span th:case="1" class="status-badge status-public">公開</span>
+                                <span th:case="*" class="status-badge">未知</span>
+                            </span>
+                        </td>
+                        <td data-label="建立時間"><span class="itinerary-date" th:text="${#dates.format(itinerary.itnCreateDat, 'yyyy-MM-dd')}">2024-01-01</span></td>
+                        <td data-label="操作">
+                            <div class="action-buttons">
+                                <a th:href="@{/admin/itinerary/detail/{id}(id=${itinerary.itnId})}" class="action-btn btn-view" title="查看">👁️</a>
+                                <a th:href="@{/admin/itinerary/edit/{id}(id=${itinerary.itnId})}" class="action-btn btn-edit" title="編輯">✏️</a>
+                                <form th:action="@{/admin/itinerary/delete/{id}(id=${itinerary.itnId})}" method="post" class="action-form" th:data-itinerary-name="${itinerary.itnName}">
+                                    <button type="submit" class="action-btn btn-delete" title="刪除">🗑️</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+        
+        <!-- 前端分頁控制 -->
+        <div class="pagination-container" id="paginationContainer">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" id="firstPageBtn">
+                        <button type="button" class="page-link">
+                            <span class="material-icons">first_page</span>
+                        </button>
+                    </li>
+                    <li class="page-item" id="prevPageBtn">
+                        <button type="button" class="page-link">
+                            <span class="material-icons">chevron_left</span>
+                        </button>
+                    </li>
+                    <!-- 頁碼容器 -->
+                    <span id="pageNumbers"></span>
+                    <li class="page-item" id="nextPageBtn">
+                        <button type="button" class="page-link">
+                            <span class="material-icons">chevron_right</span>
+                        </button>
+                    </li>
+                    <li class="page-item" id="lastPageBtn">
+                        <button type="button" class="page-link">
+                            <span class="material-icons">last_page</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        
+        <!-- 傳遞資料到前端 -->
+        <script th:inline="javascript">
+            // 從後端傳遞資料到前端
+            window.allItinerariesData = /*[[${simplifiedItineraries}]]*/ [];
+            window.currentPage = /*[[${currentPage}]]*/ 0;
+            window.pageSize = /*[[${size}]]*/ 10;
+            
+            console.log('頁面資料:', {
+                allItinerariesData: window.allItinerariesData,
+                currentPage: window.currentPage,
+                pageSize: window.pageSize,
+                totalElements: window.allItinerariesData.length
+            });
+        </script>
+        </div>
+    </main>
+</body>
+</html> 

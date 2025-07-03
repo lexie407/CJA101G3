@@ -1,0 +1,30 @@
+<!-- 景點後台專用 subnav fragment -->
+<!-- 次導覽列 -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+<div th:fragment="subnav(activeItem)">
+    <header class="secondary-nav">
+        <ul>
+            <li><a th:href="@{/admin/spot/spotlist}" th:classappend="${activeItem == 'spotlist' ? 'active' : ''}">景點列表</a></li>
+            <li><a th:href="@{/admin/spot/spotreview}" th:classappend="${activeItem == 'spotreview' ? 'active' : ''}">景點審核</a></li>
+            <li><a th:href="@{/admin/itinerary/itnlist}" th:classappend="${activeItem == 'itnlist' ? 'active' : ''  }">行程列表</a></li>
+            <li><a th:href="@{/act/admin/listAllAct}" th:classappend="${activeItem == 'actlist' ? 'active' : ''}">揪團列表</a></li>
+            <li><a th:href="@{/item/listAllItem_admin}" th:classappend="${activeItem == 'productlist' ? 'active' : ''}">商品列表</a></li>
+            <li><a th:href="@{/forum/admin}" th:classappend="${activeItem == 'articlelist' ? 'active' : ''}">文章列表</a></li>
+            <li class="dropdown">
+                <a th:href="@{/admin/spot/add}" th:classappend="${activeItem == 'add' or activeItem == 'api-import' ? 'active' : ''}">新增景點</a>
+                <div class="dropdown-content">
+                    <a th:href="@{/admin/spot/api-import}">
+                        <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 8px;">cloud_download</i>
+                        API資料匯入
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </header>
+</div>
+</body>
+</html> 

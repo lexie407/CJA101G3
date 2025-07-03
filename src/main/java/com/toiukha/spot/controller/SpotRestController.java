@@ -406,12 +406,5 @@ public class SpotRestController {
         return spotAdminApiController.getAdminStats();
     }
 
-    /**
-     * 安全的布林值轉換
-     * @param b 布林值
-     * @return 安全的布林值
-     */
-    private boolean safeBoolean(Boolean b) {
-        return b != null && b;
-    }
+
 } 

@@ -104,8 +104,8 @@ public class SpotAdminApiController {
             // 轉換DTO為VO
             SpotVO spotVO = spotMapper.toVO(spotDTO);
             
-            // 設定建立者ID (後續整合登入系統時從 session 獲取)
-            spotVO.setCrtId(getCurrentUserId());
+            // 設定建立者ID (暫時使用固定值)
+            spotVO.setCrtId(1);
             
             // 後台新增預設為上架狀態 (除非特別指定)
             if (spotVO.getSpotStatus() == null) {
@@ -331,7 +331,7 @@ public class SpotAdminApiController {
             List<SpotVO> spotVOList = spotDTOList.stream()
                     .map(spotMapper::toVO)
                     .peek(spotVO -> {
-                        spotVO.setCrtId(getCurrentUserId());
+                        spotVO.setCrtId(1); // 暫時使用固定值
                         // 後台批次匯入預設為上架狀態
                         if (spotVO.getSpotStatus() == null) {
                             spotVO.setSpotStatus((byte) 1);
@@ -347,15 +347,5 @@ public class SpotAdminApiController {
         }
     }
 
-    // ========== 9. 工具方法 ==========
 
-    /**
-     * 取得當前使用者ID
-     * TODO: 後續整合 Spring Security 時從認證資訊獲取
-     * @return 使用者ID
-     */
-    private Integer getCurrentUserId() {
-        // 暫時回傳固定值，後續整合登入系統時修改
-        return 1; // 管理員ID
-    }
 } 

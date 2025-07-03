@@ -609,7 +609,7 @@
             
             // 重新導向到無參數的列表頁面
             setTimeout(() => {
-                window.location.href = '/spot/list';
+                window.location.href = '/spot/spotlist';
             }, 500);
         }
     };

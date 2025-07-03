@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{/back-end/spot/navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
 <head>
     <title>景點詳情 - 後台管理系統</title>
     <th:block th:fragment="head">
@@ -11,198 +11,193 @@
         <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
         <!-- 詳情頁面專用樣式 -->
         <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-detail.css}">
-        <!-- CSRF Token -->
-        <meta name="_csrf" th:content="${_csrf.token}"/>
-        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <!-- CSRF Token 暫時註解-->
+        <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
     </th:block>
 </head>
 <body>
     <!-- 頂部導覽 -->
-    <div id="subnav" th:replace="~{subnavSpotBack :: subnav(activeItem='list')}"></div>
+    <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='list')}"></div>
 
-    <main th:fragment="main">
-        <div class="spot-detail-page">
-            <!-- 頁面標題與圖片區域 -->
-            <div class="page-header-section">
-                <div class="header-content">
-                    <div class="header-text">
-                        <h1>景點詳情</h1>
-                        <p>查看景點的完整資訊和管理狀態</p>
+    <main th:fragment="main" class="spot-detail-page">
+        <div class="page-header-section">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>景點詳情</h1>
+                    <p>查看景點的完整資訊和管理狀態</p>
+                </div>
+                <div class="header-image">
+                    <img src="/images/logo.png" alt="景點管理系統" class="header-logo">
+                </div>
+            </div>
+        </div>
+        <div class="content-container">
+            <!-- 基本資訊卡片 -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="material-icons">info</i>
+                        <span>基本資訊</span>
                     </div>
-                    <div class="header-image">
-                        <img src="/images/logo.png" alt="景點管理系統" class="header-logo">
+                    <div class="card-actions">
+                        <span class="status-badge" th:classappend="${spot.spotStatus == 1 ? 'status-active' : (spot.spotStatus == 2 ? 'status-rejected' : (spot.spotStatus == 3 ? 'status-inactive' : 'status-pending'))}">
+                            <span th:text="${spot.getStatusText()}">狀態</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-content">
+                    <div class="detail-grid">
+                        <!-- 左側：景點圖片 -->
+                        <div class="detail-image-section">
+                            <div class="image-container">
+                                <img th:src="@{${spot.getFirstPictureUrl()}}" 
+                                     alt="景點圖片" 
+                                     class="detail-image"
+                                     onerror="this.src='/images/404.png'">
+                            </div>
+                        </div>
+                        
+                        <!-- 右側：基本資訊 -->
+                        <div class="detail-info-section">
+                            <div class="info-group">
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="material-icons">place</i>
+                                        景點名稱
+                                    </div>
+                                    <div class="info-value" th:text="${spot.spotName}">景點名稱</div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="material-icons">location_on</i>
+                                        景點地址
+                                    </div>
+                                    <div class="info-value" th:text="${spot.spotLoc}">景點地址</div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="material-icons">phone</i>
+                                        聯絡電話
+                                    </div>
+                                    <div class="info-value" th:text="${spot.tel ?: '未提供'}">聯絡電話</div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="material-icons">language</i>
+                                        官方網站
+                                    </div>
+                                    <div class="info-value">
+                                        <a th:if="${spot.website}" 
+                                           th:href="${spot.website}" 
+                                           th:text="${spot.website}" 
+                                           target="_blank" 
+                                           class="website-link">
+                                        </a>
+                                        <span th:unless="${spot.website}">未提供</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="material-icons">schedule</i>
+                                        建立時間
+                                    </div>
+                                    <div class="info-value" th:text="${#temporals.format(spot.spotCreateAt, 'yyyy-MM-dd HH:mm')}">建立時間</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 詳情內容區域 -->
-            <div class="content-container">
-                <!-- 基本資訊卡片 -->
-                <div class="detail-card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <i class="material-icons">info</i>
-                            <span>基本資訊</span>
+            <!-- 詳細描述卡片 -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="material-icons">description</i>
+                        <span>景點描述</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="description-content">
+                        <p th:text="${spot.spotDesc}" class="description-text">景點的詳細描述...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系統資訊卡片 -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="material-icons">settings</i>
+                        <span>系統資訊</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="system-info-grid">
+                        <div class="system-info-item">
+                            <div class="info-label">
+                                <i class="material-icons">fingerprint</i>
+                                景點ID
+                            </div>
+                            <div class="info-value" th:text="${spot.spotId}">ID</div>
                         </div>
-                        <div class="card-actions">
-                            <span class="status-badge" th:classappend="${spot.spotStatus == 1 ? 'status-active' : (spot.spotStatus == 2 ? 'status-rejected' : (spot.spotStatus == 3 ? 'status-inactive' : 'status-pending'))}">
-                                <span th:text="${spot.getStatusText()}">狀態</span>
-                            </span>
+                        
+                        <div class="system-info-item">
+                            <div class="info-label">
+                                <i class="material-icons">account_circle</i>
+                                建立者ID
+                            </div>
+                            <div class="info-value" th:text="${spot.crtId}">建立者ID</div>
+                        </div>
+                        
+                        <div class="system-info-item">
+                            <div class="info-label">
+                                <i class="material-icons">public</i>
+                                地區
+                            </div>
+                            <div class="info-value" th:text="${spot.region ?: '未分類'}">地區</div>
+                        </div>
+                        
+                        <div class="system-info-item">
+                            <div class="info-label">
+                                <i class="material-icons">star_rate</i>
+                                Google評分
+                            </div>
+                            <div class="info-value">
+                                <span th:if="${spot.googleRating != null}" th:text="${spot.googleRating} + ' 分'"></span>
+                                <span th:unless="${spot.googleRating}">未提供</span>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- 操作按鈕區域 -->
+            <div class="action-section">
+                <div class="action-buttons">
+                    <a th:href="@{/admin/spot/spotlist}" class="btn btn-secondary">
+                        <i class="material-icons">arrow_back</i>
+                        <span>返回列表</span>
+                    </a>
                     
-                    <div class="card-content">
-                        <div class="detail-grid">
-                            <!-- 左側：景點圖片 -->
-                            <div class="detail-image-section">
-                                <div class="image-container">
-                                    <img th:src="@{${spot.getFirstPictureUrl()}}" 
-                                         alt="景點圖片" 
-                                         class="detail-image"
-                                         onerror="this.src='/images/404.png'">
-                                </div>
-                            </div>
-                            
-                            <!-- 右側：基本資訊 -->
-                            <div class="detail-info-section">
-                                <div class="info-group">
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="material-icons">place</i>
-                                            景點名稱
-                                        </div>
-                                        <div class="info-value" th:text="${spot.spotName}">景點名稱</div>
-                                    </div>
-                                    
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="material-icons">location_on</i>
-                                            景點地址
-                                        </div>
-                                        <div class="info-value" th:text="${spot.spotLoc}">景點地址</div>
-                                    </div>
-                                    
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="material-icons">phone</i>
-                                            聯絡電話
-                                        </div>
-                                        <div class="info-value" th:text="${spot.tel ?: '未提供'}">聯絡電話</div>
-                                    </div>
-                                    
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="material-icons">language</i>
-                                            官方網站
-                                        </div>
-                                        <div class="info-value">
-                                            <a th:if="${spot.website}" 
-                                               th:href="${spot.website}" 
-                                               th:text="${spot.website}" 
-                                               target="_blank" 
-                                               class="website-link">
-                                            </a>
-                                            <span th:unless="${spot.website}">未提供</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="info-item">
-                                        <div class="info-label">
-                                            <i class="material-icons">schedule</i>
-                                            建立時間
-                                        </div>
-                                        <div class="info-value" th:text="${#temporals.format(spot.spotCreateAt, 'yyyy-MM-dd HH:mm')}">建立時間</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 詳細描述卡片 -->
-                <div class="detail-card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <i class="material-icons">description</i>
-                            <span>景點描述</span>
-                        </div>
-                    </div>
-                    <div class="card-content">
-                        <div class="description-content">
-                            <p th:text="${spot.spotDesc}" class="description-text">景點的詳細描述...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 系統資訊卡片 -->
-                <div class="detail-card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <i class="material-icons">settings</i>
-                            <span>系統資訊</span>
-                        </div>
-                    </div>
-                    <div class="card-content">
-                        <div class="system-info-grid">
-                            <div class="system-info-item">
-                                <div class="info-label">
-                                    <i class="material-icons">fingerprint</i>
-                                    景點ID
-                                </div>
-                                <div class="info-value" th:text="${spot.spotId}">ID</div>
-                            </div>
-                            
-                            <div class="system-info-item">
-                                <div class="info-label">
-                                    <i class="material-icons">account_circle</i>
-                                    建立者ID
-                                </div>
-                                <div class="info-value" th:text="${spot.crtId}">建立者ID</div>
-                            </div>
-                            
-                            <div class="system-info-item">
-                                <div class="info-label">
-                                    <i class="material-icons">public</i>
-                                    地區
-                                </div>
-                                <div class="info-value" th:text="${spot.region ?: '未分類'}">地區</div>
-                            </div>
-                            
-                            <div class="system-info-item">
-                                <div class="info-label">
-                                    <i class="material-icons">star_rate</i>
-                                    Google評分
-                                </div>
-                                <div class="info-value">
-                                    <span th:if="${spot.googleRating != null}" th:text="${spot.googleRating} + ' 分'"></span>
-                                    <span th:unless="${spot.googleRating}">未提供</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 操作按鈕區域 -->
-                <div class="action-section">
-                    <div class="action-buttons">
-                        <a th:href="@{/admin/spot/list}" class="btn btn-secondary">
-                            <i class="material-icons">arrow_back</i>
-                            <span>返回列表</span>
-                        </a>
-                        
-                        <a th:href="@{/admin/spot/edit/{id}(id=${spot.spotId})}" class="btn btn-primary">
-                            <i class="material-icons">edit</i>
-                            <span>編輯景點</span>
-                        </a>
-                        
-                        <form th:action="@{/admin/spot/delete/{id}(id=${spot.spotId})}" method="post" class="delete-form">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('確定要刪除這個景點嗎？此操作無法復原！')">
-                                <i class="material-icons">delete</i>
-                                <span>刪除景點</span>
-                            </button>
-                        </form>
-                    </div>
+                    <a th:href="@{/admin/spot/edit/{id}(id=${spot.spotId})}" class="btn btn-primary">
+                        <i class="material-icons">edit</i>
+                        <span>編輯景點</span>
+                    </a>
+                    
+                    <form th:action="@{/admin/spot/delete/{id}(id=${spot.spotId})}" method="post" class="delete-form">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('確定要刪除這個景點嗎？此操作無法復原！')">
+                            <i class="material-icons">delete</i>
+                            <span>刪除景點</span>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

@@ -29,14 +29,24 @@ public class ItineraryPageController {
      * 行程首頁
      */
     @GetMapping("/")
-    public String homePage() {
+    public String homePage(Model model) {
+        model.addAttribute("currentPage", "travel");
+        return "front-end/itinerary/index";
+    }
+    
+    /**
+     * 行程首頁 - 別名路由
+     */
+    @GetMapping({"/index", "/home", "/main"})
+    public String homePageAlias(Model model) {
+        model.addAttribute("currentPage", "travel");
         return "front-end/itinerary/index";
     }
 
     /**
      * 行程列表頁面
      */
-    @GetMapping("/list")
+    @GetMapping("/itnlist")
     public String listPage(Model model,
                           @RequestParam(required = false) String keyword,
                           @RequestParam(required = false) Boolean isPublic) {
@@ -70,7 +80,7 @@ public class ItineraryPageController {
             model.addAttribute("errorMessage", "載入行程資料時發生錯誤");
         }
         
-        return "front-end/itinerary/list";
+        return "front-end/itinerary/itnlist";
     }
 
     /**

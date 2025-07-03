@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+<head>
+    <title>編輯行程 - 後台管理系統</title>
+    <th:block th:fragment="head">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <!-- 行程模組通用樣式 -->
+        <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-common.css}">
+        <!-- 行程表單專用樣式 -->
+        <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-form.css}">
+        <!-- CSRF Token -->
+        <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
+    </th:block>
+</head>
+
+<body>
+    <!-- This div will be passed as the 'subnav' parameter to the layout -->
+    <div id="subnav" th:replace="~{subnavItinerary :: subnav('edit')}"></div>
+
+    <main th:fragment="main" class="itinerary-review-page">
+        <!-- 英雄區塊全寬 -->
+        <div class="page-header-section">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>編輯行程</h1>
+                    <p>修改行程資訊，更新行程內容</p>
+                </div>
+                <div class="header-image">
+                    <img src="/images/logo.png" alt="行程管理系統" class="header-logo">
+                </div>
+            </div>
+        </div>
+        <div class="itinerary-form-page">
+
+            <!-- 成功/錯誤訊息 -->
+            <div th:if="${successMessage}" class="alert alert-success">
+                <i class="material-icons">check_circle</i>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <i class="material-icons">error</i>
+                <span th:utext="${errorMessage}"></span>
+            </div>
+            <!-- 表單內容區域 -->
+            <div class="content-container">
+                <form th:action="@{/admin/itinerary/edit/{id}(id=${itinerary.itnId})}" method="post" id="itineraryForm" class="itinerary-form">
+
+                    <!-- 基本資訊區塊 -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="material-icons">info</i>
+                                基本資訊
+                            </h2>
+                            <p class="section-desc">請修改行程的基本資訊</p>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="itnName" class="form-label">
+                                    行程名稱 <span class="required">*</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="material-icons input-icon">map</i>
+                                    <input id="itnName" type="text" class="form-control" 
+                                           name="itnName" required maxlength="50"
+                                           placeholder="請輸入行程名稱"
+                                           th:value="${itinerary.itnName}">
+                                </div>
+                                <div class="helper-text">請輸入行程的正式名稱，最多50個字元 <span class="char-count">(0/50)</span></div>
+                            </div>
+
+                            <div class="form-group form-group-full">
+                                <label for="itnDesc" class="form-label">行程描述</label>
+                                <textarea id="itnDesc" class="form-control form-textarea" 
+                                          name="itnDesc" maxlength="500" rows="4"
+                                          placeholder="詳細描述行程特色、路線安排或遊覽重點..."
+                                          th:text="${itinerary.itnDesc}"></textarea>
+                                <div class="helper-text">詳細描述行程特色、路線安排或遊覽重點，最多500個字元 <span class="char-count">(0/500)</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 狀態設定區塊 -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="material-icons">toggle_on</i>
+                                狀態設定
+                            </h2>
+                            <p class="section-desc">設定行程的顯示狀態</p>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">公開狀態</label>
+                                <div class="status-card">
+                                    <div class="status-switch-container">
+                                        <label class="status-switch">
+                                            <input type="checkbox" id="statusCheckbox" name="isPublicEnabled" 
+                                                   th:checked="${itinerary.isPublic == 1}">
+                                            <span class="switch-slider"></span>
+                                        </label>
+                                        <div class="status-info">
+                                            <span class="status-text" th:text="${itinerary.isPublic == 1 ? '公開' : '私人'}">公開</span>
+                                            <div class="status-badge" th:classappend="${itinerary.isPublic == 1 ? 'badge-success' : 'badge-secondary'}">
+                                                <i class="material-icons" th:text="${itinerary.isPublic == 1 ? 'visibility' : 'visibility_off'}">visibility</i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="helper-text">公開的行程會顯示於前台，私人的行程則會隱藏</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 隱藏欄位 -->
+                    <input type="hidden" name="isPublic" id="isPublic" th:value="${itinerary.isPublic}">
+
+                    <!-- 操作按鈕區域 -->
+                    <div class="form-actions">
+                        <a th:href="@{/admin/itinerary/itnlist}" class="btn btn-secondary">
+                            <i class="material-icons">arrow_back</i>
+                            返回列表
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="material-icons">save</i>
+                            <span>更新行程</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 表單頁面專用腳本 -->
+        <script th:src="@{/js/itinerary/back-end/form.js}" defer></script>
+        
+        <!-- 簡化的按鈕顯示確保腳本 -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // 簡單確保按鈕顯示
+                const formActions = document.querySelector('.form-actions');
+                const buttons = document.querySelectorAll('.btn');
+                
+                if (formActions) formActions.style.display = 'flex';
+                buttons.forEach(btn => btn.style.display = 'inline-flex');
+                
+                console.log('編輯行程頁面載入完成，按鈕數量:', buttons.length);
+                
+                // 初始化字元計數
+                const nameInput = document.getElementById('itnName');
+                const descTextarea = document.getElementById('itnDesc');
+                
+                if (nameInput) {
+                    const nameCount = nameInput.value.length;
+                    const nameCountSpan = document.querySelector('#itnName').closest('.form-group').querySelector('.char-count');
+                    if (nameCountSpan) nameCountSpan.textContent = `(${nameCount}/50)`;
+                }
+                
+                if (descTextarea) {
+                    const descCount = descTextarea.value.length;
+                    const descCountSpan = document.querySelector('#itnDesc').closest('.form-group').querySelector('.char-count');
+                    if (descCountSpan) descCountSpan.textContent = `(${descCount}/500)`;
+                }
+            });
+        </script>
+    </main>
+</body>
+</html> 

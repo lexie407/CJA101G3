@@ -229,7 +229,7 @@ function loadMoreItineraries() {
     }
     
     // 模擬 API 呼叫
-    fetch(`/api/itinerary/list?page=${currentPage}&size=${currentSize}`)
+            fetch(`/api/itinerary/itnlist?page=${currentPage}&size=${currentSize}`)
         .then(response => response.json())
         .then(data => {
             if (data.success && data.data.length > 0) {

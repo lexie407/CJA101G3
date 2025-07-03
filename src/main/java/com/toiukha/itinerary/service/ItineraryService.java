@@ -287,4 +287,20 @@ public class ItineraryService {
     public Long getSpotCountByItineraryId(Integer itnId) {
         return itnSpotService.getSpotCountByItnId(itnId);
     }
+
+    // ========== 7. 後台管理專用方法 ==========
+
+    /**
+     * 根據條件查詢行程（後台管理用）
+     * @param keyword 搜尋關鍵字
+     * @param status 狀態篩選
+     * @param isPublic 公開狀態篩選
+     * @param pageable 分頁參數
+     * @return 符合條件的行程分頁結果
+     */
+    public Page<ItineraryVO> findItinerariesWithFilters(String keyword, Integer status, Integer isPublic, Pageable pageable) {
+        return itineraryRepository.findWithFilters(keyword, status, isPublic, pageable);
+    }
+
+
 } 
