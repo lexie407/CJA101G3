@@ -228,3 +228,85 @@ window.deleteAct = function (actId, hostId) {
       });
   }
 };
+
+/**
+ * 會員刪除活動（僅限未公開活動）
+ * @param {number} actId - 活動 ID
+ */
+window.memberDeleteAct = function (actId) {
+  if (confirm("確定要刪除這個活動嗎？此操作無法復原。")) {
+    GroupActivityAPI.memberDeleteActivity(actId)
+      .then((response) => {
+        if (response.success) {
+          alert("活動刪除成功");
+          location.reload();
+        } else {
+          alert(response.error || "刪除失敗，請稍後再試");
+        }
+      })
+      .catch((error) => {
+        console.error("刪除失敗:", error);
+        alert("刪除失敗，請稍後再試");
+      });
+  }
+};
+
+/**
+ * 參加活動
+ * @param {number} actId - 活動 ID
+ */
+window.joinActivity = function (actId) {
+  // 從頁面取得 currentMemId，如果沒有則提示登入
+  const currentMemId = window.currentMemId;
+  if (!currentMemId) {
+    alert("請先登入");
+    window.location.href = "/members/login";
+    return;
+  }
+
+  GroupActivityAPI.joinActivity(actId, currentMemId)
+    .then((response) => {
+      if (response.success) {
+        alert("報名成功！");
+        location.reload();
+      } else {
+        alert(response.error || "報名失敗，請稍後再試");
+      }
+    })
+    .catch((error) => {
+      console.error("報名失敗:", error);
+      alert("報名失敗，請稍後再試");
+    });
+};
+
+/**
+ * 取消參加活動
+ * @param {number} actId - 活動 ID
+ */
+window.cancelParticipation = function (actId) {
+  if (!confirm("確定要取消報名嗎？")) {
+    return;
+  }
+
+  // 從頁面取得 currentMemId，如果沒有則提示登入
+  const currentMemId = window.currentMemId;
+  if (!currentMemId) {
+    alert("請先登入");
+    window.location.href = "/members/login";
+    return;
+  }
+
+  GroupActivityAPI.leaveActivity(actId, currentMemId)
+    .then((response) => {
+      if (response.success) {
+        alert("取消報名成功");
+        location.reload();
+      } else {
+        alert(response.error || "取消報名失敗，請稍後再試");
+      }
+    })
+    .catch((error) => {
+      console.error("取消報名失敗:", error);
+      alert("取消報名失敗，請稍後再試");
+    });
+};

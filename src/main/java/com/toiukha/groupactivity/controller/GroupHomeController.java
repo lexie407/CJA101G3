@@ -1,6 +1,5 @@
 package com.toiukha.groupactivity.controller;
 
-import com.toiukha.groupactivity.model.ActStatus;
 import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.groupactivity.security.AuthService;
 import com.toiukha.groupactivity.service.ActService;
@@ -40,21 +39,14 @@ public class GroupHomeController {
             return "redirect:/act/member/search";
         }
 
-        if (act.getRecruitStatus() != ActStatus.FULL.getValue()) {
-            return "redirect:/act/member/search";
-        }
-
+        // 檢查活動是否為公開活動（僅非團主且非參加者時禁止進入）
         AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
-
         if (!memberInfo.isLoggedIn()) {
             return "redirect:/members/login";
         }
-
         boolean isHost = act.getHostId().equals(memberInfo.getMemId());
         boolean isParticipant = partService.getParticipants(actId).contains(memberInfo.getMemId());
-
-        // 修改權限檢查：團主或參加者都可以進入
-        if (!isHost && !isParticipant) {
+        if (act.getIsPublic() != 1 && !isHost && !isParticipant) {
             return "redirect:/act/member/search";
         }
 

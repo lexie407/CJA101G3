@@ -155,7 +155,7 @@
 
                 <!-- 使用ActService檢查是否為公開活動 -->
                 <a
-                  th:if="${@actService.isPublic(actVo)}"
+                  th:if="(${atPage} == 'myJoin' or ${atPage} == 'myHost') and (${isHost} or ${isParticipant})"
                   th:href="@{'/act/group/' + ${actVo.actId} + '/home'}"
                   class="act-btn act-btn-success"
                 >
@@ -171,7 +171,7 @@
     <script th:inline="javascript">
       // 從伺服器取得資料
       const actId = /*[[${actVo.actId}]]*/ null;
-      const currentMemId = /*[[${session.member?.memId}]]*/ null;
+      const currentMemId = /*[[${currentMemId}]]*/ null;
 
       function joinActivity() {
         if (!actId) {

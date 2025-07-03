@@ -24,20 +24,12 @@ public class ActServiceImpl implements ActService {
     
     @Autowired
     private ActTagService tagService;
+    
+    @Autowired
+    private com.toiukha.participant.model.PartRepository partRepo;
 
 
-    private ActCardDTO convertToCardDTO(ActVO actVO) {
-        ActCardDTO dto = new ActCardDTO();
-        dto.setActId(actVO.getActId());
-        dto.setActName(actVO.getActName());
-        dto.setActDesc(actVO.getActDesc());
-        dto.setActStart(actVO.getActStart());
-        dto.setSignupCnt(actVO.getSignupCnt());
-        dto.setMaxCap(actVO.getMaxCap());
-        dto.setRecruitStatus(actVO.getRecruitStatus());
-        dto.setHostId(actVO.getHostId());
-        return dto;
-    }
+
 
     //=======前後台通用基本功能==========
 
@@ -87,6 +79,28 @@ public class ActServiceImpl implements ActService {
         actHandlerSvc.handleActivityDeletion(actId);
     }
 
+    //會員刪除活動（僅限未公開活動）
+    @Override
+    public void memDelete(Integer actId, Integer hostId) {
+        ActVO act = getOneAct(actId);
+        if (act == null) {
+            throw new IllegalArgumentException("活動不存在");
+        }
+        
+        // 檢查是否為團主
+        if (!act.getHostId().equals(hostId)) {
+            throw new SecurityException("只有團主可以刪除活動");
+        }
+        
+        // 檢查是否為未公開活動
+        if (act.getIsPublic() == 1) {
+            throw new IllegalStateException("公開活動無法刪除");
+        }
+        
+        // 使用 ActHandlerService 處理刪除
+        actHandlerSvc.handleActivityDeletion(actId);
+    }
+
     //查詢活動
     @Override
     public ActVO getOneAct(Integer actId) {
@@ -112,7 +126,7 @@ public class ActServiceImpl implements ActService {
     public List<ActCardDTO> getJoinedActsAsCard(Integer memId) {
         List<ActVO> joinedActs = getJoinedActs(memId);
         return joinedActs.stream()
-                .map(this::convertToCardDTO)
+                .map(ActCardDTO::fromVO)
                 .collect(java.util.stream.Collectors.toList());
     }
 
@@ -141,7 +155,7 @@ public class ActServiceImpl implements ActService {
     @Override
     public Page<ActCardDTO> searchActsAsCard(Specification<ActVO> spec, Pageable pageable) {
         Page<ActVO> actPage = actRepo.findAll(spec, pageable);
-        return actPage.map(this::convertToCardDTO);
+        return actPage.map(ActCardDTO::fromVO);
     }
 
     //分頁查詢已公開活動
@@ -172,7 +186,34 @@ public class ActServiceImpl implements ActService {
             )
         );
         Page<ActVO> actPage = actRepo.findAll(spec, sortedPageable);
-        return actPage.map(this::convertToCardDTO);
+        return actPage.map(ActCardDTO::fromVO);
+    }
+
+    //分頁查詢已公開活動（含當前用戶參與狀態）
+    @Override
+    public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName, 
+                                           Integer hostId, LocalDateTime actStart, 
+                                           Integer maxCap, Integer currentUserId, 
+                                           Pageable pageable) {
+        // 呼叫原有方法
+        Page<ActCardDTO> result = searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, pageable);
+        
+        // 如果有當前用戶，查詢參與狀態
+        if (currentUserId != null) {
+            List<Integer> joinedActIds = partRepo.findActIdsByMemId(currentUserId);
+            
+            // 設定參與狀態
+            result.getContent().forEach(dto -> {
+                dto.setIsCurrentUserParticipant(joinedActIds.contains(dto.getActId()));
+            });
+        } else {
+            // 未登入用戶，全部設為 false
+            result.getContent().forEach(dto -> {
+                dto.setIsCurrentUserParticipant(false);
+            });
+        }
+        
+        return result;
     }
 
     //===========活動狀態===========
@@ -292,7 +333,7 @@ public class ActServiceImpl implements ActService {
                 .sorted((a, b) -> b.getActStart().compareTo(a.getActStart()))
                 .skip(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .map(this::convertToCardDTO)
+                .map(ActCardDTO::fromVO)
                 .collect(java.util.stream.Collectors.toList());
 
         return new org.springframework.data.domain.PageImpl<>(results, pageable, actIds.size());

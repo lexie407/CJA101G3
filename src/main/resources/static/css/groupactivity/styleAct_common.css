@@ -555,3 +555,69 @@
     min-width: unset;
   }
 }
+
+/* ===================== 新增：我揪的團/我跟的團 icon 按鈕樣式 ===================== */
+.listMyAct .btn-group,
+.listMyJoin .btn-group {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.listMyAct .btn,
+.listMyJoin .btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1.25rem;
+  background: transparent;
+  border: 2px solid transparent;
+}
+
+.listMyAct .btn-icon-zoom,
+.listMyJoin .btn-icon-zoom {
+  background-color: transparent;
+  color:var(--md-sys-color-primary);
+  border: 2px solid transparent;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.listMyAct .btn-icon-zoom i,
+.listMyJoin .btn-icon-zoom i {
+  transition: transform 0.3s ease-in-out;
+}
+
+.listMyAct .btn-icon-zoom:hover,
+.listMyJoin .btn-icon-zoom:hover {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-color: var(--md-sys-color-primary);
+  transform: translateY(-2px);
+}
+.listMyAct .btn-icon-zoom:hover i,
+.listMyJoin .btn-icon-zoom:hover i {
+  transform: scale(1.2);
+}
+
+/* 針對不同功能按鈕顏色 */
+.listMyAct .btn-icon-zoom.secondary,
+.listMyJoin .btn-icon-zoom.secondary { color: var(--md-sys-color-secondary); }
+.listMyAct .btn-icon-zoom.secondary:hover,
+.listMyJoin .btn-icon-zoom.secondary:hover { background-color: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); border-color: var(--md-sys-color-secondary); }
+.listMyAct .btn-icon-zoom.tertiary,
+.listMyJoin .btn-icon-zoom.tertiary { color: var(--md-sys-color-tertiary); }
+.listMyAct .btn-icon-zoom.tertiary:hover,
+.listMyJoin .btn-icon-zoom.tertiary:hover { background-color: var(--md-sys-color-tertiary); color: var(--md-sys-color-on-tertiary); border-color: var(--md-sys-color-tertiary); }
+.listMyAct .btn-icon-zoom.error,
+.listMyJoin .btn-icon-zoom.error { color: var(--md-sys-color-error); border-color: transparent; }
+.listMyAct .btn-icon-zoom.error:hover,
+.listMyJoin .btn-icon-zoom.error:hover { background-color: var(--md-sys-color-error); color: var(--md-sys-color-on-error); border-color: var(--md-sys-color-error); }

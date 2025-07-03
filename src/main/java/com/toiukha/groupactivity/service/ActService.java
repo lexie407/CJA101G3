@@ -24,6 +24,9 @@ public interface ActService {
     void updateAct(ActDTO actDto);
     void deleteAct(Integer actId);
 
+    // 會員刪除活動（僅限未公開活動）
+    void memDelete(Integer actId, Integer hostId);
+
     //查詢活動
     ActVO getOneAct(Integer actId);
     List<ActVO> getAll();
@@ -47,6 +50,11 @@ public interface ActService {
                                      Integer hostId, LocalDateTime actStart, 
                                      Integer maxCap, Pageable pageable);
 
+    //查詢已公開活動（含當前用戶參與狀態）
+    Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName, 
+                                     Integer hostId, LocalDateTime actStart, 
+                                     Integer maxCap, Integer currentUserId, 
+                                     Pageable pageable);
 
     //===========活動狀態===========
 
