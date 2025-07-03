@@ -5,6 +5,8 @@ import com.toiukha.spot.model.SpotVO;
 import com.toiukha.spot.service.GovernmentDataService;
 import com.toiukha.spot.service.SpotEnrichmentService;
 import com.toiukha.spot.service.SpotService;
+import com.toiukha.administrant.model.AdministrantVO;
+import com.toiukha.administrant.model.AdministrantService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,7 @@ import jakarta.validation.ConstraintViolationException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 景點管理後端總控制器
@@ -59,10 +62,41 @@ public class SpotAdminController {
     @Autowired
     private SpotService spotService;
 
+    @Autowired
+    private AdministrantService administrantService;
+
 
     // ===================================================================================
     // 頁面路由 (Page Routing)
     // ===================================================================================
+
+    /**
+     * 景點列表頁面 - 新路由映射 (spotlist)
+     */
+    @GetMapping("/spotlist")
+    public String spotlistPage(
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "status", required = false) Integer status,
+            @RequestParam(name = "region", required = false) String region,
+            @RequestParam(name = "sort", defaultValue = "spotId") String sort,
+            @RequestParam(name = "direction", defaultValue = "desc") String direction,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            Model model) {
+        // 調用現有的業務邏輯，但返回新的模板路徑
+        listPage(keyword, status, region, sort, direction, page, size, model);
+        return "back-end/spot/spotlist";
+    }
+
+    /**
+     * 景點審核頁面 - 新路由映射 (spotreview)
+     */
+    @GetMapping("/spotreview")
+    public String spotreviewPage(Model model) {
+        // 調用現有的業務邏輯，但返回新的模板路徑
+        reviewPage(model);
+        return "back-end/spot/spotreview";
+    }
 
     /**
      * 顯示景點列表頁面 (分頁) - 支援複合搜尋
@@ -190,7 +224,7 @@ public class SpotAdminController {
                    spotPage.getTotalElements(), spotPage.getNumberOfElements(), spotPage.getTotalPages());
         logger.info("==================");
 
-        return "back-end/spot/list";
+        return "back-end/spot/spotlist";
     }
 
     /**
@@ -222,7 +256,7 @@ public class SpotAdminController {
         List<SpotVO> pendingList = spotService.getPendingSpotsWithAutoCheck();
         model.addAttribute("pendingList", pendingList);
         model.addAttribute("currentPage", "spotReview");
-        return "back-end/spot/review";
+        return "back-end/spot/spotreview";
     }
 
     /**
@@ -270,7 +304,7 @@ public class SpotAdminController {
             
             // 新增成功後跳轉到審核管理頁面
             redirectAttr.addFlashAttribute("successMessage", "景點新增成功！已加入待審核列表。");
-            return "redirect:/admin/spot/review";
+            return "redirect:/admin/spot/spotreview";
         } catch (Exception e) {
             String errorMessage = formatExceptionMessage(e);
             redirectAttr.addFlashAttribute("errorMessage", errorMessage);
@@ -288,7 +322,7 @@ public class SpotAdminController {
     public String showEditForm(@PathVariable Integer spotId, Model model) {
         SpotVO spot = spotService.getSpotById(spotId);
         if (spot == null) {
-            return "redirect:/admin/spot/list";
+            return "redirect:/admin/spot/spotlist";
         }
         model.addAttribute("spotVO", spot);
         model.addAttribute("isEdit", true);
@@ -313,7 +347,7 @@ public class SpotAdminController {
             SpotVO originalSpot = spotService.getSpotById(spotId);
             if (originalSpot == null) {
                 redirectAttr.addFlashAttribute("errorMessage", "景點不存在");
-                return "redirect:/admin/spot/list";
+                return "redirect:/admin/spot/spotlist";
             }
             
             // 設定必要欄位
@@ -339,7 +373,7 @@ public class SpotAdminController {
         } catch (Exception e) {
             redirectAttr.addFlashAttribute("errorMessage", "更新失敗：" + e.getMessage());
         }
-        return "redirect:/admin/spot/list";
+        return "redirect:/admin/spot/spotlist";
     }
 
     /**
@@ -356,7 +390,7 @@ public class SpotAdminController {
         } catch (Exception e) {
             redirectAttr.addFlashAttribute("errorMessage", "刪除失敗：" + e.getMessage());
         }
-        return "redirect:/admin/spot/list";
+        return "redirect:/admin/spot/spotlist";
     }
 
     /**
@@ -371,7 +405,7 @@ public class SpotAdminController {
         try {
             if (spotIds == null || spotIds.isEmpty()) {
                 redirectAttr.addFlashAttribute("errorMessage", "請選擇要刪除的景點");
-                return "redirect:/admin/spot/list";
+                return "redirect:/admin/spot/spotlist";
             }
 
             int deletedCount = 0;
@@ -398,7 +432,7 @@ public class SpotAdminController {
         } catch (Exception e) {
             redirectAttr.addFlashAttribute("errorMessage", "批量刪除失敗：" + e.getMessage());
         }
-        return "redirect:/admin/spot/list";
+        return "redirect:/admin/spot/spotlist";
     }
 
     /**
@@ -427,7 +461,7 @@ public class SpotAdminController {
         } catch (Exception e) {
             redirectAttr.addFlashAttribute("errorMessage", "狀態切換失敗：" + e.getMessage());
         }
-        return "redirect:/admin/spot/list";
+        return "redirect:/admin/spot/spotlist";
     }
 
     /**
@@ -440,7 +474,7 @@ public class SpotAdminController {
     public String adminSpotDetail(@PathVariable Integer spotId, Model model) {
         SpotVO spot = spotService.getSpotById(spotId);
         if (spot == null) {
-            return "redirect:/admin/spot/list";
+            return "redirect:/admin/spot/spotlist";
         }
         model.addAttribute("spot", spot);
         model.addAttribute("currentPage", "spotManagement");
@@ -460,7 +494,7 @@ public class SpotAdminController {
         } catch (Exception e) {
             redirectAttr.addFlashAttribute("errorMessage", "重置失敗：" + e.getMessage());
         }
-        return "redirect:/admin/spot/list";
+        return "redirect:/admin/spot/spotlist";
     }
 
     /**
@@ -475,7 +509,7 @@ public class SpotAdminController {
         } catch (Exception e) {
             redirectAttr.addFlashAttribute("errorMessage", "批量上架失敗：" + e.getMessage());
         }
-        return "redirect:/admin/spot/list";
+        return "redirect:/admin/spot/spotlist";
     }
 
     /**
@@ -487,14 +521,14 @@ public class SpotAdminController {
         try {
             if (spotIds == null || spotIds.isEmpty()) {
                 redirectAttr.addFlashAttribute("errorMessage", "請選擇要下架的景點");
-                return "redirect:/admin/spot/list";
+                return "redirect:/admin/spot/spotlist";
             }
             spotService.batchUpdateStatus(spotIds, (byte) 3); // 3: 下架
             redirectAttr.addFlashAttribute("successMessage", "已批量下架 " + spotIds.size() + " 個景點");
         } catch (Exception e) {
             redirectAttr.addFlashAttribute("errorMessage", "批量下架失敗：" + e.getMessage());
         }
-        return "redirect:/admin/spot/list";
+        return "redirect:/admin/spot/spotlist";
     }
 
     /**
@@ -509,19 +543,63 @@ public class SpotAdminController {
         try {
             if (spotIds == null || spotIds.isEmpty()) {
                 redirectAttr.addFlashAttribute("errorMessage", "請選擇要退回的景點");
-                return "redirect:/admin/spot/list";
+                return "redirect:/admin/spot/spotlist";
             }
             spotService.batchUpdateStatus(spotIds, (byte) 2); // 2: 退回
             redirectAttr.addFlashAttribute("successMessage", "已批量退回 " + spotIds.size() + " 個景點");
         } catch (Exception e) {
             redirectAttr.addFlashAttribute("errorMessage", "批量退回失敗：" + e.getMessage());
         }
-        return "redirect:/admin/spot/list";
+        return "redirect:/admin/spot/spotlist";
+    }
+
+    /**
+     * 後台登入頁面
+     * @return 登入頁面
+     */
+    @GetMapping("/login")
+    public String adminLoginPage() {
+        return "back-end/spot/login";
+    }
+
+    /**
+     * 後台首頁 (Dashboard)
+     * @param model 模型
+     * @return 後台首頁
+     */
+    @GetMapping("/dashboard")
+    public String adminDashboard(Model model) {
+        // 取得統計資料
+        model.addAttribute("totalSpots", spotService.getTotalSpotCount());
+        model.addAttribute("pendingCount", spotService.getSpotCountByStatus(0));
+        model.addAttribute("approvedCount", spotService.getSpotCountByStatus(1));
+        model.addAttribute("rejectedCount", spotService.getSpotCountByStatus(2));
+        return "back-end/spot/dashboard";
+    }
+
+    /**
+     * 權限不足頁面
+     * @return 權限不足頁面
+     */
+    @GetMapping("/forbidden")
+    public String forbiddenPage() {
+        return "back-end/spot/forbidden";
+    }
+
+    /**
+     * 後台登出
+     * @param session HTTP Session
+     * @return 重定向到登入頁面
+     */
+    @GetMapping("/logout")
+    public String logout(jakarta.servlet.http.HttpSession session) {
+        session.invalidate();
+        return "redirect:/admin/spot/login";
     }
 
     @GetMapping({"", "/"})
     public String redirectToList() {
-        return "redirect:/admin/spot/list";
+        return "redirect:/admin/spot/spotlist";
     }
 
     // ===================================================================================
@@ -813,6 +891,29 @@ public class SpotAdminController {
     }
 
     /**
+     * 批次退回景點審核
+     */
+    @PostMapping("/api/batch-reject")
+    @ResponseBody
+    public ApiResponse<String> batchRejectSpots(@RequestBody List<Integer> spotIds) {
+        int count = 0;
+        for (Integer id : spotIds) {
+            if (spotService.rejectSpot(id, "批次退回", "")) count++;
+        }
+        return ApiResponse.success("已退回 " + count + " 筆景點");
+    }
+
+    /**
+     * 批次移至待審核狀態
+     */
+    @PostMapping("/api/batch-pending")
+    @ResponseBody
+    public ApiResponse<String> batchPendingSpots(@RequestBody List<Integer> spotIds) {
+        int count = spotService.batchUpdateStatus(spotIds, (byte) 0); // 0=待審核
+        return ApiResponse.success("已將 " + count + " 筆景點移至待審");
+    }
+
+    /**
      * 匯出所有景點審核結果（CSV）
      */
     @GetMapping("/api/export")
@@ -938,5 +1039,55 @@ public class SpotAdminController {
             logger.warn("解析驗證錯誤訊息失敗: {}", parseError.getMessage());
             return "新增失敗：資料驗證錯誤";
         }
+    }
+
+    /**
+     * 處理後台登入
+     * @param adminAcc 管理員帳號
+     * @param adminPwd 管理員密碼
+     * @param session HTTP Session
+     * @param model 模型
+     * @return 登入結果
+     */
+    @PostMapping("/login")
+    public String processLogin(@RequestParam String adminAcc, 
+                              @RequestParam String adminPwd, 
+                              jakarta.servlet.http.HttpSession session,
+                              Model model) {
+        
+        // 1. 判斷帳號是否存在
+        Optional<AdministrantVO> opt = administrantService.findByAdminAcc(adminAcc);
+        if (opt.isEmpty()) {
+            model.addAttribute("errorMsgs", List.of("管理員帳號錯誤"));
+            model.addAttribute("adminAcc", adminAcc);
+            return "back-end/spot/login";
+        }
+        AdministrantVO admin = opt.get();
+
+        // 2. 密碼比對
+        if (!admin.getAdminPwd().equals(adminPwd)) {
+            model.addAttribute("errorMsgs", List.of("管理員密碼錯誤"));
+            model.addAttribute("adminAcc", adminAcc);
+            return "back-end/spot/login";
+        }
+
+        // 3. 帳號狀態檢查：0 = 啟用；1 = 停權
+        if (admin.getAdminStatus() == 1) {
+            model.addAttribute("errorMsgs", List.of("帳號已被停權，如有問題請聯絡最高管理員"));
+            model.addAttribute("adminAcc", adminAcc);
+            return "back-end/spot/login";
+        }
+
+        // 4. 登入成功：放入 Session
+        session.setAttribute("admin", admin);
+        
+        // 把功能授權也存進 session 
+        List<Integer> funcIds = admin.getAuths().stream()
+            .map(auth -> auth.getManageFunction().getManageFuncId())
+            .toList();
+        session.setAttribute("adminFuncIds", funcIds);
+
+        // 5. 導向景點後台首頁
+        return "redirect:/admin/spot/spotlist";
     }
 } 

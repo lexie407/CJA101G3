@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行程卡片元件使用範例 (Itn)</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .demo-header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .demo-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .demo-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .demo-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+            padding-left: 16px;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        
+        .demo-buttons {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .demo-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .demo-btn-primary {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .demo-btn-primary:hover {
+            background: #1976d2;
+        }
+        
+        .demo-btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+        
+        .demo-btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .status-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .status-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .status-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+        
+        #itnTripCardsContainer {
+            margin: 20px 0;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feature-list li:before {
+            content: "✅";
+            margin-right: 10px;
+        }
+        
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .api-table th,
+        .api-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .api-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .api-table code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- 標題區塊 -->
+        <div class="demo-header">
+            <h1 class="demo-title">🎯 行程卡片動態元件 (Itn)</h1>
+            <p class="demo-subtitle">可重複使用的行程卡片生成器，支援動態資料載入和自訂回調函數</p>
+            
+            <ul class="feature-list">
+                <li>純 JavaScript，無框架依賴</li>
+                <li>支援多種資料來源（API、JSON、陣列）</li>
+                <li>響應式設計，自動適應不同螢幕尺寸</li>
+                <li>可自訂主題色彩和按鈕文字</li>
+                <li>完整的錯誤處理機制</li>
+                <li>簡單的引入方式，一行程式碼即可使用</li>
+            </ul>
+        </div>
+
+        <!-- 快速開始 -->
+        <div class="demo-section">
+            <h2 class="section-title">🚀 快速開始</h2>
+            
+            <h3>1. 引入檔案</h3>
+            <div class="code-block">
+&lt;!-- 引入元件檔案 --&gt;
+&lt;script src="/js/itn-components/itn-trip-card.js"&gt;&lt;/script&gt;
+&lt;script src="/js/itn-components/itn-trip-card-data.js"&gt;&lt;/script&gt;
+            </div>
+            
+            <h3>2. 準備容器</h3>
+            <div class="code-block">
+&lt;div id="itnTripCardsContainer"&gt;&lt;/div&gt;
+            </div>
+            
+            <h3>3. 載入資料</h3>
+            <div class="code-block">
+// 使用範例資料
+const tripData = getItnTripSampleData('FULL');
+createItnTripCards('#itnTripCardsContainer', tripData);
+            </div>
+        </div>
+
+        <!-- 即時示範 -->
+        <div class="demo-section">
+            <h2 class="section-title">💡 即時示範</h2>
+            
+            <div class="demo-buttons">
+                <button class="demo-btn demo-btn-primary" onclick="loadBasicExample()">基本範例</button>
+                <button class="demo-btn demo-btn-primary" onclick="loadFullExample()">完整範例</button>
+                <button class="demo-btn demo-btn-primary" onclick="loadCategoriesExample()">多分類範例</button>
+                <button class="demo-btn demo-btn-secondary" onclick="clearCards()">清空卡片</button>
+                <button class="demo-btn demo-btn-secondary" onclick="loadFromAPI()">模擬 API 載入</button>
+            </div>
+            
+            <div id="statusMessage"></div>
+            
+            <!-- 卡片容器 -->
+            <div id="itnTripCardsContainer"></div>
+        </div>
+
+        <!-- API 參考 -->
+        <div class="demo-section">
+            <h2 class="section-title">📖 API 參考</h2>
+            
+            <h3>主要方法</h3>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>方法</th>
+                        <th>參數</th>
+                        <th>說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>createItnTripCards()</code></td>
+                        <td>containerSelector, data, options</td>
+                        <td>創建行程卡片（便利函數）</td>
+                    </tr>
+                    <tr>
+                        <td><code>loadItnTripCardsFromAPI()</code></td>
+                        <td>containerSelector, apiUrl, options</td>
+                        <td>從 API 載入資料並創建卡片</td>
+                    </tr>
+                    <tr>
+                        <td><code>getItnTripSampleData()</code></td>
+                        <td>type</td>
+                        <td>獲取範例資料（BASIC, FULL, CATEGORIES）</td>
+                    </tr>
+                    <tr>
+                        <td><code>validateItnTripData()</code></td>
+                        <td>data</td>
+                        <td>驗證資料格式是否正確</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>配置選項 (options)</h3>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>選項</th>
+                        <th>類型</th>
+                        <th>預設值</th>
+                        <th>說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>onRegisterClick</code></td>
+                        <td>function</td>
+                        <td>null</td>
+                        <td>報名按鈕點擊回調函數</td>
+                    </tr>
+                    <tr>
+                        <td><code>onDetailClick</code></td>
+                        <td>function</td>
+                        <td>null</td>
+                        <td>詳情按鈕點擊回調函數</td>
+                    </tr>
+                    <tr>
+                        <td><code>onCardClick</code></td>
+                        <td>function</td>
+                        <td>null</td>
+                        <td>卡片點擊回調函數</td>
+                    </tr>
+                    <tr>
+                        <td><code>enableCardClick</code></td>
+                        <td>boolean</td>
+                        <td>true</td>
+                        <td>是否啟用卡片點擊事件</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 資料格式 -->
+        <div class="demo-section">
+            <h2 class="section-title">📋 資料格式</h2>
+            
+            <h3>基本格式</h3>
+            <div class="code-block">
+{
+  "id": "itn001",                     // 可選，唯一識別碼
+  "title": "台北文化美食一日遊",      // 必要，行程標題
+  "date": "2025-07-15",              // 必要，行程日期
+  "duration": "8小時",               // 必要，行程時長
+  "groupSize": "4-8人",              // 必要，團體人數
+  "price": 1200,                     // 必要，價格（數字）
+  "rating": 4.8,                     // 可選，評分
+  "itinerary": [                     // 必要，行程安排陣列
+    {
+      "time": "09:00",               // 時間
+      "duration": "2.5小時",         // 持續時間
+      "name": "國立故宮博物院",       // 地點名稱
+      "location": "士林區",          // 地點位置
+      "category": "文化景點"         // 分類
+    }
+  ]
+}
+            </div>
+            
+            <h3>進階格式（含主題設定）</h3>
+            <div class="code-block">
+{
+  // ... 基本欄位 ...
+  "theme": {
+    "gradient": "linear-gradient(135deg, #4285f4 0%, #9c27b0 100%)",
+    "primaryColor": "#2196f3"
+  },
+  "buttons": {
+    "register": "立即報名",
+    "detail": "查看詳情"
+  }
+}
+            </div>
+        </div>
+
+        <!-- 整合說明 -->
+        <div class="demo-section">
+            <h2 class="section-title">🔧 揪團頁面整合</h2>
+            
+            <h3>1. 在揪團頁面引入元件</h3>
+            <div class="code-block">
+&lt;!-- 在 head 標籤中引入 --&gt;
+&lt;script src="/js/itn-components/itn-trip-card.js"&gt;&lt;/script&gt;
+&lt;script src="/js/itn-components/itn-trip-card-data.js"&gt;&lt;/script&gt;
+            </div>
+            
+            <h3>2. 設定容器和回調函數</h3>
+            <div class="code-block">
+&lt;div id="groupActivityCards"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+// 設定回調函數
+const options = {
+  onRegisterClick: function(trip, cardElement) {
+    // 跳轉到報名頁面
+    window.location.href = `/groupactivity/register/${trip.id}`;
+  },
+  onDetailClick: function(trip, cardElement) {
+    // 跳轉到詳情頁面
+    window.location.href = `/groupactivity/detail/${trip.id}`;
+  },
+  onCardClick: function(trip, cardElement) {
+    // 卡片點擊效果（可選）
+    console.log('查看行程:', trip.title);
+  }
+};
+
+// 從後端 API 載入資料
+loadItnTripCardsFromAPI('#groupActivityCards', '/api/groupactivity/trips', options);
+&lt;/script&gt;
+            </div>
+            
+            <h3>3. 後端 API 回應格式</h3>
+            <div class="code-block">
+{
+  "success": true,
+  "data": [
+    {
+      "id": "itn001",
+      "title": "台北文化美食一日遊",
+      // ... 其他欄位
+    }
+  ],
+  "message": "資料載入成功",
+  "total": 10
+}
+            </div>
+        </div>
+
+        <!-- 錯誤處理 -->
+        <div class="demo-section">
+            <h2 class="section-title">⚠️ 錯誤處理</h2>
+            
+            <p>元件內建完整的錯誤處理機制：</p>
+            
+            <ul class="feature-list">
+                <li>資料格式驗證</li>
+                <li>API 請求失敗處理</li>
+                <li>容器不存在檢查</li>
+                <li>友善的錯誤訊息顯示</li>
+            </ul>
+            
+            <h3>手動驗證資料</h3>
+            <div class="code-block">
+const validation = validateItnTripData(yourData);
+if (!validation.valid) {
+  console.error('資料格式錯誤:', validation.errors);
+}
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入元件檔案 -->
+    <script src="../components/itn-trip-card.js"></script>
+    <script src="../components/itn-trip-card-data.js"></script>
+
+    <script>
+        // 狀態訊息顯示
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            // 3秒後自動隱藏
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // 載入基本範例
+        function loadBasicExample() {
+            try {
+                const data = getItnTripSampleData('BASIC');
+                createItnTripCards('#itnTripCardsContainer', data, {
+                    onRegisterClick: (trip) => alert(`報名：${trip.title}`),
+                    onDetailClick: (trip) => alert(`查看詳情：${trip.title}`)
+                });
+                showStatus('✅ 基本範例載入成功', 'success');
+            } catch (error) {
+                showStatus(`❌ 載入失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 載入完整範例
+        function loadFullExample() {
+            try {
+                const data = getItnTripSampleData('FULL');
+                createItnTripCards('#itnTripCardsContainer', data, {
+                    onRegisterClick: (trip) => {
+                        showStatus(`準備報名：${trip.title}`, 'info');
+                        console.log('報名資料:', trip);
+                    },
+                    onDetailClick: (trip) => {
+                        showStatus(`查看詳情：${trip.title}`, 'info');
+                        console.log('詳情資料:', trip);
+                    },
+                    onCardClick: (trip) => {
+                        console.log('卡片被點擊:', trip.title);
+                    }
+                });
+                showStatus('✅ 完整範例載入成功', 'success');
+            } catch (error) {
+                showStatus(`❌ 載入失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 載入多分類範例
+        function loadCategoriesExample() {
+            try {
+                const data = getItnTripSampleData('CATEGORIES');
+                createItnTripCards('#itnTripCardsContainer', data, {
+                    onRegisterClick: (trip) => alert(`報名：${trip.title} - NT$ ${trip.price}`),
+                    onDetailClick: (trip) => alert(`詳情：${trip.title}\n評分：${trip.rating}⭐`)
+                });
+                showStatus('✅ 多分類範例載入成功', 'success');
+            } catch (error) {
+                showStatus(`❌ 載入失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 清空卡片
+        function clearCards() {
+            document.getElementById('itnTripCardsContainer').innerHTML = '';
+            showStatus('🗑️ 卡片已清空', 'info');
+        }
+
+        // 模擬 API 載入
+        function loadFromAPI() {
+            showStatus('🔄 正在載入...', 'info');
+            
+            // 模擬 API 延遲
+            setTimeout(() => {
+                try {
+                    const data = getItnTripSampleData('FULL');
+                    createItnTripCards('#itnTripCardsContainer', data, {
+                        onRegisterClick: (trip) => showStatus(`API 報名：${trip.title}`, 'success'),
+                        onDetailClick: (trip) => showStatus(`API 詳情：${trip.title}`, 'success')
+                    });
+                    showStatus('✅ API 資料載入成功', 'success');
+                } catch (error) {
+                    showStatus(`❌ API 載入失敗：${error.message}`, 'error');
+                }
+            }, 1500);
+        }
+
+        // 頁面載入完成後自動載入範例
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFullExample();
+        });
+    </script>
+</body>
+</html> 

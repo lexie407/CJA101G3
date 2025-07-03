@@ -1,0 +1,554 @@
+/* =============================
+   行程表單專用樣式 - 符合 Material Design 3
+   ============================= */
+
+/* 表單頁面容器 - 統一使用 back_style.css 標準設定 */
+/* 移除所有覆蓋樣式，使用 .content-area-main 標準 padding: 20px */
+
+.itinerary-review-page {
+    padding-top: 20px;
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-bottom: 40px;
+}
+
+.itinerary-review-page .itinerary-form-page {
+    width: 100%;
+    /* 移除 max-width 限制，讓表單與英雄區塊寬度一致 */
+}
+
+.header-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+}
+
+.header-icon {
+    font-size: 36px !important;
+    color: white;
+}
+
+/* 頁面標題區域 */
+.page-header-section {
+    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-secondary) 100%);
+    border-radius: 12px;
+    padding: 50px;
+    margin-bottom: 30px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.header-text h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: var(--md-sys-color-on-primary);
+}
+
+.header-text p {
+    font-size: 1.125rem;
+    margin: 0;
+    opacity: 0.9;
+    color: var(--md-sys-color-on-primary);
+}
+
+.header-image {
+    display: flex;
+    align-items: center;
+}
+
+.header-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    opacity: 0.8;
+}
+
+/* 成功/錯誤訊息 */
+.alert {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #166534;
+    border-left: 4px solid #22c55e;
+}
+
+.alert-error {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert i {
+    font-size: 20px;
+}
+
+/* 表單內容區域 */
+.content-container {
+    background: var(--md-sys-color-surface);
+    border-radius: 12px;
+    padding: 22px 60px; /* 增加內邊距，讓內容往內縮 */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    min-height: calc(100vh - 100px);
+    margin: 0; /* 移除左右外邊距，與英雄區塊對齊 */
+}
+
+/* 表單本體 */
+.itinerary-form {
+    max-width: none;
+}
+
+/* 表單區塊 */
+.form-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.form-section:first-child {
+    margin-top: 0;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* 區塊標題 */
+.section-header {
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title .material-icons {
+    font-size: 20px;
+    color: var(--md-sys-color-primary);
+}
+
+.section-desc {
+    font-size: var(--font-size-sm);
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+}
+
+/* 表單網格布局 */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 24px;
+}
+
+.form-group-full {
+    grid-column: 1 / -1;
+}
+
+/* 表單組件 */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.required {
+    color: var(--md-sys-color-error);
+    font-weight: 600;
+}
+
+/* 輸入框容器 */
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    font-size: 20px !important;
+    color: var(--md-sys-color-on-surface-variant);
+    z-index: 1;
+}
+
+/* 表單控件 */
+.form-control {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: var(--font-size-base);
+    color: var(--md-sys-color-on-surface);
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.input-container .form-control {
+    padding-left: 44px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px rgba(41, 171, 194, 0.1);
+}
+
+.form-control:focus + .input-icon,
+.form-control:focus ~ .input-icon {
+    color: var(--md-sys-color-primary);
+}
+
+.form-control::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.7;
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.helper-text {
+    font-size: var(--font-size-sm);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 6px;
+    line-height: 1.4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.char-count {
+    font-weight: 500;
+    color: var(--md-sys-color-primary);
+}
+
+/* 狀態卡片 */
+.status-card {
+    padding: 16px;
+    background: var(--md-sys-color-surface-container);
+    border-radius: 8px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* 狀態開關 */
+.status-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+
+.status-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--md-sys-color-outline);
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.status-switch input:checked + .switch-slider {
+    background-color: var(--md-sys-color-primary);
+}
+
+.status-switch input:checked + .switch-slider:before {
+    transform: translateX(24px);
+}
+
+.status-switch input:focus + .switch-slider {
+    box-shadow: 0 0 0 2px rgba(41, 171, 194, 0.2);
+}
+
+.status-text {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--md-sys-color-surface-container);
+}
+
+.badge-success {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.badge-secondary {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.status-badge .material-icons {
+    font-size: 16px;
+}
+
+/* 操作按鈕 - 使用更具體的選擇器並強制顯示 */
+.itinerary-form-page .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    visibility: visible;
+    opacity: 1;
+}
+
+.itinerary-form-page .form-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    visibility: visible;
+    opacity: 1;
+    z-index: 1;
+}
+
+.itinerary-form-page .form-actions .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.itinerary-form-page .form-actions .btn:hover::before {
+    left: 100%;
+}
+
+.itinerary-form-page .form-actions .btn .material-icons {
+    font-size: 18px;
+    display: inline-block;
+    visibility: visible;
+    opacity: 1;
+}
+
+.itinerary-form-page .form-actions .btn-primary {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.itinerary-form-page .form-actions .btn-primary:hover {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.itinerary-form-page .form-actions .btn-primary:disabled {
+    background: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.itinerary-form-page .form-actions .btn-secondary {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline);
+}
+
+.itinerary-form-page .form-actions .btn-secondary:hover {
+    background: var(--md-sys-color-surface-container-high);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 額外的保護措施 - 防止任何隱藏 */
+.itinerary-form-page .form-actions *[style*="display: none"] {
+    display: inline-flex;
+}
+
+.itinerary-form-page .form-actions *[style*="visibility: hidden"] {
+    visibility: visible;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .itinerary-form-page {
+        padding: 10px; /* 減少側邊距 */
+    }
+    
+    .content-container {
+        padding: 24px 20px; /* 調整內邊距 */
+        margin: 0; /* 移除外邊距，與英雄區塊對齊 */
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .section-title {
+        font-size: var(--font-size-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .content-container {
+        padding: 20px 16px; /* 調整內邊距 */
+        margin: 0; /* 移除外邊距，與英雄區塊對齊 */
+    }
+    
+    .form-control {
+        padding: 10px 12px;
+    }
+    
+    .input-container .form-control {
+        padding-left: 38px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+    }
+    
+    .header-icon-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .header-icon {
+        font-size: 28px !important;
+    }
+}
+
+/* 動畫效果 */
+.form-section {
+    animation: fadeInUp 0.3s ease;
+}
+
+.form-section:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.form-section:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 字元計數器 */
+.char-count.warning {
+    color: var(--md-sys-color-error);
+}
+
+.char-count.danger {
+    color: var(--md-sys-color-error);
+    font-weight: 600;
+} 
+
+ 

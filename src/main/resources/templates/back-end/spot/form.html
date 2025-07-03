@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{/back-end/spot/navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
 <head>
     <title th:text="${isEdit != null and isEdit ? '編輯景點' : '新增景點'} + ' - 後台管理系統'"></title>
     <th:block th:fragment="head">
@@ -12,16 +12,16 @@
         <!-- 景點表單專用樣式 -->
         <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-form.css}">
         <!-- CSRF Token -->
-        <meta name="_csrf" th:content="${_csrf.token}"/>
-        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
     </th:block>
 </head>
 <body>
     <!-- 頂部導航 -->
-    <div id="subnav" th:replace="~{subnavSpotBack :: subnav(activeItem=${isEdit != null and isEdit ? 'edit' : 'add'})}"></div>
+    <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem=${isEdit != null and isEdit ? 'edit' : 'add'})}"></div>
         
     <!-- 主要內容 -->
-    <main th:fragment="main">
+    <main th:fragment="main" class="spot-review-page">
         <div class="spot-form-page">
             <!-- 頁面標題與圖片區域 -->
             <div class="page-header-section">
@@ -147,7 +147,7 @@
 
                     <!-- 操作按鈕區域 -->
                     <div class="form-actions">
-                        <a th:href="@{/admin/spot/list}" class="btn btn-secondary">
+                        <a th:href="@{/admin/spot/spotlist}" class="btn btn-secondary">
                             <i class="material-icons">arrow_back</i>
                             返回列表
                         </a>

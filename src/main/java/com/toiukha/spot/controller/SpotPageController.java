@@ -79,7 +79,7 @@ public class SpotPageController {
      * @param model 模型物件
      * @return 列表頁模板
      */
-    @GetMapping("/list")
+    @GetMapping("/spotlist")
     public String spotList(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "region", required = false) String region,
@@ -125,7 +125,7 @@ public class SpotPageController {
             model.addAttribute("currentPage", "list");
         }
         
-        return "front-end/spot/list";
+        return "front-end/spot/spotlist";
     }
 
     // ========== 2. 景點搜尋 ==========
@@ -228,7 +228,7 @@ public class SpotPageController {
             model.addAttribute("currentPage", "home");
         }
         
-        return "front-end/spot/list"; // 暫時使用列表模板
+        return "front-end/spot/spotlist"; // 暫時使用列表模板
     }
 
     /**
@@ -308,7 +308,7 @@ public class SpotPageController {
             model.addAttribute("currentPage", "home");
         }
         
-        return "front-end/spot/list"; // 暫時使用列表模板
+        return "front-end/spot/spotlist"; // 暫時使用列表模板
     }
 
     // ========== 3. 景點詳情 ==========
@@ -410,7 +410,7 @@ public class SpotPageController {
         // }
 
         // 預先設定系統欄位
-        spotVO.setCrtId(getCurrentUserId());
+        spotVO.setCrtId(getCurrentUserId(session));
         spotVO.setSpotStatus((byte) 0);
 
         // 檢查景點名稱是否重複
@@ -431,7 +431,7 @@ public class SpotPageController {
         try {
             SpotVO savedSpot = spotService.addSpot(spotVO);
             redirectAttr.addFlashAttribute("msg", "景點新增成功！景點ID: " + savedSpot.getSpotId() + "，等待管理員審核後上架。");
-            return "redirect:/spot/list";
+            return "redirect:/spot/spotlist";
         } catch (Exception e) {
             model.addAttribute("errorMsgs", List.of("新增景點時發生錯誤：" + e.getMessage()));
             model.addAttribute("currentPage", "home");
@@ -489,11 +489,29 @@ public class SpotPageController {
     // ========== 輔助方法 ==========
 
     /**
-     * 獲取當前用戶ID (建立者ID)
-     * @return 用戶ID
+     * 從 Session 獲取當前登入的會員ID
+     * 整合會員模組的登入系統
+     * @param session HTTP Session
+     * @return 會員ID，如果未登入則返回null
      */
-    private Integer getCurrentUserId() {
-        // TODO: 整合完整的會員登入系統後，從Session獲取真實用戶ID
-        return 10; // 使用測試會員ID範圍 10-19
+    private Integer getMemIdFromSession(HttpSession session) {
+        Object memberObj = session.getAttribute("member");
+        if (memberObj instanceof com.toiukha.members.model.MembersVO) {
+            com.toiukha.members.model.MembersVO member = (com.toiukha.members.model.MembersVO) memberObj;
+            return member.getMemId();
+        }
+        return null;
+    }
+
+
+
+    /**
+     * 獲取當前用戶ID (建立者ID)
+     * 整合會員登入系統
+     * @param session HTTP Session
+     * @return 用戶ID，如果未登入則返回null
+     */
+    private Integer getCurrentUserId(HttpSession session) {
+        return getMemIdFromSession(session);
     }
 } 

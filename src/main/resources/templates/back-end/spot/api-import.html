@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{/back-end/spot/navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
 <head>
     <title>API資料匯入 - 後台管理系統</title>
     <th:block th:fragment="head">
@@ -11,249 +11,244 @@
         <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
         <!-- API匯入專用樣式 -->
         <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-api-import.css}">
-        <!-- CSRF Token -->
+        <!-- CSRF Token 暫時註解
         <meta name="_csrf" th:content="${_csrf.token}"/>
         <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        -->
     </th:block>
 </head>
 <body>
     <!-- 頂部導航 -->
-    <div id="subnav" th:replace="~{subnavSpotBack :: subnav(activeItem='api-import')}"></div>
+    <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='api-import')}"></div>
         
     <!-- 主要內容 -->
-    <main th:fragment="main">
-        <div class="spot-api-import-page">
-            <!-- 頁面標題與圖片區域 -->
-            <div class="page-header-section">
-                <div class="header-content">
-                    <div class="header-text">
-                        <h1>API資料匯入</h1>
-                        <p>整合政府觀光資料開放平臺，匯入最新的全台景點資訊</p>
+    <main th:fragment="main" class="spot-api-import-page">
+        <!-- 頁面標題與圖片區域 -->
+        <div class="page-header-section">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>API資料匯入</h1>
+                    <p>整合政府觀光資料開放平臺，匯入最新的全台景點資訊</p>
+                </div>
+                <div class="header-image">
+                    <div class="header-icon-container">
+                        <i class="material-icons header-icon">cloud_download</i>
                     </div>
-                    <div class="header-image">
-                        <div class="header-icon-container">
-                            <i class="material-icons header-icon">cloud_download</i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 成功/錯誤訊息 -->
-            <div th:if="${successMessage}" class="alert alert-success">
-                <i class="material-icons">check_circle</i>
-                <span th:text="${successMessage}"></span>
-            </div>
-            <div th:if="${errorMessage}" class="alert alert-error">
-                <i class="material-icons">error</i>
-                <span th:utext="${errorMessage}"></span>
-            </div>
-
-            <!-- 資料來源說明 -->
-            <div class="info-card">
-                <div class="info-header">
-                    <i class="material-icons">info</i>
-                    <h3>資料來源說明</h3>
-                </div>
-                <div class="info-content">
-                    <p>本系統整合<strong>政府資料開放平臺</strong>的觀光景點資料，提供最新、最完整的全台灣景點資訊。</p>
-                    <p>資料來源：<a href="https://data.gov.tw/dataset/7777" target="_blank" class="external-link">
-                        <i class="material-icons">open_in_new</i>
-                        景點 - 觀光資訊資料庫
-                    </a></p>
-                </div>
-            </div>
-
-            <!-- API連線測試區域 -->
-            <div class="api-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="material-icons">network_check</i>
-                        API連線測試
-                    </h2>
-                    <p class="section-desc">測試與政府觀光API的連線狀態，確保資料來源正常運作</p>
-                </div>
-                
-                <div class="action-container">
-                    <button id="test-button" class="btn btn-primary btn-large">
-                        <i class="material-icons">wifi</i>
-                        測試API連線
-                    </button>
-                    
-                    <div id="test-spinner" class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>正在測試API連線...</p>
-                    </div>
-                </div>
-                
-                <div id="test-result" class="result-area" style="display:none;">
-                    <div class="result-header">
-                        <i class="material-icons">assessment</i>
-                        <h4>測試結果</h4>
-                    </div>
-                    <div class="result-content"></div>
-                </div>
-            </div>
-            
-            <!-- 全台景點匯入區域 -->
-            <div class="api-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="material-icons">map</i>
-                        全台景點資料匯入
-                    </h2>
-                    <p class="section-desc">一次性匯入全台灣的熱門景點資料，建議首次使用時執行</p>
-                </div>
-                
-                <div class="form-group">
-                    <label for="import-count" class="form-label">匯入筆數</label>
-                    <div class="input-container">
-                        <i class="material-icons input-icon">format_list_numbered</i>
-                        <input id="import-count" type="number" class="form-control" value="50" min="10" max="200">
-                        <span class="input-suffix">筆 (10-200)</span>
-                    </div>
-                    <div class="helper-text">建議首次匯入設定為50-100筆，避免處理時間過長</div>
-                </div>
-                
-                <div class="warning-card">
-                    <i class="material-icons">warning</i>
-                    <div class="warning-content">
-                        <strong>注意事項：</strong>
-                        <ul>
-                            <li>匯入過程可能需要數分鐘，請耐心等待</li>
-                            <li>系統會自動跳過重複的景點</li>
-                            <li>建議在非尖峰時段執行大量匯入</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="action-container">
-                    <button id="import-button" class="btn btn-success btn-large">
-                        <i class="material-icons">download</i>
-                        開始匯入全台景點
-                    </button>
-                    
-                    <div id="import-spinner" class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>正在匯入景點資料，請稍候...</p>
-                    </div>
-                </div>
-                
-                <div id="import-result" class="result-area" style="display:none;">
-                    <div class="result-header">
-                        <i class="material-icons">assessment</i>
-                        <h4>匯入結果</h4>
-                    </div>
-                    <div class="result-content"></div>
-                </div>
-            </div>
-            
-            <!-- 依縣市匯入區域 -->
-            <div class="api-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="material-icons">location_city</i>
-                        依縣市匯入景點
-                    </h2>
-                    <p class="section-desc">選擇特定縣市匯入景點資料，適合針對性地補充特定地區的景點</p>
-                </div>
-                
-                <div class="form-group">
-                    <label for="city-count" class="form-label">每個縣市匯入筆數</label>
-                    <div class="input-container">
-                        <i class="material-icons input-icon">format_list_numbered</i>
-                        <input id="city-count" type="number" class="form-control" value="30" min="10" max="100">
-                        <span class="input-suffix">筆 (10-100)</span>
-                    </div>
-                    <div class="helper-text">每個縣市建議匯入20-50筆景點資料</div>
-                </div>
-                
-                <div class="city-selection">
-                    <h4 class="selection-title">選擇縣市</h4>
-                    <div class="city-grid">
-                        <button class="city-btn" data-city="Taipei">
-                            <i class="material-icons">location_on</i>
-                            <span>台北市</span>
-                        </button>
-                        <button class="city-btn" data-city="NewTaipei">
-                            <i class="material-icons">location_on</i>
-                            <span>新北市</span>
-                        </button>
-                        <button class="city-btn" data-city="Taoyuan">
-                            <i class="material-icons">location_on</i>
-                            <span>桃園市</span>
-                        </button>
-                        <button class="city-btn" data-city="Taichung">
-                            <i class="material-icons">location_on</i>
-                            <span>台中市</span>
-                        </button>
-                        <button class="city-btn" data-city="Tainan">
-                            <i class="material-icons">location_on</i>
-                            <span>台南市</span>
-                        </button>
-                        <button class="city-btn" data-city="Kaohsiung">
-                            <i class="material-icons">location_on</i>
-                            <span>高雄市</span>
-                        </button>
-                        <button class="city-btn" data-city="Hualien">
-                            <i class="material-icons">location_on</i>
-                            <span>花蓮縣</span>
-                        </button>
-                        <button class="city-btn" data-city="Taitung">
-                            <i class="material-icons">location_on</i>
-                            <span>台東縣</span>
-                        </button>
-                        <button class="city-btn" data-city="Nantou">
-                            <i class="material-icons">location_on</i>
-                            <span>南投縣</span>
-                        </button>
-                        <button class="city-btn" data-city="Yilan">
-                            <i class="material-icons">location_on</i>
-                            <span>宜蘭縣</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="city-spinner" class="loading-spinner">
-                    <div class="spinner"></div>
-                    <p>正在匯入縣市景點資料...</p>
-                </div>
-                
-                <div id="city-result" class="result-area" style="display:none;">
-                    <div class="result-header">
-                        <i class="material-icons">assessment</i>
-                        <h4>匯入結果</h4>
-                    </div>
-                    <div class="result-content"></div>
-                </div>
-            </div>
-            
-            <!-- 管理操作區域 -->
-            <div class="action-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="material-icons">settings</i>
-                        管理操作
-                    </h2>
-                    <p class="section-desc">匯入完成後的相關操作</p>
-                </div>
-                
-                <div class="action-buttons">
-                    <a th:href="@{/admin/spot/list}" class="btn btn-secondary btn-large">
-                        <i class="material-icons">list</i>
-                        返回景點管理
-                    </a>
-                    <a th:href="@{/admin/spot/review}" class="btn btn-primary btn-large">
-                        <i class="material-icons">rate_review</i>
-                        審核管理
-                    </a>
-                    <a href="/spot/search" class="btn btn-tertiary btn-large" target="_blank">
-                        <i class="material-icons">search</i>
-                        前台景點搜尋
-                    </a>
                 </div>
             </div>
         </div>
+
+        <!-- 成功/錯誤訊息 -->
+        <div th:if="${successMessage}" class="alert alert-success">
+            <i class="material-icons">check_circle</i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <i class="material-icons">error</i>
+            <span th:utext="${errorMessage}"></span>
+        </div>
+
+        <!-- 資料來源說明 -->
+        <div class="info-card">
+            <div class="info-header">
+                <i class="material-icons">info</i>
+                <h3>資料來源說明</h3>
+            </div>
+            <div class="info-content">
+                <p>本系統整合<strong>政府資料開放平臺</strong>的觀光景點資料，提供最新、最完整的全台灣景點資訊。</p>
+                <p>資料來源：<a href="https://data.gov.tw/dataset/7777" target="_blank" class="external-link">
+                    <i class="material-icons">open_in_new</i>
+                    景點 - 觀光資訊資料庫
+                </a></p>
+            </div>
+        </div>
+
+        <!-- API連線測試區域 -->
+        <div class="api-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="material-icons">network_check</i>
+                    API連線測試
+                </h2>
+                <p class="section-desc">測試與政府觀光API的連線狀態，確保資料來源正常運作</p>
+            </div>
+            <div class="action-container">
+                <button id="test-button" class="btn btn-primary btn-large" type="button">
+                    <i class="material-icons">wifi</i>
+                    測試API連線
+                </button>
+                <div id="test-spinner" class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>正在測試API連線...</p>
+                </div>
+            </div>
+            <div id="test-result" class="result-area" style="display:none;">
+                <div class="result-header">
+                    <i class="material-icons">assessment</i>
+                    <h4>測試結果</h4>
+                </div>
+                <div class="result-content"></div>
+            </div>
+        </div>
         
+        <!-- 全台景點匯入區域 -->
+        <div class="api-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="material-icons">map</i>
+                    全台景點資料匯入
+                </h2>
+                <p class="section-desc">一次性匯入全台灣的熱門景點資料，建議首次使用時執行</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="import-count" class="form-label">匯入筆數</label>
+                <div class="input-container">
+                    <i class="material-icons input-icon">format_list_numbered</i>
+                    <input id="import-count" type="number" class="form-control" value="50" min="10" max="200">
+                    <span class="input-suffix">筆 (10-200)</span>
+                </div>
+                <div class="helper-text">建議首次匯入設定為50-100筆，避免處理時間過長</div>
+            </div>
+            
+            <div class="warning-card">
+                <i class="material-icons">warning</i>
+                <div class="warning-content">
+                    <strong>注意事項：</strong>
+                    <ul>
+                        <li>匯入過程可能需要數分鐘，請耐心等待</li>
+                        <li>系統會自動跳過重複的景點</li>
+                        <li>建議在非尖峰時段執行大量匯入</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="action-container">
+                <button id="import-button" class="btn btn-success btn-large" type="button">
+                    <i class="material-icons">download</i>
+                    開始匯入全台景點
+                </button>
+                
+                <div id="import-spinner" class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>正在匯入景點資料，請稍候...</p>
+                </div>
+            </div>
+            
+            <div id="import-result" class="result-area" style="display:none;">
+                <div class="result-header">
+                    <i class="material-icons">assessment</i>
+                    <h4>匯入結果</h4>
+                </div>
+                <div class="result-content"></div>
+            </div>
+        </div>
+        
+        <!-- 依縣市匯入區域 -->
+        <div class="api-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="material-icons">location_city</i>
+                    依縣市匯入景點
+                </h2>
+                <p class="section-desc">選擇特定縣市匯入景點資料，適合針對性地補充特定地區的景點</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="city-count" class="form-label">每個縣市匯入筆數</label>
+                <div class="input-container">
+                    <i class="material-icons input-icon">format_list_numbered</i>
+                    <input id="city-count" type="number" class="form-control" value="30" min="10" max="100">
+                    <span class="input-suffix">筆 (10-100)</span>
+                </div>
+                <div class="helper-text">每個縣市建議匯入20-50筆景點資料</div>
+            </div>
+            
+            <div class="city-selection">
+                <h4 class="selection-title">選擇縣市</h4>
+                <div class="city-grid">
+                    <button class="city-btn" data-city="Taipei" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>台北市</span>
+                    </button>
+                    <button class="city-btn" data-city="NewTaipei" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>新北市</span>
+                    </button>
+                    <button class="city-btn" data-city="Taoyuan" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>桃園市</span>
+                    </button>
+                    <button class="city-btn" data-city="Taichung" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>台中市</span>
+                    </button>
+                    <button class="city-btn" data-city="Tainan" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>台南市</span>
+                    </button>
+                    <button class="city-btn" data-city="Kaohsiung" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>高雄市</span>
+                    </button>
+                    <button class="city-btn" data-city="Hualien" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>花蓮縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Taitung" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>台東縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Nantou" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>南投縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Yilan" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>宜蘭縣</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="city-spinner" class="loading-spinner">
+                <div class="spinner"></div>
+                <p>正在匯入縣市景點資料...</p>
+            </div>
+            
+            <div id="city-result" class="result-area" style="display:none;">
+                <div class="result-header">
+                    <i class="material-icons">assessment</i>
+                    <h4>匯入結果</h4>
+                </div>
+                <div class="result-content"></div>
+            </div>
+        </div>
+        
+        <!-- 管理操作區域 -->
+        <div class="action-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="material-icons">settings</i>
+                    管理操作
+                </h2>
+                <p class="section-desc">匯入完成後的相關操作</p>
+            </div>
+            
+            <div class="action-buttons">
+                <a th:href="@{/admin/spot/spotlist}" class="btn btn-secondary btn-large" type="button">
+                    <i class="material-icons">list</i>
+                    返回景點管理
+                </a>
+                <a th:href="@{/admin/spot/spotreview}" class="btn btn-primary btn-large" type="button">
+                    <i class="material-icons">rate_review</i>
+                    審核管理
+                </a>
+                <a href="/spot/search" class="btn btn-tertiary btn-large" target="_blank" type="button">
+                    <i class="material-icons">search</i>
+                    前台景點搜尋
+                </a>
+            </div>
+        </div>
         <!-- API匯入專用腳本 -->
         <script th:src="@{/js/spot/back-end/spot-api-import.js}" defer></script>
     </main>

@@ -299,11 +299,13 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-		<!-- OAuth2 Client for Google Login -->
+		<!-- OAuth2 Client for Google Login - 已移除，改用會員模組登入 -->
+		<!--
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
+		-->
 		
 		<!-- WebFlux for WebClient -->
 		<dependency>

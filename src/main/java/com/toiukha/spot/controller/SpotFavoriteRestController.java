@@ -253,25 +253,16 @@ public class SpotFavoriteRestController {
 
     /**
      * 從 Session 獲取會員ID
-     * TODO: 暫時使用測試會員ID，供測試使用
+     * 整合會員模組的登入系統
+     * @param session HTTP Session
+     * @return 會員ID，如果未登入則返回null
      */
     private Integer getMemIdFromSession(HttpSession session) {
-        // TODO: 暫時關閉登入檢查，供測試使用
-        // 優先檢查原有會員系統
-        // Object memberInfo = session.getAttribute("member");
-        // if (memberInfo != null) {
-        //     // 原有會員系統的處理
-        //     return 1; // 根據實際會員VO結構調整
-        // }
-        
-        // 檢查OAuth2 Google用戶
-        // String userEmail = (String) session.getAttribute("userEmail");
-        // if (userEmail != null) {
-        //     // 使用email的hashCode作為臨時ID（僅供景點收藏功能使用）
-        //     return Math.abs(userEmail.hashCode());
-        // }
-        
-        // 使用測試會員ID (測試用)
-        return 10;
+        Object memberObj = session.getAttribute("member");
+        if (memberObj instanceof com.toiukha.members.model.MembersVO) {
+            com.toiukha.members.model.MembersVO member = (com.toiukha.members.model.MembersVO) memberObj;
+            return member.getMemId();
+        }
+        return null; // 未登入時返回null
     }
 } 

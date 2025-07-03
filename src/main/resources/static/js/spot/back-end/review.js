@@ -210,8 +210,6 @@ function filterTable() {
     });
 }
 
-
-
 // 批次操作功能
 function batchOperation(operation) {
     const checkedBoxes = document.querySelectorAll('.spot-checkbox:checked');
@@ -247,14 +245,14 @@ function batchOperation(operation) {
         return;
     }
     
-    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+    // 移除 CSRF Token 依賴
+    // const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    // const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
     
     fetch(endpoint, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            [csrfHeader]: csrfToken
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(ids)
     })
@@ -289,13 +287,11 @@ function approveSpot(id) {
     if (!confirm('確定要通過此景點？')) return;
     
     console.log('開始審核通過，景點ID:', id);
-    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
     
     fetch('/admin/spot/api/approve/' + id, {
         method: 'POST',
         headers: {
-            [csrfHeader]: csrfToken
+            'Content-Type': 'application/json'
         }
     })
     .then(response => {
@@ -356,14 +352,10 @@ function submitReject() {
         return;
     }
     
-    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-    
     fetch('/admin/spot/api/reject/' + id, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            [csrfHeader]: csrfToken
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ reason, remark })
     })
@@ -540,8 +532,9 @@ function filterByStatus(status) {
 function getStatusText(status) {
     switch(status) {
         case '0': return '待審核';
-        case '1': return '通過';
+        case '1': return '上架';
         case '2': return '退回';
+        case '3': return '下架';
         default: return '未知';
     }
 }

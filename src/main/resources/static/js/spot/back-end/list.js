@@ -105,18 +105,20 @@ window.handleImageLoad = handleImageLoad;
 // 輔助函數
 function getStatusText(status) {
     switch (status) {
+        case 0: return '待審核';
         case 1: return '上架';
-        case 0: return '下架';
         case 2: return '退回';
+        case 3: return '下架';
         default: return '未知';
     }
 }
 
 function getStatusClass(status) {
     switch (status) {
+        case 0: return 'status-badge status-pending';
         case 1: return 'status-badge status-active';
-        case 0: return 'status-badge status-inactive';
         case 2: return 'status-badge status-rejected';
+        case 3: return 'status-badge status-inactive';
         default: return 'status-badge';
     }
 }
@@ -1376,25 +1378,41 @@ function bindBatchActions() {
                     const btnElement = document.getElementById('batchBtn');
                     const rect = btnElement.getBoundingClientRect();
                     
-                    // 設置選單位置和顯示 - 往左移動30px
+                    // 計算選單位置，確保不會超出視窗邊界
+                    const menuWidth = 180;
+                    let leftPos = rect.left + rect.width - menuWidth; // 右對齊按鈕
+                    
+                    // 如果右對齊會超出視窗左邊界，則左對齊按鈕
+                    if (leftPos < 10) {
+                        leftPos = rect.left;
+                    }
+                    
+                    // 如果左對齊會超出視窗右邊界，則向左調整
+                    if (leftPos + menuWidth > window.innerWidth - 10) {
+                        leftPos = window.innerWidth - menuWidth - 10;
+                    }
+                    
+                    // 設置選單位置和顯示
                     batchMenu.style.cssText = `
-                        display: block;
-                        position: fixed;
-                        left: ${rect.left - 85}px;
-                        top: ${rect.bottom + 5}px;
-                        z-index: 99999;
-                        min-width: 180px;
-                        padding: 8px 0;
-                        background: #ffffff;
-                        border: 1px solid #ddd;
-                        border-radius: 8px;
-                        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                        display: block !important;
+                        position: fixed !important;
+                        left: ${leftPos}px !important;
+                        top: ${rect.bottom + 8}px !important;
+                        z-index: 99999 !important;
+                        min-width: ${menuWidth}px !important;
+                        padding: 8px 0 !important;
+                        background: #ffffff !important;
+                        border: 1px solid #e0e0e0 !important;
+                        border-radius: 8px !important;
+                        box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     `;
                     
                     console.log('➡️ 顯示選單，位置:', {
-                        left: rect.left,
-                        top: rect.bottom + 5,
-                        display: batchMenu.style.display
+                        buttonRect: rect,
+                        menuLeft: leftPos,
+                        menuTop: rect.bottom + 8,
+                        menuWidth: menuWidth
                     });
                 }
                 return;

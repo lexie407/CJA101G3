@@ -18,6 +18,9 @@
 /* 表格樣式調整 */
 .admin-table {
     width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
     border-collapse: separate;
     border-spacing: 0;
     margin: 0;
@@ -275,7 +278,7 @@
 }
 
 .search-input {
-    width: 100%;
+    /* width: 100%; */
     padding: 12px 45px 12px 40px;
     border: 2px solid #e5e7eb;
     border-radius: 20px;
@@ -443,8 +446,6 @@
     color: var(--warning-color);
 }
 
-
-
 .modern-btn.filter-btn {
     background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
     color: white;
@@ -493,4 +494,29 @@
         min-width: auto;
         flex: 1;
     }
+}
+
+.spot-review-page {
+    padding-top: 20px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+.spot-review-page .admin-table {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.spot-review-page .admin-table th:last-child,
+.spot-review-page .admin-table td:last-child {
+    text-align: right;
+}
+
+.spot-review-page .action-buttons-table {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
 } 

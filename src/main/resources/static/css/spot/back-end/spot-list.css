@@ -14,6 +14,31 @@
 /* 頁面標題區域 - 使用 spot-common.css 中的 .page-header-section 樣式 */
 /* 如果需要，可以在這裡添加列表頁專用的標題樣式覆蓋 */
 
+.spot-list-page {
+    padding-top: 20px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+.sample-table {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sample-table th:last-child,
+.sample-table td:last-child {
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
+}
+
 /* 篩選控制區 */
 .filter-section {
     background: white;
@@ -413,55 +438,58 @@
     border-color: var(--md-sys-color-primary);
 }
 
-/* 批量操作下拉選單 - 簡化版 */
+/* 批量操作選單樣式 */
 #batchMenu {
-    display: none;
-    position: fixed; /* 位置由 JavaScript 動態計算，會自動往左偏移30px */
+    position: fixed;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 99999;
     min-width: 180px;
     padding: 8px 0;
-    background: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    display: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 #batchMenu .dropdown-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    color: var(--md-sys-color-on-surface);
+    padding: 12px 16px;
+    margin: 0;
+    border: none;
+    background: transparent;
+    color: #333333;
     text-decoration: none;
-    transition: all 0.2s;
-    font-size: var(--font-size-base);
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    text-align: left;
+    gap: 8px;
 }
 
 #batchMenu .dropdown-item:hover {
-    background: #f5f5f5;
+    background-color: #f5f5f5;
 }
 
 #batchMenu .dropdown-item.danger {
-    color: #dc2626;
+    color: #d32f2f;
 }
 
 #batchMenu .dropdown-item.danger:hover {
-    background: rgba(220, 38, 38, 0.08);
+    background-color: #ffebee;
 }
 
 #batchMenu .material-icons {
-    font-size: 20px;
-}
-
-.sample-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 2px;
+    font-size: 18px;
+    margin-right: 0;
 }
 
 .sample-table th {
     background: var(--md-sys-color-surface-container);
-    padding: 16px 20px;
+    padding: 16px 5px;
     text-align: left;
     font-weight: 600;
     color: var(--md-sys-color-on-surface);
@@ -674,14 +702,6 @@
     line-height: 1.4;
 }
 
-
-
-.action-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-}
-
 .action-btn {
     width: 32px;
     height: 32px;
@@ -722,8 +742,6 @@
     opacity: 0.9;
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
-
-
 
 /* 響應式設計 */
 @media (max-width: 992px) {

@@ -6,7 +6,7 @@
     <title>景點列表 - 島遊Kha</title>
     
     <!-- 必要資源引用 - 統一使用絕對路徑 -->
-    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{navTemplate :: headResources}"></th:block>
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 景點列表頁樣式 -->
@@ -15,7 +15,7 @@
 <body class="light">
     <div class="app-container">
         <!-- 左側主導覽列 -->
-        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        <aside th:replace="~{navTemplate :: navbar}"></aside>
         
         <div class="main-content">
             <!-- 頂部次導覽列 -->

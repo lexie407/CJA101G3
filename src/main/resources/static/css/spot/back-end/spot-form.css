@@ -5,7 +5,18 @@
 /* 表單頁面容器 - 統一使用 back_style.css 標準設定 */
 /* 移除所有覆蓋樣式，使用 .content-area-main 標準 padding: 20px */
 
+.spot-review-page {
+    padding-top: 20px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
 
+.spot-review-page .spot-form-page {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
 
 .header-icon-container {
     display: flex;
@@ -32,8 +43,6 @@
     border: 1px solid var(--md-sys-color-outline-variant);
     min-height: calc(100vh - 100px);
 }
-
-
 
 /* 表單本體 */
 .spot-form {
@@ -451,4 +460,11 @@
 
 .form-section:nth-child(3) {
     animation-delay: 0.2s;
-} 
+}
+
+.spot-review-page #spotDesc {
+    padding-left: 20px;
+}
+.spot-review-page #spotDesc {
+    box-sizing: border-box;
+}

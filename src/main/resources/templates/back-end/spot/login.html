@@ -1,0 +1,208 @@
+<!-- templates/back-end/administrant/login.html -->
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>後台管理員登入</title>
+<!-- 共用後台 CSS -->
+<th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+<style>
+/* 確保 html 和 body 佔滿整個視窗高度，以便內容可以垂直居中 */
+html, body {
+	height: 100%; /* 確保 html 和 body 佔據整個視窗高度 */
+	margin: 0;
+	padding: 0;
+	overflow: hidden; /* 防止滾動條意外出現 */
+}
+
+body {
+	font-size: 1rem;
+	display: flex;
+	flex-direction: column; /* 使 body 內的內容垂直排列 */
+	background-color: var(--md-sys-color-background); /* 使用後台背景色變數 */
+	color: var(--md-sys-color-on-background); /* 使用後台文字色變數 */
+}
+
+/* 調整 app-container 以確保其內容能正確分佈 */
+.app-container {
+	display: flex;
+	min-height: 100vh;
+	background-color: var(--md-sys-color-background); /* 使用後台背景色變數 */
+	color: var(--md-sys-color-on-background); /* 使用後台文字色變數 */
+	flex-grow: 1; /* 讓 app-container 佔滿所有可用高度 */
+	/* align-items: stretch; 保持默認，讓 main-content 能夠自行管理高度 */
+	overflow: hidden; /* 防止內部內容溢出 app-container 導致滾動 */
+}
+
+.main-content {
+	flex-grow: 1;
+	padding: 24px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow-x: hidden;
+}
+
+.md-card {
+	width: 100%;
+	max-width: 480px;
+	padding: 48px;
+	box-shadow: 0 6px 18px var(--md-sys-color-shadow); /* 使用陰影變數 */
+	border-radius: 16px;
+	background-color: var(--md-sys-color-surface-container-low);
+	/* 使用表面容器色變數 */
+	text-align: center;
+	box-sizing: border-box;
+}
+
+.md-headline {
+	font-size: 2.2rem;
+	font-weight: 500;
+	color: var(--md-sys-color-primary); /* 使用主色變數 */
+	margin-bottom: 32px;
+}
+
+.form-group {
+	margin-bottom: 20px;
+	text-align: left;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: var(--md-sys-color-on-surface-variant); /* 使用表面變體文字色變數 */
+	font-size: 0.9rem;
+}
+
+.md-text-field input {
+	width: 100%;
+	padding: 14px;
+	border: 1px solid var(--md-sys-color-outline); /* 使用邊框色變數 */
+	border-radius: 8px;
+	background-color: var(--md-sys-color-surface); /* 使用表面色變數 */
+	color: var(--md-sys-color-on-surface); /* 使用表面文字色變數 */
+	font-size: 1rem;
+	box-sizing: border-box;
+	transition: border-color .3s, box-shadow .3s;
+}
+
+.md-text-field input:focus {
+	outline: none;
+	border-color: var(--md-sys-color-primary); /* 使用主色變數 */
+	box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
+	/* 使用主色容器變數 */
+}
+
+.error-messages-container {
+	background-color: var(--md-sys-color-error-container); /* 使用錯誤容器色變數 */
+	color: var(--md-sys-color-on-error-container); /* 使用錯誤容器文字色變數 */
+	border-left: 5px solid var(--md-sys-color-error); /* 使用錯誤色變數 */
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	text-align: left;
+}
+
+.form-actions {
+	margin-top: 30px;
+}
+
+.material-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 12px 24px;
+	border-radius: 24px;
+	border: none;
+	font-size: 1rem;
+	font-weight: 500;
+	cursor: pointer;
+	background-color: var(--md-sys-color-secondary); /* 調整為次要顏色變數 */
+	color: var(--md-sys-color-on-secondary); /* 調整為次要顏色文字變數 */
+	box-shadow: 0 2px 4px var(--md-sys-color-shadow); /* 使用陰影變數 */
+	text-decoration: none;
+	transition: background-color .3s, box-shadow .3s, filter .3s;
+	/* 確保 filter 過渡效果 */
+}
+
+.material-button:hover {
+	/* 不再使用 secondary-fixed-dim，而是直接讓 secondary 顏色變淡 */
+	background-color: var(--md-sys-color-secondary); /* 保持基礎次要顏色 */
+	filter: brightness(1.2); /* 應用濾鏡使其變亮（變淡） */
+	box-shadow: 0 4px 8px var(--md-sys-color-shadow); /* 使用陰影變數 */
+}
+
+.link-group {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	text-align: center;
+}
+
+.link-group a {
+	color: var(--md-sys-color-primary); /* 使用主色變數 */
+	text-decoration: none;
+	font-size: 0.9rem;
+}
+
+.link-group a:hover {
+	text-decoration: underline;
+}
+
+.success-card {
+	margin-bottom: 16px;
+	padding: 16px;
+	border-left: 4px solid var(--md-sys-color-primary-container);
+	/* 使用主色容器變數 */
+	background-color: var(--md-sys-color-surface-container-low);
+	/* 使用表面容器淺色變數 */
+	border-radius: 16px;
+	box-shadow: 0 6px 18px var(--md-sys-color-shadow); /* 使用陰影變數 */
+	text-align: left;
+	color: var(--md-sys-color-on-surface); /* 使用表面文字色變數 */
+}
+</style>
+</head>
+<body class="light">
+	<div class="app-container">
+		<!-- 後台側邊欄 -->
+		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+
+		<div class="main-content">
+			<div class="md-card login-container">
+				<h2 class="md-headline">管理員登入</h2>
+
+				<div th:if="${not #lists.isEmpty(errorMsgs)}"
+					class="error-messages-container">
+					<div th:each="msg : ${errorMsgs}" th:text="${msg}"
+						style="margin-bottom: 5px;"></div>
+				</div>
+
+				<form th:action="@{/admin/spot/login}" method="post">
+					<div class="form-group md-text-field">
+						<label for="adminAcc">帳號</label> <input type="text" id="adminAcc"
+							name="adminAcc" th:value="${adminAcc}" placeholder="請輸入管理員帳號"
+							required />
+					</div>
+					<div class="form-group md-text-field">
+						<label for="adminPwd">密碼</label> <input type="password"
+							id="adminPwd" name="adminPwd" placeholder="請輸入密碼" required />
+					</div>
+					<div class="form-actions">
+						<button type="submit" class="material-button">
+							<span class="material-icons">login</span> 登入
+						</button>
+					</div>
+				</form>
+
+			
+			</div>
+		</div>
+	</div>
+</body>
+</html>

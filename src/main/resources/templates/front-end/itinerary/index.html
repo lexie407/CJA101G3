@@ -6,14 +6,14 @@
     <title>行程首頁 - 島遊Kha</title>
     
     <!-- 引用景點模組的樣式基礎 -->
-    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 行程首頁專用樣式 -->
     <link rel="stylesheet" th:href="@{/css/itinerary/front-end/index.css}">
 </head>
 <body class="light">
     <div class="app-container">
-        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        <aside th:replace="~{/navTemplate :: navbar}"></aside>
         <div class="main-content">
             <div th:replace="~{subnavItnFront :: subnav('home')}"></div>
             <main class="content-area-main">
@@ -149,7 +149,7 @@
                             快速入口
                         </h2>
                         <div class="quicklink-grid">
-                            <a th:href="@{/itinerary/list}" class="quicklink-card">
+                            <a th:href="@{/itinerary/itnlist}" class="quicklink-card">
                                 <div class="quicklink-card__icon quicklink-card__icon--blue">
                                     <span class="material-icons">list</span>
                                 </div>

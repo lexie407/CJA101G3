@@ -6,7 +6,7 @@
     <title th:text="${spot != null ? spot.spotName + ' - 島遊Kha' : '景點詳情 - 島遊Kha'}">景點詳情 - 島遊Kha</title>
     
     <!-- 必要資源引用 - 統一使用絕對路徑 -->
-    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 景點詳情頁樣式 -->
@@ -15,7 +15,7 @@
 <body class="light">
     <div class="app-container">
         <!-- 左側主導覽列 -->
-        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        <aside th:replace="~{/navTemplate :: navbar}"></aside>
         
         <div class="main-content">
             <!-- 頂部次導覽列 - 詳情頁高亮列表項目 -->
@@ -31,7 +31,7 @@
                         <h2 class="spot-detail-error__title">找不到景點</h2>
                         <p class="spot-detail-error__message" th:text="${errorMessage}">景點不存在或已被移除</p>
                         <div class="spot-detail-error__actions">
-                            <a th:href="@{/spot/list}" class="spot-detail-btn spot-detail-btn--primary">
+                                                            <a th:href="@{/spot/spotlist}" class="spot-detail-btn spot-detail-btn--primary">
                                 <span class="material-icons">arrow_back</span>
                                 回到景點列表
                             </a>
@@ -59,7 +59,7 @@
                                             </a>
                                         </li>
                                         <li class="spot-detail-breadcrumb__item">
-                                            <a th:href="@{/spot/list}" class="spot-detail-breadcrumb__link">
+                                            <a th:href="@{/spot/spotlist}" class="spot-detail-breadcrumb__link">
                                                 <span class="material-icons">list</span>
                                                 景點列表
                                             </a>

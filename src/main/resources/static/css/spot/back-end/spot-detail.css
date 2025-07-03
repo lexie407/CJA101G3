@@ -5,7 +5,9 @@
 
 /* 詳情頁面容器 */
 .spot-detail-page {
-    /* 不覆蓋 .content-area-main 的 padding，在其內部定義樣式 */
+    padding-top: 20px;
+    padding-left: 50px;
+    padding-right: 50px;
 }
 
 /* 內容容器 */
@@ -211,14 +213,9 @@
 
 .action-buttons {
     display: flex;
+    justify-content: flex-end;
+    gap: 8px;
     align-items: center;
-    justify-content: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    padding: 24px;
-    background: var(--md-sys-color-surface-container);
-    border-radius: 12px;
-    border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .delete-form {
@@ -251,11 +248,10 @@
     color: var(--md-sys-color-on-primary);
 }
 
-.btn-primary:hover {
-    background: var(--md-sys-color-primary);
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(41, 171, 194, 0.3);
+.btn-primary:hover, .btn-primary:active {
+    background: linear-gradient(135deg, rgba(41, 171, 194, 0.9), var(--md-sys-color-primary));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(41, 171, 194, 0.4);
 }
 
 .btn-secondary {
@@ -264,10 +260,10 @@
     border: 1px solid var(--md-sys-color-outline);
 }
 
-.btn-secondary:hover {
-    background: var(--md-sys-color-surface-container);
+.btn-secondary:hover, .btn-secondary:active {
+    background: var(--md-sys-color-surface-container-high);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .btn-danger {
@@ -275,11 +271,11 @@
     color: var(--md-sys-color-on-error);
 }
 
-.btn-danger:hover {
+.btn-danger:hover, .btn-danger:active {
     background: var(--md-sys-color-error);
     opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(186, 26, 26, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(186, 26, 26, 0.3);
 }
 
 /* ==========================================================================
@@ -299,6 +295,13 @@
     .image-container {
         max-width: 400px;
         margin: 0 auto;
+    }
+}
+
+@media (max-width: 992px) {
+    .spot-detail-page {
+        padding-left: 20px;
+        padding-right: 20px;
     }
 }
 
@@ -325,13 +328,18 @@
     
     .action-buttons {
         flex-direction: column;
+        align-items: stretch;
         gap: 12px;
-        padding: 20px;
     }
     
     .btn {
         width: 100%;
         min-width: auto;
+    }
+    
+    .spot-detail-page {
+        padding-left: 8px;
+        padding-right: 8px;
     }
 }
 
