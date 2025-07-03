@@ -77,7 +77,7 @@ public class ItnRptController {
 	public String listAllReports(HttpSession session, Model model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		List<ItnRptVO> reports = itnRptService.getAll();
@@ -93,7 +93,7 @@ public class ItnRptController {
 	public String getReportDetail(@RequestParam Integer repId, HttpSession session, Model model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		ItnRptVO report = itnRptService.getOneItnRpt(repId);
@@ -116,7 +116,7 @@ public class ItnRptController {
 							   RedirectAttributes redirectAttributes) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		ItnRptVO report = itnRptService.getOneItnRpt(repId);
@@ -156,7 +156,7 @@ public class ItnRptController {
 							  RedirectAttributes redirectAttributes) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		ItnRptVO report = itnRptService.getOneItnRpt(repId);
@@ -183,7 +183,7 @@ public class ItnRptController {
 	public String listPendingReports(HttpSession session, Model model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		List<ItnRptVO> pendingReports = itnRptService.getPendingReports();
@@ -200,7 +200,7 @@ public class ItnRptController {
 	public String listApprovedReports(HttpSession session, Model model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		List<ItnRptVO> approvedReports = itnRptService.getApprovedReports();
@@ -217,7 +217,7 @@ public class ItnRptController {
 	public String listRejectedReports(HttpSession session, Model model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		List<ItnRptVO> rejectedReports = itnRptService.getRejectedReports();
@@ -234,7 +234,7 @@ public class ItnRptController {
 	public String listReportsByItem(@PathVariable Integer itemId, HttpSession session, Model model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		// 檢查商品是否存在
@@ -267,7 +267,7 @@ public class ItnRptController {
 	public String listReportsByMember(@PathVariable Integer memId, HttpSession session, Model model) {
 		// 檢查管理員登入狀態
 		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admin/login";
+			return "redirect:/admins/login";
 		}
 		
 		List<ItnRptVO> reports = itnRptService.getReportsByMemberId(memId);

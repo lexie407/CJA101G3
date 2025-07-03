@@ -10,8 +10,9 @@
 
     <style>
         .admin-container {
-            max-width: 1200px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: none;
+            margin: 0;
             padding: 20px;
         }
         .page-header {
@@ -50,9 +51,9 @@
             text-decoration: none;
         }
         .ad-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 20px !important;
             margin-top: 20px;
         }
         .ad-card {
@@ -161,13 +162,21 @@
 <body class="light">
 
 <div class="app-container">
-    <div th:insert="~{/navTemplate :: navbar}"></div>
+    <div th:insert="~{/navBackTemplate :: navbar}"></div>
     
     <div class="main-content">
-        <div class="admin-container">
-            <div class="page-header">
-                <h1 class="page-title">廣告審核管理</h1>
-            </div>
+        <header class="secondary-nav">
+            <ul>
+                <li><a href="/advertisment/admin/dashboard">管理員儀表板</a></li>
+                <li><a href="/advertisment/admin/pending" class="active">待審核廣告</a></li>
+                <li><a href="/advertisment/admin/reviewed">已審核廣告</a></li>
+            </ul>
+        </header>
+        <main class="content-area-main">
+            <div class="admin-container">
+                <div class="page-header">
+                    <h1 class="page-title">廣告審核管理</h1>
+                </div>
             
             <!-- 導航標籤 -->
             <div class="nav-tabs">
@@ -243,7 +252,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 </div>
 
