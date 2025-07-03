@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', function (){
 
+    checkMemberId();
+
+
     // 分類選擇功能
     document.querySelectorAll('.category-chips .chip').forEach(chip => {
         chip.addEventListener('click', () => {
@@ -54,11 +57,11 @@ document.addEventListener('DOMContentLoaded', function (){
         }
 
         // 會員編號檢查
-        const artHol = document.getElementById('artHol').value.trim();
-        if (!artHol) {
-            alert('會員編號為必填！');
-            return;
-        }
+        // const artHol = document.getElementById('artHol').value.trim();
+        // if (!artHol) {
+        //     alert('會員編號為必填！');
+        //     return;
+        // }
 
         // 內容檢查（清理後內容）
         if (!finalHTML || finalHTML === '<p><br></p>') {
@@ -71,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function (){
 
         // 狀態固定為1
         document.getElementById('artSta').value = "1";
+
         document.getElementById('title').value = title;
         document.getElementById('artCon').value = finalHTML;
 
@@ -90,4 +94,17 @@ function cancelForm() {
     if (confirm('確定要取消嗎？現在寫的內容都會消失喔！')) {
         history.back();
     }
+}
+
+function checkMemberId() {
+    fetch("/api/session/currentMember")
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('current-user-info').textContent = `以 ${data.memName} 的身份發文`;
+            } else {
+                alert("請先登入");
+                window.location.href = "/members/login";
+            }
+        });
 }

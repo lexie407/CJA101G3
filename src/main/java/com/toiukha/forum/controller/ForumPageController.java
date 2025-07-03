@@ -57,9 +57,13 @@ public class ForumPageController {
 
     // 新增文章的處理與重導向
     @PostMapping("/article/insert")
-    public String insertArticle(@ModelAttribute Article art, Model model) {
+    public String insertArticle(@ModelAttribute Article art, Model model, HttpSession session) {
         model.addAttribute("currentPage", "forum");
-
+        MembersVO member = (MembersVO) session.getAttribute("member");
+        if (member == null) {
+            Debug.log("未登入會員，無法新增文章");
+            return "redirect:/login";
+        }
         if (art == null) {
             Debug.log("文章資料為空，無法新增文章");
             return "redirect:/forum/article/edit";
@@ -70,7 +74,7 @@ public class ForumPageController {
                 "文章內容：" + art.getArtCon());
 
         // 存進資料庫
-        Article newArt = articleService.add(art.getArtCat(),art.getArtSta(),art.getArtHol(),art.getArtTitle(),art.getArtCon());
+        Article newArt = articleService.add(art.getArtCat(),art.getArtSta(), member.getMemId(), art.getArtTitle(),art.getArtCon());
 
         // 若有文章圖片，圖片綁定文章ID
         List<Integer> picIds = getImageIdsFromHtml(art.getArtCon());
