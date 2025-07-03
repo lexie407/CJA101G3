@@ -62,14 +62,54 @@
     /* 其他您已有的 main 樣式 */
     padding: 20px; /* 給 main 內部留點邊距 */
     box-sizing: border-box; /* 確保 padding 不會增加總寬度 */
+    align-items: center; /* 水平居中 */
 }
+
+.chat-welcome-area {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: var(--md-sys-color-surface-container-low);
+    border-radius: 16px;
+    max-width: 800px; /* 與聊天室寬度一致 */
+    width: 100%;
+}
+
+.assistant-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 1.5rem; /* 改為右邊距 */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    flex-shrink: 0; /* 防止頭像被壓縮 */
+}
+
+.welcome-text {
+    text-align: left;
+}
+
+.chat-welcome-area h2 {
+    font-size: 1.75rem;
+    color: var(--md-sys-color-primary);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.chat-welcome-area p {
+    font-size: 1rem;
+    color: var(--md-sys-color-on-surface-variant);
+    max-width: 600px;
+    margin: 0;
+}
+
 
 /* 聊天室窗的主要容器 */
 #chat-container-main {
     flex-grow: 1; /* 讓聊天室佔滿 main 內部剩餘的垂直空間 */
     width: 100%; /* 佔滿 main 的寬度 */
     max-width: 800px; /* 可以設定一個最大寬度，防止過寬 */
-    height: calc(100vh - 200px); /* 設置一個動態高度，例如 viewport 高度減去導航、header等高度 */
+    height: calc(100vh - 400px); /* 設置一個動態高度，例如 viewport 高度減去導航、header等高度 */
     /* 或者如果父容器 main 有固定高度，可以用 height: 100%; */
     
     border: 1px solid var(--md-sys-color-outline);
@@ -213,6 +253,10 @@
 .material-button:hover {
     background-color: var(--md-sys-color-primary-fixed);
     box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.icon-button {
+	display: none;
 }
 
 /* 如果您的 `style.css` 或 `light.css` 中已經有針對 `body` 和 `html` 的 `height: 100%` 或 `min-height: 100%`，

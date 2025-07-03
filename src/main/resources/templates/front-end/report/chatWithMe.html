@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>與我聊聊</title>
+<title>與我聊聊 | 島遊kha</title>
 
 <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
 <link rel="stylesheet" th:href="@{/css/report/chatWithMe.css}">
@@ -23,12 +23,19 @@
 				</ul>
 			</header>
 			<main class="content-area-main">
+				<div class="chat-welcome-area" style="display: flex;">
+					<img th:src="@{/images/ai.png}" alt="AI Assistant"
+						class="assistant-avatar">
+					<div class="welcome-text">
+						<h2>嗨，我是你的 AI 夥伴</h2>
+						<p>在島遊 kha 的大小事，都能問我！</p>
+					</div>
+				</div>
 
 				<div id="chat-container-main">
 					<div class="chat-header">
-<!-- 						<h3>AI 客服</h3> -->
-						<button id="close-chat-btn" class="material-button icon-button"
-							style="display: none;">
+						<h3>AI 夥伴上線中</h3>
+						<button id="close-chat-btn" class="material-button icon-button">
 							<span class="material-icons">close</span>
 						</button>
 					</div>

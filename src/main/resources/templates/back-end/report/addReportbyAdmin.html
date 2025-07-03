@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>新增案件 | 異常回報 | 後台 | 島遊kha</title>
     
     <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
     
@@ -30,16 +30,12 @@
 						<h1>新增回報案件</h1>
 						<form id="notificationEditForm" method="post"
 							th:action="@{/report/doAddReportbyAdmin}">
-<!-- 							記得放管理員 -->
-							<input type="hidden" name="adminId" value="1">
 							<div class="form-group">
 <!-- 							記得放會員 -->
 								<label>回報會員:</label>
 								<select id="notificationMemberId" name="memId" required>
 									<option value="" selected>請選擇</option>
-									<option value="1">會員1</option>
-									<option value="2">會員2</option>
-									<option value="3">會員3</option>
+									<option th:each="membersVO : ${memList}" th:value="${membersVO.memId}" th:text="${membersVO.memId} + ' ' + ${membersVO.memName}"></option>
 								</select>
 							</div>
 							<div class="form-group">

@@ -13,26 +13,37 @@ let conversationId = "";
       }
     }
 
-    // 將訊息添加到聊天視窗中
+ // 將訊息添加到聊天視窗中
     function appendMessage(text, sender, isLoading = false) {
-      const messageBubble = document.createElement("div");
-      messageBubble.classList.add("message-bubble");
-      if (sender === "user") {
-        messageBubble.classList.add("user-message");
-        messageBubble.textContent = text;
-        messagesContainer.appendChild(messageBubble);
-      } else if (sender === "ai") {
-        messageBubble.classList.add("ai-message");
-        if (isLoading) {
-            messageBubble.innerHTML = '<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>';
-        } else {
-            messageBubble.textContent = text;
+        const messageBubble = document.createElement("div");
+        messageBubble.classList.add("message-bubble", sender + "-message");
+
+        const messageContent = document.createElement("div");
+        messageContent.classList.add("message-content");
+
+        if (sender === "ai") {
+            const avatar = document.createElement("img");
+            avatar.src = "/images/user.png"; 
+            avatar.alt = "AI";
+            avatar.classList.add("ai-avatar");
+            messageBubble.appendChild(avatar);
         }
+
+        if (isLoading) {
+            const loadingDots = document.createElement('span');
+            loadingDots.classList.add('loading-dots');
+            loadingDots.innerHTML = '<span>.</span><span>.</span><span>.</span>';
+            messageContent.appendChild(loadingDots);
+        } else {
+            messageContent.textContent = text;
+        }
+
+        messageBubble.appendChild(messageContent);
         messagesContainer.appendChild(messageBubble);
-      }
-      scrollToBottom();
-      return messageBubble;
+        scrollToBottom();
+        return messageContent; // 返回 content div 以便更新
     }
+
 
     // 滾動聊天視窗到底部
     function scrollToBottom() {
@@ -138,7 +149,8 @@ let conversationId = "";
               } else if (jsonString) {
                     console.warn("忽略無法解析的段落 (結尾非JSON格式)：", jsonString);
               }
-          } else if (trimmedLine) {
+          }
+          else if (trimmedLine) {
                console.warn("忽略無法解析的段落 (結尾非data:開頭)：", trimmedLine);
           }
       }

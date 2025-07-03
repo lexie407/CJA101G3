@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.toiukha.members.model.MembersService;
+import com.toiukha.members.model.MembersVO;
 import com.toiukha.report.model.ReportService;
 import com.toiukha.report.model.ReportVO;
 
@@ -26,6 +28,8 @@ public class ReportController {
 
 	@Autowired
 	private ReportService reportService;
+	@Autowired
+	private MembersService membersService;
 
 	//========== DIYI用 ==========//
 	//新增回報案件
@@ -87,6 +91,8 @@ public class ReportController {
 	public String addReportbyAdmin(
 			HttpServletRequest req, 
 			ModelMap model) {
+		List<MembersVO> memList = membersService.findAllMembers();
+		model.addAttribute("memList", memList);
 		model.addAttribute("currentPage", "support_agent");
 		model.addAttribute("currentPage2", "addReportbyAdmin");
 		return "back-end/report/addReportbyAdmin";
