@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${storeName} + ' - 商品列表 - 島遊Kha'">商店商品列表 - 島遊Kha</title>
+    
+    <!-- 引入 Thymeleaf 模板中的 headResources 片段，包含 Material Design 相關 CSS/JS -->
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+
+    <!-- 這裡可以放置此頁面特有的 CSS -->
+    <style>
+        .store-items-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .store-header {
+            background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .store-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .store-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .item-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            border-color: #adb5bd;
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .item-content {
+            padding: 16px;
+        }
+        
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #212529;
+            line-height: 1.3;
+        }
+        
+        .item-price {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .original-price {
+            text-decoration: line-through;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .discount-price {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .current-price {
+            color: #495057;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .item-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        
+        .status-available {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background-color: #343a40;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .back-button:hover {
+            background-color: #23272b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .no-items-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .no-items-message .material-icons {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #adb5bd;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin-bottom: 20px;
+        }
+        
+        .promotion-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #495057;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .item-card {
+            position: relative;
+        }
+        
+        .view-item-button {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: block;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .view-item-button:hover {
+            background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+</head>
+<body class="light">
+
+	<div class="app-container">
+		<!-- 引入 Thymeleaf 模板中的 navbar 片段 -->
+		<div th:insert="~{/navTemplate :: navbar}"></div>
+		
+		<div class="main-content">
+			<header class="secondary-nav">
+                <ul>
+                    <li><h2 th:text="${storeName} + ' - 商品列表'">商店商品列表</h2></li>
+                </ul>
+            </header>
+			
+            <main class="content-area-main">
+                <div class="store-items-container">
+                    <!-- 錯誤訊息顯示 -->
+                    <div th:if="${errorMessage}" class="error-message">
+                        <span th:text="${errorMessage}"></span>
+                    </div>
+                    
+                    <!-- 返回按鈕 -->
+                    <a th:href="@{/advertisment/listAllAd}" class="back-button">
+                        <span class="material-icons">arrow_back</span>
+                        返回廣告列表
+                    </a>
+                    
+                    <!-- 商店標題 -->
+                    <div class="store-header">
+                        <h1 th:text="${storeName}">商店名稱</h1>
+                        <p th:text="'共有 ' + ${storeItems.size()} + ' 項商品'">共有 0 項商品</p>
+                    </div>
+                    
+                    <!-- 商品列表 -->
+                    <div th:if="${#lists.isEmpty(storeItems)}" class="no-items-message">
+                        <i class="material-icons">inventory_2</i>
+                        <div style="font-size: 1.5rem; margin-bottom: 10px;">目前沒有上架的商品</div>
+                        <p>請稍後再來看看，或許會有新商品上架！</p>
+                    </div>
+                    
+                    <div th:unless="${#lists.isEmpty(storeItems)}" class="items-grid">
+                        <div class="item-card" th:each="item : ${storeItems}">
+                            <!-- 促銷標籤 -->
+                            <div th:if="${item.discPrice != null and item.staTime != null and item.endTime != null and #temporals.createNow().isAfter(item.staTime) and #temporals.createNow().isBefore(item.endTime)}" 
+                                 class="promotion-badge">
+                                限時促銷
+                            </div>
+                            
+                            <!-- 商品圖片 -->
+                            <img th:src="@{/item/DBGifReader(itemId=${item.itemId})}" 
+                                 class="item-image" 
+                                 alt="商品圖片"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDI4MCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI4MCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGNUY1RjUiLz48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMDAiIHI9IjMwIiBmaWxsPSIjRERERERkIi8+PC9zdmc+'">
+                            
+                            <div class="item-content">
+                                <!-- 商品名稱 -->
+                                <h3 class="item-name" th:text="${item.itemName}">商品名稱</h3>
+                                
+                                <!-- 商品價格 -->
+                                <div class="item-price">
+                                    <span th:if="${item.discPrice != null and item.staTime != null and item.endTime != null and #temporals.createNow().isAfter(item.staTime) and #temporals.createNow().isBefore(item.endTime)}">
+                                        <span class="original-price" th:text="'原價: $' + ${item.itemPrice}">原價: $0</span>
+                                        <span class="discount-price" th:text="'特價: $' + ${item.discPrice}">特價: $0</span>
+                                    </span>
+                                    <span th:if="${item.discPrice == null or item.staTime == null or item.endTime == null or #temporals.createNow().isBefore(item.staTime) or #temporals.createNow().isAfter(item.endTime)}">
+                                        <span class="current-price" th:text="'$' + ${item.itemPrice}">$0</span>
+                                    </span>
+                                </div>
+                                
+                                <!-- 商品狀態 -->
+                                <div class="item-status status-available">
+                                    <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">check_circle</span>
+                                    現貨供應
+                                </div>
+                                
+                                <!-- 查看商品按鈕 -->
+                                <a th:href="@{/item/listAllItem}" class="view-item-button">
+                                    查看商品詳情
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+		</div>
+	</div>
+    
+    <!-- 引入 Thymeleaf 模板中的腳本 -->
+    <script th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
+    <script th:src="@{/webjars/stomp-websocket/stomp.min.js}"></script>
+    <script th:src="@{/js/notification/websocket.js}"></script>
+    
+</body>
+</html> 
