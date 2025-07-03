@@ -286,20 +286,17 @@
                     <div class="order-items">
                         <h6 class="mb-3">訂單項目:</h6>
                         <div th:each="orderItem : ${order.orderItems}" class="item-card">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <h6 th:text="${orderItem.item.itemName}">商品名稱</h6>
+                            <div style="display: flex; align-items: center; gap: 18px;">
+                                <img th:src="@{'/item/DBGifReader?itemId=' + ${orderItem.itemId}}" alt="商品圖片"
+                                    style="width:80px;height:80px;border-radius:8px;object-fit:cover;box-shadow:0 2px 8px #1976d233;">
+                                <div style="display: flex; flex-direction: column; gap: 2px;">
+                                    <h6 th:text="${orderItem.item.itemName}"
+                                        style="font-size:1.12rem;font-weight:600;margin-bottom:0;">商品名稱</h6>
                                     <small class="text-muted">購買數量: <span
                                             th:text="${orderItem.ordTotal}"></span></small>
-                                </div>
-                                <div class="col-md-4 text-end">
-                                    <p class="mb-1">
-                                        <strong class="text-primary">價格: $<span
-                                                th:text="${orderItem.discPrice != null and orderItem.discPrice > 0 ? orderItem.discPrice : orderItem.oriPrice}"></span></strong>
-                                    </p>
-                                    <p class="mb-0">
-                                        <strong>小計: $<span th:text="${orderItem.itemSubtotal}"></span></strong>
-                                    </p>
+                                    <strong class="text-primary">價格: $<span
+                                            th:text="${orderItem.discPrice != null and orderItem.discPrice > 0 ? orderItem.discPrice : orderItem.oriPrice}"></span></strong>
+                                    <strong>小計: $<span th:text="${orderItem.itemSubtotal}"></span></strong>
                                 </div>
                             </div>
                             <!-- 評價區塊 -->

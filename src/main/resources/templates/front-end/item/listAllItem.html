@@ -217,7 +217,7 @@
                                         alert('已加入收藏！');
                                     } else {
                                         alert(response + ' !');
-                                    } 
+                                    }
                                 },
                                 error: function (xhr, status, error) {
                                     alert('加入收藏失敗，請稍後再試！\n錯誤信息：' + error);
@@ -286,11 +286,13 @@
                                     }
                                 });
 
-                                html += '<table style="width:100%;font-size:15px;"><tr><th>商品名稱</th><th>單價</th><th>數量</th></tr>';
+                                html += '<table style="width:100%;font-size:15px;"><tr><th></th><th>商品名稱</th><th>單價</th><th>數量</th></tr>';
                                 var total = 0;
                                 cartList.forEach(function (item) {
                                     var price = item.price;
+                                    var imgSrc = '/item/DBGifReader?itemId=' + item.itemId;
                                     html += '<tr data-itemid="' + item.itemId + '">';
+                                    html += '<td style="padding:6px 0;"><img src="' + imgSrc + '" alt="商品圖片" style="width:48px;height:auto;border-radius:6px;object-fit:cover;"></td>';
                                     html += '<td style="padding:6px 0;">' + item.itemName + '</td>';
                                     html += '<td style="padding:6px 0;">' + price + '</td>';
                                     html += '<td style="padding:6px 0;"><input type="number" class="cart-qty-input" value="' + item.quantity + '" min="1" style="width:48px;height:28px;font-size:1rem;text-align:center;border-radius:4px;border:1px solid #ccc;"/></td>';
