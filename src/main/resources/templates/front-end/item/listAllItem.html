@@ -161,38 +161,58 @@
             </header>
             <main class="content-area-main">
                 <input type="hidden" name="memId" th:value="${session.member != null ? session.member.memId : ''}">
-                <div class="container">
+                <!-- 搜尋欄位區塊 -->
+                <div class="item-search-bar"
+                    style="display:flex;align-items:center;background:#fff;border-radius:24px;box-shadow:0 2px 8px rgba(25,118,210,0.10);padding:4px 16px;width:520px;margin:0 auto 24px auto;border:1.5px solid #bdbdbd;transition:border 0.2s;">
+                    <span class="material-icons" style="color:#1976d2;font-size:1.5rem;margin-right:8px;">search</span>
+                    <input type="text" id="itemSearchInput" placeholder="搜尋票券"
+                        style="border:none;outline:none;font-size:1.08rem;background:transparent;width:100%;padding:8px 0;">
+                </div>
+                <div class="container" style="display:flex;flex-direction:column;gap:28px;padding:24px 0;">
                     <th:block th:each="itemVO : ${itemListData_front}">
-                        <div class="card"
-                            th:attr="data-itemid=${itemVO.itemId},data-itemname=${itemVO.itemName},data-iteminfo=${itemVO.itemInfo},data-itemprice=${itemVO.itemPrice},data-discprice=${itemVO.discPrice},data-statime=${itemVO.staTime},data-endtime=${itemVO.endTime},data-imgsrc=@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}">
-                            <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
-                            <h4 th:text="${itemVO.itemName}"></h4>
-                            <p>
-                                <span
-                                    th:if="${itemVO.discPrice != null} and ${itemVO.staTime != null} and ${itemVO.endTime != null} and ${#temporals.createNow().isAfter(itemVO.staTime)} and ${#temporals.createNow().isBefore(itemVO.endTime)}">
-                                    <span style="text-decoration: line-through; color: #888;">原價: <span
-                                            th:text="${itemVO.itemPrice}"></span></span>
-                                    <span style="color: #d32f2f; font-weight: bold; margin-left: 6px;">促銷價: <span
-                                            th:text="${itemVO.discPrice}"></span></span>
-                                </span>
-                                <span
-                                    th:if="${itemVO.discPrice == null} or ${itemVO.staTime == null} or ${itemVO.endTime == null} or ${#temporals.createNow().isBefore(itemVO.staTime)} or ${#temporals.createNow().isAfter(itemVO.endTime)}">
-                                    商品價格: <span th:text="${itemVO.itemPrice}"></span>
-                                </span>
-                            </p>
-                            <form method="post" th:action="@{/item/add_to_shopCart}" class="shopping-cart-form"
-                                style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-                                <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
-                                <input type="hidden" name="memId"
-                                    th:value="${session.member != null ? session.member.memId : ''}">
-                                <input type="number" name="quantity" class="quantity-input" min="1" max="99" value="1"
-                                    style="width: 50px; height: 28px; border-radius: 4px; border: 1px solid #ccc; text-align: center; margin-right: 4px;" />
-                                <button type="button" class="add-to-cart-btn">加入購物車</button>
-                                <button type="button" class="add-to-favorite-btn"
-                                    th:attr="data-itemid=${itemVO.itemId},data-memid=${session.member != null ? session.member.memId : ''}">
-                                    <i class="fa-regular fa-star"></i>
-                                </button>
-                            </form>
+                        <div class="card item-row"
+                            th:attr="data-itemid=${itemVO.itemId},data-itemname=${itemVO.itemName},data-iteminfo=${itemVO.itemInfo},data-itemprice=${itemVO.itemPrice},data-discprice=${itemVO.discPrice},data-statime=${itemVO.staTime},data-endtime=${itemVO.endTime},data-imgsrc=@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}"
+                            style="display:flex;flex-direction:row;align-items:center;gap:22px;width:100%;max-width:900px;margin:0 auto;padding:18px 18px 18px 0;text-align:left;">
+                            <div style="flex:0 0 240px;max-width:240px;">
+                                <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片"
+                                    style="width:100%;height:180px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px #1976d233;">
+                            </div>
+                            <div style="flex:1 1 auto;display:flex;flex-direction:column;gap:6px;">
+                                <h4 th:text="${itemVO.itemName}"
+                                    style="color:#1976d2;font-size:1.18rem;font-weight:600;margin:0 0 6px 0;"></h4>
+                                <p style="color:#666;margin:0 0 4px 0;min-height:32px;"
+                                    th:text="${#strings.length(itemVO.itemInfo) > 30} ? ${#strings.substring(itemVO.itemInfo, 0, 30)} + '...' : ${itemVO.itemInfo}">
+                                </p>
+                                <p style="margin:0 0 8px 0;">
+                                    <span
+                                        th:if="${itemVO.discPrice != null} and ${itemVO.staTime != null} and ${itemVO.endTime != null} and ${#temporals.createNow().isAfter(itemVO.staTime)} and ${#temporals.createNow().isBefore(itemVO.endTime)}">
+                                        <span style="text-decoration: line-through; color: #888; font-size:1.05rem;">原價:
+                                            $<span th:text="${itemVO.itemPrice}"></span></span>
+                                        <span
+                                            style="color: #d32f2f; font-weight: bold; margin-left: 6px; font-size:1.18rem;">促銷價:
+                                            $<span th:text="${itemVO.discPrice}"></span></span>
+                                    </span>
+                                    <span
+                                        th:if="${itemVO.discPrice == null} or ${itemVO.staTime == null} or ${itemVO.endTime == null} or ${#temporals.createNow().isBefore(itemVO.staTime)} or ${#temporals.createNow().isAfter(itemVO.endTime)}">
+                                        <span style="color:#1976d2;font-weight:700;font-size:1.18rem;">$<span
+                                                th:text="${itemVO.itemPrice}"></span></span>
+                                    </span>
+                                </p>
+                                <form method="post" th:action="@{/item/add_to_shopCart}" class="shopping-cart-form"
+                                    style="display: flex; align-items: center; gap: 6px; margin-top:8px;">
+                                    <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
+                                    <input type="hidden" name="memId"
+                                        th:value="${session.member != null ? session.member.memId : ''}">
+                                    <input type="number" name="quantity" class="quantity-input" min="1" max="99"
+                                        value="1"
+                                        style="width: 50px; height: 28px; border-radius: 4px; border: 1px solid #ccc; text-align: center; margin-right: 4px;" />
+                                    <button type="button" class="add-to-cart-btn">加入購物車</button>
+                                    <button type="button" class="add-to-favorite-btn"
+                                        th:attr="data-itemid=${itemVO.itemId},data-memid=${session.member != null ? session.member.memId : ''}">
+                                        <i class="fa-regular fa-star"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </th:block>
                 </div>
@@ -272,8 +292,8 @@
                                 blurBg.style.transition = 'opacity 0.2s';
                                 document.body.appendChild(blurBg);
                             }
-                            var html = '<div id="cart-modal" style="position:fixed;top:12%;left:50%;transform:translateX(-50%);background:#fff;padding:28px 24px;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,0.18);z-index:2000;max-height:80vh;overflow-y:auto;min-width:340px;max-width:420px;width:90vw;font-size:15px;">';
-                            html += '<h3 style="color:#1976d2;font-size:1.35rem;margin-bottom:12px;">購物車內容</h3>';
+                            var html = '<div id="cart-modal" style="position:fixed;top:8%;left:50%;transform:translateX(-50%);background:#fff;padding:38px 32px;border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.18);z-index:2000;max-height:86vh;overflow-y:auto;min-width:420px;max-width:540px;width:96vw;font-size:1.18rem;">';
+                            html += '<h3 style="color:#1976d2;font-size:1.55rem;margin-bottom:18px;">購物車內容</h3>';
 
                             if (cartList.length === 0) {
                                 html += '<p style="font-size:1rem;">購物車是空的</p>';
@@ -286,17 +306,17 @@
                                     }
                                 });
 
-                                html += '<table style="width:100%;font-size:15px;"><tr><th></th><th>商品名稱</th><th>單價</th><th>數量</th></tr>';
+                                html += '<table style="width:100%;font-size:1.13rem;"><tr><th></th><th>商品名稱</th><th>單價</th><th>數量</th></tr>';
                                 var total = 0;
                                 cartList.forEach(function (item) {
-                                    var price = item.price;
+                                    var price = parseFloat(item.price);
                                     var imgSrc = '/item/DBGifReader?itemId=' + item.itemId;
                                     html += '<tr data-itemid="' + item.itemId + '">';
-                                    html += '<td style="padding:6px 0;"><img src="' + imgSrc + '" alt="商品圖片" style="width:48px;height:auto;border-radius:6px;object-fit:cover;"></td>';
-                                    html += '<td style="padding:6px 0;">' + item.itemName + '</td>';
-                                    html += '<td style="padding:6px 0;">' + price + '</td>';
-                                    html += '<td style="padding:6px 0;"><input type="number" class="cart-qty-input" value="' + item.quantity + '" min="1" style="width:48px;height:28px;font-size:1rem;text-align:center;border-radius:4px;border:1px solid #ccc;"/></td>';
-                                    html += '<td><button class="remove-cart-btn" style="color:#fff;background:#d32f2f;border:none;border-radius:4px;padding:2px 10px;font-size:0.95rem;">移除</button></td>';
+                                    html += '<td style="padding:10px 0;"><img src="' + imgSrc + '" alt="商品圖片" style="width:68px;height:68px;border-radius:8px;object-fit:cover;"></td>';
+                                    html += '<td style="padding:10px 0;">' + item.itemName + '</td>';
+                                    html += '<td style="padding:10px 0;">' + price + '</td>';
+                                    html += '<td style="padding:10px 0;"><input type="number" class="cart-qty-input" value="' + item.quantity + '" min="1" style="width:60px;height:36px;font-size:1.1rem;text-align:center;border-radius:6px;border:1.5px solid #ccc;"/></td>';
+                                    html += '<td><button class="remove-cart-btn" style="color:#fff;background:#d32f2f;border:none;border-radius:6px;padding:4px 16px;font-size:1.08rem;">移除</button></td>';
                                     html += '</tr>';
                                     total += price * item.quantity;
                                 });
@@ -377,7 +397,7 @@
                             // 遍歷購物車中的每一項商品以計算原始總價
                             $('#cart-modal table tr[data-itemid]').each(function () {
                                 var tr = $(this);
-                                var price = parseFloat(tr.find('td:nth-child(2)').text());
+                                var price = parseFloat(tr.find('td:nth-child(3)').text());
                                 var quantity = parseInt(tr.find('.cart-qty-input').val());
                                 if (!isNaN(price) && !isNaN(quantity)) {
                                     total += price * quantity;
@@ -400,7 +420,7 @@
                             $('#cart-modal table tr[data-itemid]').each(function (idx) {
                                 var tr = $(this);
                                 var itemId = tr.data('itemid');
-                                var price = parseFloat(tr.find('td:nth-child(2)').text());
+                                var price = parseFloat(tr.find('td:nth-child(3)').text());
                                 var quantity = parseInt(tr.find('.cart-qty-input').val());
                                 newFormItemsHtml += '<input type="hidden" name="items[' + idx + '].itemId" value="' + itemId + '"/>';
                                 newFormItemsHtml += '<input type="hidden" name="items[' + idx + '].price" value="' + price + '"/>';
@@ -608,14 +628,14 @@
                         $(document).on('click', '.card, .card img', function (e) {
                             if ($(e.target).is('button') || $(e.target).is('input') || $(e.target).is('i')) return;
                             var card = $(this).closest('.card');
-                            var itemId = card.find('input[name="itemId"]').val() || card.data('itemid');
-                            var itemName = card.find('h4').text() || card.data('itemname');
-                            var itemInfo = card.find('span[th\\:text="${itemVO.itemInfo}"]').text() || card.data('iteminfo');
+                            var itemId = card.data('itemid');
+                            var itemName = card.data('itemname');
+                            var itemInfo = card.data('iteminfo');
                             var itemPrice = card.data('itemprice');
                             var discPrice = card.data('discprice');
                             var staTime = card.data('statime');
                             var endTime = card.data('endtime');
-                            var imgSrc = card.find('img').attr('src') || card.data('imgsrc');
+                            var imgSrc = card.data('imgsrc');
                             var memId = $('input[name="memId"]').val();
 
                             var now = new Date();
@@ -628,31 +648,35 @@
 
                             var modalHtml = `
                                 <div class="modal-backdrop" id="item-modal-backdrop">
-                                    <div class="modal-content">
-                                        <button class="modal-close" id="modal-close-btn">&times;</button>
-                                        <img src="${imgSrc}" alt="商品圖片">
-                                        <h4 style="color:#1976d2;">${itemName}</h4>
-                                        <p style="color:#666;">${itemInfo ? itemInfo : ''}</p>
-                                        <p>
-                                            ${showDisc ?
-                                    `<span style="text-decoration: line-through; color: #888;">原價: ${itemPrice}</span>
-                                                <span style="color: #d32f2f; font-weight: bold; margin-left: 6px;">促銷價: ${discPrice}</span>`
+                                    <div class="modal-content" style="display:flex;flex-direction:row;align-items:center;gap:32px;min-width:620px;max-width:980px;padding:32px 32px 32px 0;text-align:left;">
+                                        <div style="flex:0 0 320px;max-width:320px;">
+                                            <img src="${imgSrc}" alt="商品圖片" style="width:100%;height:240px;object-fit:cover;border-radius:12px;box-shadow:0 4px 16px #1976d233;">
+                                        </div>
+                                        <div style="flex:1 1 auto;display:flex;flex-direction:column;gap:16px;">
+                                            <h4 style="color:#1976d2;font-size:1.7rem;font-weight:700;margin:0 0 10px 0;">${itemName}</h4>
+                                            <p style="color:#555;margin:0 0 8px 0;min-height:38px;font-size:1.18rem;">${itemInfo ? itemInfo : ''}</p>
+                                            <p style="margin:0 0 14px 0;">
+                                                ${showDisc ?
+                                    `<span style=\"text-decoration: line-through; color: #888; font-size:1.18rem;\">原價: $${itemPrice}</span>
+                                                     <span style=\"color: #d32f2f; font-weight: bold; margin-left: 12px; font-size:1.7rem;\">促銷價: $${discPrice}</span>`
                                     :
-                                    `商品價格: ${itemPrice}`
+                                    `<span style=\"color:#1976d2;font-weight:700;font-size:1.7rem;\">$${itemPrice}</span>`
                                 }
-                                        </p>
-                                        <form method="post" action="/item/add_to_shopCart" class="shopping-cart-form modal-cart-form"
-                                            style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px;">
-                                            <input type="hidden" name="itemId" value="${itemId}">
-                                            <input type="hidden" name="memId" value="${memId}">
-                                            <input type="number" name="quantity" class="quantity-input" min="1" max="99" value="1"
-                                                style="width: 50px; height: 28px; border-radius: 4px; border: 1px solid #ccc; text-align: center; margin-right: 4px;" />
-                                            <button type="button" class="add-to-cart-btn">加入購物車</button>
-                                            <button type="button" class="add-to-favorite-btn"
-                                                data-itemid="${itemId}" data-memid="${memId}">
-                                                <i class="fa-regular fa-star"></i>
-                                            </button>
-                                        </form>
+                                            </p>
+                                            <form method="post" action="/item/add_to_shopCart" class="shopping-cart-form modal-cart-form"
+                                                style="display: flex; align-items: center; gap: 10px; margin-top: 18px;">
+                                                <input type="hidden" name="itemId" value="${itemId}">
+                                                <input type="hidden" name="memId" value="${memId}">
+                                                <input type="number" name="quantity" class="quantity-input" min="1" max="99" value="1"
+                                                    style="width: 60px; height: 36px; border-radius: 6px; border: 1.5px solid #ccc; text-align: center; margin-right: 8px;font-size:1.1rem;" />
+                                                <button type="button" class="add-to-cart-btn" style="font-size:1.1rem;height:40px;">加入購物車</button>
+                                                <button type="button" class="add-to-favorite-btn"
+                                                    data-itemid="${itemId}" data-memid="${memId}" style="font-size:1.3rem;height:40px;width:40px;">
+                                                    <i class="fa-regular fa-star"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <button class="modal-close" id="modal-close-btn" style="position:absolute;top:18px;right:24px;font-size:2.2rem;color:#888;cursor:pointer;background:none;border:none;">&times;</button>
                                     </div>
                                 </div>
                             `;
@@ -665,6 +689,19 @@
                             });
                             $('#item-modal-backdrop').on('click', function (e) {
                                 if (e.target === this) $('#item-modal-backdrop').remove();
+                            });
+                        });
+
+                        // 商品名稱即時搜尋功能
+                        $('#itemSearchInput').on('input', function () {
+                            var keyword = $(this).val().trim().toLowerCase();
+                            $('.item-row').each(function () {
+                                var name = $(this).data('itemname').toLowerCase();
+                                if (!keyword || name.includes(keyword)) {
+                                    $(this).show();
+                                } else {
+                                    $(this).hide();
+                                }
                             });
                         });
                     });

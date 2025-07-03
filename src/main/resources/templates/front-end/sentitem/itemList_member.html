@@ -33,13 +33,16 @@
                 <div class="mdc-horizontal-list">
                     <th:block th:each="ticket : ${ticketList}">
                         <div class="mdc-horizontal-card"
-                            th:attr="data-name=${ticket.ticketName},data-id=${ticket.sentItemId}">
-                            <div class="mdc-horizontal-card__media">
+                            th:attr="data-name=${ticket.ticketName},data-id=${ticket.sentItemId}"
+                            style="display:flex;flex-direction:row;align-items:center;gap:18px;">
+                            <div class="mdc-horizontal-card__media" style="flex:0 0 180px;max-width:180px;">
                                 <img th:src="@{'/item/DBGifReader?itemId=' + ${ticket.itemId}}" alt="商品圖片"
-                                    style="width:100px;height:100px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px #1976d233;">
+                                    style="width:100%;height:180px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px #1976d233;">
                             </div>
-                            <div class="mdc-horizontal-card__content">
-                                <h3 class="mdc-horizontal-card__title" th:text="${ticket.ticketName}"></h3>
+                            <div class="mdc-horizontal-card__content"
+                                style="flex:1 1 auto;display:flex;flex-direction:column;gap:4px;">
+                                <h3 class="mdc-horizontal-card__title" th:text="${ticket.ticketName}"
+                                    style="font-size:1.15rem;font-weight:600;margin:0 0 4px 0;color:#1976d2;"></h3>
                                 <div class="mdc-horizontal-card__subtitle">電子票券ID: <span
                                         th:text="${ticket.sentItemId}"></span></div>
                                 <div class="mdc-horizontal-card__subtitle">商品ID: <span
@@ -50,7 +53,7 @@
                                 </div>
                                 <div class="mdc-horizontal-card__actions">
                                     <button class="mdc-button mdc-button--outlined" th:if="${ticket.itemStatus == 0}"
-                                        th:attr="onclick='showUseTicketModal(' + ${ticket.sentItemId} + ',\'' + ${ticket.ticketName} + '\',' + ${ticket.itemId} + ',' + ${ticket.memId} + ')'">使用</button>
+                                        th:attr="onclick='showUseTicketModal(' + ${ticket.sentItemId} + ',' + '\'' + ${ticket.ticketName} + '\',' + ${ticket.itemId} + ',' + ${ticket.memId} + ')'">使用</button>
                                     <span th:if="${ticket.itemStatus != 0}" style="color:#bdbdbd;">不可使用</span>
                                 </div>
                             </div>
