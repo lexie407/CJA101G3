@@ -176,6 +176,7 @@ public class MembersController {
 		// 2. 加入模型供 Thymeleaf 使用
 		model.addAttribute("membersVO", member);
 		model.addAttribute("currentPage", "account");
+		model.addAttribute("activeItem", "profile");
 
 		// 3. 回傳「會員資料檢視」的模板名稱（與檔名一致）
 		return "front-end/members/membersProfile";
@@ -256,6 +257,7 @@ public class MembersController {
 	public String showSelectPage(Model model) {
 		model.addAttribute("membersList", membersService.findAllMembers());
 		model.addAttribute("currentPage", "accounts");
+		model.addAttribute("currentPage2", "selectPage");
 		return "back-end/members/selectPage";
 	}
 
@@ -295,6 +297,7 @@ public class MembersController {
 		List<MembersVO> all = membersService.findAllMembers();
 		model.addAttribute("membersList", all);
 		model.addAttribute("currentPage", "accounts");
+		model.addAttribute("currentPage2", "listAll");
 		return "back-end/members/listAll";
 	}
 

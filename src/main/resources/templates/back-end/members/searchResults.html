@@ -13,9 +13,9 @@
 	rel="stylesheet" />
 
 <style>
-/* ==================================================================== */
-/* 以下是從「忘記密碼頁」母模板繼承的通用 Material Design 樣式，確保頁面外觀一致 */
-/* ==================================================================== */
+body {
+    font-size: 1.1rem;
+  }
 .app-container {
 	display: flex;
 	min-height: 100vh;
@@ -328,12 +328,11 @@ td[colspan="23"] {
 	<div class="app-container">
 		<div th:insert="~{/navBackTemplate :: navbar}"></div>
 		<div class="main-content">
-
-			<a th:href="@{/members/selectPage}"
-				class="material-button md-secondary-button"
-				style="align-self: flex-start; margin-bottom: 1rem;"> <i
-				class="material-icons">arrow_back</i> 回查詢主頁
-			</a>
+			<header class="secondary-nav">
+				<ul>
+					<th:block th:replace="~{subnavMembersBack :: secNavResources}"></th:block>
+				</ul>
+			</header>
 
 
 			<main class="content-area-main">
@@ -405,9 +404,6 @@ td[colspan="23"] {
 									<td><a class="edit-btn"
 										th:href="@{/members/editMembers(memId=${m.memId})}">修改</a></td>
 								</tr>
-								<tr th:if="${#lists.isEmpty(membersList)}">
-									<td colspan="23" style="text-align: center;">查無符合條件的會員。</td>
-								</tr>
 							</tbody>
 						</table>
 					</div>
@@ -429,13 +425,24 @@ td[colspan="23"] {
 	<script th:inline="javascript">
 		$(document).ready(function() {
 			$('.datatable-class').DataTable({
+				destroy : true,
 				lengthMenu : [ 5, 10 ],
 				searching : true,
-				paging : false, // 關閉 DataTables 原生分頁
-				info : false, // 關閉 DataTables 原生 info
-				dom : 'lfrt', // 只留下 length + filter + table + 排序
+				paging : true,
 				ordering : true,
-				language : { /* 你的中文設定 */}
+				scrollX : true,
+				language : {
+					emptyTable : "查無任何會員資料",
+					lengthMenu : "顯示 _MENU_ 筆結果",
+					zeroRecords : "沒有符合的結果",
+					info : "顯示第 _START_ 至 _END_ 筆結果，共 <font color='red'>_TOTAL_</font> 筆",
+					infoEmpty : "顯示第 0 至 0 筆結果，共 0 筆",
+					search : "搜尋：",
+					paginate : {
+						previous : "上一頁",
+						next : "下一頁"
+					}
+				}
 			});
 		});
 	</script>

@@ -9,6 +9,9 @@
 
 <style>
 /* Material Design 卡片樣式 */
+body {
+    font-size: 1.1rem;
+  }
 .md-card {
 	max-width: 800px;
 	margin: 40px auto;
@@ -110,9 +113,7 @@
 		<div class="main-content">
 			<header class="secondary-nav">
 				<ul>
-					<li><a th:href="@{/admins/selectPage}">查詢主頁</a></li>
-					<li><a th:href="@{/admins/listAll}">列出所有管理員</a></li>
-					<li><a th:href="@{/admins/add}" class="active">新增管理員</a></li>
+					<th:block th:replace="~{subnavMembersBack :: secNavResources}"></th:block>
 				</ul>
 			</header>
 			<main class="content-area-main">

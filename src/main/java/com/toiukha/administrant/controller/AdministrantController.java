@@ -47,6 +47,7 @@ public class AdministrantController {
 	@GetMapping("/selectPage")
 	public String showSelectPage(Model model) {
 		model.addAttribute("currentPage", "accounts");
+		model.addAttribute("currentPage2", "adminSelect");
 		return "back-end/administrant/selectPage";
 	}
 
@@ -86,7 +87,8 @@ public class AdministrantController {
 		List<AdministrantVO> admins = administrantService.getAll();
 
 		model.addAttribute("admins", admins);
-	    model.addAttribute("currentPage", "accounts"); 
+	    model.addAttribute("currentPage", "accounts");
+	    model.addAttribute("currentPage2", "adminList");
 		return "back-end/administrant/listAll";
 	}
 
@@ -96,6 +98,7 @@ public class AdministrantController {
 		model.addAttribute("form", new AdministrantDTO());
 		model.addAttribute("allFunctions", manageFunctionService.getAll());
 		model.addAttribute("currentPage", "accounts");
+		model.addAttribute("currentPage2", "adminAdd");
 		return "back-end/administrant/add";
 	}
 
@@ -114,6 +117,7 @@ public class AdministrantController {
 			model.addAttribute("errorMsgs", errorMsgs);
 			model.addAttribute("allFunctions", manageFunctionService.getAll());
 			model.addAttribute("currentPage", "accounts");
+			model.addAttribute("currentPage2", "adminAdd");
 			return "back-end/administrant/add";
 		}
 

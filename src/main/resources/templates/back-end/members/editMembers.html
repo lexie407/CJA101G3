@@ -9,6 +9,9 @@
 
 <style>
 /* Material Design 卡片樣式 */
+body {
+    font-size: 1.1rem;
+  }
 .md-card {
 	max-width: 800px;
 	margin: 40px auto;
@@ -133,7 +136,11 @@
 	<div class="app-container">
 		<div th:insert="~{/navBackTemplate :: navbar}"></div>
 		<div class="main-content">
-			
+			<header class="secondary-nav">
+				<ul>
+					<th:block th:replace="~{subnavMembersBack :: secNavResources}"></th:block>
+				</ul>
+			</header>
 			<main class="content-area-main">
 				<div class="md-card">
 					<h2 class="md-headline">編輯會員</h2>

@@ -45,6 +45,7 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 						
 						//景點模組
 					    "/spot/add", //新增景點
+					    "/api/spot/favorites",	//景點收藏api
 
 
 
@@ -172,7 +173,7 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
         		
         		//景點模組
         		"/admin/spot/",		//管理員功能
-
+        		"/admin/itinerary/",	//行程管理員功能
 
 
         		//揪團模組
@@ -190,6 +191,10 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
         		//文章模組
         		"/Articlereport/allReportList",  // 文章檢舉明細
         		"/CommentsReports/allReportList",  // 留言檢舉明細
+        		
+        		"/commentsAPI/adminDeleteComments",
+        		"/forum/admin/**", // 文章後台管理員功能
+
 
 
         		//通知模組

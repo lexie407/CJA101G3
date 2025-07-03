@@ -154,9 +154,7 @@ body {
 		<div class="main-content">
 			<header class="secondary-nav">
 				<ul>
-					<li><a th:href="@{/manageFunction/selectPage}" class="active">選擇功能</a></li>
-					<li><a th:href="@{/manageFunction/listAll}">功能列表</a></li>
-					<li><a th:href="@{/manageFunction/add}">新增功能</a></li>
+					<th:block th:replace="~{subnavMembersBack :: secNavResources}"></th:block>
 				</ul>
 			</header>
 			<main class="content-area-main">
@@ -164,7 +162,7 @@ body {
 					<div th:if="${errorMsg}" class="error-messages-container">
 						<p th:text="${errorMsg}"></p>
 					</div>
-					<h2 class="md-headline">請選擇要管理的功能</h2>
+					<h2 class="md-headline">管理功能查詢</h2>
 					<form th:action="@{/manageFunction/search}" method="get">
 						<div class="form-group">
 							<label for="manageFuncId">管理功能</label> <select id="manageFuncId"

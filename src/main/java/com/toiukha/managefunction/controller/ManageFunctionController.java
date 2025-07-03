@@ -34,6 +34,7 @@ public class ManageFunctionController {
 		// 一定要把所有功能丟給前端下拉
 		model.addAttribute("manageFunctions", manageFunctionService.getAll());
 		model.addAttribute("currentPage", "accounts");
+		model.addAttribute("currentPage2", "funcSelect");
 		return "back-end/manageFunction/selectPage";
 	}
 
@@ -46,6 +47,7 @@ public class ManageFunctionController {
 		if (manageFuncId == null) {
 			model.addAttribute("errorMsg", "請先選擇一個管理功能");
 			model.addAttribute("currentPage", "accounts");
+			model.addAttribute("currentPage2", "funcSelect");
 			return "back-end/manageFunction/selectPage";
 		}
 
@@ -61,6 +63,7 @@ public class ManageFunctionController {
 	public String listAll(Model model) {
 		model.addAttribute("manageFunctions", manageFunctionService.getAll());
 		model.addAttribute("currentPage", "accounts");
+		model.addAttribute("currentPage2", "funcList");
 		return "back-end/manageFunction/listAll";
 	}
 
@@ -69,6 +72,7 @@ public class ManageFunctionController {
 	public String showAddForm(Model model) {
 		model.addAttribute("manageFunctionVO", new ManageFunctionVO());
 		model.addAttribute("currentPage", "accounts");
+		model.addAttribute("currentPage2", "funcAdd");
 		return "back-end/manageFunction/add";
 	}
 
@@ -85,6 +89,7 @@ public class ManageFunctionController {
 			}
 			model.addAttribute("errorMsgs", errorMsgs);
 			model.addAttribute("currentPage", "accounts");
+			model.addAttribute("currentPage2", "funcAdd");
 			return "back-end/manageFunction/add";
 		}
 
