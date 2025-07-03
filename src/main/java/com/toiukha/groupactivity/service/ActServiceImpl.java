@@ -27,6 +27,12 @@ public class ActServiceImpl implements ActService {
     
     @Autowired
     private com.toiukha.participant.model.PartRepository partRepo;
+    
+    @Autowired
+    private com.toiukha.participant.model.PartService partSvc;
+    
+    @Autowired
+    private com.toiukha.notification.model.NotificationService notificationService;
 
 
 
@@ -247,6 +253,52 @@ public class ActServiceImpl implements ActService {
         }
         act.setRecruitStatus(status);
         actRepo.save(act);
+
+        // 當狀態變更為成團、取消、凍結時，發送通知給團員和團主
+        if (status == ActStatus.FULL.getValue() || 
+            status == ActStatus.CANCELLED.getValue() || 
+            status == ActStatus.FROZEN.getValue()) {
+            
+            String statusMessage = "";
+            switch (status) {
+                case 1: // FULL
+                    statusMessage = "已成團";
+                    break;
+                case 3: // CANCELLED
+                    statusMessage = "已取消";
+                    break;
+                case 4: // FROZEN
+                    statusMessage = "已凍結";
+                    break;
+                default:
+                    statusMessage = "狀態已變更";
+            }
+            
+            // 通知團員
+            List<Integer> memberIds = partSvc.getParticipants(actId);
+            for (Integer memId : memberIds) {
+                com.toiukha.notification.model.NotificationVO noti = 
+                    new com.toiukha.notification.model.NotificationVO(
+                        "活動狀態通知",
+                        "活動「" + act.getActName() + "」" + statusMessage,
+                        memId,
+                        new java.sql.Timestamp(System.currentTimeMillis())
+                    );
+                notificationService.addOneNoti(noti);
+            }
+            
+            // 通知團主（如果團主不在團員列表中）
+            if (!memberIds.contains(act.getHostId())) {
+                com.toiukha.notification.model.NotificationVO hostNoti = 
+                    new com.toiukha.notification.model.NotificationVO(
+                        "活動狀態通知",
+                        "您的活動「" + act.getActName() + "」" + statusMessage,
+                        act.getHostId(),
+                        new java.sql.Timestamp(System.currentTimeMillis())
+                    );
+                notificationService.addOneNoti(hostNoti);
+            }
+        }
     }
 
     //檢查活動狀態（招募中）

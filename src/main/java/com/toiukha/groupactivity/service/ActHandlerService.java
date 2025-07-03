@@ -121,9 +121,13 @@ public class ActHandlerService {
         
         if (newCount >= act.getMaxCap()) {
             act.setRecruitStatus(ActStatus.FULL.getValue());
-        } else if (act.getRecruitStatus() == ActStatus.FULL.getValue() && newCount < act.getMaxCap()) {
+        } else if (act.getRecruitStatus() == ActStatus.FULL.getValue() && 
+                   newCount < act.getMaxCap() && 
+                   LocalDateTime.now().isBefore(act.getActStart())) {
+            // 只有在活動開始前才重新開放招募
             act.setRecruitStatus(ActStatus.OPEN.getValue());
         }
+        // 如果活動已經開始，即使人數不足也不會重新開放招募
         
         actRepo.save(act);
     }

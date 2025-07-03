@@ -40,6 +40,9 @@ public class ActApiController {
     
     @Autowired
     private AuthService authService;
+    
+    @Autowired
+    private com.toiukha.groupactivity.service.ActStatusScheduler actStatusScheduler;
 
     // 新增活動
     @PostMapping("/add")
@@ -613,6 +616,40 @@ public class ActApiController {
                 "error", e.getMessage(),
                 "message", "預設圖片載入失敗"
             );
+        }
+    }
+    
+    /**
+     * 測試端點 - 活動狀態排程器
+     * 用途：手動觸發活動狀態檢查（僅供開發測試用）
+     */
+    @PostMapping("/test-scheduler")
+    public ResponseEntity<?> testScheduler(HttpServletRequest request) {
+        try {
+            // 權限驗證：僅限管理員或開發測試
+            AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
+            
+            if (!memberInfo.isLoggedIn()) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "error", "請先登入"
+                ));
+            }
+            
+            // 手動觸發排程器檢查
+            actStatusScheduler.checkActStatus();
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "活動狀態檢查已執行",
+                "timestamp", LocalDateTime.now().toString()
+            ));
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", "執行排程器時發生錯誤: " + e.getMessage()
+            ));
         }
     }
 
