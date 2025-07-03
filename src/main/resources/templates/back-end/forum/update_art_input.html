@@ -6,8 +6,8 @@
     <title>文章資料修改 | 後台 | 島遊kha</title>
     <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
     <!--後台CSS-->
-    <link rel="stylesheet" th:href="@{/css/light.css}">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/back_light.css}">
+    <link rel="stylesheet" th:href="@{/css/back_style.css}">
     <link th:href="@{/vendors/quillEditor/quill.snow.css}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
@@ -177,9 +177,8 @@
     <div th:insert="~{/navBackTemplate :: navbar}"></div>
 
     <div class="main-content">
-        <!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
-        <div th:insert="~{back-end/forum/subnavForum :: subnav('all')}"></div>
-
+        <!--頂部次導覽-->
+        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>
         <!--main 以下為頁面主要內容 -->
         <main class="content-area-main">
             <div style="margin-bottom: 1rem;">
