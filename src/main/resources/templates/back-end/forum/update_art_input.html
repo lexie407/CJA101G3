@@ -349,12 +349,24 @@
     });
 
     function deleteComment(commId) {
-        if (!confirm('確定要刪除此留言？')) return;
-        fetch(`/commentsAPI/deleteComments`, {
+        // if (!confirm('確定要刪除此留言？')) return;
+        let formData = new FormData();
+        formData.append('commId', commId);
+        console.log(formData);
+        fetch(`/commentsAPI/adminDeleteComments`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'commId=' + encodeURIComponent(commId)
-        }).then(() => location.reload());
+            body: formData
+        }).then(response => {
+            if (!response.ok) {
+                // 開發除錯用：輸出詳細錯誤
+                console.error(`Fetch error: ${response.status} ${response.statusText}`);
+                throw new Error("刪除失敗");
+            }
+            console.log("OK" + `${response.status} ${response.statusText}`);
+            location.reload(); // 刪除成功後重新載入頁面
+        })
+            .catch(err => console.error('刪除失敗', err));
+
     }
 
 
