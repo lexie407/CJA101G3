@@ -14,6 +14,7 @@
             gap: 20px;
             justify-content: center;
         }
+
         .card {
             width: 200px;
             background-color: #f9f9f9;
@@ -25,14 +26,17 @@
             font-size: 12px;
             cursor: pointer;
         }
+
         .card img {
             width: 100%;
             height: auto;
             border-radius: 8px;
         }
+
         .card:hover {
             transform: scale(1.05);
         }
+
         .add-to-cart-btn {
             background-color: #1976d2 !important;
             color: white !important;
@@ -45,9 +49,11 @@
             transition: background 0.2s;
             height: 32px;
         }
+
         .add-to-cart-btn:hover {
             background-color: #1565c0 !important;
         }
+
         .add-to-favorite-btn {
             height: 32px;
             width: 32px;
@@ -61,32 +67,39 @@
             align-items: center;
             justify-content: center;
         }
+
         /* Modal 樣式 */
         .modal-backdrop {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
             z-index: 2000;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+
         .modal-content {
             background: #fff;
             border-radius: 12px;
             padding: 24px 32px 18px 32px;
             max-width: 400px;
             width: 90vw;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
             position: relative;
             text-align: center;
         }
+
         .modal-content img {
             width: 80%;
             max-width: 300px;
             border-radius: 8px;
             margin-bottom: 16px;
         }
+
         .modal-close {
             position: absolute;
             top: 12px;
@@ -97,13 +110,16 @@
             background: none;
             border: none;
         }
+
         .modal-content h4 {
             margin: 0 0 8px 0;
             color: #1976d2;
         }
+
         .modal-content p {
             margin: 8px 0;
         }
+
         #cart-fab {
             position: fixed;
             right: 32px;
@@ -123,10 +139,12 @@
             z-index: 1000;
             transition: background 0.2s, box-shadow 0.2s;
         }
+
         #cart-fab:hover {
             background: #1565c0;
             box-shadow: 0 8px 24px rgba(25, 118, 210, 0.35);
         }
+
         #cart-fab .material-icons {
             font-size: 32px;
         }
@@ -147,8 +165,8 @@
                     <th:block th:each="itemVO : ${itemListData_front}">
                         <div class="card"
                             th:attr="data-itemid=${itemVO.itemId},data-itemname=${itemVO.itemName},data-iteminfo=${itemVO.itemInfo},data-itemprice=${itemVO.itemPrice},data-discprice=${itemVO.discPrice},data-statime=${itemVO.staTime},data-endtime=${itemVO.endTime},data-imgsrc=@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}">
+                            <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
                             <h4 th:text="${itemVO.itemName}"></h4>
-                            <p>商品說明: <span th:text="${itemVO.itemInfo}"></span></p>
                             <p>
                                 <span
                                     th:if="${itemVO.discPrice != null} and ${itemVO.staTime != null} and ${itemVO.endTime != null} and ${#temporals.createNow().isAfter(itemVO.staTime)} and ${#temporals.createNow().isBefore(itemVO.endTime)}">
@@ -162,7 +180,6 @@
                                     商品價格: <span th:text="${itemVO.itemPrice}"></span>
                                 </span>
                             </p>
-                            <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
                             <form method="post" th:action="@{/item/add_to_shopCart}" class="shopping-cart-form"
                                 style="display: flex; align-items: center; justify-content: center; gap: 6px;">
                                 <input type="hidden" name="itemId" th:value="${itemVO.itemId}">
@@ -199,8 +216,8 @@
                                     if (response === 'success') {
                                         alert('已加入收藏！');
                                     } else {
-                                        alert('加入收藏失敗：' + response);
-                                    }
+                                        alert(response + ' !');
+                                    } 
                                 },
                                 error: function (xhr, status, error) {
                                     alert('加入收藏失敗，請稍後再試！\n錯誤信息：' + error);
@@ -240,11 +257,26 @@
                         });
 
                         function displayCartModal(cartList, memberCoupons, memId) {
-                            var html = '<div id="cart-modal" style="position:fixed;top:10%;left:50%;transform:translateX(-50%);background:#fff;padding:24px 32px;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.18);z-index:2000;max-height:80vh;overflow-y:auto;">';
-                            html += '<h3 style="color:#1976d2;">購物車內容</h3>';
+                            // 先加霧化背景
+                            if (!document.getElementById('cart-blur-bg')) {
+                                var blurBg = document.createElement('div');
+                                blurBg.id = 'cart-blur-bg';
+                                blurBg.style.position = 'fixed';
+                                blurBg.style.top = '0';
+                                blurBg.style.left = '0';
+                                blurBg.style.width = '100vw';
+                                blurBg.style.height = '100vh';
+                                blurBg.style.background = 'rgba(0,0,0,0.18)';
+                                blurBg.style.backdropFilter = 'blur(6px)';
+                                blurBg.style.zIndex = '1999';
+                                blurBg.style.transition = 'opacity 0.2s';
+                                document.body.appendChild(blurBg);
+                            }
+                            var html = '<div id="cart-modal" style="position:fixed;top:12%;left:50%;transform:translateX(-50%);background:#fff;padding:28px 24px;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,0.18);z-index:2000;max-height:80vh;overflow-y:auto;min-width:340px;max-width:420px;width:90vw;font-size:15px;">';
+                            html += '<h3 style="color:#1976d2;font-size:1.35rem;margin-bottom:12px;">購物車內容</h3>';
 
                             if (cartList.length === 0) {
-                                html += '<p>購物車是空的</p>';
+                                html += '<p style="font-size:1rem;">購物車是空的</p>';
                             } else {
                                 // 計算購物車中商品的商店ID
                                 var storeIds = new Set();
@@ -259,10 +291,10 @@
                                 cartList.forEach(function (item) {
                                     var price = item.price;
                                     html += '<tr data-itemid="' + item.itemId + '">';
-                                    html += '<td>' + item.itemName + '</td>';
-                                    html += '<td>' + price + '</td>';
-                                    html += '<td><input type="number" class="cart-qty-input" value="' + item.quantity + '" min="1" style="width:48px;text-align:center;border-radius:4px;border:1px solid #ccc;"></td>';
-                                    html += '<td><button class="remove-cart-btn" style="color:#fff;background:#d32f2f;border:none;border-radius:4px;padding:2px 10px;">移除</button></td>';
+                                    html += '<td style="padding:6px 0;">' + item.itemName + '</td>';
+                                    html += '<td style="padding:6px 0;">' + price + '</td>';
+                                    html += '<td style="padding:6px 0;"><input type="number" class="cart-qty-input" value="' + item.quantity + '" min="1" style="width:48px;height:28px;font-size:1rem;text-align:center;border-radius:4px;border:1px solid #ccc;"/></td>';
+                                    html += '<td><button class="remove-cart-btn" style="color:#fff;background:#d32f2f;border:none;border-radius:4px;padding:2px 10px;font-size:0.95rem;">移除</button></td>';
                                     html += '</tr>';
                                     total += price * item.quantity;
                                 });
@@ -303,7 +335,7 @@
                                 }
 
                                 // 總金額顯示區域
-                                html += '<div style="text-align:right;font-size:16px;margin:10px 0;color:#d32f2f;">';
+                                html += '<div style="text-align:right;font-size:1.08rem;margin:10px 0;color:#d32f2f;">';
                                 html += '原價：<span id="cart-original-total">' + total + '</span> 元<br>';
                                 html += '優惠券折抵：<span id="coupon-discount">0</span> 元<br>';
                                 html += '總金額：<span id="cart-total-amount">' + total + '</span> 元';
@@ -318,16 +350,20 @@
                                     html += '<input type="hidden" name="items[' + idx + '].price" value="' + item.price + '"/>';
                                     html += '<input type="hidden" name="items[' + idx + '].quantity" value="' + item.quantity + '"/>';
                                 });
-                                html += '<button type="submit" style="margin-top:18px;padding:6px 18px;border-radius:6px;background:#43a047;color:#fff;border:none;">結帳</button>';
+                                html += '<button type="submit" style="margin-top:16px;padding:7px 20px;border-radius:6px;background:#43a047;color:#fff;border:none;font-size:1rem;">結帳</button>';
                                 html += '</form>';
                             }
 
-                            html += '<button onclick="$(\'#cart-modal\').remove();" style="margin-top:18px;padding:6px 18px;border-radius:6px;background:#1976d2;color:#fff;border:none;">關閉</button>';
+                            html += '<button id="cart-modal-close-btn" style="margin-top:16px;padding:7px 20px;border-radius:6px;background:#1976d2;color:#fff;border:none;font-size:1rem;">關閉</button>';
                             html += '</div>';
                             $('#cart-modal').remove();
                             $('body').append(html);
-
-                            // 綁定購物車內的各種事件
+                            // 關閉時移除霧化背景
+                            $('#cart-modal-close-btn').on('click', function () {
+                                $('#cart-modal').remove();
+                                $('#cart-blur-bg').remove();
+                            });
+                            // 補上購物車事件綁定
                             bindCartEvents(memId);
                         }
                         /**
@@ -597,11 +633,11 @@
                                         <p style="color:#666;">${itemInfo ? itemInfo : ''}</p>
                                         <p>
                                             ${showDisc ?
-                                                `<span style="text-decoration: line-through; color: #888;">原價: ${itemPrice}</span>
+                                    `<span style="text-decoration: line-through; color: #888;">原價: ${itemPrice}</span>
                                                 <span style="color: #d32f2f; font-weight: bold; margin-left: 6px;">促銷價: ${discPrice}</span>`
-                                                :
-                                                `商品價格: ${itemPrice}`
-                                            }
+                                    :
+                                    `商品價格: ${itemPrice}`
+                                }
                                         </p>
                                         <form method="post" action="/item/add_to_shopCart" class="shopping-cart-form modal-cart-form"
                                             style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px;">
@@ -634,10 +670,11 @@
             </main>
         </div>
     </div>
- 
+
     <!-- 右下角購物車浮動按鈕 -->
     <button id="cart-fab" title="查看購物車">
         <span class="material-icons">shopping_cart</span>
     </button>
 </body>
+
 </html>

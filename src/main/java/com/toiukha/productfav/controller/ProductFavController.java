@@ -98,8 +98,10 @@ public class ProductFavController {
             
             // 檢查是否已經收藏過
             if (productFavService.isFavorite(memIdInt, itemIdInt)) {
-                return "already_exists";
+            	productFavService.removeFavorite(memIdInt, itemIdInt);
+                return "取消收藏";
             }
+            
             
             // 新增收藏
             productFavService.addFavorite(memIdInt, itemIdInt);

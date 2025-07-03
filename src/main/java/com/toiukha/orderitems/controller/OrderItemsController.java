@@ -208,18 +208,12 @@ public class OrderItemsController {
 		sb.append("<script>document.getElementById('ecpay').submit();</script>");
 
 		// 4. 將這段 HTML 返回給前端，瀏覽器收到後會自動執行 script 並跳轉到 ECPay 付款頁面
-		// 購物完成後，刪除購物車內容
-		try {
-			String cartKey = "cart:" + memId;
-			redisTemplate.delete(cartKey);
-		} catch (Exception e) {
-			System.out.println("刪除購物車失敗: " + e.getMessage());
-		}
+		
 		return sb.toString();
 	}
 	 @PostMapping("/notify")
 	    @ResponseBody
-	    public String ecpayNotify(@RequestParam Map<String, String> params) {
+	    public String ecpayNotify(@RequestParam Map<String, String> params,HttpSession session) {
 	        try {
 	            System.out.println("收到綠界回調通知: " + params);
 	            
@@ -345,6 +339,8 @@ public class OrderItemsController {
 	                // 可以更新訂單狀態為付款失敗
 	            }
 	            
+	          
+	            
 	            // 4. 回傳成功訊息給綠界 (必須回傳 "1|OK")
 	            return "1|OK";
 	            
@@ -356,6 +352,8 @@ public class OrderItemsController {
 
 	@PostMapping("/checkoutResult")
 	public String checkoutResult(@RequestParam(value = "orderId", required = false) Integer orderId, HttpSession session, Model model) {
+		
+		
 	    if (orderId == null) {
 	        Object lastOrderId = session.getAttribute("lastOrderId");
 	        if (lastOrderId != null) {
@@ -396,8 +394,20 @@ public class OrderItemsController {
 	        model.addAttribute("couponDiscount", couponDiscount);
 	        model.addAttribute("finalAmount", finalAmount);
 	    }
+	 // 購物完成後，刪除購物車內容
+		  
+        int memberId = order.getMemId();
+        session.setAttribute("memId", memberId);
+        try {
+        	String cartKey = "cart:" + memberId;
+        	redisTemplate.delete(cartKey);
+        } catch (Exception e) {
+        	System.out.println("刪除購物車失敗: " + e.getMessage());
+        }
+        
 	    model.addAttribute("order", order);
 	    model.addAttribute("currentPage", "store");
+	    
 	    return "front-end/order/checkoutResult";
 	}
 

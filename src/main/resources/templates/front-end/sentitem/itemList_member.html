@@ -303,24 +303,43 @@
                         })
                             .then(res => res.json())
                             .then(data => {
-                                if (data.success) {
-                                    // 顯示成功訊息與票券資訊
-                                    document.getElementById('modalTitle').textContent = '票券已成功設為已使用';
-                                    document.getElementById('modalSuccessMsg').textContent = '使用成功！';
-                                    document.getElementById('modalSuccessMsg').style.display = '';
-                                    document.getElementById('modalTicketInfo').innerHTML =
-                                        `<div>票券名稱：<b>${currentTicketInfo.ticketName}</b></div>` +
-                                        `<div>電子票券ID：<b>${currentTicketInfo.sentItemId}</b></div>` +
-                                        `<div>商品ID：${currentTicketInfo.itemId}</div>` +
-                                        `<div>會員ID：${currentTicketInfo.memId}</div>`;
-                                    document.getElementById('modalConfirmBtn').style.display = 'none';
-                                    document.getElementById('modalCancelBtn').style.display = 'none';
-                                    document.getElementById('modalCloseSuccessBtn').style.display = '';
-                                } else {
+                            	if (data.success) {
+                            	    // ✅ 更新 Modal 顯示
+                            	    document.getElementById('modalTitle').textContent = '票券已成功設為已使用';
+                            	    document.getElementById('modalSuccessMsg').textContent = '使用成功！';
+                            	    document.getElementById('modalSuccessMsg').style.display = '';
+                            	    document.getElementById('modalTicketInfo').innerHTML =
+                            	        `<div>票券名稱：<b>${currentTicketInfo.ticketName}</b></div>` +
+                            	        `<div>電子票券ID：<b>${currentTicketInfo.sentItemId}</b></div>` +
+                            	        `<div>商品ID：${currentTicketInfo.itemId}</div>` +
+                            	        `<div>會員ID：${currentTicketInfo.memId}</div>`;
+                            	    document.getElementById('modalConfirmBtn').style.display = 'none';
+                            	    document.getElementById('modalCancelBtn').style.display = 'none';
+                            	    document.getElementById('modalCloseSuccessBtn').style.display = '';
+
+                            	    // ✅ 更新主畫面上的卡片狀態
+                            	    const card = document.querySelector(`.mdc-horizontal-card[data-id="${currentTicketInfo.sentItemId}"]`);
+                            	    if (card) {
+                            	        // 修改狀態文字
+                            	        const statusSpans = card.querySelectorAll('.mdc-horizontal-card__subtitle span');
+                            	        statusSpans.forEach(span => {
+                            	            if (span.textContent.trim() === '未使用') {
+                            	                span.textContent = '已使用';
+                            	                span.style.color = '#1976d2';
+                            	            }
+                            	        });
+
+                            	        // 隱藏「使用」按鈕，改成顯示「已使用」
+                            	        const actions = card.querySelector('.mdc-horizontal-card__actions');
+                            	        if (actions) {
+                            	            actions.innerHTML = '<span style="color:#1976d2;">已使用</span>';
+                            	        }
+                            	    }
+                            	} else {
                                     alert('操作失敗：' + (data.message || '未知錯誤'));
                                 }
                             })
-                            .catch(() => alert('連線失敗'));
+
                     };
                 </script>
             </main>

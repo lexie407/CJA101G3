@@ -73,6 +73,32 @@
             </main>
         </div>
     </div>
+
+    <!-- 全螢幕載入遮罩 -->
+    <div id="page-loading-mask" style="
+        position:fixed;z-index:99999;left:0;top:0;width:100vw;height:100vh;
+        background:rgba(255,255,255,0.92);display:flex;align-items:center;justify-content:center;
+        transition:opacity 0.3s;
+    ">
+        <div style="text-align:center;">
+            <div class="loader" style="margin-bottom:18px;">
+                <span class="material-icons" style="font-size:3rem;color:#1976d2;animation:spin 1.2s linear infinite;">autorenew</span>
+            </div>
+            <div style="color:#1976d2;font-size:1.15rem;font-weight:600;">頁面載入中，請稍候...</div>
+        </div>
+    </div>
+    <style>
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+    <script>
+    window.onload = function() {
+        var mask = document.getElementById('page-loading-mask');
+        if(mask){
+            mask.style.opacity = '0';
+            setTimeout(function(){ mask.remove(); }, 350);
+        }
+    };
+    </script>
 </body>
 
 </html>
