@@ -8,67 +8,10 @@
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <!-- GroupActivity 模組 CSS -->
-    <link
-      rel="stylesheet"
-      th:href="@{/css/groupactivity/styleAct_common.css}"
-    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
 
-    <style>
-      /* 日期區間樣式 */
-      .act-date-range-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
 
-      .act-date-input {
-        flex: 1;
-        min-width: 140px;
-      }
-
-      .act-date-separator {
-        color: var(--md-sys-color-on-surface-variant);
-        font-weight: 500;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-
-      /* 修正搜尋表單的響應式佈局 */
-      .act-search-form {
-        display: grid;
-        grid-template-columns: 1fr 2fr 1fr 1fr;
-        gap: 16px;
-        align-items: end;
-      }
-
-      @media (max-width: 1024px) {
-        .act-search-form {
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .act-search-form {
-          grid-template-columns: 1fr;
-          gap: 16px;
-        }
-
-        .act-date-range-container {
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .act-date-separator {
-          display: none;
-        }
-
-        .act-date-input {
-          min-width: unset;
-        }
-      }
-    </style>
   </head>
   <body class="light">
     <div class="app-container">
@@ -77,8 +20,15 @@
       <div class="main-content act-page">
         <div th:insert="~{/subnavActFront :: subnav('myJoin')}"></div>
 
+        <!-- Hero Banner 區塊 -->
+        <div class="hero-banner my-join-hero">
+          <div class="hero-banner-content">
+            <h1>我跟的團</h1>
+            <p>查看您參加的活動，與團員互動，分享精彩回憶</p>
+          </div>
+        </div>
+
         <main class="content-area-main act-area listMyJoin">
-          <h3 class="act-front-title">我參加的活動...</h3>
 
           <!-- 篩選區域 -->
           <div class="act-search-container">

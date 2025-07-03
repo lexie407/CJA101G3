@@ -160,4 +160,48 @@ public class GroupHomeController {
             return ResponseEntity.status(500).body(Map.of("error", "伺服器錯誤"));
         }
     }
+    
+    /**
+     * 分帳紀錄頁面
+     */
+    @GetMapping("/{actId}/expense")
+    public String expenseRecord(@PathVariable Integer actId, Model model, HttpServletRequest request) {
+        ActVO act = actService.getOneAct(actId);
+
+        if (act == null) {
+            return "redirect:/act/member/search";
+        }
+
+        // 檢查活動是否為公開活動（僅非團主且非參加者時禁止進入）
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
+        if (!memberInfo.isLoggedIn()) {
+            return "redirect:/members/login";
+        }
+        boolean isHost = act.getHostId().equals(memberInfo.getMemId());
+        boolean isParticipant = partService.getParticipants(actId).contains(memberInfo.getMemId());
+        if (act.getIsPublic() != 1 && !isHost && !isParticipant) {
+            return "redirect:/act/member/search";
+        }
+
+        // 查詢所有參加者詳細資料（含狀態與姓名）
+        List<PartDTO> participantList = partService.getParticipantsAsDTO(actId);
+        List<PartDTO> filteredList;
+        if (isHost) {
+            // 團主：顯示所有未退出成員
+            filteredList = participantList.stream()
+                    .filter(dto -> dto.getJoinStatus() != null && dto.getJoinStatus() != 3)
+                    .collect(java.util.stream.Collectors.toList());
+        } else {
+            // 團員：只顯示已參加成員
+            filteredList = participantList.stream()
+                    .filter(dto -> dto.getJoinStatus() != null && dto.getJoinStatus() == 1)
+                    .collect(java.util.stream.Collectors.toList());
+        }
+        
+        model.addAttribute("memberList", filteredList);
+        model.addAttribute("act", act);
+        model.addAttribute("isHost", isHost);
+        
+        return "front-end/groupactivity/expenseRecord";
+    }
 } 

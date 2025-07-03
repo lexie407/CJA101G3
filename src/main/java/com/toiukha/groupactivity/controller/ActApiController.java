@@ -22,10 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // 提供前端 AJAX 呼叫(送出表單、測試用api)
 @RestController
@@ -289,25 +286,60 @@ public class ActApiController {
     //根據標籤搜尋活動
     @GetMapping("/searchByTags")
     public PageResDTO<ActCardDTO> searchByTags(
-            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "type", required = false) List<String> types,
             @RequestParam(value = "city", required = false) String city,
             @PageableDefault(size = 9, sort = {"actStart"}, direction = Sort.Direction.DESC) Pageable pageable) {
 
-        ActTag typeTag = null;
-        ActTag cityTag = null;
+        List<ActTag> typeTags = new ArrayList<>();
+        List<ActTag> cityTags = new ArrayList<>();
 
         try {
-            if (type != null && !type.isEmpty()) {
-                typeTag = ActTag.valueOf(type);
+            // 處理多個類型標籤
+            if (types != null && !types.isEmpty()) {
+                for (String type : types) {
+                    if (type != null && !type.isEmpty()) {
+                        typeTags.add(ActTag.valueOf(type));
+                    }
+                }
             }
+            // 處理五大區對應多個縣市
             if (city != null && !city.isEmpty()) {
-                cityTag = ActTag.valueOf(city);
+                switch (city) {
+                    case "NORTH":
+                        cityTags.addAll(Arrays.asList(
+                            ActTag.TAIPEI, ActTag.NEW_TAIPEI, ActTag.KEELUNG, ActTag.TAOYUAN, ActTag.HSINCHU, ActTag.YILAN
+                        ));
+                        break;
+                    case "CENTRAL":
+                        cityTags.addAll(Arrays.asList(
+                            ActTag.TAICHUNG, ActTag.MIAOLI, ActTag.CHANGHUA, ActTag.NANTOU, ActTag.YUNLIN
+                        ));
+                        break;
+                    case "SOUTH":
+                        cityTags.addAll(Arrays.asList(
+                            ActTag.TAINAN, ActTag.KAOHSIUNG, ActTag.CHIAYI, ActTag.PINGTUNG
+                        ));
+                        break;
+                    case "EAST":
+                        cityTags.addAll(Arrays.asList(
+                            ActTag.HUALIEN, ActTag.TAITUNG
+                        ));
+                        break;
+                    case "ISLANDS":
+                        cityTags.addAll(Arrays.asList(
+                            ActTag.ISLANDS
+                        ));
+                        break;
+                    default:
+                        // 若傳入單一縣市
+                        cityTags.add(ActTag.valueOf(city));
+                }
             }
         } catch (IllegalArgumentException e) {
             // 無效的標籤值，使用預設搜尋
         }
 
-        Page<ActCardDTO> page = actSvc.searchByTags(typeTag, cityTag, pageable);
+        Page<ActCardDTO> page = actSvc.searchByTags(typeTags, cityTags, pageable);
         return PageResDTO.of(page);
     }
 
@@ -649,6 +681,86 @@ public class ActApiController {
             return ResponseEntity.status(500).body(Map.of(
                 "success", false,
                 "error", "執行排程器時發生錯誤: " + e.getMessage()
+            ));
+        }
+    }
+    
+    /**
+     * 批量注入活動標籤測試端點
+     * 一次性為現有的 10 個活動注入標籤資料
+     */
+    @PostMapping("/inject-tags")
+    public ResponseEntity<?> injectTags(HttpServletRequest request) {
+        try {
+            // 權限驗證：僅限管理員或開發測試
+            AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
+            
+            if (!memberInfo.isLoggedIn()) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "error", "請先登入"
+                ));
+            }
+            
+            // 預設的活動標籤資料 (actId -> [typeTag, cityTag])
+            Map<Integer, String[]> actTags = new HashMap<>();
+            actTags.put(1, new String[]{"ECOLOGY", "NANTOU"});     // 生態, 南投
+            actTags.put(2, new String[]{"ARTS", "TAICHUNG"});      // 藝文, 台中
+            actTags.put(3, new String[]{"ECOLOGY", "ISLANDS"});    // 生態, 離島
+            actTags.put(4, new String[]{"FOOD", "TAICHUNG"});      // 美食, 台中
+            actTags.put(5, new String[]{"SPORTS", "TAICHUNG"});    // 運動, 台中
+            actTags.put(6, new String[]{"FAMILY", "TAINAN"});      // 親子, 台南
+            actTags.put(7, new String[]{"FOOD", "TAINAN"});        // 美食, 台南
+            actTags.put(8, new String[]{"ECOLOGY", "ISLANDS"});    // 生態, 離島
+            actTags.put(9, new String[]{"ECOLOGY", "ISLANDS"});    // 生態, 離島
+            actTags.put(10, new String[]{"OUTDOOR", "ISLANDS"});   // 戶外, 離島
+            
+            // 使用 ActService 批量寫入標籤
+            int successCount = 0;
+            int errorCount = 0;
+            
+            for (Map.Entry<Integer, String[]> entry : actTags.entrySet()) {
+                try {
+                    Integer actId = entry.getKey();
+                    String[] tagNames = entry.getValue();
+                    
+                    // 檢查活動是否存在
+                    ActVO act = actSvc.getOneAct(actId);
+                    if (act == null) {
+                        System.out.println("活動不存在，ID: " + actId);
+                        errorCount++;
+                        continue;
+                    }
+                    
+                    // 轉換為 ActTag 枚舉
+                    ActTag typeTag = ActTag.valueOf(tagNames[0]);
+                    ActTag cityTag = ActTag.valueOf(tagNames[1]);
+                    
+                    // 寫入標籤到 Redis
+                    actSvc.saveActTags(actId, typeTag, cityTag);
+                    System.out.println("活動 " + actId + " 標籤寫入成功: " + typeTag.getDisplayName() + ", " + cityTag.getDisplayName());
+                    successCount++;
+                    
+                } catch (Exception e) {
+                    System.err.println("活動 " + entry.getKey() + " 標籤寫入失敗: " + e.getMessage());
+                    errorCount++;
+                }
+            }
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "標籤注入完成",
+                "successCount", successCount,
+                "errorCount", errorCount,
+                "totalCount", actTags.size()
+            ));
+            
+        } catch (Exception e) {
+            System.err.println("批量注入標籤失敗: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", "批量注入標籤失敗: " + e.getMessage()
             ));
         }
     }

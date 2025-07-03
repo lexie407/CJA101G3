@@ -8,10 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <!-- GroupActivity 模組 CSS -->
-    <link
-      rel="stylesheet"
-      th:href="@{/css/groupactivity/styleAct_common.css}"
-    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
   </head>
   <body class="light">
@@ -21,8 +18,15 @@
       <div class="main-content act-page">
         <div th:insert="~{/subnavActFront :: subnav('my')}"></div>
 
+        <!-- Hero Banner 區塊 -->
+        <div class="hero-banner my-act-hero">
+          <div class="hero-banner-content">
+            <h1>我揪的團</h1>
+            <p>管理您建立的活動，查看報名狀況，與團員保持聯繫</p>
+          </div>
+        </div>
+
         <main class="content-area-main act-area listMyAct">
-          <h3 class="act-front-title">我揪的團</h3>
 
           <!-- 篩選區域 -->
           <div class="act-search-container">
