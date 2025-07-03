@@ -15,9 +15,8 @@ import java.nio.file.Paths;
  */
 @Service
 public class DefaultImageService {
-    //改成全組通用的位置
-    private static final String DEFAULT_IMAGE_PATH = "uploads/common/default.png";
-//    private static final String DEFAULT_IMAGE_PATH = "src/main/resources/static/act/default.png"; //目前是錯誤
+
+    private static final String DEFAULT_IMAGE_PATH = "static/images/act/default.png";
     private byte[] defaultImageBytes;
     
     /**
