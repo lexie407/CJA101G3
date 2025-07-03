@@ -1,52 +1,49 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <!-- Material Icons 字體 -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/subnav.css}" />
-  </head>
-  <body>
-    <div th:fragment="subnav(activeItem)">
-      <header class="secondary-nav">
-        <ul>
-          <li>
-            <a th:href="@{/members/view}"
-               th:classappend="${activeItem=='profile'}? 'active' : ''">
-              <span class="material-icons">person</span> 會員資料
-            </a>
-          </li>
-          <li>
-            <a th:href="@{/members/coupons}"
-               th:classappend="${activeItem=='coupons'}? 'active' : ''">
-              <span class="material-icons">redeem</span> 優惠券管理
-            </a>
-          </li>
-          <li>
-            <a th:href="@{/members/points-record}"
-               th:classappend="${activeItem=='points'}? 'active' : ''">
-              <span class="material-icons">history</span> 點數管理
-            </a>
-          </li>
-          <li>
-            <a th:href="@{/members/favorites}"
-               th:classappend="${activeItem=='favorites'}? 'active' : ''">
-              <span class="material-icons">favorite</span> 我的收藏
-            </a>
-          </li>
-          <li>
-            <a th:href="@{/members/orders}"
-               th:classappend="${activeItem=='orders'}? 'active' : ''">
-              <span class="material-icons">receipt_long</span> 我的訂單
-            </a>
-          </li>
-          <li>
-            <a th:href="@{/members/tickets}"
-               th:classappend="${activeItem=='tickets'}? 'active' : ''">
-              <span class="material-icons">confirmation_number</span> 票券夾
-            </a>
-          </li>
-        </ul>
-      </header>
-    </div>
-  </body>
+<head>
+<!-- Material Icons 字體 -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	rel="stylesheet">
+
+</head>
+<body>
+	<div th:fragment="subnav(activeItem)">
+		<header class="secondary-nav">
+			<ul>
+				<li><a th:href="@{/members/view}"
+					th:classappend="${activeItem=='profile'}? 'active' : ''"> <span
+						class="material-icons">person</span> 會員資料
+				</a></li>
+				<li><a th:href="@{/members/coupons}"
+					th:classappend="${activeItem=='coupons'}? 'active' : ''"> <span
+						class="material-icons">redeem</span> 優惠券管理
+				</a></li>
+				<li><a th:href="@{/members/report-status}"
+					th:classappend="${activeItem=='reports'}? 'active' : ''"> <span
+						class="material-icons">flag</span> 檢舉進度
+				</a></li>
+				<li><a th:href="@{/members/favorites}"
+					th:classappend="${activeItem=='favorites'}? 'active' : ''"> <span
+						class="material-icons">favorite</span> 我的收藏
+				</a></li>
+				<li><a th:href="@{/members/orders}"
+					th:classappend="${activeItem=='orders'}? 'active' : ''"> <span
+						class="material-icons">receipt_long</span> 我的訂單
+				</a></li>
+				<li><a th:href="@{/members/tickets}"
+					th:classappend="${activeItem=='tickets'}? 'active' : ''"> <span
+						class="material-icons">confirmation_number</span> 票券夾
+				</a></li>
+				<li style="margin-left: auto">
+					<form id="logoutForm" th:action="@{/members/logout}" method="post"
+						style="display: none;"></form>  <a href="#"
+					th:onclick="|event.preventDefault(); document.getElementById('logoutForm').submit();|">
+						<span class="material-icons">exit_to_app</span> 登出
+				</a>
+				</li>
+
+			</ul>
+		</header>
+	</div>
+</body>
 </html>
