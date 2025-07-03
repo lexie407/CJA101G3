@@ -2,6 +2,7 @@ package com.toiukha.forum.article.controller;
 
 import com.toiukha.forum.article.dto.ArticleDTO;
 //import com.toiukha.forum.article.model.ArticlePicturesServiceImpl;
+import com.toiukha.forum.article.model.ArticlePicturesService;
 import com.toiukha.forum.article.model.ArticleService;
 //import org.hibernate.query.SortDirection;
 import com.toiukha.forum.article.model.ArticleServiceImpl;
@@ -30,18 +31,22 @@ import com.toiukha.articlecollection.model.ArticleCollectionCompositePrimaryKey;
 public class ArticleController {
 
     private final ArticleService articleService;
-//    private final ArticlePicturesServiceImpl apService;
+    private final ArticlePicturesService apService;
 
     private LikeService likeService;
     private ArticleCollectionService articleCollectionService;
 
     // 使用建構子注入 ArticleService
     @Autowired
-    public ArticleController(ArticleService articleService, LikeService likeService, ArticleCollectionService articleCollectionService) {
+    public ArticleController(ArticleService articleService
+                            , LikeService likeService
+                            , ArticleCollectionService articleCollectionService
+                            , ArticlePicturesService apService) {
+
         this.articleService = articleService;
         this.likeService = likeService;
         this.articleCollectionService = articleCollectionService;
-//        this.apService = apService;
+        this.apService = apService;
     }
 
 // 取得單篇文章 DTO
@@ -285,7 +290,7 @@ public class ArticleController {
     }
     
     // 更新文章
-    @PutMapping("/article/{artId}")
+    @PutMapping("/article/{artId}/update")
     public ResponseEntity<Map<String, Object>> updateArticle(
             @PathVariable Integer artId,
             @RequestBody Map<String, Object> articleData) {
@@ -299,16 +304,14 @@ public class ArticleController {
                 response.put("message", "找不到文章");
                 return ResponseEntity.ok(response);
             }
-            
-            // 更新文章資料
-            article.setArtTitle((String) articleData.get("artTitle"));
-            article.setArtCat(((Number) articleData.get("artCat")).byteValue());
-            article.setArtSta(((Number) articleData.get("artSta")).byteValue());
-            article.setArtCon((String) articleData.get("artCon"));
-            
+
             // 儲存更新
-            articleService.update(article);
-            
+            articleService.updateBasic(artId,
+                    ((Number) articleData.get("artCat")).byteValue(),
+                    ((Number) articleData.get("artSta")).byteValue(),
+                    (String) articleData.get("artTitle"),
+                    (String) articleData.get("artCon"));
+
             response.put("success", true);
             response.put("message", "文章更新成功");
             return ResponseEntity.ok(response);

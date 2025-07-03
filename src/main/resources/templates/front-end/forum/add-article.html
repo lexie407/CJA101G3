@@ -87,6 +87,10 @@
                         </div>
                     </form>
                 </div>
+
+<!--                查看輸出內容(測試用)-->
+<!--                <button onclick="getContent()">查看輸出內容</button>-->
+<!--                <pre id="output"></pre>-->
             </div>
 
 
@@ -158,7 +162,7 @@
     const quill = new Quill('#editor', {
         modules: {
             toolbar: [
-                [{ 'size': ['small', false, 'large', 'huge'] }, 'bold', 'italic', 'underline', 'strike', 'blockquote'],        // toggled buttons
+                ['bold', 'italic', 'underline', 'strike'],
                 ['link', 'image', 'video'],
 
                 [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
