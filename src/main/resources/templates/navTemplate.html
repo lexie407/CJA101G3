@@ -26,13 +26,13 @@
 
             <ul>
                 <li th:classappend="${currentPage == 'home' ? 'active' : ''}"><a th:href="@{/spot/}"><span class="material-icons">home</span>首頁</a></li>
-                <li th:classappend="${currentPage == 'travel' ? 'active' : ''}"><a href="@{/itinerary/}"><span class="material-icons">card_travel</span>行程</a></li>
-                <li th:classappend="${currentPage == 'groups' ? 'active' : ''}"><a href="@{/act/member/search}"><span class="material-icons">groups</span>揪團</a></li>
-                <li th:classappend="${currentPage == 'store' ? 'active' : ''}"><a href="@{/item/listAllItem}"><span class="material-icons">store</span>商店</a></li>
+                <li th:classappend="${currentPage == 'travel' ? 'active' : ''}"><a th:href="@{/itinerary/}"><span class="material-icons">card_travel</span>行程</a></li>
+                <li th:classappend="${currentPage == 'groups' ? 'active' : ''}"><a th:href="@{/act/member/search}"><span class="material-icons">groups</span>揪團</a></li>
+                <li th:classappend="${currentPage == 'store' ? 'active' : ''}"><a th:href="@{/item/listAllItem}"><span class="material-icons">store</span>商店</a></li>
                 <li th:classappend="${currentPage == 'forum' ? 'active' : ''}"><a th:href="@{/forum}"><span class="material-icons">edit</span>討論區</a></li>
                 <hr>
                 <li th:classappend="${currentPage == 'account' ? 'active' : ''}"><a th:href="@{/members/view}"><span class="material-icons">account_circle</span>會員中心</a></li>
-                <li th:classappend="${currentPage == 'bePartner' ? 'active' : ''}"><a href="@{/store/register}"><span class="material-icons">add_circle_outline</span>成為廠商</a></li>
+                <li th:classappend="${currentPage == 'bePartner' ? 'active' : ''}"><a th:href="@{/store/register}"><span class="material-icons">add_circle_outline</span>成為廠商</a></li>
             </ul>
 
             <div class="bottom-notification" style="display: flex; gap: 20px; padding-left: 12px; position: relative;">

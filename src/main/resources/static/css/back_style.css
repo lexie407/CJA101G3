@@ -85,7 +85,7 @@ body {
     top: 0;
     left: 0;
     height: 100vh;
-    overflow-y: hidden;
+    overflow: visible; /* 允許子元素(次選單)超出邊界 */
     z-index: 1000;
 }
 
@@ -151,7 +151,7 @@ body {
     margin: 0.5rem 0 0 0;
     /* margin-top: 5; */
     padding: 0;
-    overflow-y: auto;
+    overflow: visible; /* 移除 overflow-y: auto，允許次選單溢出 */
     flex-grow: 1;
 }
 
@@ -179,7 +179,8 @@ body {
 }
 
 .left-nav a:hover,
-.left-nav li.active a {
+.left-nav li.active a,
+.left-nav li.has-submenu:hover > a { /* 當滑鼠移到有次選單的li上時，保持主連結的啟用樣式 */
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
     border-radius: 5px;
@@ -233,6 +234,43 @@ body {
 .left-nav .bottom-notification a:hover {
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
+}
+
+/* 次選單樣式 */
+.left-nav li.has-submenu {
+    position: relative;
+}
+
+.left-nav .submenu {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background-color: var(--md-sys-color-surface-container-high);
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+    list-style: none;
+    margin: 0;
+    min-width: 180px;
+    z-index: 1001;
+}
+
+.left-nav li.has-submenu:hover > .submenu {
+    display: block;
+}
+
+.left-nav .submenu li {
+    margin: 0;
+}
+
+.left-nav .submenu a {
+    padding: 10px 15px;
+    white-space: nowrap;
+}
+
+.left-nav .submenu a:hover {
+    background-color: var(--md-sys-color-primary-container);
 }
 
 /* 登出按鈕區塊 */
