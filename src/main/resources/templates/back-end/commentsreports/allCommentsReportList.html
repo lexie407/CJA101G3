@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Document</title>
+<title>留言檢舉 | 檢舉管理 | 後台 | 島遊kha</title>
 
 <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
 <link rel="stylesheet" href="../css/vendors/datatables.css" />
@@ -17,7 +17,7 @@
 		<div class="main-content">
 			<header class="secondary-nav">
 				<ul>
-					
+					<th:block th:insert="~{/back-end/report/navBackEndReport :: secNavResources}"></th:block>
 				</ul>
 			</header>
 			<main class="content-area-main">
@@ -42,7 +42,6 @@
 								<th>案件時間</th>
 								<th>會員</th>
 								<th>進度</th>
-								<th>案件標題</th>
 								<th>案件內容</th>
 							</tr>
 						</thead>
@@ -57,7 +56,6 @@
 										th:case="0">處理中</span> <span th:case="1">檢舉成立</span> <span
 										th:case="2">檢舉不成立</span>
 								</span></td>
-								<td th:text="${commentsReportVO.repCat}"></td>
 								<td th:text="${commentsReportVO.repDes}"></td>
 							</tr>
 						</tbody>

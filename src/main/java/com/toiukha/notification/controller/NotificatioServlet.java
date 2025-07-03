@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.toiukha.members.model.MembersService;
 import com.toiukha.members.model.MembersVO;
 import com.toiukha.notification.model.NotificationService;
 import com.toiukha.notification.model.NotificationVO;
@@ -32,6 +33,8 @@ public class NotificatioServlet {
 
 	@Autowired
 	NotificationService notificationService;
+	@Autowired
+	MembersService membersService;
 	
 	////=====前台=====////
 	//取得該會員的通知資料
@@ -42,13 +45,11 @@ public class NotificatioServlet {
 		ModelMap model) {
 		
 		Integer memId = ((MembersVO)req.getSession().getAttribute("member")).getMemId();
-		System.out.println(memId);
 		
 		//查詢資料
 		List<NotificationVO> list = notificationService.getMemNoti(memId);
 		
 		//轉交資料
-		model.addAttribute("currentPage", "account");
 		model.addAttribute("list", list);
 		return "front-end/notification/memberNotification";
 	}
@@ -66,7 +67,6 @@ public class NotificatioServlet {
 		notificationService.updateNotiStatus(notiId, (byte)1);
 		
 		//轉交資料
-		model.addAttribute("currentPage", "account");
 		model.addAttribute("notificationVO", notificationVO);
 		return "front-end/notification/memberNotificationDetail";
 	}
@@ -76,12 +76,13 @@ public class NotificatioServlet {
 	public String removeNotibyMember(
 		//取得請求資料
 		@RequestParam("notiIds") String[] notiNos,
-		ModelMap model) {
+		ModelMap model,
+		HttpServletRequest req) {
 		
 		//查詢資料後並刪除資料
 //		登入功能放入要改!
 		notificationService.updateNotiStatuses(notiNos, (byte)2);
-		List<NotificationVO> list = notificationService.getMemNoti(1);
+		List<NotificationVO> list = notificationService.getMemNoti(((MembersVO)req.getSession().getAttribute("member")).getMemId());
 		
 		//轉交資料
 		model.addAttribute("currentPage", "account");
@@ -161,6 +162,9 @@ public class NotificatioServlet {
 	//搜尋頁面
 	@GetMapping("searchNotification")
 	public String searchNotification(HttpServletRequest req, ModelMap model) {
+		
+		List<MembersVO> list = membersService.findAllMembers();
+		model.addAttribute("memList", list);
 		model.addAttribute("currentPage", "notifications");
 		model.addAttribute("currentPage2", "searchNotification");
 		return "back-end/notification/searchNotification";
@@ -168,16 +172,18 @@ public class NotificatioServlet {
 	
 	//開始搜尋
 	@PostMapping("doSearchNotification")
-	public String doSearchNotification(HttpServletRequest req, ModelMap model) {
-		req.getSession().setAttribute("originalPage", "/notification/searchNotification");
+	public String doSearchNotification(
+			HttpServletRequest req, 
+			ModelMap model,
+			@RequestParam Map<String, String[]> map) {
 		req.getSession().removeAttribute("searchMap");
-		
-		Map<String, String[]> map = req.getParameterMap();
 
 		List<NotificationVO> list = notificationService.getByCriteria(map);
+		List<MembersVO> memList = membersService.findAllMembers();
 		Date nowTime = new Date();
 		model.addAttribute("nowTime", nowTime);
 		model.addAttribute("list", list);
+		model.addAttribute("memList", memList);
 		model.addAttribute("map", map);
 		model.addAttribute("currentPage", "notifications");
 		model.addAttribute("currentPage2", "searchNotification");
@@ -188,7 +194,6 @@ public class NotificatioServlet {
 	//返回查詢使用
 	@GetMapping("backDoSearchNotification")
 	public String backDoSearchNotification(HttpServletRequest req, ModelMap model) {
-		req.getSession().setAttribute("originalPage", "/notification/searchNotification");
 		Map<String, String[]> map = req.getParameterMap();
 		List<NotificationVO> list = notificationService.getByCriteria(map);
 		Date nowTime = new Date();
@@ -250,6 +255,8 @@ public class NotificatioServlet {
 	//新增通知頁面
 	@GetMapping("addNotification")
 	public String addNotification (ModelMap model) {
+		List<MembersVO> memList = membersService.findAllMembers();
+		model.addAttribute("memList", memList);
 		model.addAttribute("currentPage", "notifications");
 		model.addAttribute("currentPage2", "addNotification");
 		return "back-end/notification/addNotification";

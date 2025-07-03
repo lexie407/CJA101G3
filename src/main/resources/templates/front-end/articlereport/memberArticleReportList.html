@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Document</title>
+<title>文章檢舉 | 檢舉進度 | 會員中心 | 島遊kha</title>
 
 <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
 
@@ -13,11 +13,7 @@
 	<div class="app-container">
 		<div th:insert="~{/navTemplate :: navbar}"></div>
 		<div class="main-content">
-			<header class="secondary-nav">
-				<ul>
-
-				</ul>
-			</header>
+			<div th:replace="~{subnavMembers :: subnav(activeItem='')}"></div>
 			<main class="content-area-main">
 				<div class="notification-detail-container">
 					<h2 style="margin-top: 0px; margin-bottom: 20px;">以下是你的文章檢舉案件明細</h2>

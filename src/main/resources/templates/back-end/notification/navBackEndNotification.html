@@ -1,7 +1,7 @@
 <th:block th:fragment="secNavResources">
 	<ul>
-        <li><a th:href="@{/notification/addNotification}" th:classappend="${currentPage2 == 'addNotification' ? 'active' : ''}">新增通知</a></li>
         <li><a th:href="@{/notification/unSendNotification}" th:classappend="${currentPage2 == 'unSendNotification' ? 'active' : ''}">待發送通知</a></li>
         <li><a th:href="@{/notification/searchNotification}" th:classappend="${currentPage2 == 'searchNotification' ? 'active' : ''}">查詢通知</a></li>
+        <li><a th:href="@{/notification/addNotification}" th:classappend="${currentPage2 == 'addNotification' ? 'active' : ''}">新增通知</a></li>
 	</ul>
 </th:block>

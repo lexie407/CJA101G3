@@ -65,6 +65,8 @@ public class CommentsReportsController {
 	public String allReportList(ModelMap model) {
 		List<CommentsReportVO> list = commentsReportService.getAll();
 		model.addAttribute("list", list);
+		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "commentsReport");
 		return "back-end/commentsreports/allCommentsReportList";
 	}
 	
@@ -78,7 +80,8 @@ public class CommentsReportsController {
 		
 		model.addAttribute("commentsReportVO", commentsReportVO);
 		model.addAttribute("commentsVO", commentsVO);
-		model.addAttribute("currentPage", "account");
+		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "commentsReport");
 		return "back-end/commentsreports/editCommentsReport";
 	}
 	
@@ -93,7 +96,7 @@ public class CommentsReportsController {
 		commentsService.changeSta(commId, (byte)2);
 		
 		//修改檢舉狀態
-		CommentsReportVO commentsReportVO = new CommentsReportVO();
+		CommentsReportVO commentsReportVO = commentsReportService.getOne(commRepId);
 		Date date = new Date();
 		Timestamp now = new Timestamp(date.getTime());
 		commentsReportVO.setCommRepId(commRepId);
@@ -129,8 +132,7 @@ public class CommentsReportsController {
 			@RequestParam("commRepId") Integer commRepId,
 			RedirectAttributes redirectAttributes) {
 		//修改檢舉狀態
-		System.out.println(commRepId);
-		CommentsReportVO commentsReportVO = new CommentsReportVO();
+		CommentsReportVO commentsReportVO = commentsReportService.getOne(commRepId);
 		Date date = new Date();
 		Timestamp now = new Timestamp(date.getTime());
 		commentsReportVO.setCommRepId(commRepId);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Document</title>
+<title>通知詳情 | 通知管理 | 後台 | 島遊kha</title>
 
 <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
 
@@ -23,7 +23,7 @@
 			<main class="content-area-main">
 				<div
 					class="single-notification-container notification-center-container">
-					<div class="single-notification-actions">
+					<div class="single-notification-actions" style="display: flex; gap: 10px;">
 						<button id="backToAdminNotificationsBtn" class="material-button"
 							th:attr="data-originalUri=${originalUri}"
 							style="margin-bottom: 10px;">
@@ -32,8 +32,9 @@
 						<button
 							th:if="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}"
 							id="deleteAdminNotificationBtn"
-							class="material-button delete-btn"
-							th:attr="data-notiId=${notificationVO.notiId}">
+							class="material-button delete-btn error"
+							th:attr="data-notiId=${notificationVO.notiId}"
+							style="max-height: 43.333px;">
 							<span class="material-icons">delete</span> 刪除此通知
 						</button>
 					</div>

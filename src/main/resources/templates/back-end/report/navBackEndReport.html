@@ -1,0 +1,6 @@
+<th:block th:fragment="secNavResources">
+	<ul>
+        <li><a th:href="@{/Articlereport/allReportList}" th:classappend="${currentPage2 == 'articlereport' ? 'active' : ''}">文章檢舉</a></li>
+        <li><a th:href="@{/CommentsReports/allReportList}" th:classappend="${currentPage2 == 'commentsReport' ? 'active' : ''}">留言檢舉</a></li>
+	</ul>
+</th:block>

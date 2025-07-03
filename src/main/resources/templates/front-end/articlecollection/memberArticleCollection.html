@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>文章收藏 | 我的收藏 | 會員中心 | 島遊kha</title>
 
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/articlecollection/articlecollection.css}">
@@ -14,16 +14,10 @@
 	<div class="app-container">
 		<div th:insert="~{/navTemplate :: navbar}"></div>
 		<div class="main-content">
-			<header class="secondary-nav">
-                <ul>
-<!-- 					放自己需要的內容 -->
-                </ul>
-            </header>
+				<div th:replace="~{subnavMembers :: subnav(activeItem='favorites')}"></div>
 			<main class="content-area-main">
 			
-<!-- 				<input type="hidden" id="member" th:value=${session.member}> -->
-<!-- 加入登入功能後記得改 -->
-				<input type="hidden" id="member" value=1>
+				<input type="hidden" id="member" th:value=${session.member.memId}>
 				
 				<div class="notification-center-container">
 				<h2 style="margin-top: 0px; margin-bottom: 20px;">以下是你收藏的文章</h2>

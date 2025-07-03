@@ -30,6 +30,12 @@ document.addEventListener("DOMContentLoaded", function(){
 	
 	let unDo_btn = document.getElementById("unDo");
 	unDo_btn.addEventListener("click", function(){
+		
+		if(document.getElementById("notificationContent").value == ""){
+					alert("結案說明不能空白!");
+					return;
+				}
+		
 		let form = document.createElement("form");
 			form.method = "post";
 			form.action = "/Articlereport/unEstablished";

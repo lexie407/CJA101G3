@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Document</title>
+<title>查詢通知 | 通知管理 | 後台 | 島遊kha</title>
 
 <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
-<link rel="stylesheet" th:href="@{/css/vendors/multi-select.css}">
-<link rel="stylesheet" th:href="@{/css/vendors/custom-material-multiselect.css}">
+<link rel="stylesheet" th:href="@{/css/notification/notificationBackEndLightBox.css}">
+<link rel="stylesheet" th:href="@{/css/vendors/datatables.css}">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/2.0.0/css/select.dataTables.min.css"/>
+
 
 </head>
 <body class="light">
@@ -29,15 +31,56 @@
 							<h2 style="margin-top: 0px; margin-bottom: 20px;">查詢條件</h2>
 							<form id="notificationEditForm"
 								th:action="@{/notification/doSearchNotification}" method="post">
+								<div class="form-actions" style="display: flex; flex-direction: column;">
+									<p>會員:</p>
+									<button type="button" id="pickMemberBtn" class="material-button" style="margin-bottom: 10px; max-width: 136px">
+										點我選取會員
+									</button>
+									<p id="selectNum"></p>
+								</div>
+								
 								<div class="form-group">
-									<select id="notificationMemberId" name="memIds" multiple>
-										<option value="1"
-											>會員1</option>
-										<option value="2"
-											>會員2</option>
-										<option value="3"
-											>會員3</option>
-									</select>
+								
+									<!-- Lightbox Overlay -->
+								    <div id="lightboxOverlay" class="lightbox-overlay"></div>
+								
+								    <!-- Article Lightbox -->
+								    <div id="articleLightBox" class="article-lightbox">
+								        <button id="closeLightboxBtn" class="close-button" type="button">&times;</button>
+								        <h3>請勾選你需要查詢的會員</h3>
+								        <table class="admin-table" id="admin-table-member">
+								        	<label class="checkbox-container"> 
+								        		<input type="checkbox" class="selectAllMembers"> <span class="checkmark"></span>
+												全選會員
+											</label>
+											<thead>
+												<tr>
+													<th>勾選</th>
+													<th>會員編號</th>
+													<th>會員名稱</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr th:each="membersVO : ${memList}" class="mem-table-line"
+													th:attr="data-memId=${membersVO.memId}">
+													<td>
+														<label class="checkbox-container"
+															th:for="${'memId_' + membersVO.memId}"> <input
+															type="checkbox" class="member-checkbox" name="memIds"
+															th:value="${membersVO.memId}"
+															th:id="${'memId_' + membersVO.memId}"
+															th:attr="data-member-id=${membersVO.memId}"> <span
+															class="checkmark"></span>
+														</label>
+													</td>
+													<td th:text="${membersVO.memId}"></td>
+													<td th:text="${membersVO.memName}"></td>
+												</tr>
+											</tbody>
+										</table>
+								        
+								    </div>
+								
 								</div>
 
 								<div class="form-group">
@@ -89,7 +132,7 @@
 					</div>
 
 					<h2 style="margin-top: 40px; margin-bottom: 20px;">查詢結果</h2>
-					<table class="admin-table">
+					<table class="admin-table" id="notificationSearchResultsTable">
 						<thead>
 							<tr>
 								<th>通知時間</th>
@@ -123,8 +166,9 @@
 	</div>
 	
 	<script src="../js/vendors/jquery-3.7.1.min.js"></script>
-	<script src="../js/vendors/jquery.multi-select.js"></script>
+	<script src="../vendors/dataTable/datatables.js"></script>
 	<script src="../js/notification/searchNotification.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/select/2.0.0/js/dataTables.select.min.js"></script>
 
 </body>
 </html>
