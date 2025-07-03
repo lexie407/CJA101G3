@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +18,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.toiukha.checkmacvalue.EcpayCheckMacValueGenerator;
 import com.toiukha.coupon.model.CouponService;
 import com.toiukha.coupon.model.CouponVO;
+import com.toiukha.item.model.ItemService;
+import com.toiukha.item.model.ItemVO;
+import com.toiukha.members.model.MembersService;
+import com.toiukha.members.model.MembersVO;
 import com.toiukha.memcoupons.model.MemCouponsService;
 import com.toiukha.memcoupons.model.MemCouponsVO;
 import com.toiukha.order.model.OrderService;
@@ -29,9 +32,6 @@ import com.toiukha.paymentlog.model.PaymentLogService;
 import com.toiukha.paymentlog.model.PaymentLogVO;
 import com.toiukha.sentitem.model.SentItemService;
 import com.toiukha.sentitem.model.SentItemVO;
-import com.toiukha.item.model.ItemService;
-import com.toiukha.item.model.ItemVO;
-import com.toiukha.members.model.MembersVO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -60,6 +60,9 @@ public class OrderItemsController {
 	
 	@Autowired
 	ItemService itemSvc;
+	
+	@Autowired
+	MembersService membersService;
 
 	@Autowired
 	RedisTemplate<String, String> redisTemplate;
@@ -350,66 +353,69 @@ public class OrderItemsController {
 	        }
 	    }
 
-	@PostMapping("/checkoutResult")
-	public String checkoutResult(@RequestParam(value = "orderId", required = false) Integer orderId, HttpSession session, Model model) {
-		
-		
-	    if (orderId == null) {
-	        Object lastOrderId = session.getAttribute("lastOrderId");
-	        if (lastOrderId != null) {
-	            orderId = (Integer) lastOrderId;
-	        }
-	    }
-	    if (orderId == null) {
-	        model.addAttribute("order", null);
-	        return "front-end/order/checkoutResult";
-	    }
-	    OrderVO order = orderSvc.getOneOrder(orderId);
-	    if (order != null) {
-	        List<OrderItemsVO> orderItems = orderitmeSvc.findByOrdId(orderId);
-	        int totalAmount = 0;
-	        for (OrderItemsVO item : orderItems) {
-	            ItemVO itemVO = itemSvc.getOneItem(item.getItemId());
-	            if (itemVO != null) {
-	                item.setItemName(itemVO.getItemName());
-	            }
-	            totalAmount += item.getOrdTotal() * item.getDiscPrice();
-	        }
-	        // 查詢付款紀錄取得優惠券ID
-	        int couponDiscount = 0;
-	        Integer couponId = null;
-	        PaymentLogVO paymentLog = paymentLogSvc.getByOrdId(orderId);
-	        if (paymentLog != null) {
-	            couponId = paymentLog.getCouId();
-	            if (couponId != null && couponId != 0) {
-	                CouponVO coupon = couponSvc.getOneCoupon(couponId);
-	                if (coupon != null) {
-	                    couponDiscount = coupon.getDiscValue();
-	                }
-	            }
-	        }
-	        int finalAmount = Math.max(0, totalAmount - couponDiscount);
-	        order.setOrderItems(orderItems);
-	        model.addAttribute("totalAmount", totalAmount);
-	        model.addAttribute("couponDiscount", couponDiscount);
-	        model.addAttribute("finalAmount", finalAmount);
-	    }
-	 // 購物完成後，刪除購物車內容
-		  
-        int memberId = order.getMemId();
-        session.setAttribute("memId", memberId);
-        try {
-        	String cartKey = "cart:" + memberId;
-        	redisTemplate.delete(cartKey);
-        } catch (Exception e) {
-        	System.out.println("刪除購物車失敗: " + e.getMessage());
-        }
-        
-	    model.addAttribute("order", order);
-	    model.addAttribute("currentPage", "store");
-	    
-	    return "front-end/order/checkoutResult";
-	}
+	 @PostMapping("/checkoutResult")
+	 public String checkoutResult(@RequestParam(value = "orderId", required = false) Integer orderId, HttpSession session, Model model) {
+	     if (orderId == null) {
+	         Object lastOrderId = session.getAttribute("lastOrderId");
+	         if (lastOrderId != null) {
+	             orderId = (Integer) lastOrderId;
+	         }
+	     }
+	     if (orderId == null) {
+	         model.addAttribute("order", null);
+	         return "front-end/order/checkoutResult";
+	     }
+	     OrderVO order = orderSvc.getOneOrder(orderId);
+	     if (order != null) {
+	         // 只補登入
+	         if (session.getAttribute("member") == null) {
+	             MembersVO member = membersService.getOneMember(order.getMemId());
+	             if (member != null) {
+	                 session.setAttribute("member", member);
+	             }
+	         }
+	         // ↓↓↓ 這些都要放在 if 區塊外面 ↓↓↓
+	         List<OrderItemsVO> orderItems = orderitmeSvc.findByOrdId(orderId);
+	         int totalAmount = 0;
+	         for (OrderItemsVO item : orderItems) {
+	             ItemVO itemVO = itemSvc.getOneItem(item.getItemId());
+	             if (itemVO != null) {
+	                 item.setItemName(itemVO.getItemName());
+	             }
+	             totalAmount += item.getOrdTotal() * item.getDiscPrice();
+	         }
+	         int couponDiscount = 0;
+	         Integer couponId = null;
+	         PaymentLogVO paymentLog = paymentLogSvc.getByOrdId(orderId);
+	         if (paymentLog != null) {
+	             couponId = paymentLog.getCouId();
+	             if (couponId != null && couponId != 0) {
+	                 CouponVO coupon = couponSvc.getOneCoupon(couponId);
+	                 if (coupon != null) {
+	                     couponDiscount = coupon.getDiscValue();
+	                 }
+	             }
+	         }
+	         int finalAmount = Math.max(0, totalAmount - couponDiscount);
+	         order.setOrderItems(orderItems);
+	         model.addAttribute("totalAmount", totalAmount);
+	         model.addAttribute("couponDiscount", couponDiscount);
+	         model.addAttribute("finalAmount", finalAmount);
+
+	         // 購物完成後，刪除購物車內容
+	         int memberId = order.getMemId();
+	         session.setAttribute("memId", memberId);
+	         try {
+	             String cartKey = "cart:" + memberId;
+	             redisTemplate.delete(cartKey);
+	         } catch (Exception e) {
+	             System.out.println("刪除購物車失敗: " + e.getMessage());
+	         }
+	         model.addAttribute("order", order);
+	         model.addAttribute("currentPage", "store");
+	     }
+	     return "front-end/order/checkoutResult";
+	 }
 
 	@PostMapping("/commentOrderItem")
 	@ResponseBody
