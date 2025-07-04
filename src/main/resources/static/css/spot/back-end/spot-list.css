@@ -1179,3 +1179,144 @@
     visibility: visible;
     transform: translateY(0);
 } 
+
+/* API匯入按鈕樣式 */
+.api-import-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 12px;
+    transition: background-color 0.2s;
+}
+
+.api-import-btn:hover {
+    background-color: rgb(30, 120, 160); /* 比主色深一點的藍綠色 */
+    color: var(--md-sys-color-on-primary);
+}
+
+.api-import-btn i {
+    font-size: 18px;
+}
+
+/* 模態視窗樣式 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: var(--md-sys-color-surface);
+    margin: 40px auto;
+    padding: 24px;
+    width: 90%;
+    max-width: 800px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.modal-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    color: var(--md-sys-color-on-surface);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+/* 模態視窗內容區域樣式 */
+.modal-section {
+    margin-bottom: 32px;
+    padding: 20px;
+    background-color: var(--md-sys-color-surface-container-lowest);
+    border-radius: 8px;
+}
+
+.section-header {
+    margin-bottom: 16px;
+}
+
+.section-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: var(--md-sys-color-on-surface);
+}
+
+.section-header p {
+    margin: 0;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 14px;
+}
+
+/* 表單元素樣式 */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--md-sys-color-on-surface);
+    font-weight: 500;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-group input {
+    width: 100px;
+    padding: 8px 12px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.input-suffix {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 14px;
+}
+
+.helper-text { 

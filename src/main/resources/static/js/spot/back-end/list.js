@@ -1591,3 +1591,186 @@ function bindFormSubmissions() {
     
     console.log('表單提交事件已綁定');
 }
+
+// API匯入相關函數
+function initializeApiImport() {
+    const modal = document.getElementById('apiImportModal');
+    const openBtn = document.getElementById('apiImportBtn');
+    const closeBtn = document.getElementById('closeModal');
+    const importAllBtn = document.getElementById('importAllBtn');
+    const cityButtons = document.querySelectorAll('.city-btn');
+    const resultArea = document.getElementById('importResult');
+
+    // 打開模態視窗
+    openBtn.addEventListener('click', () => {
+        modal.style.display = 'block';
+    });
+
+    // 關閉模態視窗
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // 修改點擊模態視窗外部關閉的邏輯
+    let mouseDownInModal = false;
+    
+    // 記錄滑鼠按下的位置是否在模態視窗內
+    modal.addEventListener('mousedown', (e) => {
+        // 檢查點擊位置是否在模態內容區域內
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent.contains(e.target)) {
+            mouseDownInModal = true;
+        }
+    });
+
+    // 監聽滑鼠釋放事件
+    window.addEventListener('mouseup', (e) => {
+        // 只有當滑鼠按下和釋放都在模態視窗外時才關閉
+        if (e.target === modal && !mouseDownInModal) {
+            modal.style.display = 'none';
+        }
+        mouseDownInModal = false;
+    });
+
+    // 全台匯入
+    importAllBtn.addEventListener('click', async () => {
+        const count = document.getElementById('import-count').value;
+        if (count < 10 || count > 200) {
+            alert('請輸入10-200之間的數字');
+            return;
+        }
+
+        try {
+            importAllBtn.disabled = true;
+            importAllBtn.innerHTML = '<i class="material-icons">hourglass_empty</i> 匯入中...';
+            
+            const response = await fetch(`/admin/spot/api/import-spots?limit=${count}`, {
+                method: 'POST'
+            });
+            
+            const result = await response.json();
+            showResult(result);
+            
+            // 重新載入頁面以顯示新匯入的資料
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } catch (error) {
+            console.error('匯入失敗:', error);
+            showResult({
+                success: false,
+                message: '匯入失敗，請稍後再試'
+            });
+        } finally {
+            importAllBtn.disabled = false;
+            importAllBtn.innerHTML = '<i class="material-icons">download</i> 開始匯入全台景點';
+        }
+    });
+
+    // 依縣市匯入
+    cityButtons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const city = btn.dataset.city;
+            const count = document.getElementById('city-count').value;
+            
+            if (count < 10 || count > 100) {
+                alert('請輸入10-100之間的數字');
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="material-icons">hourglass_empty</i>';
+                
+                const response = await fetch(`/admin/spot/api/import-spots-by-city?city=${city}&limit=${count}`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                showResult(result);
+                
+                // 重新載入頁面以顯示新匯入的資料
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            } catch (error) {
+                console.error('匯入失敗:', error);
+                showResult({
+                    success: false,
+                    message: '匯入失敗，請稍後再試'
+                });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+    });
+}
+
+// 顯示匯入結果
+function showResult(result) {
+    const resultArea = document.getElementById('importResult');
+    const resultContent = resultArea.querySelector('.result-content');
+    
+    resultArea.style.display = 'block';
+    
+    console.log('API 返回結果:', result);
+    
+    if (result.success) {
+        // 確保 data 存在且包含 ImportResult 數據
+        const data = result.data || {};
+        
+        resultContent.innerHTML = `
+            <div class="success-message">
+                <i class="material-icons">check_circle</i>
+                <p>匯入成功！</p>
+                <ul>
+                    <li>✅ 成功匯入: ${data.successCount || 0} 筆</li>
+                    <li>⏭️ 重複跳過: ${data.skippedCount || 0} 筆</li>
+                    <li>❌ 匯入失敗: ${data.errorCount || 0} 筆</li>
+                </ul>
+                <p class="success-note">頁面將在 3 秒後自動重新載入</p>
+            </div>
+        `;
+        
+        // 顯示 Toastify 通知
+        Toastify({
+            text: `✅ 匯入成功！共匯入 ${data.successCount || 0} 筆資料`,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "center",
+            style: {
+                background: "#2ecc71"
+            }
+        }).showToast();
+    } else {
+        resultContent.innerHTML = `
+            <div class="error-message">
+                <i class="material-icons">error</i>
+                <p>${result.message || '匯入失敗，請稍後再試'}</p>
+            </div>
+        `;
+        
+        // 顯示 Toastify 通知
+        Toastify({
+            text: `❌ ${result.message || '匯入失敗，請稍後再試'}`,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "center",
+            style: {
+                background: "#e74c3c"
+            }
+        }).showToast();
+    }
+}
+
+// 在 document ready 時初始化
+document.addEventListener('DOMContentLoaded', () => {
+    // ... 其他初始化代碼 ...
+    
+    // 初始化API匯入功能
+    initializeApiImport();
+});

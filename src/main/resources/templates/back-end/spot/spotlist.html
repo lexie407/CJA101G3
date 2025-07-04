@@ -12,7 +12,12 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-list.css}">
-    <script th:src="@{/js/spot/back-end/list.js?v=8}" defer></script>
+    
+    <!-- Toastify 通知庫 -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    
+    <script th:src="@{/js/spot/back-end/list.js?v=9}" defer></script>
     
     <!-- 🔧 過度階段：註解掉CSRF token -->
     <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
@@ -147,13 +152,19 @@
                             th:text="|共 ${spotPage.totalElements} 筆|">共 0 筆</span>
                     </h2>
                 </div>
-                <div class="table-actions">
+                <div class="table-actions" style="display: flex; align-items: center; gap: 12px;">
                     <span class="selected-info hidden" id="selectedInfo">已選擇 <span id="selectedCount">0</span> 個項目</span>
                     <div class="batch-actions">
+                        <!-- 原有的批量操作按鈕 -->
                         <button class="batch-btn hidden" id="batchBtn">
                             批量操作 <span class="batch-btn-small">▼</span>
                         </button>
                     </div>
+                    <!-- API匯入按鈕 -->
+                    <button class="api-import-btn" id="apiImportBtn" type="button">
+                        <i class="material-icons">cloud_download</i>
+                        <span>API匯入</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -277,6 +288,122 @@
         <button type="button" class="dropdown-item danger" data-action="delete">
             <span class="material-icons icon-danger">delete</span> 批量刪除
         </button>
+    </div>
+
+    <!-- API匯入模態視窗 -->
+    <div id="apiImportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>
+                    <i class="material-icons">cloud_download</i>
+                    API資料匯入
+                </h2>
+                <button class="close-btn" id="closeModal">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+
+            <!-- 全台景點匯入區域 -->
+            <div class="modal-section">
+                <div class="section-header">
+                    <h3>
+                        <i class="material-icons">map</i>
+                        全台景點資料匯入
+                    </h3>
+                    <p>一次性匯入全台灣的熱門景點資料<br/>
+                    <small>✨ 新功能：全台匯入現在會隨機混合各地區景點，讓匯入結果更加多樣化！</small></p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="import-count">匯入筆數</label>
+                    <div class="input-group">
+                        <input id="import-count" type="number" value="50" min="10" max="200">
+                        <span class="input-suffix">筆 (10-200)</span>
+                    </div>
+                    <div class="helper-text">建議首次匯入設定為50-100筆，避免處理時間過長</div>
+                </div>
+                
+                <div class="warning-card">
+                    <i class="material-icons">warning</i>
+                    <div class="warning-content">
+                        <strong>注意事項：</strong>
+                        <ul>
+                            <li>匯入過程可能需要數分鐘，請耐心等待</li>
+                            <li>系統會自動跳過重複的景點</li>
+                            <li>建議在非尖峰時段執行大量匯入</li>
+                            <li>🎲 全台匯入會隨機打亂景點順序，避免同地區景點集中匯入</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <button id="importAllBtn" class="btn btn-primary">
+                    <i class="material-icons">download</i>
+                    開始匯入全台景點
+                </button>
+            </div>
+
+            <!-- 依縣市匯入區域 -->
+            <div class="modal-section">
+                <div class="section-header">
+                    <h3>
+                        <i class="material-icons">location_city</i>
+                        依縣市匯入景點
+                    </h3>
+                    <p>選擇特定縣市匯入景點資料，適合針對性地補充特定地區的景點</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="city-count">每個縣市匯入筆數</label>
+                    <div class="input-group">
+                        <input id="city-count" type="number" value="30" min="10" max="100">
+                        <span class="input-suffix">筆 (10-100)</span>
+                    </div>
+                    <div class="helper-text">每個縣市建議匯入20-50筆景點資料</div>
+                </div>
+                
+                <div class="city-selection">
+                    <h4>選擇縣市</h4>
+                    <div class="city-grid">
+                        <!-- 直轄市 -->
+                        <button class="city-btn" data-city="Taipei">台北市</button>
+                        <button class="city-btn" data-city="NewTaipei">新北市</button>
+                        <button class="city-btn" data-city="Taoyuan">桃園市</button>
+                        <button class="city-btn" data-city="Taichung">台中市</button>
+                        <button class="city-btn" data-city="Tainan">台南市</button>
+                        <button class="city-btn" data-city="Kaohsiung">高雄市</button>
+                        
+                        <!-- 省轄市 -->
+                        <button class="city-btn" data-city="Keelung">基隆市</button>
+                        <button class="city-btn" data-city="Hsinchu">新竹市</button>
+                        <button class="city-btn" data-city="Chiayi">嘉義市</button>
+                        
+                        <!-- 縣 -->
+                        <button class="city-btn" data-city="HsinchuCounty">新竹縣</button>
+                        <button class="city-btn" data-city="MiaoliCounty">苗栗縣</button>
+                        <button class="city-btn" data-city="ChanghuaCounty">彰化縣</button>
+                        <button class="city-btn" data-city="NantouCounty">南投縣</button>
+                        <button class="city-btn" data-city="YunlinCounty">雲林縣</button>
+                        <button class="city-btn" data-city="ChiayiCounty">嘉義縣</button>
+                        <button class="city-btn" data-city="PingtungCounty">屏東縣</button>
+                        <button class="city-btn" data-city="YilanCounty">宜蘭縣</button>
+                        <button class="city-btn" data-city="HualienCounty">花蓮縣</button>
+                        <button class="city-btn" data-city="TaitungCounty">台東縣</button>
+                        <button class="city-btn" data-city="PenghuCounty">澎湖縣</button>
+                        <button class="city-btn" data-city="KinmenCounty">金門縣</button>
+                        <button class="city-btn" data-city="LienchiangCounty">連江縣</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 匯入結果區域 -->
+            <div id="importResult" class="result-area" style="display:none;">
+                <div class="result-header">
+                    <i class="material-icons">assessment</i>
+                    <h4>匯入結果</h4>
+                </div>
+                <div class="result-content"></div>
+            </div>
+        </div>
     </div>
 </body>
 </html> 
