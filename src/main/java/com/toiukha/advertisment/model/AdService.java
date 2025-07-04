@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("adService")
 public class AdService {
@@ -17,12 +18,15 @@ public class AdService {
 	@Autowired
 	private SessionFactory sessionFactory;
 	
+	@Transactional
 	public void addAd(AdVO adVO) {
 		repository.save(adVO);
 	}
+	@Transactional
 	public void updateAd(AdVO adVO) {
 		repository.save(adVO);
 	}
+	@Transactional
 	public void deleteAd(Integer adId) {
 		if(repository.existsById(adId)) {
 //			repository.deleteByAdId(adId);
@@ -70,27 +74,37 @@ public class AdService {
         return adRepo.findByAdStatus(AdVO.STATUS_REJECTED);
     }
     
+    @Transactional
     public void approveAd(Integer adId) {
-        AdVO ad = getOneAd(adId);
-        if (ad != null) {
-            ad.setAdStatus(AdVO.STATUS_APPROVED);
-            updateAd(ad);
-        }
+        updateAdStatus(adId, AdVO.STATUS_APPROVED);
     }
     
+    @Transactional
     public void rejectAd(Integer adId) {
-        AdVO ad = getOneAd(adId);
-        if (ad != null) {
-            ad.setAdStatus(AdVO.STATUS_REJECTED);
-            updateAd(ad);
-        }
+        updateAdStatus(adId, AdVO.STATUS_REJECTED);
     }
     
+    @Transactional
     public void deactivateAd(Integer adId) {
+        updateAdStatus(adId, AdVO.STATUS_INACTIVE);
+    }
+    
+    /**
+     * 專門用於更新廣告狀態的方法
+     * 這個方法會直接更新狀態而不進行完整的Bean Validation
+     */
+    @Transactional
+    public void updateAdStatus(Integer adId, Byte newStatus) {
         AdVO ad = getOneAd(adId);
         if (ad != null) {
-            ad.setAdStatus(AdVO.STATUS_INACTIVE);
-            updateAd(ad);
+            ad.setAdStatus(newStatus);
+            try {
+                repository.save(ad);
+            } catch (Exception e) {
+                throw new RuntimeException("更新廣告狀態失敗 ID: " + adId + ", 新狀態: " + newStatus, e);
+            }
+        } else {
+            throw new RuntimeException("找不到廣告 ID: " + adId);
         }
     }
 

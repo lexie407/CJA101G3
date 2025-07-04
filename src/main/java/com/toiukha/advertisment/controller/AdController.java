@@ -34,6 +34,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.toiukha.advertisment.model.AdService;
 import com.toiukha.advertisment.model.AdVO;
+import com.toiukha.store.model.StoreService;
+import com.toiukha.store.model.StoreVO;
+import com.toiukha.item.model.ItemService;
+import com.toiukha.item.model.ItemVO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -52,6 +56,31 @@ public class AdController {
 
 	@Autowired
 	AdService adSvc;	// 自動注入AdService
+	
+	@Autowired
+	StoreService storeSvc;	// 自動注入StoreService
+	
+	@Autowired
+	ItemService itemSvc;	// 自動注入ItemService
+	
+	/**
+	 * 獲取真實的商店資料Map
+	 * @return Map<Integer, String> 商店ID和商店名稱的對應Map
+	 */
+	private Map<Integer, String> getStoreNamesMap() {
+		Map<Integer, String> storeNamesMap = new LinkedHashMap<>();
+		try {
+			List<StoreVO> stores = storeSvc.findAllStores();
+			for (StoreVO store : stores) {
+				storeNamesMap.put(store.getStoreId(), store.getStoreName());
+			}
+		} catch (Exception e) {
+			// 如果無法獲取資料，回傳預設資料
+			System.err.println("無法獲取商店資料: " + e.getMessage());
+			storeNamesMap.put(1, "預設商店");
+		}
+		return storeNamesMap;
+	}
 	
     /**
      * 檢查商家是否已登入
@@ -127,11 +156,11 @@ public class AdController {
                 
                 try {
                     // 自動下架過期廣告
-                    ad.setAdStatus(AdVO.STATUS_INACTIVE);
-                    adSvc.updateAd(ad);
+                    adSvc.updateAdStatus(ad.getAdId(), AdVO.STATUS_INACTIVE);
                     System.out.println("自動下架過期廣告：" + ad.getAdTitle() + " (ID: " + ad.getAdId() + ")");
                 } catch (Exception e) {
                     System.err.println("下架過期廣告失敗 ID: " + ad.getAdId() + ", 錯誤: " + e.getMessage());
+                    e.printStackTrace(); // 打印完整的堆疊追蹤
                 }
             }
         }
@@ -155,11 +184,11 @@ public class AdController {
             
             try {
                 // 自動下架過期廣告
-                ad.setAdStatus(AdVO.STATUS_INACTIVE);
-                adSvc.updateAd(ad);
+                adSvc.updateAdStatus(ad.getAdId(), AdVO.STATUS_INACTIVE);
                 System.out.println("自動下架過期廣告：" + ad.getAdTitle() + " (ID: " + ad.getAdId() + ")");
             } catch (Exception e) {
                 System.err.println("下架過期廣告失敗 ID: " + ad.getAdId() + ", 錯誤: " + e.getMessage());
+                e.printStackTrace(); // 打印完整的堆疊追蹤
             }
         }
     }
@@ -177,11 +206,8 @@ public class AdController {
 			return "redirect:/store/login";
 		}
 		
-		Map<Integer, String> storeNamesMap = new LinkedHashMap<>();
-	    storeNamesMap.put(1, "肯德基 KFC");
-	    storeNamesMap.put(2, "麥當勞 McDonald's");
-	    storeNamesMap.put(3, "星巴克 Starbucks");
-	    
+		// 使用真實的商店資料
+		Map<Integer, String> storeNamesMap = getStoreNamesMap();
 		model.addAttribute("storeNamesMap", storeNamesMap);		
 		return "front-end/advertisment/addAd";
 	}
@@ -355,7 +381,7 @@ public class AdController {
 		
 		// 手動驗證必要欄位
 		if (adTitle == null || adTitle.trim().isEmpty()) {
-			model.addAttribute("errorMessage", "廣告標題不能為空");
+			model.addAttribute("errorMessage", "廣告描述不能為空");
 			// 重新設置 adVO 以便模板渲染
 			AdVO adVO = adSvc.getOneAd(adId);
 			model.addAttribute("adVO", adVO);
@@ -364,8 +390,8 @@ public class AdController {
 			return "front-end/advertisment/update_ad_input";
 		}
 		
-		if (adTitle.length() < 2 || adTitle.length() > 100) {
-			model.addAttribute("errorMessage", "廣告標題長度必須在2到100個字符之間");
+		if (adTitle.length() < 10 || adTitle.length() > 200) {
+			model.addAttribute("errorMessage", "廣告描述長度必須在10到200個字符之間");
 			// 重新設置 adVO 以便模板渲染
 			AdVO adVO = adSvc.getOneAd(adId);
 			model.addAttribute("adVO", adVO);
@@ -553,13 +579,9 @@ public class AdController {
 		list = adSvc.getApprovedAds();
 		model.addAttribute("adListData", list);
 		
-	    // 假資料寫死
-	    Map<Integer, String> storeNamesMap = new LinkedHashMap<>();
-	    storeNamesMap.put(1, "肯德基 KFC");
-	    storeNamesMap.put(2, "麥當勞 McDonald's");
-	    storeNamesMap.put(3, "星巴克 Starbucks");
-
-	    model.addAttribute("storeNamesMap", storeNamesMap);
+		// 使用真實的商店資料
+		Map<Integer, String> storeNamesMap = getStoreNamesMap();
+		model.addAttribute("storeNamesMap", storeNamesMap);
 		
 //		return adSvc.getAll();
 		return "front-end/advertisment/listAllAd"; // 回傳所有廣告的列表頁面
@@ -581,15 +603,44 @@ public class AdController {
 		// 重新獲取廣告資料（可能已被下架）
 		adVO = adSvc.getOneAd(adId);
 		
-		// 假資料寫死
-	    Map<Integer, String> storeNamesMap = new LinkedHashMap<>();
-	    storeNamesMap.put(1, "肯德基 KFC");
-	    storeNamesMap.put(2, "麥當勞 McDonald's");
-	    storeNamesMap.put(3, "星巴克 Starbucks");
+		// 使用真實的商店資料
+		Map<Integer, String> storeNamesMap = getStoreNamesMap();
 		
 		model.addAttribute("adVO", adVO);
 		model.addAttribute("storeNamesMap", storeNamesMap);
 		return "front-end/advertisment/adDetail"; // 回傳廣告詳情頁面
+	}
+	
+	// 處理查看商店商品列表的請求
+	@GetMapping("/storeItems")
+	public String viewStoreItems(@RequestParam("storeId") Integer storeId, ModelMap model) {
+		try {
+			// 獲取商店資訊
+			Map<Integer, String> storeNamesMap = getStoreNamesMap();
+			String storeName = storeNamesMap.get(storeId);
+			
+			if (storeName == null) {
+				model.addAttribute("errorMessage", "找不到該商店資訊");
+				return "error/404";
+			}
+			
+			// 獲取該商店的所有上架商品
+			List<ItemVO> storeItems = itemSvc.findByStoreId(storeId);
+			
+			// 只顯示已上架的商品 (itemStatus = 1)
+			List<ItemVO> activeItems = storeItems.stream()
+					.filter(item -> item.getItemStatus() != null && item.getItemStatus() == 1)
+					.collect(java.util.stream.Collectors.toList());
+			
+			model.addAttribute("storeItems", activeItems);
+			model.addAttribute("storeName", storeName);
+			model.addAttribute("storeId", storeId);
+			
+			return "front-end/advertisment/storeItems"; // 回傳商店商品列表頁面
+		} catch (Exception e) {
+			model.addAttribute("errorMessage", "載入商店商品時發生錯誤：" + e.getMessage());
+			return "error/500";
+		}
 	}
 	
 	/*
@@ -598,12 +649,8 @@ public class AdController {
 	 */
 	@ModelAttribute("storeMapData") //
 	protected Map<Integer, String> referenceMapData() {
-		Map<Integer, String> map = new LinkedHashMap<Integer, String>();
-		map.put(10, "商店1");
-		map.put(20, "商店2");
-		map.put(30, "商店3");
-		map.put(40, "商店4");
-		return map;
+		// 使用真實的商店資料
+		return getStoreNamesMap();
 	}
 	
 	// 去除BindingResult中某個欄位的FieldError紀錄
@@ -739,12 +786,9 @@ public class AdController {
 		
 		model.addAttribute("pendingAds", pendingAds);
 		
-		// 假資料寫死
-	    Map<Integer, String> storeNamesMap = new LinkedHashMap<>();
-	    storeNamesMap.put(1, "肯德基 KFC");
-	    storeNamesMap.put(2, "麥當勞 McDonald's");
-	    storeNamesMap.put(3, "星巴克 Starbucks");
-	    model.addAttribute("storeNamesMap", storeNamesMap);
+		// 使用真實的商店資料
+		Map<Integer, String> storeNamesMap = getStoreNamesMap();
+		model.addAttribute("storeNamesMap", storeNamesMap);
 		
 		return "back-end/advertisment/pendingAds";
 	}
@@ -771,12 +815,9 @@ public class AdController {
 		model.addAttribute("approvedAds", approvedAds);
 		model.addAttribute("rejectedAds", rejectedAds);
 		
-		// 假資料寫死
-	    Map<Integer, String> storeNamesMap = new LinkedHashMap<>();
-	    storeNamesMap.put(1, "肯德基 KFC");
-	    storeNamesMap.put(2, "麥當勞 McDonald's");
-	    storeNamesMap.put(3, "星巴克 Starbucks");
-	    model.addAttribute("storeNamesMap", storeNamesMap);
+		// 使用真實的商店資料
+		Map<Integer, String> storeNamesMap = getStoreNamesMap();
+		model.addAttribute("storeNamesMap", storeNamesMap);
 		
 		return "back-end/advertisment/reviewedAds";
 	}

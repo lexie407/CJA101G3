@@ -3,8 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>修改廣告</title>
+    <title>修改廣告 - 島遊Kha</title>
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-color-primary);
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .current-image {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .current-image img {
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body class="light">
 
@@ -12,46 +79,44 @@
     <div th:insert="~{/navTemplate :: navbar}"></div>
     <div class="main-content">
         <header class="secondary-nav">
-            <ul>
-	            <li>
-	            	<h2>修改廣告</h2>
-	            </li>
-            </ul>
+            <ul><li><h2>修改廣告</h2></li></ul>
         </header>
 
-			<main class="content-area-main">
-        	    <div class="form-container">
-	                <!-- 錯誤訊息顯示 -->
-	                <div th:if="${errorMessage}" class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
-	                    <span th:text="${errorMessage}"></span>
-	                </div>
-	                
-	                <form th:action="@{/advertisment/update}" th:object="${adVO}" method="post" enctype="multipart/form-data">
-	                    <input type="hidden" th:field="*{adId}" />
-	
-	                    <div class="form-group">
-	                        <label>標題：</label>
-	                        <input type="text" th:field="*{adTitle}" required placeholder="請輸入廣告標題" />
-	                    </div>
-	
-	                    <div class="form-group">
-	                        <label>開始時間：</label>
-	                        <input type="datetime-local" name="adStartTime" th:value="${startTimeStr}" required />
-	                    </div>
-	
-	                    <div class="form-group">
-	                        <label>結束時間：</label>
-	                        <input type="datetime-local" name="adEndTime" th:value="${endTimeStr}" required />
-	                    </div>
-	
-	                    <div class="form-group">
-	                        <label>狀態：</label>
-	                        <select th:field="*{adStatus}">
-	                            <option value="1">啟用</option>
-	                            <option value="0">停用</option>
-	                        </select>
-	                    </div>
-	
+        <main class="content-area-main">
+            <div class="form-container">
+                <!-- 錯誤訊息顯示 -->
+                <div th:if="${errorMessage}" class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+                    <span th:text="${errorMessage}"></span>
+                </div>
+                
+                <form th:action="@{/advertisment/update}" th:object="${adVO}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" th:field="*{adId}" />
+
+                    <div class="form-group">
+                                                  <label>廣告描述：</label>
+                        <input type="text" th:field="*{adTitle}" required placeholder="請輸入廣告描述，例如：限時優惠活動、新品上市等" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>開始時間：</label>
+                        <input type="datetime-local" id="adStartTimeInput" th:value="${startTimeStr}" required />
+                        <input type="hidden" name="adStartTime" id="adStartTime" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>結束時間：</label>
+                        <input type="datetime-local" id="adEndTimeInput" th:value="${endTimeStr}" required />
+                        <input type="hidden" name="adEndTime" id="adEndTime" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>狀態：</label>
+                        <select th:field="*{adStatus}">
+                            <option value="1">啟用</option>
+                            <option value="0">停用</option>
+                        </select>
+                    </div>
+
                     <div class="form-group">
                         <label>目前圖片：</label>
                         <div class="current-image">
@@ -75,11 +140,11 @@
 
                     <div class="button-group">
                         <button type="submit" class="btn btn-primary">確定修改</button>
-	                        <a th:href="@{/advertisment/myAds}" class="btn btn-secondary">取消</a>
-	                    </div>
-	                </form>
-	           </div>
-	       </main>
+                        <a th:href="@{/advertisment/myAds}" class="btn btn-secondary">取消</a>
+                    </div>
+                </form>
+            </div>
+        </main>
     </div>
 </div>
 
@@ -87,104 +152,102 @@
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 <script src="../js/notification/websocket.js"></script>
 
-		<script>
-		    // 時間處理
-		    document.getElementById('adStartTimeInput').addEventListener('change', function () {
-		        const datetimeValue = this.value;
-		        if (datetimeValue) {
-		            // 直接使用 YYYY-MM-DDTHH:mm 格式
-		            document.getElementById('adStartTime').value = datetimeValue;
-		            console.log('開始時間設定為:', datetimeValue);
-		        }
-		    });
-		    
-		    document.getElementById('adEndTimeInput').addEventListener('change', function () {
-		        const datetimeValue = this.value;
-		        if (datetimeValue) {
-		            // 直接使用 YYYY-MM-DDTHH:mm 格式
-		            document.getElementById('adEndTime').value = datetimeValue;
-		            console.log('結束時間設定為:', datetimeValue);
-		        }
-		    });
-		    
-		    // 頁面載入時初始化時間值
-		    document.addEventListener('DOMContentLoaded', function() {
-		        const startTimeInput = document.getElementById('adStartTimeInput');
-		        const endTimeInput = document.getElementById('adEndTimeInput');
-		        
-		        if (startTimeInput.value) {
-		            document.getElementById('adStartTime').value = startTimeInput.value;
-		        }
-		        if (endTimeInput.value) {
-		            document.getElementById('adEndTime').value = endTimeInput.value;
-		        }
-		    });
-		    
-		    // 表單提交前驗證
-		    document.querySelector('form').addEventListener('submit', function(e) {
-		        const startTime = document.getElementById('adStartTime').value;
-		        const endTime = document.getElementById('adEndTime').value;
-		        
-		        if (!startTime || !endTime) {
-		            e.preventDefault();
-		            alert('請選擇開始時間和結束時間');
-		            return false;
-		        }
-		        
-		        // 檢查結束時間是否晚於開始時間
-		        const startDate = new Date(startTime);
-		        const endDate = new Date(endTime);
-		        
-		        if (endDate <= startDate) {
-		            e.preventDefault();
-		            alert('結束時間必須晚於開始時間');
-		            return false;
-		        }
-		    });
-		    
-		    // 圖片預覽功能
-		    document.getElementById('imageInput').addEventListener('change', function(e) {
-		        const file = e.target.files[0];
-		        const previewDiv = document.getElementById('imagePreview');
-		        const previewImage = document.getElementById('previewImage');
-		        
-		        if (file) {
-		            // 檢查檔案類型
-		            if (!file.type.startsWith('image/')) {
-		                alert('請選擇圖片檔案');
-		                this.value = '';
-		                previewDiv.style.display = 'none';
-		                return;
-		            }
-		            
-		            // 檢查檔案大小 (限制為 5MB)
-		            if (file.size > 5 * 1024 * 1024) {
-		                alert('圖片檔案大小不能超過 5MB');
-		                this.value = '';
-		                previewDiv.style.display = 'none';
-		                return;
-		            }
-		            
-		            // 建立預覽
-		            const reader = new FileReader();
-		            reader.onload = function(e) {
-		                previewImage.src = e.target.result;
-		                previewDiv.style.display = 'block';
-		            };
-		            reader.readAsDataURL(file);
-		        } else {
-		            previewDiv.style.display = 'none';
-		        }
-		    });
-		    
-		    // 清除圖片選擇功能
-		    function clearImageSelection() {
-		        document.getElementById('imageInput').value = '';
-		        document.getElementById('imagePreview').style.display = 'none';
-		    }
-		    
-		    
-		</script>
+<script>
+    // 時間處理
+    document.getElementById('adStartTimeInput').addEventListener('change', function () {
+        const datetimeValue = this.value;
+        if (datetimeValue) {
+            // 直接使用 YYYY-MM-DDTHH:mm 格式
+            document.getElementById('adStartTime').value = datetimeValue;
+            console.log('開始時間設定為:', datetimeValue);
+        }
+    });
+    
+    document.getElementById('adEndTimeInput').addEventListener('change', function () {
+        const datetimeValue = this.value;
+        if (datetimeValue) {
+            // 直接使用 YYYY-MM-DDTHH:mm 格式
+            document.getElementById('adEndTime').value = datetimeValue;
+            console.log('結束時間設定為:', datetimeValue);
+        }
+    });
+    
+    // 頁面載入時初始化時間值
+    document.addEventListener('DOMContentLoaded', function() {
+        const startTimeInput = document.getElementById('adStartTimeInput');
+        const endTimeInput = document.getElementById('adEndTimeInput');
+        
+        if (startTimeInput.value) {
+            document.getElementById('adStartTime').value = startTimeInput.value;
+        }
+        if (endTimeInput.value) {
+            document.getElementById('adEndTime').value = endTimeInput.value;
+        }
+    });
+    
+    // 表單提交前驗證
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const startTime = document.getElementById('adStartTime').value;
+        const endTime = document.getElementById('adEndTime').value;
+        
+        if (!startTime || !endTime) {
+            e.preventDefault();
+            alert('請選擇開始時間和結束時間');
+            return false;
+        }
+        
+        // 檢查結束時間是否晚於開始時間
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+        
+        if (endDate <= startDate) {
+            e.preventDefault();
+            alert('結束時間必須晚於開始時間');
+            return false;
+        }
+    });
+    
+    // 圖片預覽功能
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const previewDiv = document.getElementById('imagePreview');
+        const previewImage = document.getElementById('previewImage');
+        
+        if (file) {
+            // 檢查檔案類型
+            if (!file.type.startsWith('image/')) {
+                alert('請選擇圖片檔案');
+                this.value = '';
+                previewDiv.style.display = 'none';
+                return;
+            }
+            
+            // 檢查檔案大小 (限制為 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('圖片檔案大小不能超過 5MB');
+                this.value = '';
+                previewDiv.style.display = 'none';
+                return;
+            }
+            
+            // 建立預覽
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewDiv.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            previewDiv.style.display = 'none';
+        }
+    });
+    
+    // 清除圖片選擇功能
+    function clearImageSelection() {
+        document.getElementById('imageInput').value = '';
+        document.getElementById('imagePreview').style.display = 'none';
+    }
+</script>
 
 </body>
 </html>

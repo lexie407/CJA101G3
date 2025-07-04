@@ -16,11 +16,12 @@
             padding: 20px;
         }
         .ad-detail-card {
-            background-color: var(--card-background-color);
+            background-color: #f8f9fa;
             border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
             overflow: hidden;
             margin-bottom: 20px;
+            border: 1px solid #dee2e6;
         }
         .ad-detail-image {
             width: 100%;
@@ -34,7 +35,7 @@
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 16px;
-            color: var(--text-color-primary);
+            color: #212529;
         }
         .ad-detail-info {
             display: grid;
@@ -47,23 +48,23 @@
             align-items: center;
             gap: 8px;
             padding: 12px;
-            background-color: var(--background-color-secondary);
+            background-color: #e9ecef;
             border-radius: 8px;
         }
         .info-label {
             font-weight: 600;
-            color: var(--text-color-secondary);
+            color: #6c757d;
             min-width: 80px;
         }
         .info-value {
-            color: var(--text-color-primary);
+            color: #495057;
         }
         .ad-status-active {
-            color: #4CAF50;
+            color: #28a745;
             font-weight: bold;
         }
         .ad-status-inactive {
-            color: #FFC107;
+            color: #ffc107;
             font-weight: bold;
         }
         .back-button {
@@ -71,16 +72,18 @@
             align-items: center;
             gap: 8px;
             padding: 12px 24px;
-            background-color: var(--primary-color);
+            background-color: #343a40;
             color: white;
             text-decoration: none;
             border-radius: 8px;
             transition: all 0.3s ease;
             margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .back-button:hover {
-            background-color: var(--primary-color-dark);
+            background-color: #23272b;
             transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
             text-decoration: none;
             color: white;
         }
@@ -91,6 +94,37 @@
             border-radius: 8px;
             border: 1px solid #f5c6cb;
             margin-bottom: 20px;
+        }
+        
+        .store-items-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(73, 80, 87, 0.3);
+        }
+        
+        .store-items-button:hover {
+            background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(73, 80, 87, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .store-items-button .material-icons {
+            font-size: 1.2rem;
+        }
+        
+        .store-items-button .material-icons:last-child {
+            margin-left: auto;
         }
     </style>
 </head>
@@ -166,6 +200,15 @@
                                     <span class="info-value" th:text="${#dates.format(adVO.adCreatedTime, 'yyyy-MM-dd HH:mm')}">建立時間</span>
                                 </div>
                             </div>
+                            
+                            <!-- 商店商品按鈕 -->
+                            <div class="store-actions" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e0e0e0;">
+                                <a th:href="@{/advertisment/storeItems(storeId=${adVO.storeId})}" class="store-items-button">
+                                    <span class="material-icons">store</span>
+                                    <span>查看商店商品</span>
+                                    <span class="material-icons">arrow_forward</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -179,4 +222,4 @@
     <script th:src="@{/js/notification/websocket.js}"></script>
     
 </body>
-</html>
+</html> 

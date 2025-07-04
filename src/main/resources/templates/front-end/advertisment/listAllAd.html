@@ -10,78 +10,217 @@
 
     <!-- 這裡可以放置此頁面特有的 CSS -->
     <style>
+        .ads-container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
         .ad-card {
-            background-color: var(--card-background-color); /* Material Design 卡片背景色 */
-            border-radius: 8px; /* 圓角 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 輕微陰影 */
-            margin-bottom: 20px;
-            overflow: hidden; /* 確保內容不會超出圓角 */
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            height: 100%; /* 確保卡片在網格中高度一致 */
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 160px;
         }
+        
         .ad-card:hover {
-            transform: translateY(-5px); /* 鼠標懸停時輕微上移 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* 陰影加深 */
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            border-color: #667eea;
         }
+        
+        .ad-card-content {
+            display: flex;
+            height: 100%;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .ad-image-section {
+            flex: 0 0 260px;
+            position: relative;
+            overflow: hidden;
+        }
+        
         .ad-card-image {
             width: 100%;
-            height: 200px; /* 固定圖片高度 */
-            object-fit: cover; /* 裁剪圖片以填充容器 */
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
+            height: 100%;
+            min-height: 160px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
         }
-        .ad-card-content {
+        
+        .ad-card:hover .ad-card-image {
+            transform: scale(1.05);
+        }
+        
+        .ad-text-section {
+            flex: 1;
             padding: 16px;
-            flex-grow: 1; /* 讓內容區塊可以伸展 */
+            color: #333;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
         }
+        
+        .ad-header {
+            margin-bottom: 10px;
+        }
+        
         .ad-card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-color-primary);
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            line-height: 1.2;
         }
-        .ad-card-subtitle {
+        
+        .ad-description {
+            margin-bottom: 10px;
+        }
+        
+        .ad-description p {
             font-size: 0.9rem;
-            color: var(--text-color-secondary);
-            margin-bottom: 4px;
+            color: #555;
+            line-height: 1.4;
+            margin: 0;
+            font-weight: 400;
         }
-        .ad-card-details {
+        
+
+        
+        .ad-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            margin-top: auto;
+            padding-top: 10px;
+        }
+        
+        .ad-dates {
+            font-size: 0.8rem;
+            color: #777;
+        }
+        
+        .ad-view-btn {
+            background: #667eea;
+            border: 2px solid #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 18px;
+            text-decoration: none;
+            font-weight: 600;
             font-size: 0.85rem;
-            color: var(--text-color-secondary);
-            margin-top: auto; /* 將詳細資訊推到底部 */
+            transition: all 0.3s ease;
         }
-        .ad-status-active {
-            color: #4CAF50; /* Material Green */
-            font-weight: bold;
+        
+        .ad-view-btn:hover {
+            background: #764ba2;
+            border-color: #764ba2;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
         }
-        .ad-status-inactive {
-            color: #FFC107; /* Material Amber */
-            font-weight: bold;
+        
+        .ad-status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 3;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
+        
         .no-ads-message {
             text-align: center;
-            padding: 50px;
-            color: var(--text-color-secondary);
-            font-size: 1.2rem;
+            padding: 80px 20px;
+            color: #666;
+            font-size: 1.3rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        .container-fluid {
-            padding-left: 20px;
-            padding-right: 20px;
-        }
+        
         .main-content {
-            padding-top: 20px; /* 根據你的 header 高度調整 */
+            padding-top: 20px;
             padding-bottom: 20px;
+            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+            min-height: 100vh;
         }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 自動調整列數，最小寬度 280px */
-            gap: 20px; /* 卡片間距 */
-            padding: 20px; /* 整個網格的內邊距 */
+        
+        .page-header {
+            text-align: center;
+            padding: 40px 0;
+            margin-bottom: 30px;
         }
+        
+        .page-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .page-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+                 /* 響應式設計 */
+         @media (max-width: 768px) {
+             .ad-card {
+                 min-height: auto;
+             }
+             
+             .ad-card-content {
+                 flex-direction: column;
+             }
+             
+             .ad-image-section {
+                 flex: none;
+             }
+             
+             .ad-card-image {
+                 height: 200px;
+                 min-height: 200px;
+             }
+             
+             .ad-text-section {
+                 padding: 20px;
+             }
+             
+             .ad-card-title {
+                 font-size: 1.5rem;
+             }
+             
+             .ads-container {
+                 padding: 15px;
+             }
+             
+             .ad-footer {
+                 flex-direction: column;
+                 gap: 15px;
+                 align-items: stretch;
+             }
+             
+             .ad-view-btn {
+                 text-align: center;
+                 align-self: stretch;
+             }
+         }
     </style>
 </head>
 <body class="light">
@@ -91,47 +230,64 @@
 		<div th:insert="~{/navTemplate :: navbar}"></div>
 		
 		<div class="main-content">
-			<header class="secondary-nav">
-                <ul>
-                    <li><h2>最新廣告</h2></li>
-                </ul>
-            </header>
+			<div class="page-header">
+                <h2>🎯 精選廣告</h2>
+                <p>發現最優質的商家與服務</p>
+            </div>
 			
             <main class="content-area-main">
-                <div th:if="${#lists.isEmpty(adListData)}" class="no-ads-message">
-                    目前沒有任何廣告。
-                </div>
-                <div th:unless="${#lists.isEmpty(adListData)}" class="grid-container">
-                    <div class="ad-card" th:each="adVO : ${adListData}">
-                        <!-- 廣告圖片顯示 -->
-                        <img th:src="@{/advertisment/DBGifReader(adId=${adVO.adId})}" 
-                             class="ad-card-image" alt="廣告圖片">
-                        
-                        <div class="ad-card-content">
-                            <h3 class="ad-card-title" th:text="${adVO.adTitle}">廣告標題</h3>
-                            <p class="ad-card-subtitle">
-                                <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">store</span>
-								<span th:text="${storeNamesMap != null ? storeNamesMap.get(adVO.storeId) : '未知商店'}"></span>
-                            </p>
-                            <p class="ad-card-details">
-                                狀態: 
-                                <span class="ad-status-active" text="啟用中">啟用中</span>
-                            </p>
-                            <p class="ad-card-details">
-                                <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">event</span>
-                                開始: <span th:text="${#dates.format(adVO.adStartTime, 'yyyy-MM-dd HH:mm')}"></span>
-                            </p>
-                            <p class="ad-card-details">
-                                <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">event_busy</span>
-                                結束: <span th:text="${#dates.format(adVO.adEndTime, 'yyyy-MM-dd HH:mm')}"></span>
-                            </p>
-                            <!-- 可以添加查看詳情按鈕等互動元素 -->
-                            <div class="mt-auto pt-3 text-right">
-                                <a th:href="@{/advertisment/getOne_For_Display(adId=${adVO.adId})}" 
-                                   class="btn btn-primary" 
-                                   style="text-decoration: none; display: inline-block; padding: 8px 16px; background-color: #007bff; color: white; border-radius: 4px; transition: background-color 0.3s ease;">
-                                    查看詳情
-                                </a>
+                <div class="ads-container">
+                    <div th:if="${#lists.isEmpty(adListData)}" class="no-ads-message">
+                        <i class="material-icons" style="font-size: 4rem; margin-bottom: 20px;">campaign</i>
+                        <div>目前沒有任何廣告</div>
+                        <p style="margin-top: 10px; font-size: 1rem; opacity: 0.7;">敬請期待更多精彩內容！</p>
+                    </div>
+                    
+                    <div th:unless="${#lists.isEmpty(adListData)}">
+                        <div class="ad-card" th:each="adVO : ${adListData}">
+                            <!-- 狀態標籤 -->
+                            <div class="ad-status-badge">
+                                <i class="material-icons" style="font-size: 1rem; vertical-align: middle;">verified</i>
+                                熱門推薦
+                            </div>
+                            
+                            <div class="ad-card-content">
+                                <!-- 圖片區域 -->
+                                <div class="ad-image-section">
+                                    <img th:src="@{/advertisment/DBGifReader(adId=${adVO.adId})}" 
+                                         class="ad-card-image" 
+                                         alt="廣告圖片"
+                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGNUY1RjUiLz48Y2lyY2xlIGN4PSIxNTAiIGN5PSIxMDAiIHI9IjMwIiBmaWxsPSIjRERERERkIi8+PC9zdmc+'">
+                                </div>
+                                
+                                <!-- 文字內容區域 -->
+                                <div class="ad-text-section">
+                                                                         <div class="ad-header">
+                                         <h3 class="ad-card-title" th:text="${storeNamesMap != null ? storeNamesMap.get(adVO.storeId) : '精選商家'}">商店名稱</h3>
+                                         <div class="ad-description">
+                                             <p th:text="${adVO.adTitle}">廣告描述內容</p>
+                                         </div>
+                                     </div>
+                                    
+                                    
+                                    
+                                    <div class="ad-footer">
+                                        <div class="ad-dates">
+                                            <div style="margin-bottom: 4px;">
+                                                <i class="material-icons" style="font-size: 0.9rem; vertical-align: middle;">schedule</i>
+                                                活動期間
+                                            </div>
+                                                                                         <div th:text="${#dates.format(adVO.adStartTime, 'yyyy/MM/dd')} + ' - ' + ${#dates.format(adVO.adEndTime, 'yyyy/MM/dd')}">
+                                                 日期範圍
+                                             </div>
+                                        </div>
+                                        <a th:href="@{/advertisment/getOne_For_Display(adId=${adVO.adId})}" 
+                                           class="ad-view-btn">
+                                            <i class="material-icons" style="font-size: 1rem; vertical-align: middle; margin-right: 5px;">visibility</i>
+                                            查看詳情
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
