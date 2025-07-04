@@ -6,7 +6,8 @@ var stompClient = null;
        // 例如：var currentUserId = '[[${loggedInUserId}]]';
        // 這裡為了示範，我們假設一個固定的用戶ID。
        // 請確保這個ID與後端 SimpMessagingTemplate.convertAndSendToUser 方法中使用的ID一致。
-       var currentUserId = "1"; // 範例用戶ID，請替換為實際登入用戶的ID
+       var currentUserIdNav = (document.getElementById("currentUserId").value).toString();
+	   var currentUserId = currentUserIdNav; // 範例用戶ID，請替換為實際登入用戶的ID
 
        // 頁面元素引用
        var notificationButtonHover = document.getElementById('notificationButtonHover');
