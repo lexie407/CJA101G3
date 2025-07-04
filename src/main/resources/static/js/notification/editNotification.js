@@ -25,7 +25,12 @@ document.addEventListener("DOMContentLoaded", function() {
 	//綁定返回按鈕
 	let backBtn = document.getElementById("backToAdminNotificationsBtn");
 	backBtn.addEventListener("click", function(){
-		history.back();
+		if(sessionStorage.getItem("oriUrl") == "/notification/unSendNotification"){
+			window.location.href = "/notification/unSendNotification"
+		}else{
+			window.location.href = "/notification/backDoSearchNotification";
+		}
+		
 	})
 
 });
