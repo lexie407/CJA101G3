@@ -2,8 +2,8 @@ package com.toiukha.spot.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
+// import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+// import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -20,10 +20,12 @@ public class SecurityConfig {
         return new RestTemplate();
     }
     
+    // 🔧 過度階段：註解掉SecurityFilterChain，改用會員模組統一攔截器
+    /*
     @Bean
     public SecurityFilterChain spotSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-//           .csrf(csrf -> csrf.disable())
+           .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/spot/login", "/oauth2/**", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/admin/spot/**").authenticated()
@@ -45,4 +47,5 @@ public class SecurityConfig {
             );
         return http.build();
     }
+    */
 } 

@@ -240,7 +240,8 @@
                     </a>
                     
                     <form th:action="@{/admin/itinerary/delete/{id}(id=${itinerary.itnId})}" method="post" class="delete-form">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <!-- 🔧 過度階段：註解掉CSRF token -->
+                        <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/> -->
                         <button type="submit" class="btn btn-danger" onclick="return confirm('確定要刪除這個行程嗎？此操作無法復原！')">
                             <i class="material-icons">delete</i>
                             <span>刪除行程</span>
