@@ -112,7 +112,18 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 						        "/articleCollection/allList",  //收藏文章-明細
 						        "/ArticleCollectionAPI/api",  //收藏文章
 						        "/ArticlereportI/memberReportList",  //檢舉文章明細
-						        "/CommentsReports/memberReportList"  //檢舉留言明細
+						        "/CommentsReports/memberReportList",  //檢舉留言明細
+						        "/forum/article/insert",
+						        "/forum/article/edit",
+						        "/forum/article/add",
+						        "/forum/members/**",
+						        "/article/like",
+						        "/article/isLiked",
+						        "/article/collect",
+						        "/article/isCollected",
+						        "/article/*/update",
+						        "/article/*/delete",
+						        "/forum/artImage/upload" //圖片上傳
 
 						
 						

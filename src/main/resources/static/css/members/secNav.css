@@ -1,0 +1,71 @@
+/* --------------------------------------------- */
+/* 次導覽列 Subnav 下拉選單 完整樣式（覆蓋整份） */
+/* --------------------------------------------- */
+
+/* 0. 讓主列 <ul> 一行不換行，li 並排 */
+.secondary-nav ul {
+	white-space: nowrap;
+	overflow: visible;
+}
+
+.secondary-nav ul>li {
+	display: inline-block;
+	vertical-align: top;
+}
+
+/* 1. 父 <li> 定位與層級 */
+.secondary-nav ul li.has-dropdown {
+	position: relative;
+	z-index: 100;
+}
+
+/* 2. 子選單容器：跟父 li 一樣寬，絕對定位隱藏 */
+.secondary-nav ul li.has-dropdown>.dropdown {
+	display: none;
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 100%; /* 與父 li 完全同步寬度 */
+	box-sizing: border-box; /* 包含 padding 計算在內 */
+	background: var(--md-sys-color-surface-container);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	border-radius: 4px;
+	list-style: none;
+	padding: 8px 0;
+}
+
+/* 3. 懸停父 <li> 時顯示子選單 */
+.secondary-nav ul li.has-dropdown:hover>.dropdown {
+	display: block;
+}
+
+/* 4. 主連結懸停＆active 高亮（千萬別移除） */
+.secondary-nav a:hover, .secondary-nav li.active a, .secondary-nav li.has-dropdown:hover>a
+	{
+	background-color: var(--md-sys-color-primary-container);
+	color: var(--md-sys-color-on-primary-container);
+	border-radius: 5px;
+}
+
+/* 5. 子選單項目 <li> 撐滿寬度並上底色 */
+.secondary-nav ul li .dropdown li {
+	display: block;
+	width: 100%;
+	background-color: var(--md-sys-color-surface-container);
+}
+
+/* 6. 子選單連結 <a> 撐滿 li、不換行 */
+.secondary-nav ul li .dropdown li a {
+	display: block;
+	width: 100%;
+	padding: 8px 16px;
+	color: var(--md-sys-color-on-surface);
+	background-color: inherit;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+/* 7. 子選單項目懸停底色 */
+.secondary-nav ul li .dropdown li a:hover {
+	background-color: var(--md-sys-color-surface-container-low);
+}
