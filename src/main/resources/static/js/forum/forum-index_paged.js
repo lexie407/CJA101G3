@@ -77,16 +77,19 @@ function createArticleCard(article) {
     }
     const artCat = artCatMap[article.artCat] || "文章*";  //若文章類別沒有被適當的歸類，顯示成文章*類別
     const artTitle = article.artTitle;
-    const artCon = function () {
-        const cleanText = article.artCon.replace(/<img[^>]*>/gi, ""); // 移除 img 標籤
 
-        // 如果文章內容超過50個字，則截斷並加上省略號
-        if (cleanText.length > 50) {
-            return cleanText.substring(0, 50) + "...";
-        } else {
-            return cleanText;
-        }
-    };
+    const artPreview = article.artPreview || "";  // 從 DTO 直接拿純文字預覽
+
+    // const artCon = function () {
+    //     const cleanText = article.artCon.replace(/<img[^>]*>/gi, ""); // 移除 img 標籤
+    //
+    //     // 如果文章內容超過50個字，則截斷並加上省略號
+    //     if (cleanText.length > 50) {
+    //         return cleanText.substring(0, 50) + "...";
+    //     } else {
+    //         return cleanText;
+    //     }
+    // };
     const mamName = article.mamName;
     const artId = article.artId;
     const artLike = article.artLike;
@@ -101,7 +104,7 @@ function createArticleCard(article) {
         <div class="article-meta">
             <span class="category category-${article.artCat}">${artCat}</span>
             <strong>${artTitle}</strong>
-            <p class="article-preview">${artCon()}</p>
+            <p class="article-preview">${artPreview}</p>
             <div class="article-info">${mamName} · ${createDate}</div>
         </div>
         <div class="article-actions">

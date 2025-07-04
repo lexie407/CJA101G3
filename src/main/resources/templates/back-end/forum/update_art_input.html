@@ -264,7 +264,8 @@
         </main>
     </div>
 </div>
-
+<!--圖片上傳邏輯-->
+<script th:src="@{/js/forum/handleQuillImages.js}"></script>
 <script>
     // 隱藏錯誤訊息用
     function hideContent(d) {
@@ -272,9 +273,24 @@
     }
 
     // 表單送出時，把 Quill 的 HTML 內容填到隱藏的 textarea
-    document.querySelector('form').addEventListener('submit', function (e) {
-        const html = quill.root.innerHTML;
-        document.querySelector('#artCon').value = html;
+    document.querySelector('form').addEventListener('submit',function (e) {
+        e.preventDefault(); // 阻止表單的默認提交行為
+
+        handleQuillImages(quill)
+            .then(function (html) {
+                document.querySelector('#artCon').value = html;
+                e.target.submit(); // 圖片都處理完才送出
+            })
+            .catch(function (error) {
+                console.error('圖片上傳失敗:', error);
+                alert('處理圖片失敗，請稍後再試。');
+            });
+
+        //把quill的值存到html
+        // const html = quill.root.innerHTML;
+        // console.log(html);
+        //
+        // document.querySelector('#artCon').value = html;
     });
 
     // 避免第一次載入時 Quill 是空的

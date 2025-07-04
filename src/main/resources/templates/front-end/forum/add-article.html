@@ -96,63 +96,13 @@
 <!--                <pre id="output"></pre>-->
             </div>
 
-
-            <!-- 					舊版表單 -->
-<!--            <div class="app-bar">-->
-<!--                <h2><span class="material-icons">edit</span>新增文章</h2>-->
-<!--            </div>-->
-<!--            <form  th:action="@{/forum/article/insert}" method="post" enctype="multipart/form-data" id="addArticleForm" >-->
-<!--                <div class="form-container">-->
-
-<!--                    <label for="artTitle">文章標題</label>-->
-<!--                    <input type="text" id="artTitle" name="artTitle" required value="測試用123">-->
-<!--                    <br>-->
-<!--                    <label for="artHol">會員編號</label>-->
-<!--                    <input type="number" id="artHol" name="artHol" required min="1" value="1">-->
-<!--                    <br>-->
-<!--                    <label for="artCat">分類</label>-->
-<!--                    <select id="artCat" name="artCat" required>-->
-<!--                        &lt;!&ndash;                <option value="">請選擇分類</option>&ndash;&gt;-->
-<!--                        <option value="1">文章</option>-->
-<!--                        <option value="2">問題</option>-->
-<!--                        &lt;!&ndash;            <option value="3">已解決</option>&ndash;&gt;-->
-<!--                    </select>-->
-<!--                    <br>-->
-<!--                    <label for="artSta">分類</label>-->
-<!--                    <select id="artSta" name="artSta" required>-->
-<!--                        <option value="1">上架</option>-->
-<!--                        <option value="2">下架</option>-->
-<!--                    </select>-->
-<!--                    <br>-->
-<!--                    <label for="editor">內容</label>-->
-<!--                    &lt;!&ndash;        <textarea id="artCon" name="artCon" rows="8" required></textarea>&ndash;&gt;-->
-
-<!--                    <textarea id="artCon" name="artCon" style="display:none;"></textarea>-->
-<!--                    <div id="editor">-->
-<!--                        <p>測試用456</p>-->
-<!--                        &lt;!&ndash;Qill編輯器&ndash;&gt;-->
-<!--                    </div>-->
-<!--                    &lt;!&ndash;        <label for="image">圖片上傳</label>&ndash;&gt;-->
-<!--                    &lt;!&ndash;        <input type="file" id="image" name="image">&ndash;&gt;-->
-
-<!--                    <div class="button-group">-->
-<!--                        <button type="submit">送出</button>-->
-<!--                        <button type="reset">清除</button>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </form>-->
-            <!-- ===================================================================== -->
-
-<!--            <button onclick="getContent()">查看輸出內容</button>-->
-
-<!--            <pre id="output"></pre>-->
         </main>
     </div>
 </div>
 
-<!--<script src="/webjars/sockjs-client/sockjs.min.js"></script>-->
-<!--<script src="/webjars/stomp-websocket/stomp.min.js"></script>-->
-<!--<script src="../js/notification/websocket.js"></script>-->
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="../js/notification/websocket.js"></script>
 
 
 <script th:src="@{/js/forum/frontEnd/add-article.js}" ></script>

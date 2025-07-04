@@ -451,8 +451,12 @@
 		// 綁定檢舉按鈕事件
 		$('#articleDetail .report-btn').off('click').on('click', async function () {
 			const userId = await getCurrentUserId();
+
 			if (!userId) {
-				alert('請先登入才能檢舉文章');
+				const goLogin = confirm('請先登入才能檢舉文章喔\n是否前往登入頁面？');
+				if (goLogin) {
+					window.location.href = '/members/login?redirect=' + encodeURIComponent(location.href);
+				}
 				return;
 			}
 
@@ -505,7 +509,7 @@
         console.log('分享選單數量:', $('#articleDetail .share-menu').length);
     }
 
-    // 全域變數儲存當前用戶ID
+    // 儲存當前用戶ID
     let articleCurrentUserId = null;
 
     // 取得當前用戶ID
@@ -538,11 +542,15 @@
         try {
             // 取得當前用戶ID
             const userId = await getCurrentUserId();
-            
-            if (!userId) {
-                alert('請先登入才能按讚');
-                return;
-            }
+
+
+			if (!userId) {
+				const goLogin = confirm('請先登入才能按讚喔\n是否前往登入頁面？');
+				if (goLogin) {
+					window.location.href = '/members/login?redirect=' + encodeURIComponent(location.href);
+				}
+				return;
+			}
 
             const formData = new FormData();
             formData.append('docId', artId);
@@ -590,7 +598,7 @@
     async function checkArticleLikeStatus(artId) {
         try {
             const userId = await getCurrentUserId();
-            
+
             if (!userId) {
                 return; // 未登入用戶不檢查按讚狀態
             }
@@ -631,13 +639,16 @@
         try {
             // 取得當前用戶ID
             const userId = await getCurrentUserId();
-            
-            if (!userId) {
-                alert('請先登入才能收藏');
-                return;
-            }
 
-            const formData = new FormData();
+			if (!userId) {
+				const goLogin = confirm('請先登入才能收藏喔\n是否前往登入頁面？');
+				if (goLogin) {
+					window.location.href = '/members/login?redirect=' + encodeURIComponent(location.href);
+				}
+				return;
+			}
+
+			const formData = new FormData();
             formData.append('artId', artId);
             formData.append('memId', userId);
 

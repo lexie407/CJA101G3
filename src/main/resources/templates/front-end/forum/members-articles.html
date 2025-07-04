@@ -115,8 +115,24 @@
 <script src="../js/notification/websocket.js"></script>
 <!--<script th:src="@{/js/forum/frontEnd/search_Page.js}" ></script>-->
 <script>
-    // 點擊 li 跳轉到單篇文章頁面
+    function checkMemberId() {
+        fetch("/api/session/currentMember")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    return;
+                } else {
+                    alert("請先登入");
+                    window.location.href = "/members/login";
+                }
+            });
+    }
+
+    checkMemberId();
+
     document.addEventListener('DOMContentLoaded', function () {
+
+        // 點擊 li 跳轉到單篇文章頁面
         document.querySelectorAll('.item-list li[data-artid]').forEach(function (li) {
             li.addEventListener('click', function (e) {
                 // 如果點擊的是按鈕，不執行跳轉
