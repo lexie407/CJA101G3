@@ -133,7 +133,7 @@ function initComments(shadowRoot) {
 		const commentItem = document.createElement('div');
 		commentItem.className = 'comment-item card';
 		commentItem.dataset.commentId = comment.commId;
-		commentItem.dataset.userId = comment.memId;
+		commentItem.dataset.userId = comment.commHol;
 
 		// 顯示留言者名稱
 		const authorStrong = document.createElement('strong');
@@ -213,7 +213,7 @@ function initComments(shadowRoot) {
 		dropdownMenu.style.visibility = 'visible'; // Ensure it's visible
 
 		// --- 根據是否為本人留言，決定顯示不同選單項目 ---
-		if (CURRENT_USER_ID && comment.commHol === CURRENT_USER_ID) {
+		if (comment.commHol == CURRENT_USER_ID) {
 			// 本人的留言：顯示修改和刪除
 			const editLi = document.createElement('li');
 			const editLink = document.createElement('a');
