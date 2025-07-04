@@ -11,6 +11,9 @@
 	th:href="@{https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css}"
 	rel="stylesheet" />
 <style>
+body {
+      font-size: 1.1rem;
+    }
 .app-container {
 	display: flex;
 	min-height: 100vh;
@@ -384,9 +387,7 @@ td[colspan="23"] {
 		<div class="main-content">
 			<header class="secondary-nav">
 				<ul>
-					<li><a th:href="@{/store/selectPage}">查詢主頁</a></li>
-					<li><a th:href="@{/store/listAll}">列出所有商家</a></li>
-					<li><a th:href="@{/store/reviewStore}" class="active">審核商家</a></li>
+					<th:block th:replace="~{subnavStoreBack :: secNavResources}"></th:block>
 				</ul>
 			</header>
 			<main class="content-area-main">

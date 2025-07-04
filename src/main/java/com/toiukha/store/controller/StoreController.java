@@ -120,6 +120,7 @@ public class StoreController {
 		// 如果你想一開始就載入所有商家用於下拉，這裡呼叫 findAll()
 		model.addAttribute("storeList", storeService.findAllStores());
 		model.addAttribute("currentPage", "partner");
+		model.addAttribute("currentPage2", "selectPage");
 		return "back-end/store/selectPage";
 	}
 
@@ -130,6 +131,7 @@ public class StoreController {
 		List<StoreVO> pending = storeService.findPendingStores();
 		model.addAttribute("pendingStores", pending);
 		model.addAttribute("currentPage", "partner");
+		model.addAttribute("currentPage2", "reviewStore");
 		return "back-end/store/reviewStore";
 	}
 
@@ -191,6 +193,7 @@ public class StoreController {
 	public String listAllStores(Model model) {
 		model.addAttribute("stores", storeService.findAllStores());
 		model.addAttribute("currentPage", "partner");
+		model.addAttribute("currentPage2", "listAll");
 		return "back-end/store/listAll";
 	}
 

@@ -11,6 +11,12 @@
 body {
 	font-size: 1.1rem;
 }
+.md-headline {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--md-sys-color-primary);
+  text-align: center;
+}
 
 .form-field {
 	display: flex;
@@ -111,9 +117,7 @@ input, select {
 		<div class="main-content">
 			<header class="secondary-nav">
 				<ul>
-					<li><a th:href="@{/store/selectPage}" class="active">查詢主頁</a></li>
-					<li><a th:href="@{/store/listAll}">列出所有商家</a></li>
-					<li><a th:href="@{/store/reviewStore}">審核商家</a></li>
+					<th:block th:replace="~{subnavStoreBack :: secNavResources}"></th:block>
 				</ul>
 			</header>
 			<main class="content-area-main">
