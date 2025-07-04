@@ -111,9 +111,7 @@ tbody tr:nth-child(even) {
 		<div class="main-content">
 			<header class="secondary-nav">
 				<ul>
-					<li><a th:href="@{/manageFunction/selectPage}">選擇功能</a></li>
-					<li><a th:href="@{/manageFunction/listAll}">功能列表</a></li>
-					<li><a th:href="@{/manageFunction/add}">新增功能</a></li>
+					<th:block th:replace="~{subnavMembersBack :: secNavResources}"></th:block>
 				</ul>
 			</header>
 			<main class="content-area-main">
@@ -129,11 +127,11 @@ tbody tr:nth-child(even) {
 								</tr>
 							</thead>
 							<tbody>
-								<tr th:each="f : ${manageFunctions}">
-									<td th:text="${f.manageFuncId}"></td>
-									<td th:text="${f.manageFuncName}"></td>
+								<tr>
+									<td th:text="${selectedFunction.manageFuncId}"></td>
+									<td th:text="${selectedFunction.manageFuncName}"></td>
 									<td><a
-										th:href="@{/manageFunction/edit(manageFuncId=${f.manageFuncId})}"
+										th:href="@{/manageFunction/edit(manageFuncId=${selectedFunction.manageFuncId})}"
 										class="edit-btn">編輯</a></td>
 								</tr>
 								<tr th:if="${#lists.isEmpty(manageFunctions)}">

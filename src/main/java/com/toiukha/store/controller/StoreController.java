@@ -38,6 +38,7 @@ public class StoreController {
 	@GetMapping("/register")
 	public String showRegisterPage(Model model) {
 		model.addAttribute("storeVO", new StoreVO());
+		model.addAttribute("currentPage", "bePartner");
 		model.addAttribute("errorMsgs", new ArrayList<String>());
 		return "front-end/store/register";
 	}
@@ -81,7 +82,7 @@ public class StoreController {
 				// 取出每個欄位錯誤的預設訊息，加入到 errorMsgs
 				errorMsgs.add(fe.getDefaultMessage());
 			}
-
+			model.addAttribute("currentPage", "bePartner");
 			model.addAttribute("errorMsgs", errorMsgs);
 			return "front-end/store/register";
 		}

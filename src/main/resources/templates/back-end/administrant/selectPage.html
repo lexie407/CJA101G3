@@ -178,9 +178,7 @@ input:focus, select:focus {
 		<div class="main-content">
 			<header class="secondary-nav">
 				<ul>
-					<li><a th:href="@{/admins/selectPage}" class="active">查詢主頁</a></li>
-					<li><a th:href="@{/admins/listAll}">列出所有管理員</a></li>
-					<li><a th:href="@{/admins/add}">新增管理員</a></li>
+					<th:block th:replace="~{subnavMembersBack :: secNavResources}"></th:block>
 				</ul>
 			</header>
 			<main class="content-area-main">

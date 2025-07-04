@@ -13,9 +13,10 @@
 	rel="stylesheet" />
 
 <style>
-/* ==================================================================== */
-/* 以下是從「忘記密碼頁」母模板繼承的通用 Material Design 樣式，確保頁面外觀一致 */
-/* ==================================================================== */
+
+body {
+    font-size: 1.1rem;
+  }
 .app-container {
 	display: flex;
 	min-height: 100vh;
@@ -378,8 +379,7 @@ td[colspan="23"] {
 		<div class="main-content">
 			<header class="secondary-nav">
 				<ul>
-					<li><a th:href="@{/members/selectPage}">查詢主頁</a></li>
-					<li><a class="active">列出所有會員</a></li>
+					<th:block th:replace="~{subnavMembersBack :: secNavResources}"></th:block>
 				</ul>
 			</header>
 			<main class="content-area-main">

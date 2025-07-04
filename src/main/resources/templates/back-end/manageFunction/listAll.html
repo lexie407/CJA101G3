@@ -112,9 +112,7 @@ tbody tr:nth-child(even) {
 		<div class="main-content">
 			<header class="secondary-nav">
 				<ul>
-					<li><a th:href="@{/manageFunction/selectPage}">選擇功能</a></li>
-					<li><a th:href="@{/manageFunction/listAll}" class="active">功能列表</a></li>
-					<li><a th:href="@{/manageFunction/add}">新增功能</a></li>
+					<th:block th:replace="~{subnavMembersBack :: secNavResources}"></th:block>
 				</ul>
 			</header>
 			<main class="content-area-main">

@@ -1,0 +1,33 @@
+<th:block th:fragment="secNavResources">
+	<ul>
+		<!-- 會員查詢（2） -->
+		<li><a th:href="@{/members/selectPage}"
+			th:classappend="${currentPage2=='selectPage'} ? 'active' : ''">
+				會員查詢主頁 </a></li>
+		<li><a th:href="@{/members/listAll}"
+			th:classappend="${currentPage2=='listAll'} ? 'active' : ''">
+				會員列表 </a></li>
+
+		<!-- 管理員管理（3） -->
+		<li><a th:href="@{/admins/selectPage}"
+			th:classappend="${currentPage2=='adminSelect'} ? 'active' : ''">
+				管理員查詢主頁 </a></li>
+		<li><a th:href="@{/admins/listAll}"
+			th:classappend="${currentPage2=='adminList'} ? 'active' : ''">
+				管理員列表 </a></li>
+		<li><a th:href="@{/admins/add}"
+			th:classappend="${currentPage2=='adminAdd'} ? 'active' : ''">
+				新增管理員 </a></li>
+
+		<!-- 功能管理（3） -->
+		<li><a th:href="@{/manageFunction/selectPage}"
+			th:classappend="${currentPage2=='funcSelect'} ? 'active' : ''">
+				查詢管理功能主頁 </a></li>
+		<li><a th:href="@{/manageFunction/listAll}"
+			th:classappend="${currentPage2=='funcList'} ? 'active' : ''">
+				功能列表 </a></li>
+		<li><a th:href="@{/manageFunction/add}"
+			th:classappend="${currentPage2=='funcAdd'} ? 'active' : ''"> 新增功能
+		</a></li>
+	</ul>
+</th:block>
