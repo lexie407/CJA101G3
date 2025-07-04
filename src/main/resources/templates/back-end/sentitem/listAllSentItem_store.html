@@ -19,13 +19,19 @@
             </header>
             <main class="content-area-main">
                 <!-- Material Design 搜尋與日期區間 -->
-                <div class="mdc-search-bar">
-                    <span class="material-icons mdc-search-icon">search</span>
-                    <input type="text" id="sentItemSearchInput" placeholder="搜尋商品名稱或票券ID"
-                        class="mdc-input mdc-search-input">
-                    <input type="date" id="dateStart" class="mdc-date-input" style="margin-left:12px;">
-                    <span style="margin:0 4px;">~</span>
-                    <input type="date" id="dateEnd" class="mdc-date-input">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:12px;">
+                    <div class="mdc-search-bar" style="width:100%;max-width:520px;">
+                        <span class="material-icons mdc-search-icon">search</span>
+                        <input type="text" id="sentItemSearchInput" placeholder="搜尋電子票券ID"
+                            class="mdc-input mdc-search-input" style="width:100%;">
+                    </div>
+                    <div class="mdc-search-bar" style="width:100%;max-width:520px;">
+                        <span class="material-icons mdc-search-icon">search</span>
+                        <input type="text" id="memIdSearchInput" placeholder="搜尋會員ID" class="mdc-input mdc-search-input"
+                            style="width:100%;">
+                    </div>
+                    <button id="clearSearchBtn" class="mdc-button mdc-button--outlined"
+                        style="margin-top:4px;max-width:520px;width:100%;">清除搜尋欄位</button>
                 </div>
                 <div id="stats-list" class="mdc-horizontal-list"></div>
                 <div id="detail-list" class="mdc-horizontal-list" style="margin-top:32px;"></div>
@@ -43,6 +49,7 @@
                     function renderStats() {
                         const statsMap = {};
                         sentItemList.forEach(item => {
+                            if (item._visible === false) return;
                             if (!statsMap[item.itemId]) {
                                 statsMap[item.itemId] = {
                                     ticketName: item.ticketName,
@@ -70,8 +77,8 @@
                             const card = document.createElement('div');
                             card.className = 'mdc-horizontal-card mdc-card-hover';
                             card.innerHTML = `
-                                <div class="mdc-horizontal-card__media mdc-card-color">
-                                    <span class="material-icons" style="font-size: 48px;">confirmation_number</span>
+                                <div class="mdc-horizontal-card__media mdc-card-color" style="padding:0;overflow:hidden;">
+                                    <img src="/item/DBGifReader?itemId=${stat.itemId}" alt="商品圖片" style="width:100px;height:100px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px #1976d233;">
                                 </div>
                                 <div class="mdc-horizontal-card__content">
                                     <h3 class="mdc-horizontal-card__title">${cleanName}</h3>
@@ -86,11 +93,22 @@
                         nodata.style.display = hasData ? 'none' : '';
                     }
                     function showDetail(itemId) {
-                        const stat = sentItemList.filter(i => i.itemId === itemId);
+                        const keyword = document.getElementById('sentItemSearchInput').value.trim().toLowerCase();
+                        const memId = document.getElementById('memIdSearchInput').value.trim();
+                        let stat = sentItemList.filter(i => i.itemId === itemId);
+                        // 依搜尋條件過濾明細
+                        stat = stat.filter(d => {
+                            let matchKeyword = !keyword || (d.sentItemId + '').includes(keyword);
+                            let matchMemId = !memId || (d.memId + '').includes(memId);
+                            return matchKeyword && matchMemId;
+                        });
                         const detailContainer = document.getElementById('detail-list');
-                        const cleanName = stat[0]?.ticketName ? stat[0].ticketName.replace(/^\"|\"$/g, '') : '';
+                        const cleanName = stat[0]?.ticketName ? stat[0].ticketName.replace(/^"|"$/g, '') : '';
                         let html = `<button class="mdc-button mdc-button--outlined" onclick="closeDetail()" style="margin-bottom:16px;"><span class="material-icons" style="vertical-align:middle;">arrow_back</span>返回</button>`;
                         html += `<h3 style="color:#1976d2;margin-bottom:16px;">${cleanName} - 明細</h3>`;
+                        if (stat.length === 0) {
+                            html += '<div style="color:#bdbdbd;font-size:1.1rem;">查無資料</div>';
+                        }
                         stat.forEach(d => {
                             let status = d.itemStatus === 0 ? '<span style="color:#388e3c;">未使用</span>' : (d.itemStatus === 1 ? '<span style="color:#1976d2;">已使用</span>' : '<span style="color:#bdbdbd;">已過期</span>');
                             html += `
@@ -107,19 +125,28 @@
                         detailContainer.style.display = '';
                         detailContainer.scrollIntoView({ behavior: 'smooth' });
                         document.getElementById('stats-list').style.display = 'none';
+                        // 綁定搜尋欄位事件，明細畫面下即時刷新
+                        if (!window._detailSearchBinded) {
+                            document.querySelectorAll('#sentItemSearchInput, #memIdSearchInput').forEach(function (input) {
+                                input.addEventListener('input', function () { showDetail(itemId); });
+                            });
+                            window._detailSearchBinded = true;
+                        }
                     }
                     function closeDetail() {
                         document.getElementById('detail-list').innerHTML = '';
                         document.getElementById('detail-list').style.display = 'none';
                         document.getElementById('stats-list').style.display = '';
                     }
-                    document.querySelectorAll('#sentItemSearchInput, #dateStart, #dateEnd').forEach(function (input) {
-                        input.addEventListener('input', filterSentItems);
-                    });
+                    document.getElementById('sentItemSearchInput').addEventListener('input', filterSentItems);
+                    document.getElementById('memIdSearchInput').addEventListener('input', filterSentItems);
                     function filterSentItems() {
                         const keyword = document.getElementById('sentItemSearchInput').value.trim().toLowerCase();
+                        const memId = document.getElementById('memIdSearchInput').value.trim();
                         sentItemList.forEach(item => {
-                            item._visible = !keyword || item.ticketName.toLowerCase().includes(keyword) || (item.sentItemId + '').includes(keyword);
+                            let matchKeyword = !keyword || (item.sentItemId + '').includes(keyword);
+                            let matchMemId = !memId || (item.memId + '').includes(memId);
+                            item._visible = matchKeyword && matchMemId;
                         });
                         renderStats();
                     }
@@ -127,6 +154,11 @@
                         renderStats();
                         document.getElementById('detail-list').style.display = 'none';
                     }
+                    document.getElementById('clearSearchBtn').onclick = function () {
+                        document.getElementById('sentItemSearchInput').value = '';
+                        document.getElementById('memIdSearchInput').value = '';
+                        filterSentItems();
+                    };
                 </script>
                 <style>
                     .mdc-search-bar {
