@@ -1,26 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>行程詳情 - 後台管理系統</title>
-    <th:block th:fragment="head">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <!-- 行程模組通用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-common.css}">
-        <!-- 詳情頁面專用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-detail.css}">
-        <!-- CSRF Token 暫時註解-->
-        <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-        <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
-    </th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 引入後台模板的頭部資源 -->
+    <th:block th:replace="~{navBackTemplate :: headResources}"></th:block>
+    
+    <!-- 行程模組專用樣式 -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-common.css}">
+    <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-detail.css}">
+    
+    <!-- 🔧 過度階段：註解掉CSRF token -->
+    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
-<body>
-    <!-- 頂部導覽 -->
-    <div id="subnav" th:replace="~{subnavItinerary :: subnav('list')}"></div>
-
-    <main th:fragment="main" class="itinerary-detail-page">
+<body class="light">
+    <div class="app-container">
+        <!-- 引入後台左側導航 -->
+        <th:block th:replace="~{navBackTemplate :: navbar}"></th:block>
+        
+        <div class="main-content">
+            <!-- 頂部導航 -->
+            <div th:replace="~{subnavContentBack :: subnav(activeItem='itn-list')}"></div>
+            
+            <!-- 主要內容 -->
+            <main class="itinerary-detail-page">
         <div class="page-header-section">
             <div class="header-content">
                 <div class="header-text">
@@ -209,10 +216,13 @@
                         
                         <div class="system-info-item">
                             <div class="info-label">
-                                <i class="material-icons">update</i>
-                                最後更新
+                                <i class="material-icons">visibility</i>
+                                公開狀態
                             </div>
-                            <div class="info-value" th:text="${#dates.format(itinerary.itnUpdateDat, 'yyyy-MM-dd HH:mm')}">更新時間</div>
+                            <div class="info-value">
+                                <span class="status-badge" th:classappend="${itinerary.isPublic == 1 ? 'status-public' : 'status-private'}"
+                                      th:text="${itinerary.isPublic == 1 ? '公開' : '私人'}">公開</span>
+                            </div>
                         </div>
                         
                         <div class="system-info-item">
@@ -250,22 +260,8 @@
                 </div>
             </div>
         </div>
-        
-        <!-- 簡化的按鈕顯示確保腳本 -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // 簡單確保按鈕顯示
-                const actionSection = document.querySelector('.action-section');
-                const actionButtons = document.querySelector('.action-buttons');
-                const buttons = document.querySelectorAll('.btn');
-                
-                if (actionSection) actionSection.style.display = 'block';
-                if (actionButtons) actionButtons.style.display = 'flex';
-                buttons.forEach(btn => btn.style.display = 'inline-flex');
-                
-                console.log('行程詳情頁面載入完成，按鈕數量:', buttons.length);
-            });
-        </script>
-    </main>
+            </main>
+        </div>
+    </div>
 </body>
 </html> 

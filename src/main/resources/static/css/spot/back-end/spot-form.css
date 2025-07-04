@@ -42,6 +42,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     border: 1px solid var(--md-sys-color-outline-variant);
     min-height: calc(100vh - 100px);
+    margin-bottom: 30px;
 }
 
 /* 表單本體 */

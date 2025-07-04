@@ -216,6 +216,7 @@
     justify-content: flex-end;
     gap: 8px;
     align-items: center;
+    margin-bottom: 20px;
 }
 
 .delete-form {

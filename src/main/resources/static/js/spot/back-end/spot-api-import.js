@@ -154,7 +154,9 @@ async function handleImportAllSpots() {
         console.log('景點匯入成功:', data);
         
         showResult('import', data, 'success');
-        showToast(`成功匯入 ${data.imported || 0} 筆景點資料！`, 'success');
+        // 正確顯示匯入筆數
+        const importedCount = data.data?.successCount || data.data?.imported || 0;
+        showToast(`成功匯入 ${importedCount} 筆景點資料！`, 'success');
         
     } catch (error) {
         console.error('景點匯入失敗:', error);
@@ -212,7 +214,9 @@ async function handleCityImport(event) {
         console.log(`${cityName} 景點匯入成功:`, data);
         
         showResult('city', data, 'success');
-        showToast(`成功匯入 ${data.imported || 0} 筆 ${cityName} 景點資料！`, 'success');
+        // 正確顯示匯入筆數
+        const importedCount = data.data?.successCount || data.data?.imported || 0;
+        showToast(`成功匯入 ${importedCount} 筆 ${cityName} 景點資料！`, 'success');
         
     } catch (error) {
         console.error(`${cityName} 景點匯入失敗:`, error);
@@ -319,13 +323,45 @@ function showResult(type, data, resultType = 'info') {
     // 格式化數據
     let formattedData;
     if (typeof data === 'object') {
-        formattedData = JSON.stringify(data, null, 2);
+        // 如果是匯入結果，特別處理
+        if (data.data && typeof data.data === 'object' && 
+            (data.data.hasOwnProperty('successCount') || data.data.hasOwnProperty('imported'))) {
+            const result = data.data;
+            
+            // 處理全台匯入結果
+            if (result.hasOwnProperty('successCount')) {
+                formattedData = `
+📊 匯入結果統計：
+✅ 成功匯入：${result.successCount || 0} 筆
+⏭️ 跳過重複：${result.skippedCount || 0} 筆
+❌ 匯入失敗：${result.errorCount || 0} 筆
+📝 總處理筆數：${(result.successCount || 0) + (result.skippedCount || 0) + (result.errorCount || 0)} 筆
+
+${data.message || '匯入完成'}
+`;
+            }
+            // 處理其他格式的匯入結果
+            else if (result.hasOwnProperty('imported')) {
+                formattedData = `
+📊 匯入結果：
+✅ 成功匯入：${result.imported || 0} 筆
+${data.message || '匯入完成'}
+`;
+            }
+            else {
+                formattedData = JSON.stringify(data, null, 2);
+            }
+        }
+        // 處理測試連線等其他結果
+        else {
+            formattedData = JSON.stringify(data, null, 2);
+        }
     } else {
         formattedData = String(data);
     }
     
     // 設定內容
-    resultContent.textContent = formattedData;
+    resultContent.innerHTML = `<pre style="white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${formattedData}</pre>`;
     
     // 設定樣式
     resultArea.style.display = 'block';
