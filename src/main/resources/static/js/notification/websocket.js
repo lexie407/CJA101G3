@@ -7,8 +7,8 @@ var stompClient = null;
        // 這裡為了示範，我們假設一個固定的用戶ID。
        // 請確保這個ID與後端 SimpMessagingTemplate.convertAndSendToUser 方法中使用的ID一致。
 	   var currentUserIdNav = null;
-	   if(document.getElementById("currentUserIdNav")){
-		currentUserIdNav = (document.getElementById("currentUserId").value).toString();
+	   if(document.getElementById("currentUserNav")){
+		currentUserIdNav = (document.getElementById("currentUserNav").value).toString();
 	   }
 	   var currentUserId = currentUserIdNav; // 範例用戶ID，請替換為實際登入用戶的ID
 
@@ -168,7 +168,12 @@ var stompClient = null;
 	   });
 	   
 	   //登入按鈕
-	   const loginBtn = document.getElementsByClassName("logout-btn")[0];
+	   const loginBtn = null;
+	   if(document.getElementsByClassName("logout-btn").length > 0){
+			loginBtn = document.getElementsByClassName("logout-btn")[0];
+	   
 	   loginBtn.addEventListener("click", function(){
 			window.location.href="/members/login"
 	   });
+	   
+	   }
