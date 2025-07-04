@@ -83,6 +83,7 @@ public class ItnRptController {
 		List<ItnRptVO> reports = itnRptService.getAll();
 		model.addAttribute("reports", reports);
 		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "itemReport");
 		return "back-end/itnReport/listAllReports";
 	}
 	
@@ -100,6 +101,7 @@ public class ItnRptController {
 		if (report != null) {
 			model.addAttribute("report", report);
 			model.addAttribute("currentPage", "report");
+			model.addAttribute("currentPage2", "itemReport");
 			return "back-end/itnReport/reportDetail";
 		} else {
 			return "redirect:/admin/reports/list";
@@ -190,6 +192,7 @@ public class ItnRptController {
 		model.addAttribute("reports", pendingReports);
 		model.addAttribute("status", "pending");
 		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "itemReport");
 		return "back-end/itnReport/listAllReports";
 	}
 	
@@ -207,6 +210,7 @@ public class ItnRptController {
 		model.addAttribute("reports", approvedReports);
 		model.addAttribute("status", "approved");
 		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "itemReport");
 		return "back-end/itnReport/listAllReports";
 	}
 	
@@ -224,6 +228,7 @@ public class ItnRptController {
 		model.addAttribute("reports", rejectedReports);
 		model.addAttribute("status", "rejected");
 		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "itemReport");
 		return "back-end/itnReport/listAllReports";
 	}
 	
@@ -257,6 +262,7 @@ public class ItnRptController {
 		model.addAttribute("rejectedCount", rejectedCount);
 		model.addAttribute("totalCount", reports.size());
 		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "itemReport");
 		return "back-end/itnReport/listReportsByItem";
 	}
 	
@@ -284,6 +290,7 @@ public class ItnRptController {
 		model.addAttribute("rejectedCount", rejectedCount);
 		model.addAttribute("totalCount", reports.size());
 		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "itemReport");
 		return "back-end/itnReport/listReportsByMember";
 	}
 	
@@ -467,6 +474,7 @@ class ItemReportController {
 		model.addAttribute("orderItems", orderItems);
 		model.addAttribute("member", member);
 		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "itemReport");
 		return "front-end/itnReport/myOrders";
 	}
 	
@@ -504,6 +512,7 @@ class ItemReportController {
 		model.addAttribute("member", member);
 		model.addAttribute("ordId", ordId);
 		model.addAttribute("currentPage", "report");
+		model.addAttribute("currentPage2", "itemReport");
 		return "front-end/itnReport/reportFormFromOrder";
 	}
 	

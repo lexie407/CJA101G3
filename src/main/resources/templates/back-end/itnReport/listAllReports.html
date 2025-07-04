@@ -16,10 +16,7 @@
     <div class="main-content">
         <header class="secondary-nav">
             <ul>
-                <li><a th:href="@{/admin/reports/list}" th:classappend="${status == null ? 'active' : ''}">全部檢舉</a></li>
-                <li><a th:href="@{/admin/reports/pending}" th:classappend="${status == 'pending' ? 'active' : ''}">待處理檢舉</a></li>
-                <li><a th:href="@{/admin/reports/approved}" th:classappend="${status == 'approved' ? 'active' : ''}">檢舉通過</a></li>
-                <li><a th:href="@{/admin/reports/rejected}" th:classappend="${status == 'rejected' ? 'active' : ''}">檢舉未通過</a></li>
+            	<th:block th:insert="~{/back-end/report/navBackEndReport :: secNavResources}"></th:block>
             </ul>
         </header>
         
