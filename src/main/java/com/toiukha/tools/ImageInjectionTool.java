@@ -35,7 +35,7 @@ public class ImageInjectionTool {
         String passwd = "123456";
         
         // 圖片資料夾路徑
-        String photos = "static/DB_photos2"; // 圖片目錄
+        String photos = "src/main/resources/static/DB_photos2"; // 圖片目錄
         
         // SQL 更新語句
         String update = "UPDATE groupactivity SET ACTIMG = ? WHERE ACTID = ?";
