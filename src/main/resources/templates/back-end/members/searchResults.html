@@ -357,18 +357,18 @@ td[colspan="23"] {
 									<th>信箱</th>
 									<th>地址</th>
 									<th>註冊時間</th>
-									<th>點數</th>
+<!-- 									<th>點數</th> -->
 									<th>更新時間</th>
 									<th>帳號狀態</th>
 									<th>會員頭像</th>
 									<th>暱稱</th>
-									<th>頭像框</th>
+<!-- 									<th>頭像框</th> -->
 									<th>錯誤次數</th>
 									<th>錯誤時間</th>
-									<th>頁面權限</th>
-									<th>違規記點</th>
-									<th>商城權限</th>
-									<th>商城記點</th>
+<!-- 									<th>頁面權限</th> -->
+<!-- 									<th>違規記點</th> -->
+<!-- 									<th>商城權限</th> -->
+<!-- 									<th>商城記點</th> -->
 									<th>修改</th>
 								</tr>
 							</thead>
@@ -385,22 +385,22 @@ td[colspan="23"] {
 									<td th:text="${m.memAddr}"></td>
 									<td
 										th:text="${#dates.format(m.memRegTime,'yyyy-MM-dd HH:mm:ss')}"></td>
-									<td th:text="${m.memPoint}"></td>
+<!-- 									<td th:text="${m.memPoint}"></td> -->
 									<td
 										th:text="${#dates.format(m.memUpdatedAt,'yyyy-MM-dd HH:mm:ss')}"></td>
 									<td th:text="${m.memStatus}"></td>
 									<td><img class="avatar"
 										th:src="@{/members/DBGifReader(memId=${m.memId},type='memAvatar')}" /></td>
 									<td th:text="${m.memUsername}"></td>
-									<td><img class="avatar"
-										th:src="@{/members/DBGifReader(memId=${m.memId},type='memAvatarFrame')}" /></td>
+<!-- 									<td><img class="avatar" -->
+<!-- 										th:src="@{/members/DBGifReader(memId=${m.memId},type='memAvatarFrame')}" /></td> -->
 									<td th:text="${m.memLogErrCount}"></td>
 									<td
 										th:text="${#dates.format(m.memLogErrTime,'yyyy-MM-dd HH:mm:ss')}"></td>
-									<td th:text="${m.memGroupAuth}"></td>
-									<td th:text="${m.memGroupPoint}"></td>
-									<td th:text="${m.memStoreAuth}"></td>
-									<td th:text="${m.memStorePoint}"></td>
+<!-- 									<td th:text="${m.memGroupAuth}"></td> -->
+<!-- 									<td th:text="${m.memGroupPoint}"></td> -->
+<!-- 									<td th:text="${m.memStoreAuth}"></td> -->
+<!-- 									<td th:text="${m.memStorePoint}"></td> -->
 									<td><a class="edit-btn"
 										th:href="@{/members/editMembers(memId=${m.memId})}">修改</a></td>
 								</tr>
