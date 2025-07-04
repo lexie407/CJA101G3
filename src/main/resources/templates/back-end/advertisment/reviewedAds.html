@@ -6,7 +6,7 @@
     <title>已審核廣告 - 後台管理</title>
     
     <!-- 引入 Thymeleaf 模板中的 headResources 片段 -->
-    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/navBackDropdownTemplate :: headResources}"></th:block>
 
     <style>
         .admin-container {
@@ -137,10 +137,7 @@
             text-align: center;
             transition: all 0.3s ease;
         }
-        .btn-view {
-            background-color: #17a2b8;
-            color: white;
-        }
+
         .btn-deactivate {
             background-color: #6c757d;
             color: white;
@@ -179,13 +176,9 @@
     <div th:insert="~{/navBackTemplate :: navbar}"></div>
     
     <div class="main-content">
-        <header class="secondary-nav">
-            <ul>
-                <li><a href="/advertisment/admin/dashboard">管理員儀表板</a></li>
-                <li><a href="/advertisment/admin/pending">待審核廣告</a></li>
-                <li><a href="/advertisment/admin/reviewed" class="active">已審核廣告</a></li>
-            </ul>
-        </header>
+        <!-- 引入全域下拉導航 -->
+        <div th:insert="~{/navBackDropdownTemplate :: topNavigation}"></div>
+        
         <main class="content-area-main">
             <div class="admin-container">
                 <div class="page-header">
@@ -252,9 +245,6 @@
                         </div>
                         
                         <div class="action-buttons">
-                            <a th:href="@{/advertisment/getOne_For_Display(adId=${ad.adId})}" 
-                               class="btn btn-view">查看詳情</a>
-                            
                             <form th:action="@{/advertisment/admin/deactivate}" method="post" style="display:inline">
                                 <input type="hidden" name="adId" th:value="${ad.adId}" />
                                 <button type="submit" class="btn btn-deactivate" 
@@ -308,10 +298,7 @@
                             </div>
                         </div>
                         
-                        <div class="action-buttons">
-                            <a th:href="@{/advertisment/getOne_For_Display(adId=${ad.adId})}" 
-                               class="btn btn-view">查看詳情</a>
-                        </div>
+                        <!-- 已拒絕的廣告無需操作按鈕 -->
                     </div>
                 </div>
             </div>

@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -136,62 +137,7 @@ public class AdController {
         return ad != null && ad.getStoreId().equals(currentStoreId);
     }
     
-    /**
-     * 檢查並自動下架過期廣告
-     * 只會處理狀態為「已審核通過」且結束時間已過的廣告
-     */
-    private void checkAndDeactivateExpiredAds(List<AdVO> adList) {
-        if (adList == null || adList.isEmpty()) {
-            return;
-        }
-        
-        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-        
-        for (AdVO ad : adList) {
-            // 只檢查已審核通過的廣告
-            if (ad.getAdStatus() != null && 
-                ad.getAdStatus().equals(AdVO.STATUS_APPROVED) && 
-                ad.getAdEndTime() != null && 
-                ad.getAdEndTime().before(currentTime)) {
-                
-                try {
-                    // 自動下架過期廣告
-                    adSvc.updateAdStatus(ad.getAdId(), AdVO.STATUS_INACTIVE);
-                    System.out.println("自動下架過期廣告：" + ad.getAdTitle() + " (ID: " + ad.getAdId() + ")");
-                } catch (Exception e) {
-                    System.err.println("下架過期廣告失敗 ID: " + ad.getAdId() + ", 錯誤: " + e.getMessage());
-                    e.printStackTrace(); // 打印完整的堆疊追蹤
-                }
-            }
-        }
-    }
-    
-    /**
-     * 檢查單一廣告是否過期並自動下架
-     */
-    private void checkAndDeactivateExpiredAd(AdVO ad) {
-        if (ad == null) {
-            return;
-        }
-        
-        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-        
-        // 只檢查已審核通過的廣告
-        if (ad.getAdStatus() != null && 
-            ad.getAdStatus().equals(AdVO.STATUS_APPROVED) && 
-            ad.getAdEndTime() != null && 
-            ad.getAdEndTime().before(currentTime)) {
-            
-            try {
-                // 自動下架過期廣告
-                adSvc.updateAdStatus(ad.getAdId(), AdVO.STATUS_INACTIVE);
-                System.out.println("自動下架過期廣告：" + ad.getAdTitle() + " (ID: " + ad.getAdId() + ")");
-            } catch (Exception e) {
-                System.err.println("下架過期廣告失敗 ID: " + ad.getAdId() + ", 錯誤: " + e.getMessage());
-                e.printStackTrace(); // 打印完整的堆疊追蹤
-            }
-        }
-    }
+
 	
 //	//放入StoreService後要改!!
 //	@Autowired(required = false)
@@ -206,9 +152,22 @@ public class AdController {
 			return "redirect:/store/login";
 		}
 		
+		// 添加空的 AdVO 對象，供 Thymeleaf 表單綁定使用
+		model.addAttribute("adVO", new AdVO());
+		
 		// 使用真實的商店資料
 		Map<Integer, String> storeNamesMap = getStoreNamesMap();
-		model.addAttribute("storeNamesMap", storeNamesMap);		
+		model.addAttribute("storeNamesMap", storeNamesMap);
+		
+		// 獲取當前登入的商家 ID 和商家資訊
+		Integer currentStoreId = getCurrentStoreId(session);
+		StoreVO currentStore = (StoreVO) session.getAttribute("store");
+		
+		if (currentStore != null) {
+			model.addAttribute("currentStoreId", currentStoreId);
+			model.addAttribute("currentStoreName", currentStore.getStoreName());
+		}
+		
 		return "front-end/advertisment/addAd";
 	}
 	
@@ -222,9 +181,7 @@ public class AdController {
 	// 廣告建立
 	@PostMapping("/insert")  // 接收表單
 	public String insert(
-			@Valid
-			@ModelAttribute AdVO adVO,
-			BindingResult result,
+			@RequestParam("adTitle") String adTitle,
 			@RequestParam("adStartTime") String adStartTime,
 			@RequestParam("adEndTime") String adEndTime,
 			@RequestParam("adImage") MultipartFile adImageFile,
@@ -241,15 +198,64 @@ public class AdController {
 		Integer currentStoreId = getCurrentStoreId(session);
 		System.out.println("=== 開始處理廣告新增 ===");
 		System.out.println("商家ID: " + currentStoreId);
-		System.out.println("廣告標題: " + adVO.getAdTitle());
+		System.out.println("廣告標題: " + adTitle);
+		
+		// 手動驗證 adTitle
+		if (adTitle == null || adTitle.trim().isEmpty()) {
+			model.addAttribute("errorMessage", "廣告描述: 請勿空白");
+			AdVO adVO = new AdVO();
+			adVO.setAdTitle(adTitle);
+			model.addAttribute("adVO", adVO);
+			Map<Integer, String> storeNamesMap = getStoreNamesMap();
+			model.addAttribute("storeNamesMap", storeNamesMap);
+			
+			// 重新加入商家資訊
+			StoreVO currentStore = (StoreVO) session.getAttribute("store");
+			if (currentStore != null) {
+				model.addAttribute("currentStoreId", currentStoreId);
+				model.addAttribute("currentStoreName", currentStore.getStoreName());
+			}
+			return "front-end/advertisment/addAd";
+		}
+		
+		if (adTitle.length() < 10 || adTitle.length() > 200) {
+			model.addAttribute("errorMessage", "廣告描述: 長度必需在10到200之間");
+			AdVO adVO = new AdVO();
+			adVO.setAdTitle(adTitle);
+			model.addAttribute("adVO", adVO);
+			Map<Integer, String> storeNamesMap = getStoreNamesMap();
+			model.addAttribute("storeNamesMap", storeNamesMap);
+			
+			// 重新加入商家資訊
+			StoreVO currentStore = (StoreVO) session.getAttribute("store");
+			if (currentStore != null) {
+				model.addAttribute("currentStoreId", currentStoreId);
+				model.addAttribute("currentStoreName", currentStore.getStoreName());
+			}
+			return "front-end/advertisment/addAd";
+		}
 		
 		// 圖片驗證
 		if (adImageFile == null || adImageFile.isEmpty()) {
-            result.rejectValue("adImage", "adImage.notEmpty", "廣告圖片: 請上傳照片");
-        } else {
-            adVO.setAdImage(adImageFile.getBytes());
+            model.addAttribute("errorMessage", "廣告圖片: 請上傳照片");
+            AdVO adVO = new AdVO();
+            adVO.setAdTitle(adTitle);
+            model.addAttribute("adVO", adVO);
+            Map<Integer, String> storeNamesMap = getStoreNamesMap();
+            model.addAttribute("storeNamesMap", storeNamesMap);
+            
+            // 重新加入商家資訊
+            StoreVO currentStore = (StoreVO) session.getAttribute("store");
+            if (currentStore != null) {
+                model.addAttribute("currentStoreId", currentStoreId);
+                model.addAttribute("currentStoreName", currentStore.getStoreName());
+            }
+            return "front-end/advertisment/addAd";
         }
 		 
+		// 創建 AdVO 對象
+		AdVO adVO = new AdVO();
+		
 		// 時間處理
 		try {
 			// 支援兩種格式：'yyyy-MM-dd\'T\'HH:mm' 及 'yyyy-MM-dd HH:mm:ss'
@@ -272,8 +278,22 @@ public class AdController {
 			// 檢查時間邏輯
 			if (aetime.before(astime)) {
 				model.addAttribute("errorMessage", "結束時間不能早於開始時間");
+				adVO.setAdTitle(adTitle);
+				model.addAttribute("adVO", adVO);
+				Map<Integer, String> storeNamesMap = getStoreNamesMap();
+				model.addAttribute("storeNamesMap", storeNamesMap);
+				
+				// 重新加入商家資訊
+				StoreVO currentStore = (StoreVO) session.getAttribute("store");
+				if (currentStore != null) {
+					model.addAttribute("currentStoreId", currentStoreId);
+					model.addAttribute("currentStoreName", currentStore.getStoreName());
+				}
 				return "front-end/advertisment/addAd";
 			}
+			
+			// 設置所有 AdVO 屬性
+			adVO.setAdTitle(adTitle);
 			adVO.setStoreId(currentStoreId); // 強制綁定登入商家
 			adVO.setAdCreatedTime(new Timestamp(System.currentTimeMillis()));
 			adVO.setAdStartTime(astime);
@@ -286,6 +306,17 @@ public class AdController {
 			System.out.println("收到的開始時間: " + adStartTime);
 			System.out.println("收到的結束時間: " + adEndTime);
 			model.addAttribute("errorMessage", "時間格式錯誤，請使用正確的日期時間格式");
+			adVO.setAdTitle(adTitle);
+			model.addAttribute("adVO", adVO);
+			Map<Integer, String> storeNamesMap = getStoreNamesMap();
+			model.addAttribute("storeNamesMap", storeNamesMap);
+			
+			// 重新加入商家資訊
+			StoreVO currentStore = (StoreVO) session.getAttribute("store");
+			if (currentStore != null) {
+				model.addAttribute("currentStoreId", currentStoreId);
+				model.addAttribute("currentStoreName", currentStore.getStoreName());
+			}
 			return "front-end/advertisment/addAd";
 		}
 		
@@ -297,6 +328,17 @@ public class AdController {
 		} catch (Exception e) {
 			System.out.println("新增失敗: " + e.getMessage());
 			model.addAttribute("errorMessage", "新增失敗: " + e.getMessage());
+			adVO.setAdTitle(adTitle);
+			model.addAttribute("adVO", adVO);
+			Map<Integer, String> storeNamesMap = getStoreNamesMap();
+			model.addAttribute("storeNamesMap", storeNamesMap);
+			
+			// 重新加入商家資訊
+			StoreVO currentStore = (StoreVO) session.getAttribute("store");
+			if (currentStore != null) {
+				model.addAttribute("currentStoreId", currentStoreId);
+				model.addAttribute("currentStoreName", currentStore.getStoreName());
+			}
 			return "front-end/advertisment/addAd";
 		}
 
@@ -559,9 +601,6 @@ public class AdController {
         
         List<AdVO> list = adSvc.getAllByStoreId(currentStoreId);
         
-        // 檢查並自動下架過期廣告
-        checkAndDeactivateExpiredAds(list);
-        
         model.addAttribute("adListData", list);
         return "front-end/advertisment/myAds";
     }
@@ -569,21 +608,14 @@ public class AdController {
 		// 處理 /advertisment/listAllAd 的 GET 請求，顯示所有廣告列表頁面
 	@GetMapping("/listAllAd")
 	public String listAllAd(ModelMap model) {
-		// 只顯示已審核通過的廣告
+		// 只顯示已審核通過且未過期的廣告
 		List<AdVO> list = adSvc.getApprovedAds();
-		
-		// 檢查並自動下架過期廣告
-		checkAndDeactivateExpiredAds(list);
-		
-		// 重新獲取已審核通過的廣告（排除剛下架的）
-		list = adSvc.getApprovedAds();
 		model.addAttribute("adListData", list);
 		
 		// 使用真實的商店資料
 		Map<Integer, String> storeNamesMap = getStoreNamesMap();
 		model.addAttribute("storeNamesMap", storeNamesMap);
 		
-//		return adSvc.getAll();
 		return "front-end/advertisment/listAllAd"; // 回傳所有廣告的列表頁面
 	}
 	
@@ -597,11 +629,15 @@ public class AdController {
 			return "error/404";
 		}
 		
-		// 檢查並自動下架過期廣告
-		checkAndDeactivateExpiredAd(adVO);
-		
-		// 重新獲取廣告資料（可能已被下架）
-		adVO = adSvc.getOneAd(adId);
+		// 檢查廣告是否已過期
+		Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+		if (adVO.getAdStatus() != null && 
+		    adVO.getAdStatus().equals(AdVO.STATUS_APPROVED) && 
+		    adVO.getAdEndTime() != null && 
+		    adVO.getAdEndTime().before(currentTime)) {
+			model.addAttribute("errorMessage", "此廣告已過期");
+			return "error/404";
+		}
 		
 		// 使用真實的商店資料
 		Map<Integer, String> storeNamesMap = getStoreNamesMap();
@@ -713,40 +749,7 @@ public class AdController {
 		return "測試頁面 - 應用程式正常運行";
 	}
 	
-	// 手動觸發過期廣告檢查（僅用於測試）
-	@GetMapping("/admin/checkExpiredAds")
-	public String checkExpiredAds(HttpSession session, RedirectAttributes redirectAttributes) {
-		// 檢查管理員登入狀態
-		if (!isAdminLoggedIn(session)) {
-			return "redirect:/admins/login";
-		}
-		
-		try {
-			// 獲取所有已審核通過的廣告進行檢查
-			List<AdVO> approvedAds = adSvc.getApprovedAds();
-			int originalCount = approvedAds.size();
-			
-			// 檢查並自動下架過期廣告
-			checkAndDeactivateExpiredAds(approvedAds);
-			
-			// 重新獲取已審核通過的廣告數量
-			List<AdVO> remainingAds = adSvc.getApprovedAds();
-			int deactivatedCount = originalCount - remainingAds.size();
-			
-			if (deactivatedCount > 0) {
-				redirectAttributes.addFlashAttribute("successMessage", 
-					"成功檢查過期廣告，共下架 " + deactivatedCount + " 個廣告");
-			} else {
-				redirectAttributes.addFlashAttribute("successMessage", 
-					"檢查完成，沒有發現過期廣告需要下架");
-			}
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("errorMessage", 
-				"檢查過期廣告時發生錯誤: " + e.getMessage());
-		}
-		
-		return "redirect:/advertisment/admin/dashboard";
-	}
+
 	
 	// ========== 後台管理功能 ==========
 	
@@ -780,10 +783,6 @@ public class AdController {
 		}
 		
 		List<AdVO> pendingAds = adSvc.getPendingAds();
-		
-		// 檢查並自動下架過期廣告
-		checkAndDeactivateExpiredAds(pendingAds);
-		
 		model.addAttribute("pendingAds", pendingAds);
 		
 		// 使用真實的商店資料
@@ -803,14 +802,6 @@ public class AdController {
 		
 		List<AdVO> approvedAds = adSvc.getApprovedAds();
 		List<AdVO> rejectedAds = adSvc.getRejectedAds();
-		
-		// 檢查並自動下架過期廣告
-		checkAndDeactivateExpiredAds(approvedAds);
-		checkAndDeactivateExpiredAds(rejectedAds);
-		
-		// 重新獲取資料（因為可能有廣告已被下架）
-		approvedAds = adSvc.getApprovedAds();
-		rejectedAds = adSvc.getRejectedAds();
 		
 		model.addAttribute("approvedAds", approvedAds);
 		model.addAttribute("rejectedAds", rejectedAds);
@@ -870,6 +861,35 @@ public class AdController {
 		} catch (Exception e) {
 			redirectAttributes.addFlashAttribute("errorMessage", "停用失敗: " + e.getMessage());
 		}
-		return "redirect:/advertisment/admin/reviewed";
-	}
+		        return "redirect:/advertisment/admin/reviewed";
+    }
+    
+    /**
+     * 獲取活躍廣告列表，用於前端輪播
+     * @return JSON格式的活躍廣告列表
+     */
+    @GetMapping("/getActiveAds")
+    @ResponseBody
+    public List<AdVO> getActiveAds() {
+        try {
+            // 直接獲取已審核通過且未過期的廣告
+            List<AdVO> approvedAds = adSvc.getApprovedAds();
+            
+            // 進一步過濾出當前時間有效的廣告（已開始且未結束）
+            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+            
+            List<AdVO> activeAds = approvedAds.stream()
+                .filter(ad -> ad.getAdStartTime() != null && 
+                             ad.getAdStartTime().before(currentTime))
+                .limit(10) // 限制最多10個廣告
+                .collect(Collectors.toList());
+            
+            return activeAds;
+            
+        } catch (Exception e) {
+            System.err.println("獲取活躍廣告失敗: " + e.getMessage());
+            e.printStackTrace();
+            return java.util.Collections.emptyList();
+        }
+    }
 }

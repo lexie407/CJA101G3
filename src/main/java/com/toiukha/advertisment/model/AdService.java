@@ -1,5 +1,7 @@
 package com.toiukha.advertisment.model;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,7 +69,7 @@ public class AdService {
     }
     
     public List<AdVO> getApprovedAds() {
-        return adRepo.findByAdStatus(AdVO.STATUS_APPROVED);
+        return adRepo.findActiveAdsByStatus(AdVO.STATUS_APPROVED);
     }
     
     public List<AdVO> getRejectedAds() {
@@ -109,7 +111,9 @@ public class AdService {
     }
 
 	
-
+    public List<AdVO> getTodayAdList(){
+    	return repository.getTodayAds(Timestamp.from(Instant.now()));
+    }
 	
 	
 	

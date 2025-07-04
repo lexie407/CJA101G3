@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toiukha.advertisment.model.AdService;
 import com.toiukha.item.model.ItemService;
 import com.toiukha.item.model.ItemVO;
 import com.toiukha.store.model.StoreVO;
@@ -34,6 +35,8 @@ public class ItemController {
 
 	@Autowired
 	ItemService itemSvc;
+	@Autowired
+	AdService adService;
 	
 	//廠商新增商品
 	@GetMapping("addItem_back")
@@ -275,6 +278,7 @@ public class ItemController {
 	//商品列表
 	@GetMapping("listAllItem")
 	public String front_listAllEmp(Model model) {
+		model.addAttribute("ads", adService.getTodayAdList());	// 取得廣告
 		model.addAttribute("currentPage", "store");
 		model.addAttribute("activeItem", "items");
 		return "front-end/item/listAllItem";

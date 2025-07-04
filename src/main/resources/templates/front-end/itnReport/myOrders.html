@@ -3,83 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>島遊Kha - 我的訂單</title>
+    <title>島遊Kha - 我的檢舉記錄</title>
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <style>
+        /* 基礎佈局 - 參考 listCompletedOrders.html */
         .orders-container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 12px;
         }
         
-        .page-header {
-            background: linear-gradient(135deg, #2196F3, #1976D2);
-            color: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(33, 150, 243, 0.3);
-        }
-        
+        /* 頁面標題 - 簡潔設計 */
         .page-title {
-            font-size: 32px;
-            font-weight: bold;
+            margin: 8px 0 16px 0;
+            color: #1976d2;
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: 1px;
+            text-align: left;
+        }
+        
+        /* 會員資訊卡片 - Material Design */
+        .member-info {
+            background: #fff;
+            border-radius: 7px;
+            box-shadow: 0 1px 2px rgba(33, 150, 243, 0.05);
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            border: 1px solid #e3f2fd;
+            transition: box-shadow 0.2s;
+        }
+        
+        .member-info:hover {
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.10);
+        }
+        
+        .member-info h4 {
+            margin: 0 0 8px 0;
+            color: #1976d2;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .member-info p {
+            margin: 4px 0;
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        /* 檢舉須知 - 簡潔設計 */
+        .instructions {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            border-radius: 7px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 2px rgba(255, 152, 0, 0.05);
+        }
+        
+        .instructions h4 {
+            margin: 0 0 12px 0;
+            color: #e65100;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .instructions ul {
             margin: 0;
+            padding-left: 18px;
+            list-style: none;
         }
         
-        .page-subtitle {
-            font-size: 16px;
-            margin: 10px 0 0 0;
-            opacity: 0.9;
+        .instructions li {
+            margin-bottom: 6px;
+            color: #bf360c;
+            position: relative;
+            padding-left: 20px;
+            line-height: 1.4;
+            font-size: 0.95rem;
         }
         
+        .instructions li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #ff9800;
+            font-weight: bold;
+        }
+        
+        /* 訂單卡片 - 完全參考 listCompletedOrders.html */
         .order-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: #fff;
+            border-radius: 7px;
+            box-shadow: 0 1px 2px rgba(33, 150, 243, 0.05);
+            margin: 6px auto;
+            transition: box-shadow 0.2s;
+            border: none;
+            overflow: hidden;
+            max-width: 600px;
         }
         
         .order-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.10);
         }
         
         .order-header {
+            background: linear-gradient(90deg, #1976d2 0%, #64b5f6 100%);
+            color: #fff;
+            padding: 4px 18px 2px 18px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        
+        .order-header .left-info {
+            flex: 1 1 60%;
+            min-width: 120px;
+        }
+        
+        .order-header .right-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            min-width: 90px;
         }
         
         .order-id {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2196F3;
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 1px;
+            color: #fff;
         }
         
         .order-date {
-            color: #666;
-            font-size: 14px;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .order-header h5 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 1px;
+        }
+        
+        .order-header p {
+            font-size: 0.95rem;
+            margin-bottom: 0;
         }
         
         .order-status {
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 12px;
+            background: #fff;
+            color: #388e3c;
+            border-radius: 10px;
+            padding: 1px 10px;
+            font-size: 0.98rem;
             font-weight: 600;
-            background: #4CAF50;
-            color: white;
+            margin-bottom: 1px;
+            box-shadow: 0 1px 2px rgba(56, 142, 60, 0.06);
+            display: inline-block;
         }
         
+        .status-completed {
+            background: #fff;
+            color: #388e3c;
+            border-radius: 10px;
+            padding: 1px 10px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            margin-bottom: 1px;
+            box-shadow: 0 1px 2px rgba(56, 142, 60, 0.06);
+            display: inline-block;
+        }
+        
+        /* 檢舉狀態樣式 */
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            border-radius: 10px;
+            padding: 1px 10px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            margin-bottom: 1px;
+            box-shadow: 0 1px 2px rgba(133, 100, 4, 0.06);
+            display: inline-block;
+        }
+        
+        .status-approved {
+            background: #d1e7dd;
+            color: #0f5132;
+            border-radius: 10px;
+            padding: 1px 10px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            margin-bottom: 1px;
+            box-shadow: 0 1px 2px rgba(15, 81, 50, 0.06);
+            display: inline-block;
+        }
+        
+        .status-rejected {
+            background: #f8d7da;
+            color: #842029;
+            border-radius: 10px;
+            padding: 1px 10px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            margin-bottom: 1px;
+            box-shadow: 0 1px 2px rgba(132, 32, 41, 0.06);
+            display: inline-block;
+        }
+        
+        .status-unknown {
+            background: #e2e3e5;
+            color: #41464b;
+            border-radius: 10px;
+            padding: 1px 10px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            margin-bottom: 1px;
+            box-shadow: 0 1px 2px rgba(65, 70, 75, 0.06);
+            display: inline-block;
+        }
+        
+        /* 商品詳情 - 參考 listCompletedOrders.html */
         .item-details {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 18px;
+        }
+        
+        .order-items {
+            padding: 12px 18px;
+            background: #fafbfc;
         }
         
         .item-image {
@@ -87,112 +244,89 @@
             height: 80px;
             border-radius: 8px;
             object-fit: cover;
-            border: 2px solid #f0f0f0;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
         }
         
         .item-info {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
         
         .item-name {
-            font-size: 18px;
+            font-size: 1.12rem;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
+            color: #1976d2;
+            margin: 0 0 2px 0;
+            line-height: 1.3;
         }
         
         .item-price {
-            color: #4CAF50;
-            font-size: 16px;
-            font-weight: bold;
+            color: #1976d2;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .text-primary {
+            color: #1976d2 !important;
         }
         
         .item-quantity {
-            color: #666;
-            font-size: 14px;
-            margin-top: 5px;
+            color: #90a4ae;
+            font-size: 0.95rem;
+            margin: 0;
         }
         
+        .text-muted {
+            color: #90a4ae !important;
+            font-size: 0.95rem;
+        }
+        
+        /* 操作按鈕 - Material Design */
         .actions {
             display: flex;
-            gap: 10px;
-            align-items: center;
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch;
+            min-width: 120px;
         }
         
-        .btn {
-            padding: 10px 20px;
+        .btn-material {
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(33, 150, 243, 0.05);
+            background: #f44336;
+            color: #fff;
             border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            padding: 8px 16px;
+            font-size: 0.85rem;
             text-decoration: none;
-            transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            gap: 6px;
         }
         
-        .btn-report {
-            background: linear-gradient(45deg, #FF5722, #FF7043);
-            color: white;
+        .btn-material:hover {
+            background: #d32f2f;
+            box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
+            color: #fff;
+            transform: translateY(-1px) scale(1.02);
         }
         
-        .btn-report:hover {
-            background: linear-gradient(45deg, #E64A19, #FF5722);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
-            color: white;
-        }
-        
-        .btn-disabled {
-            background: #ccc;
-            color: #666;
-            cursor: not-allowed;
-        }
-        
-        .btn-disabled:hover {
-            background: #ccc;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .no-orders {
-            text-align: center;
-            padding: 80px 20px;
-            color: #666;
-        }
-        
-        .no-orders-icon {
-            font-size: 80px;
-            color: #ddd;
-            margin-bottom: 20px;
-        }
-        
-        .no-orders h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        
-        .no-orders p {
-            font-size: 16px;
-            margin-bottom: 30px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(45deg, #2196F3, #1976D2);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(45deg, #1976D2, #1565C0);
-            color: white;
-        }
-        
+        /* 提醒訊息 - 簡潔設計 */
         .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 12px 16px;
+            border-radius: 7px;
+            margin-bottom: 12px;
+            border: none;
+            font-weight: 500;
+            font-size: 0.95rem;
         }
         
         .alert-success {
@@ -207,40 +341,93 @@
             color: #721c24;
         }
         
-        .member-info {
-            background: #e3f2fd;
-            border: 1px solid #2196F3;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
+        /* 空狀態 - 參考 listCompletedOrders.html */
+        .no-orders {
+            text-align: center;
+            padding: 20px 16px;
+            color: #90a4ae;
+            background: #fff;
+            border-radius: 7px;
+            box-shadow: 0 1px 2px rgba(33, 150, 243, 0.05);
+            margin: 6px auto;
+            font-size: 1rem;
+            max-width: 600px;
         }
         
-        .member-info h4 {
-            margin: 0;
-            color: #1976D2;
+        .no-orders h4 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: #666;
         }
         
-        .instructions {
-            background: #fff3e0;
-            border: 1px solid #ff9800;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
+        .no-orders p {
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            color: #90a4ae;
         }
         
-        .instructions h4 {
-            margin: 0 0 10px 0;
-            color: #e65100;
+        .btn-primary {
+            background: #1976d2;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(33, 150, 243, 0.05);
         }
         
-        .instructions ul {
-            margin: 0;
-            padding-left: 20px;
+        .btn-primary:hover {
+            background: #1565c0;
+            box-shadow: 0 2px 6px rgba(33, 150, 243, 0.12);
+            color: white;
+            transform: translateY(-1px) scale(1.02);
         }
         
-        .instructions li {
-            margin-bottom: 5px;
-            color: #bf360c;
+        /* 響應式設計 - 參考 listCompletedOrders.html */
+        @media (max-width: 768px) {
+            .order-card,
+            .no-orders {
+                max-width: 98vw;
+            }
+            
+            .order-header,
+            .order-items {
+                padding: 8px 12px;
+            }
+            
+            .page-title {
+                font-size: 1rem;
+            }
+            
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .order-header .right-info {
+                align-items: flex-start;
+                margin-top: 4px;
+            }
+            
+            .item-details {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+            
+            .item-info {
+                flex: none;
+            }
+            
+            .actions {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
         }
     </style>
 </head>
@@ -249,12 +436,13 @@
         <div th:insert="~{/navTemplate :: navbar}"></div>
         
         <div class="main-content">
-            <div class="orders-container">
+            <header class="secondary-nav">
+                <div th:insert="~{/subnavStore_front::subnav(${activeItem})}"></div>
+            </header>
+            <main class="content-area-main">
+                <div class="orders-container">
                 <!-- 頁面標題 -->
-                <div class="page-header">
-                    <h1 class="page-title">🛍️ 我的訂單</h1>
-                    <p class="page-subtitle">查看您的購買記錄，並對商品進行檢舉</p>
-                </div>
+                <h1 class="page-title">我的檢舉記錄</h1>
                 
                 <!-- 會員資訊 -->
                 <div class="member-info" th:if="${member}">
@@ -265,12 +453,13 @@
                 
                 <!-- 使用說明 -->
                 <div class="instructions">
-                    <h4>💡 檢舉須知</h4>
+                    <h4>💡 檢舉記錄說明</h4>
                     <ul>
-                        <li>只能檢舉您已經購買過的商品</li>
-                        <li>每個商品只能檢舉一次</li>
-                        <li>請提供詳細的檢舉理由和相關證明</li>
-                        <li>管理員會在3-5個工作天內審核您的檢舉</li>
+                        <li>這裡顯示您所有的商品檢舉記錄</li>
+                        <li>您可以查看每個檢舉的處理狀態</li>
+                        <li>待處理：管理員尚未審核</li>
+                        <li>檢舉通過：管理員確認檢舉有效</li>
+                        <li>檢舉未通過：管理員認為檢舉無效</li>
                     </ul>
                 </div>
                 
@@ -283,53 +472,104 @@
                     <span th:text="${errorMessage}"></span>
                 </div>
                 
-                <!-- 訂單列表 -->
-                <div th:if="${not #lists.isEmpty(orderItems)}">
-                    <div th:each="order : ${orderItems}" class="order-card">
+                <!-- 檢舉記錄列表 -->
+                <div th:if="${not #lists.isEmpty(reportItems)}">
+                    <div th:each="reportItem : ${reportItems}" class="order-card">
                         <div class="order-header">
-                            <div>
-                                <div class="order-id">訂單編號：#<span th:text="${order.ordId}"></span></div>
-                                <div class="order-date" th:text="${#temporals.format(order.orderDate, 'yyyy-MM-dd HH:mm')}"></div>
+                            <div class="left-info">
+                                <h5 class="order-id">檢舉編號: <span th:text="${reportItem.report.repId}"></span></h5>
+                                <p class="order-date">檢舉時間: <span th:text="${#temporals.format(reportItem.report.repAt, 'yyyy-MM-dd HH:mm:ss')}"></span></p>
                             </div>
-                            <div class="order-status" th:text="${order.orderStatus}"></div>
+                            <div class="right-info">
+                                <span th:class="${reportItem.statusClass}" th:text="${reportItem.statusText}"></span>
+                            </div>
                         </div>
                         
-                        <div class="item-details">
-                            <img th:if="${order.itemImg}" 
-                                 th:src="@{'data:image/jpeg;base64,' + ${T(java.util.Base64).getEncoder().encodeToString(order.itemImg)}}"
-                                 alt="商品圖片" 
-                                 class="item-image">
-                            <div th:if="${order.itemImg == null}" class="item-image" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
-                                無圖片
-                            </div>
-                            
-                            <div class="item-info">
-                                <div class="item-name" th:text="${order.itemName}"></div>
-                                <div class="item-price">NT$ <span th:text="${order.price}"></span></div>
-                                <div class="item-quantity">數量：<span th:text="${order.quantity}"></span></div>
-                            </div>
-                            
-                            <div class="actions">
-                                <a th:href="@{/item-report/form-from-order(ordId=${order.ordId}, itemId=${order.itemId})}" 
-                                   class="btn btn-report">
-                                    🚩 檢舉商品
-                                </a>
+                        <div class="order-items">
+                            <div class="item-details">
+                                <img th:src="@{'/item/DBGifReader?itemId=' + ${reportItem.item.itemId}}" 
+                                     alt="商品圖片" 
+                                     class="item-image">
+                                
+                                <div class="item-info">
+                                    <h6 class="item-name" th:text="${reportItem.item.itemName}"></h6>
+                                    <div class="item-quantity text-muted">檢舉理由: <span th:text="${reportItem.report.repReason}"></span></div>
+                                    <div class="item-price text-primary">商品價格: $<span th:text="${reportItem.item.itemPrice}"></span></div>
+                                    <div th:if="${reportItem.report.ordId != null}" class="text-muted" style="font-size: 0.9rem;">
+                                        相關訂單: #<span th:text="${reportItem.report.ordId}"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="actions">
+                                    <a th:href="@{'/item/listAllItem'}" 
+                                       class="btn-material"
+                                       style="background: #2196F3;">
+                                        📱 查看商品
+                                    </a>
+                                    <div th:if="${reportItem.report.repImg != null}" 
+                                         class="btn-material" 
+                                         style="background: #4CAF50; margin-top: 5px; cursor: pointer;"
+                                         th:onclick="'showReportImage(' + ${reportItem.report.repId} + ')'">
+                                        🖼️ 查看檢舉圖片
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 沒有訂單的情況 -->
-                <div th:if="${#lists.isEmpty(orderItems)}" class="no-orders">
-                    <div class="no-orders-icon">📦</div>
-                    <h3>您還沒有任何訂單記錄</h3>
-                    <p>開始購物，享受島遊Kha的精彩商品吧！</p>
-                    <a th:href="@{/item/listAllItem}" class="btn btn-primary">
-                        🛒 前往購物
+                <!-- 沒有檢舉記錄的情況 -->
+                <div th:if="${#lists.isEmpty(reportItems)}" class="no-orders">
+                    <h4>目前沒有檢舉記錄</h4>
+                    <p>您還沒有提交過任何商品檢舉。如果您購買的商品有問題，歡迎進行檢舉。</p>
+                    <a th:href="@{/item/listAllItem}" class="btn-primary">
+                        前往購物
                     </a>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
+    
+    <!-- 檢舉圖片顯示Modal -->
+    <div id="imageModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center;">
+        <div style="position: relative; max-width: 90%; max-height: 90%; background: white; border-radius: 8px; padding: 20px;">
+            <span id="closeImageModal" style="position: absolute; right: 15px; top: 10px; cursor: pointer; font-size: 2rem; color: #666;">&times;</span>
+            <h4 style="margin-top: 0; color: #1976d2;">檢舉圖片</h4>
+            <img id="reportImage" src="" alt="檢舉圖片" style="max-width: 100%; max-height: 70vh; border-radius: 8px;">
+        </div>
+    </div>
+    
+    <script>
+        // 顯示檢舉圖片
+        function showReportImage(repId) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('reportImage');
+            
+            // 設置圖片來源
+            img.src = '/item-report/image/' + repId;
+            
+            // 顯示Modal
+            modal.style.display = 'flex';
+        }
+        
+        // 關閉圖片Modal
+        document.getElementById('closeImageModal').addEventListener('click', function() {
+            document.getElementById('imageModal').style.display = 'none';
+        });
+        
+        // 點擊Modal背景關閉
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+        
+        // ESC鍵關閉Modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('imageModal').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html> 
