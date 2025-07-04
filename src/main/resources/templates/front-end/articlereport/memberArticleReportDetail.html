@@ -10,11 +10,10 @@
 
 </head>
 <body class="light">
-
 	<div class="app-container">
 		<div th:insert="~{/navTemplate :: navbar}"></div>
 		<div class="main-content">
-			<div th:replace="~{subnavMembers :: subnav(activeItem='')}"></div>
+			<div th:replace="~{subnavMembers :: subnav(activeItem='reports')}"></div>
 			<main class="content-area-main">
 
 				<div class="notification-detail-container">
