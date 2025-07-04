@@ -69,7 +69,7 @@ public class AdService {
     }
     
     public List<AdVO> getApprovedAds() {
-        return adRepo.findByAdStatus(AdVO.STATUS_APPROVED);
+        return adRepo.findActiveAdsByStatus(AdVO.STATUS_APPROVED);
     }
     
     public List<AdVO> getRejectedAds() {

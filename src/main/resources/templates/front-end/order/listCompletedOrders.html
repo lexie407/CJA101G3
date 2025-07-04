@@ -324,6 +324,16 @@
                                     我要評論
                                 </button>
                             </div>
+                            
+                            <!-- 檢舉按鈕（新增，不影響原有結構） -->
+                            <div class="mt-2">
+                                <a th:href="@{/item-report/form-from-order(ordId=${orderItem.ordId}, itemId=${orderItem.itemId})}" 
+                                   class="btn-material"
+                                   style="background: #f44336; text-decoration: none;"
+                                   title="檢舉此商品">
+                                    🚩 檢舉商品
+                                </a>
+                            </div>
                         </div>
 
                         <!-- 訂單總計 -->

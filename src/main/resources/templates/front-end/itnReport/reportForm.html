@@ -5,136 +5,366 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>島遊Kha - 商品檢舉</title>
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+        /* Material Design 色彩系統 */
+        :root {
+            --primary-color: #1976d2;
+            --primary-dark: #1565c0;
+            --primary-light: #42a5f5;
+            --secondary-color: #ff5722;
+            --secondary-dark: #e64a19;
+            --error-color: #f44336;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --surface-color: #ffffff;
+            --background-color: #f5f5f5;
+            --on-surface: #212121;
+            --on-surface-variant: #757575;
+            --outline: #e0e0e0;
+            --shadow: rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Roboto', 'Noto Sans TC', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
         .report-container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 680px;
+            margin: 24px auto;
+            padding: 0 16px;
         }
-        
-        .report-title {
-            text-align: center;
-            color: #1976d2;
-            margin-bottom: 30px;
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 32px 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(25, 118, 210, 0.24);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .page-title {
             font-size: 28px;
-            font-weight: bold;
+            font-weight: 500;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        
+
+        .page-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin: 8px 0 0 0;
+        }
+
+        .form-card {
+            background: var(--surface-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px var(--shadow);
+            margin-bottom: 24px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .form-card:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+        }
+
+        /* 警告訊息 */
+        .alert {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .alert-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        /* 表單元素 */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
-        
+
         .form-label {
             display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--on-surface);
             margin-bottom: 8px;
-            font-weight: bold;
-            color: #333;
         }
-        
+
+        .required {
+            color: var(--error-color);
+        }
+
         .form-control {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            padding: 16px;
+            border: 2px solid var(--outline);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--surface-color);
+            color: var(--on-surface);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
         }
-        
+
         .form-control:focus {
             outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.12);
         }
-        
+
+        .form-control:hover {
+            border-color: var(--on-surface-variant);
+        }
+
         .form-control.textarea {
             min-height: 120px;
             resize: vertical;
+            font-family: inherit;
         }
-        
-        .btn-submit {
-            background: #1976d2;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            transition: background 0.3s;
+
+        .form-help {
+            font-size: 12px;
+            color: var(--on-surface-variant);
+            margin-top: 4px;
         }
-        
-        .btn-submit:hover {
-            background: #1565c0;
-        }
-        
-        .btn-cancel {
-            background: #666;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            margin-top: 10px;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            transition: background 0.3s;
-        }
-        
-        .btn-cancel:hover {
-            background: #555;
-        }
-        
-        .alert {
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .required {
-            color: #e74c3c;
-        }
-        
+
+        /* 文件上傳 */
         .file-upload {
             position: relative;
-            display: inline-block;
+            display: block;
             width: 100%;
         }
-        
-        .file-upload-label {
-            display: block;
-            padding: 12px;
-            border: 2px dashed #ddd;
-            border-radius: 5px;
+
+        .file-upload-area {
+            border: 2px dashed var(--outline);
+            border-radius: 12px;
+            padding: 24px;
             text-align: center;
             cursor: pointer;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
+            background: #fafafa;
         }
-        
-        .file-upload-label:hover {
-            border-color: #1976d2;
+
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(25, 118, 210, 0.04);
         }
-        
+
+        .file-upload-area.dragover {
+            border-color: var(--primary-color);
+            background: rgba(25, 118, 210, 0.08);
+        }
+
         .file-upload input[type="file"] {
             position: absolute;
-            left: -9999px;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: var(--on-surface);
+            margin-bottom: 4px;
+        }
+
+        /* 按鈕設計 */
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover::before {
+            transform: translateX(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+            color: white;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(25, 118, 210, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: var(--on-surface);
+            border: 1px solid var(--outline);
+            width: 100%;
+        }
+
+        .btn-secondary:hover {
+            background: #eeeeee;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 檢舉須知卡片 */
+        .info-card {
+            background: #fff3e0;
+            border: 1px solid #ffcc02;
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .info-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e65100;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            padding: 8px 0;
+            color: #bf360c;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .info-list li::before {
+            content: '•';
+            color: #ff9800;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .report-container {
+                margin: 16px auto;
+                padding: 0 12px;
+            }
+            
+            .page-header {
+                padding: 24px 16px;
+                margin-bottom: 16px;
+            }
+            
+            .form-card {
+                padding: 16px;
+            }
+            
+            .btn {
+                padding: 14px 24px;
+            }
+        }
+
+        /* 載入動畫 */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--outline);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -144,52 +374,75 @@
         
         <div class="main-content">
             <div class="report-container">
-                <h1 class="report-title">商品檢舉</h1>
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="material-icons">report</i>
+                        商品檢舉
+                    </h1>
+                    <p class="page-subtitle">協助維護平台商品品質，保障消費者權益</p>
+                </div>
                 
                 <!-- 顯示錯誤或成功訊息 -->
-                <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
-                <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                <div th:if="${errorMessage}" class="alert alert-error">
+                    <i class="material-icons">error</i>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+                <div th:if="${successMessage}" class="alert alert-success">
+                    <i class="material-icons">check_circle</i>
+                    <span th:text="${successMessage}"></span>
+                </div>
                 
-                <form th:action="@{/item-report/submit}" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="memId" th:value="${memId}">
-                    <input type="hidden" name="itemId" th:value="${itemId}">
-                    
-                    <div class="form-group">
-                        <label class="form-label">商品編號</label>
-                        <input type="text" class="form-control" th:value="${itemId}" readonly>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="repReason">
-                            檢舉理由 <span class="required">*</span>
-                        </label>
-                        <textarea id="repReason" name="repReason" class="form-control textarea" 
-                                placeholder="請詳細說明檢舉原因，例如：商品描述與實際不符、品質問題、虛假宣傳等..." 
-                                required minlength="10" maxlength="200"></textarea>
-                        <small style="color: #666;">請提供10-200字的詳細說明</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="repImg">檢舉相關圖片（選填）</label>
-                        <div class="file-upload">
-                            <label for="repImg" class="file-upload-label">
-                                <i class="material-icons" style="vertical-align: middle;">cloud_upload</i>
-                                點擊選擇圖片檔案
-                            </label>
-                            <input type="file" id="repImg" name="repImg" accept="image/*">
+                <div class="form-card">
+                    <form th:action="@{/item-report/submit}" method="post" enctype="multipart/form-data" id="reportForm">
+                        <input type="hidden" name="memId" th:value="${memId}">
+                        <input type="hidden" name="itemId" th:value="${itemId}">
+                        
+                        <div class="form-group">
+                            <label class="form-label">商品編號</label>
+                            <input type="text" class="form-control" th:value="${itemId}" readonly>
                         </div>
-                        <small style="color: #666;">支援格式：JPG、PNG、GIF，檔案大小不超過5MB</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <button type="submit" class="btn-submit">提交檢舉</button>
-                        <a th:href="@{/item/listAllItem}" class="btn-cancel">取消</a>
-                    </div>
-                </form>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="repReason">
+                                檢舉理由 <span class="required">*</span>
+                            </label>
+                            <textarea id="repReason" name="repReason" class="form-control textarea" 
+                                    placeholder="請詳細說明檢舉原因，例如：商品描述與實際不符、品質問題、虛假宣傳等..." 
+                                    required minlength="10" maxlength="200"></textarea>
+                            <div class="form-help">請提供10-200字的詳細說明</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="repImg">檢舉相關圖片（選填）</label>
+                            <div class="file-upload">
+                                <div class="file-upload-area" id="fileUploadArea">
+                                    <i class="material-icons upload-icon">cloud_upload</i>
+                                    <div class="upload-text">點擊選擇圖片或拖拽到此處</div>
+                                    <div class="form-help">支援格式：JPG、PNG、GIF，檔案大小不超過5MB</div>
+                                    <input type="file" id="repImg" name="repImg" accept="image/*">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="material-icons">send</i>
+                                提交檢舉
+                            </button>
+                            <a th:href="@{/item/listAllItem}" class="btn btn-secondary">
+                                <i class="material-icons">arrow_back</i>
+                                返回商品列表
+                            </a>
+                        </div>
+                    </form>
+                </div>
                 
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <h4 style="color: #666; margin-bottom: 15px;">檢舉須知：</h4>
-                    <ul style="color: #666; line-height: 1.6;">
+                <div class="info-card">
+                    <div class="info-title">
+                        <i class="material-icons">info</i>
+                        檢舉須知
+                    </div>
+                    <ul class="info-list">
                         <li>請確保您已購買過此商品才能進行檢舉</li>
                         <li>檢舉內容必須真實，惡意檢舉將承擔相應責任</li>
                         <li>每個會員對同一商品只能檢舉一次</li>
@@ -200,51 +453,49 @@
             </div>
         </div>
     </div>
-    
+
     <script>
-        // 檔案上傳預覽
-        document.getElementById('repImg').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const label = document.querySelector('.file-upload-label');
+        // 文件拖拽上傳
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('repImg');
+
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
             
-            if (file) {
-                if (file.size > 5 * 1024 * 1024) { // 5MB
-                    alert('檔案大小不能超過5MB');
-                    this.value = '';
-                    return;
-                }
-                
-                label.innerHTML = '<i class="material-icons" style="vertical-align: middle;">check_circle</i> ' + file.name;
-                label.style.borderColor = '#4caf50';
-                label.style.color = '#4caf50';
-            } else {
-                label.innerHTML = '<i class="material-icons" style="vertical-align: middle;">cloud_upload</i> 點擊選擇圖片檔案';
-                label.style.borderColor = '#ddd';
-                label.style.color = 'inherit';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateFileDisplay(files[0]);
             }
         });
-        
-        // 表單提交前驗證
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const reason = document.getElementById('repReason').value.trim();
-            
-            if (reason.length < 10) {
-                alert('檢舉理由至少需要10個字符');
-                e.preventDefault();
-                return false;
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                updateFileDisplay(e.target.files[0]);
             }
-            
-            if (reason.length > 200) {
-                alert('檢舉理由不能超過200個字符');
-                e.preventDefault();
-                return false;
-            }
-            
-            // 確認提交
-            if (!confirm('確定要提交此檢舉嗎？檢舉內容提交後無法修改。')) {
-                e.preventDefault();
-                return false;
-            }
+        });
+
+        function updateFileDisplay(file) {
+            const uploadText = fileUploadArea.querySelector('.upload-text');
+            uploadText.textContent = `已選擇：${file.name}`;
+        }
+
+        // 表單提交載入動畫
+        document.getElementById('reportForm').addEventListener('submit', function() {
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            loading.innerHTML = '<div class="spinner"></div>';
+            document.body.appendChild(loading);
         });
     </script>
 </body>

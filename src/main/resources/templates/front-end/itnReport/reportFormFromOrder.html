@@ -5,251 +5,481 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>島遊Kha - 檢舉商品</title>
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+        /* Material Design 色彩系統 */
+        :root {
+            --primary-color: #1976d2;
+            --primary-dark: #1565c0;
+            --primary-light: #42a5f5;
+            --secondary-color: #ff5722;
+            --secondary-dark: #e64a19;
+            --error-color: #f44336;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --surface-color: #ffffff;
+            --background-color: #f5f5f5;
+            --on-surface: #212121;
+            --on-surface-variant: #757575;
+            --outline: #e0e0e0;
+            --shadow: rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Roboto', 'Noto Sans TC', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
         .report-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 0 16px;
         }
-        
+
         .page-header {
-            background: linear-gradient(135deg, #FF5722, #FF7043);
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #ff7043 100%);
             color: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(255, 87, 34, 0.3);
+            padding: 32px 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(255, 87, 34, 0.24);
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
         .page-title {
             font-size: 28px;
-            font-weight: bold;
+            font-weight: 500;
             margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        
+
         .page-subtitle {
             font-size: 16px;
-            margin: 10px 0 0 0;
             opacity: 0.9;
+            margin: 8px 0 0 0;
         }
-        
+
+        /* 訂單資訊卡片 */
         .order-info {
-            background: #e3f2fd;
-            border: 1px solid #2196F3;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
+            background: var(--surface-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px var(--shadow);
+            border: 1px solid var(--outline);
         }
-        
+
         .order-info h4 {
-            margin: 0 0 15px 0;
-            color: #1976D2;
+            margin: 0 0 16px 0;
+            color: var(--primary-color);
             font-size: 18px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        
+
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .order-detail-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--outline);
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: var(--on-surface-variant);
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: var(--on-surface);
+            font-weight: 500;
+        }
+
         .item-preview {
             display: flex;
             align-items: center;
-            gap: 20px;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .item-image {
-            width: 100px;
-            height: 100px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 2px solid #f0f0f0;
-        }
-        
-        .item-details h5 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
-            color: #333;
-        }
-        
-        .item-details p {
-            margin: 5px 0;
-            color: #666;
-        }
-        
-        .form-container {
-            background: white;
+            gap: 16px;
+            background: #f8f9fa;
+            padding: 16px;
             border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--outline);
+            margin-top: 16px;
         }
-        
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid var(--outline);
+        }
+
+        .item-details h5 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: var(--on-surface);
+            font-weight: 500;
+        }
+
+        .item-details p {
+            margin: 4px 0;
+            color: var(--on-surface-variant);
+            font-size: 14px;
+        }
+
+        /* 表單卡片 */
+        .form-card {
+            background: var(--surface-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .form-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--on-surface);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 24px;
         }
-        
+
         .form-label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
             font-size: 14px;
+            font-weight: 500;
+            color: var(--on-surface);
+            margin-bottom: 8px;
         }
-        
+
         .required {
-            color: #f44336;
+            color: var(--error-color);
         }
-        
+
         .form-control {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
+            padding: 16px;
+            border: 2px solid var(--outline);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--surface-color);
+            color: var(--on-surface);
+            transition: all 0.3s ease;
             box-sizing: border-box;
         }
-        
+
         .form-control:focus {
             outline: none;
-            border-color: #FF5722;
-            box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.12);
         }
-        
+
+        .form-control:hover {
+            border-color: var(--on-surface-variant);
+        }
+
         .form-control.textarea {
             resize: vertical;
             min-height: 120px;
             font-family: inherit;
         }
-        
-        .form-control.file {
-            padding: 8px 12px;
-        }
-        
+
         .form-help {
             font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+            color: var(--on-surface-variant);
+            margin-top: 4px;
         }
-        
-        .report-reasons {
+
+        /* 檢舉理由選項 */
+        .reason-options {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
         }
-        
+
         .reason-option {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px;
+            gap: 12px;
+            padding: 16px;
             background: #f8f9fa;
-            border-radius: 6px;
+            border: 2px solid var(--outline);
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
         }
-        
+
         .reason-option:hover {
             background: #e9ecef;
+            border-color: var(--secondary-color);
         }
-        
+
+        .reason-option.selected {
+            background: rgba(255, 87, 34, 0.08);
+            border-color: var(--secondary-color);
+        }
+
         .reason-option input[type="radio"] {
             margin: 0;
+            accent-color: var(--secondary-color);
         }
-        
+
         .reason-option label {
             margin: 0;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
+            color: var(--on-surface);
         }
-        
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 25px;
+
+        /* 文件上傳 */
+        .file-upload {
+            position: relative;
+            display: block;
+            width: 100%;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--outline);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            text-decoration: none;
             transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--secondary-color);
+            background: rgba(255, 87, 34, 0.04);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--secondary-color);
+            background: rgba(255, 87, 34, 0.08);
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--secondary-color);
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: var(--on-surface);
+            margin-bottom: 4px;
+        }
+
+        /* 按鈕設計 */
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .btn-submit {
-            background: linear-gradient(45deg, #FF5722, #FF7043);
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover::before {
+            transform: translateX(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--secondary-color), #ff7043);
             color: white;
             width: 100%;
-            justify-content: center;
+            margin-bottom: 12px;
         }
-        
-        .btn-submit:hover {
-            background: linear-gradient(45deg, #E64A19, #FF5722);
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, var(--secondary-dark), var(--secondary-color));
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+            box-shadow: 0 8px 24px rgba(255, 87, 34, 0.3);
         }
-        
+
         .btn-secondary {
-            background: #6c757d;
-            color: white;
-            margin-right: 10px;
+            background: #f5f5f5;
+            color: var(--on-surface);
+            border: 1px solid var(--outline);
+            width: 100%;
         }
-        
+
         .btn-secondary:hover {
-            background: #5a6268;
-            color: white;
+            background: #eeeeee;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        
-        .actions {
+
+        .btn-group {
             display: flex;
-            gap: 15px;
-            margin-top: 30px;
+            gap: 12px;
         }
-        
+
+        @media (max-width: 768px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+
+        /* 警告訊息 */
         .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
         }
-        
-        .alert-warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .alert-error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
         }
-        
-        .warning-icon {
-            font-size: 20px;
-            margin-right: 10px;
+
+        .alert-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
         }
-        
-        .guidelines {
-            background: #f8f9fa;
-            border-left: 4px solid #FF5722;
-            padding: 20px;
-            margin-bottom: 25px;
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .report-container {
+                margin: 16px auto;
+                padding: 0 12px;
+            }
+            
+            .page-header {
+                padding: 24px 16px;
+                margin-bottom: 16px;
+            }
+            
+            .form-card, .order-info {
+                padding: 16px;
+            }
+            
+            .btn {
+                padding: 14px 24px;
+            }
+            
+            .order-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .item-preview {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .reason-options {
+                grid-template-columns: 1fr;
+            }
         }
-        
-        .guidelines h5 {
-            margin: 0 0 15px 0;
-            color: #FF5722;
+
+        /* 載入動畫 */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
         }
-        
-        .guidelines ul {
-            margin: 0;
-            padding-left: 20px;
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--outline);
+            border-top: 4px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        
-        .guidelines li {
-            margin-bottom: 8px;
-            color: #495057;
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -259,202 +489,202 @@
         
         <div class="main-content">
             <div class="report-container">
-                <!-- 頁面標題 -->
                 <div class="page-header">
-                    <h1 class="page-title">🚩 檢舉商品</h1>
-                    <p class="page-subtitle">基於您的購買記錄進行商品檢舉</p>
+                    <h1 class="page-title">
+                        <i class="material-icons">report_problem</i>
+                        檢舉商品
+                    </h1>
+                    <p class="page-subtitle">基於您的購買經驗，協助我們改善平台商品品質</p>
+                </div>
+                
+                <!-- 顯示錯誤或成功訊息 -->
+                <div th:if="${errorMessage}" class="alert alert-error">
+                    <i class="material-icons">error</i>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+                <div th:if="${successMessage}" class="alert alert-success">
+                    <i class="material-icons">check_circle</i>
+                    <span th:text="${successMessage}"></span>
                 </div>
                 
                 <!-- 訂單資訊 -->
-                <div class="order-info" th:if="${ordId}">
-                    <h4>📦 訂單資訊</h4>
-                    <p><strong>訂單編號：</strong>#<span th:text="${ordId}"></span></p>
-                    <p><strong>檢舉人：</strong><span th:text="${member.memName}"></span></p>
-                    
-                    <div class="item-preview" th:if="${item}">
-                        <img th:if="${item.itemImg}" 
-                             th:src="@{'data:image/jpeg;base64,' + ${T(java.util.Base64).getEncoder().encodeToString(item.itemImg)}}"
-                             alt="商品圖片" 
-                             class="item-image">
-                        <div th:if="${item.itemImg == null}" class="item-image" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
-                            無圖片
+                <div class="order-info">
+                    <h4>
+                        <i class="material-icons">shopping_cart</i>
+                        訂單資訊
+                    </h4>
+                    <div class="order-details">
+                        <div class="order-detail-item">
+                            <div class="detail-label">訂單編號</div>
+                            <div class="detail-value" th:text="${orderItem.ordId}">訂單編號</div>
                         </div>
-                        
+                        <div class="order-detail-item">
+                            <div class="detail-label">購買日期</div>
+                            <div class="detail-value" th:text="${#temporals.format(orderItem.orderDate, 'yyyy-MM-dd')}">購買日期</div>
+                        </div>
+                        <div class="order-detail-item">
+                            <div class="detail-label">訂單狀態</div>
+                            <div class="detail-value">
+                                <span th:if="${orderItem.orderStatus == 1}">已完成</span>
+                                <span th:if="${orderItem.orderStatus == 0}">處理中</span>
+                            </div>
+                        </div>
+                        <div class="order-detail-item">
+                            <div class="detail-label">商品價格</div>
+                            <div class="detail-value">
+                                NT$ <span th:text="${orderItem.discPrice != null ? orderItem.discPrice : orderItem.oriPrice}">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="item-preview">
+                        <img th:src="@{/item/DBGifReader(id=${orderItem.itemId})}" 
+                             alt="商品圖片" class="item-image">
                         <div class="item-details">
-                            <h5 th:text="${item.itemName}"></h5>
-                            <p><strong>商品編號：</strong><span th:text="${item.itemId}"></span></p>
-                            <p><strong>商品價格：</strong>NT$ <span th:text="${item.itemPrice}"></span></p>
+                            <h5 th:text="${orderItem.itemName}">商品名稱</h5>
+                            <p>商品編號：<span th:text="${orderItem.itemId}">商品編號</span></p>
+                            <p>購買數量：<span th:text="${orderItem.quantity}">數量</span></p>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 錯誤訊息 -->
-                <div th:if="${errorMessage}" class="alert alert-error">
-                    <span class="warning-icon">⚠️</span>
-                    <span th:text="${errorMessage}"></span>
-                </div>
-                
-                <!-- 檢舉指南 -->
-                <div class="guidelines">
-                    <h5>🔍 檢舉指南</h5>
-                    <ul>
-                        <li>請選擇最符合的檢舉理由</li>
-                        <li>詳細描述您遇到的問題</li>
-                        <li>如有相關證明，請上傳圖片</li>
-                        <li>虛假檢舉可能導致帳號受限</li>
-                        <li>我們會在3-5個工作天內處理您的檢舉</li>
-                    </ul>
-                </div>
-                
                 <!-- 檢舉表單 -->
-                <div class="form-container">
-                    <form th:action="@{/item-report/submit-from-order}" method="post" enctype="multipart/form-data">
-                        <input type="hidden" name="memId" th:value="${member.memId}">
-                        <input type="hidden" name="ordId" th:value="${ordId}">
-                        <input type="hidden" name="itemId" th:value="${item.itemId}">
+                <div class="form-card">
+                    <div class="form-title">
+                        <i class="material-icons">edit</i>
+                        檢舉內容
+                    </div>
+                    
+                    <form th:action="@{/item-report/submit-from-order}" method="post" enctype="multipart/form-data" id="reportForm">
+                        <input type="hidden" name="memId" th:value="${memId}">
+                        <input type="hidden" name="ordId" th:value="${orderItem.ordId}">
+                        <input type="hidden" name="itemId" th:value="${orderItem.itemId}">
                         
-                        <!-- 檢舉理由選擇 -->
                         <div class="form-group">
-                            <label class="form-label">檢舉理由 <span class="required">*</span></label>
-                            <div class="report-reasons">
+                            <label class="form-label">
+                                檢舉理由類型 <span class="required">*</span>
+                            </label>
+                            <div class="reason-options">
                                 <div class="reason-option">
-                                    <input type="radio" id="reason1" name="reasonType" value="假貨/仿冒品">
-                                    <label for="reason1">假貨/仿冒品</label>
+                                    <input type="radio" id="reason1" name="reasonType" value="商品描述不符" required>
+                                    <label for="reason1">商品描述不符</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason2" name="reasonType" value="品質不符">
-                                    <label for="reason2">品質不符</label>
+                                    <input type="radio" id="reason2" name="reasonType" value="品質問題" required>
+                                    <label for="reason2">品質問題</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason3" name="reasonType" value="描述不實">
-                                    <label for="reason3">描述不實</label>
+                                    <input type="radio" id="reason3" name="reasonType" value="虛假宣傳" required>
+                                    <label for="reason3">虛假宣傳</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason4" name="reasonType" value="安全問題">
-                                    <label for="reason4">安全問題</label>
+                                    <input type="radio" id="reason4" name="reasonType" value="配送問題" required>
+                                    <label for="reason4">配送問題</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason5" name="reasonType" value="違法商品">
-                                    <label for="reason5">違法商品</label>
+                                    <input type="radio" id="reason5" name="reasonType" value="服務態度" required>
+                                    <label for="reason5">服務態度</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason6" name="reasonType" value="其他">
+                                    <input type="radio" id="reason6" name="reasonType" value="其他" required>
                                     <label for="reason6">其他</label>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- 詳細描述 -->
                         <div class="form-group">
-                            <label for="repReason" class="form-label">詳細說明 <span class="required">*</span></label>
+                            <label class="form-label" for="repReason">
+                                詳細說明 <span class="required">*</span>
+                            </label>
                             <textarea id="repReason" name="repReason" class="form-control textarea" 
-                                      placeholder="請詳細描述您遇到的問題，包括具體情況、時間、影響等..." 
-                                      required></textarea>
-                            <div class="form-help">請提供詳細的檢舉理由，至少20字（最多200字）</div>
+                                    placeholder="請詳細描述您遇到的問題，這將有助於我們更好地處理您的檢舉..." 
+                                    required minlength="10" maxlength="500"></textarea>
+                            <div class="form-help">請提供10-500字的詳細說明，包括具體的問題描述</div>
                         </div>
                         
-                        <!-- 檢舉圖片 -->
                         <div class="form-group">
-                            <label for="repImg" class="form-label">檢舉證明 <span style="color: #888;">(選填)</span></label>
-                            <input type="file" id="repImg" name="repImg" class="form-control file" 
-                                   accept="image/jpeg,image/jpg,image/png">
-                            <div class="form-help">支援 JPG、PNG 格式，檔案大小不超過5MB</div>
+                            <label class="form-label" for="repImg">證據圖片（選填）</label>
+                            <div class="file-upload">
+                                <div class="file-upload-area" id="fileUploadArea">
+                                    <i class="material-icons upload-icon">cloud_upload</i>
+                                    <div class="upload-text">點擊選擇圖片或拖拽到此處</div>
+                                    <div class="form-help">建議上傳相關證據圖片，支援格式：JPG、PNG、GIF，檔案大小不超過5MB</div>
+                                    <input type="file" id="repImg" name="repImg" accept="image/*">
+                                </div>
+                            </div>
                         </div>
                         
-                        <!-- 重要警告 -->
-                        <div class="alert alert-warning">
-                            <span class="warning-icon">⚠️</span>
-                            <strong>重要提醒：</strong>
-                            請確保檢舉內容屬實。虛假檢舉將可能導致您的帳號受到限制。
-                            我們會嚴格保護您的個人資料，檢舉內容僅供審核使用。
-                        </div>
-                        
-                        <!-- 提交按鈕 -->
-                        <div class="actions">
-                            <a th:href="@{/item-report/my-orders}" class="btn btn-secondary">
-                                ← 返回訂單列表
-                            </a>
-                            <button type="submit" class="btn btn-submit" style="flex: 1;">
-                                🚩 提交檢舉
-                            </button>
+                        <div class="form-group">
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="material-icons">send</i>
+                                    提交檢舉
+                                </button>
+                                <a th:href="@{/item-report/my-orders}" class="btn btn-secondary">
+                                    <i class="material-icons">arrow_back</i>
+                                    返回我的訂單
+                                </a>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script>
-        // 表單驗證
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const reason = document.querySelector('textarea[name="repReason"]').value.trim();
-            const reasonType = document.querySelector('input[name="reasonType"]:checked');
-            
-            if (!reasonType) {
-                e.preventDefault();
-                alert('請選擇檢舉理由！');
-                return;
-            }
-            
-            if (reason.length < 20) {
-                e.preventDefault();
-                alert('請提供至少20字的詳細說明！');
-                return;
-            }
-            
-            if (reason.length > 200) {
-                e.preventDefault();
-                alert('詳細說明不能超過200字！');
-                return;
-            }
-            
-            // 合併理由類型和詳細說明
-            const combinedReason = `[${reasonType.value}] ${reason}`;
-            document.querySelector('textarea[name="repReason"]').value = combinedReason;
-            
-            // 確認提交
-            if (!confirm('確定要提交這個檢舉嗎？提交後將無法修改。')) {
-                e.preventDefault();
-            }
-        });
-        
-        // 理由選擇事件
-        document.querySelectorAll('input[name="reasonType"]').forEach(function(radio) {
-            radio.addEventListener('change', function() {
-                const textarea = document.querySelector('textarea[name="repReason"]');
-                const reasonText = this.value;
-                
-                if (textarea.value.trim() === '') {
-                    // 根據選擇的理由提供模板
-                    const templates = {
-                        '假貨/仿冒品': '我購買的商品疑似假貨/仿冒品，因為...',
-                        '品質不符': '商品品質與描述不符，具體問題是...',
-                        '描述不實': '商品描述與實際收到的商品不符，差異在於...',
-                        '安全問題': '商品存在安全隱患，具體情況是...',
-                        '違法商品': '此商品疑似違法，理由是...',
-                        '其他': '我要檢舉的問題是...'
-                    };
-                    textarea.placeholder = templates[reasonText] || '請詳細描述您遇到的問題...';
-                }
+        // 檢舉理由選項選中效果
+        document.querySelectorAll('.reason-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.reason-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
             });
         });
-        
-        // 字數計算
-        const textarea = document.querySelector('textarea[name="repReason"]');
-        const helpText = textarea.nextElementSibling;
-        
-        textarea.addEventListener('input', function() {
-            const length = this.value.length;
-            helpText.textContent = `已輸入 ${length} 字（至少20字，最多200字）`;
+
+        // 文件拖拽上傳
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('repImg');
+
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
             
-            if (length < 20) {
-                helpText.style.color = '#dc3545';
-            } else if (length > 200) {
-                helpText.style.color = '#dc3545';
-            } else {
-                helpText.style.color = '#28a745';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateFileDisplay(files[0]);
             }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                updateFileDisplay(e.target.files[0]);
+            }
+        });
+
+        function updateFileDisplay(file) {
+            const uploadText = fileUploadArea.querySelector('.upload-text');
+            uploadText.textContent = `已選擇：${file.name}`;
+        }
+
+        // 表單提交載入動畫
+        document.getElementById('reportForm').addEventListener('submit', function() {
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            loading.innerHTML = '<div class="spinner"></div>';
+            document.body.appendChild(loading);
         });
     </script>
 </body>
+</html> 
 </html> 

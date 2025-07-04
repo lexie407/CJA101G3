@@ -90,14 +90,31 @@
                     <div style="background-color: #e3f2fd; padding: 12px; border-radius: 5px; margin-bottom: 20px;">
                         <strong>說明：</strong> 新增廣告後，需等待管理員審核通過才會顯示於前台。
                     </div>
+                    
+                    <!-- 錯誤訊息顯示 -->
+                    <div th:if="${errorMessage}" class="alert alert-danger" style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px; border-radius: 5px; margin-bottom: 20px;">
+                        <strong>錯誤：</strong> <span th:text="${errorMessage}"></span>
+                    </div>
+                    
+                    <!-- 成功訊息顯示 -->
+                    <div th:if="${successMessage}" class="alert alert-success" style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px; border-radius: 5px; margin-bottom: 20px;">
+                        <strong>成功：</strong> <span th:text="${successMessage}"></span>
+                    </div>
+                    
                     <form th:action="@{/advertisment/insert}" method="post" enctype="multipart/form-data">
                         <div class="form-group">
-                                            <label>廣告描述：</label>
-                <input type="text" name="adTitle" required placeholder="請輸入廣告描述，例如：限時優惠活動、新品上市等">
+                            <label>廣告描述：</label>
+                            <input type="text" name="adTitle" 
+                                   th:value="${adVO != null ? adVO.adTitle : ''}" 
+                                   required 
+                                   placeholder="請輸入廣告描述，例如：限時優惠活動、新品上市等">
+                            <!-- 欄位驗證錯誤會在上方的 errorMessage 中顯示 -->
                         </div>
                         <div class="form-group">
                             <label>商店：</label>
-                            <input type="text" th:value="${storeNamesMap != null ? storeNamesMap.get(1) : '目前登入商家'}" readonly style="background:#f8f9fa;">
+                            <input type="text" th:value="${currentStoreName != null ? currentStoreName : '商家資訊載入中...'}" readonly style="background:#f8f9fa;">
+                            <!-- 隱藏欄位傳遞商家 ID -->
+                            <input type="hidden" name="storeId" th:value="${currentStoreId}">
                         </div>
                         <div class="form-group">
                             <label>開始時間：</label>
