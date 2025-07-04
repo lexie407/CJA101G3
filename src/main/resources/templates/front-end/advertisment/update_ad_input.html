@@ -127,7 +127,10 @@
                     <div class="form-group">
                         <label>更新圖片：</label>
                         <input type="file" name="adImageFile" id="imageInput" accept="image/*" />
-                        <small style="color: #7f8c8d;">如果不選擇新圖片，將保持原有圖片</small>
+                        <small style="color: #7f8c8d; display: block;">如果不選擇新圖片，將保持原有圖片</small>
+                        <small style="color: #666; display: block;">
+                            支援格式：JPG、PNG、GIF等圖片格式，檔案大小不超過 10MB
+                        </small>
                         
                         <!-- 新圖片預覽區域 -->
                         <div id="imagePreview" style="display: none; margin-top: 10px;">
@@ -222,9 +225,9 @@
                 return;
             }
             
-            // 檢查檔案大小 (限制為 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('圖片檔案大小不能超過 5MB');
+                            // 檢查檔案大小 (限制為 10MB)
+                            if (file.size > 10 * 1024 * 1024) {
+                alert('圖片檔案大小不能超過 10MB');
                 this.value = '';
                 previewDiv.style.display = 'none';
                 return;

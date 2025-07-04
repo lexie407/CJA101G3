@@ -1,5 +1,6 @@
 package com.toiukha.advertisment.model;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,7 +33,13 @@ public interface AdRepository extends JpaRepository<AdVO, Integer>{
 	    
 	    // 根據狀態排序查詢廣告
 	    List<AdVO> findByAdStatusOrderByAdCreatedTimeDesc(Byte adStatus);
-	}
+	
 
 	
 	// 有需要自訂查詢再往下補
+
+	//查今天會上架的廣告
+	@Query(value = "FROM AdVO WHERE :now BETWEEN adStartTime AND adEndTime")
+	public List<AdVO> getTodayAds(Timestamp now);
+	
+}

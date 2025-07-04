@@ -148,6 +148,202 @@
         #cart-fab .material-icons {
             font-size: 32px;
         }
+
+        /* 圖片輪播樣式 */
+        .carousel-container {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto 32px auto;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .carousel-container:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        .carousel-slide {
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .carousel-slide.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .carousel-slide:hover {
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+        }
+
+        .carousel-slide:hover .carousel-caption {
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .carousel-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            padding: 40px 32px 24px 32px;
+            text-align: left;
+        }
+
+        .carousel-caption h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .carousel-caption p {
+            font-size: 1.1rem;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        .carousel-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .carousel-btn-prev {
+            left: 20px;
+        }
+
+        .carousel-btn-next {
+            right: 20px;
+        }
+
+        .carousel-btn .material-icons {
+            font-size: 24px;
+            color: #1976d2;
+        }
+
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator.active {
+            background: #fff;
+            transform: scale(1.2);
+        }
+
+        .indicator:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .carousel-click-hint {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #666;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .carousel-container:hover .carousel-click-hint {
+            opacity: 1;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .carousel-wrapper {
+                height: 200px;
+            }
+
+            .carousel-caption {
+                padding: 20px 16px 16px 16px;
+            }
+
+            .carousel-caption h3 {
+                font-size: 1.4rem;
+            }
+
+            .carousel-caption p {
+                font-size: 0.95rem;
+            }
+
+            .carousel-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .carousel-btn-prev {
+                left: 10px;
+            }
+
+            .carousel-btn-next {
+                right: 10px;
+            }
+
+            .carousel-btn .material-icons {
+                font-size: 20px;
+            }
+            
+            .carousel-click-hint {
+                bottom: -25px;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 
@@ -161,7 +357,46 @@
             </header>
             <main class="content-area-main">
                 <input type="hidden" name="memId" th:value="${session.member != null ? session.member.memId : ''}">
-                <!-- 搜尋欄位區塊 -->
+                <div id="ad">
+                    <div class="carousel-container">
+                        <div class="carousel-wrapper">
+                            <th:block th:each="ad, status : ${ads}">
+                                <div class="carousel-slide" 
+                                     th:classappend="${status.index == 0 ? 'active' : ''}"
+                                     th:attr="data-store-id=${ad.storeId}"
+                                     style="cursor: pointer;">
+                                    <img th:src="@{/advertisment/DBGifReader(adId=${ad.adId})}" th:alt="${ad.adTitle}" onerror="this.src='https://picsum.photos/800/300?random=1'">
+                                    <div class="carousel-caption">
+                                        <h3 th:text="${ad.adTitle}"></h3>
+                                        <p style="font-size: 0.9rem; margin-top: 8px; opacity: 0.8;">
+                                            <i class="fa fa-mouse-pointer" style="margin-right: 5px;"></i>
+                                            點擊查看商店商品
+                                        </p>
+                                    </div>
+                                </div>
+                            </th:block>
+                        </div>
+
+                        <button class="carousel-btn carousel-btn-prev" onclick="changeSlide(-1)">
+                            <span class="material-icons">chevron_left</span>
+                        </button>
+                        <button class="carousel-btn carousel-btn-next" onclick="changeSlide(1)">
+                            <span class="material-icons">chevron_right</span>
+                        </button>
+
+                        <div class="carousel-indicators">
+                            <th:block th:each="ad, status : ${ads}">
+                                <span class="indicator" th:classappend="${status.index == 0 ? 'active' : ''}" th:onclick="'currentSlide(' + (${status.index} + 1) + ')'"></span>
+                            </th:block>
+                        </div>
+                        
+                        <!-- 點擊提示 -->
+                        <div class="carousel-click-hint">
+                            <i class="fa fa-hand-pointer-o" style="margin-right: 5px;"></i>
+                            點擊廣告查看商店商品
+                        </div>
+                    </div>
+                </div>
                 <div class="item-search-bar"
                     style="display:flex;align-items:center;background:#fff;border-radius:24px;box-shadow:0 2px 8px rgba(25,118,210,0.10);padding:4px 16px;width:520px;margin:0 auto 24px auto;border:1.5px solid #bdbdbd;transition:border 0.2s;">
                     <span class="material-icons" style="color:#1976d2;font-size:1.5rem;margin-right:8px;">search</span>
@@ -218,7 +453,120 @@
                 </div>
                 <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
                 <script>
+                    // 圖片輪播相關變數
+                    let currentSlideIndex = 0;
+                    let slideInterval;
+                    const slides = document.querySelectorAll('.carousel-slide');
+                    const indicators = document.querySelectorAll('.indicator');
+                    const totalSlides = slides.length;
+
+                    // 顯示指定索引的幻燈片
+                    function showSlide(index) {
+                        // 隱藏所有幻燈片
+                        slides.forEach(slide => {
+                            slide.classList.remove('active');
+                        });
+
+                        // 移除所有指示器的active狀態
+                        indicators.forEach(indicator => {
+                            indicator.classList.remove('active');
+                        });
+
+                        // 確保索引在有效範圍內
+                        if (index >= totalSlides) {
+                            currentSlideIndex = 0;
+                        } else if (index < 0) {
+                            currentSlideIndex = totalSlides - 1;
+                        } else {
+                            currentSlideIndex = index;
+                        }
+
+                        // 顯示當前幻燈片和指示器
+                        slides[currentSlideIndex].classList.add('active');
+                        indicators[currentSlideIndex].classList.add('active');
+                    }
+
+                    // 切換到下一張或上一張幻燈片
+                    function changeSlide(direction) {
+                        const newIndex = currentSlideIndex + direction;
+                        showSlide(newIndex);
+                        resetAutoSlide();
+                    }
+
+                    // 切換到指定編號的幻燈片
+                    function currentSlide(slideNumber) {
+                        showSlide(slideNumber - 1);
+                        resetAutoSlide();
+                    }
+
+                    // 自動播放功能
+                    function autoSlide() {
+                        currentSlideIndex++;
+                        if (currentSlideIndex >= totalSlides) {
+                            currentSlideIndex = 0;
+                        }
+                        showSlide(currentSlideIndex);
+                    }
+
+                    // 開始自動播放
+                    function startAutoSlide() {
+                        slideInterval = setInterval(autoSlide, 5000); // 每5秒切換一次
+                    }
+
+                    // 停止自動播放
+                    function stopAutoSlide() {
+                        clearInterval(slideInterval);
+                    }
+
+                    // 重置自動播放
+                    function resetAutoSlide() {
+                        stopAutoSlide();
+                        startAutoSlide();
+                    }
+
+                    // 初始化輪播
+                    function initCarousel() {
+                        if (totalSlides > 0) {
+                            // 不再需要手動設定第一張為 active，因為 Thymeleaf 會處理
+                            // showSlide(0); // 這裡不需要再呼叫，因為 Thymeleaf 已經設定好初始 active
+                            startAutoSlide();
+
+                            // 當滑鼠懸停在輪播上時暫停自動播放
+                            const carouselContainer = document.querySelector('.carousel-container');
+                            if (carouselContainer) {
+                                carouselContainer.addEventListener('mouseenter', stopAutoSlide);
+                                carouselContainer.addEventListener('mouseleave', startAutoSlide);
+                            }
+                        }
+                    }
+
+                    // 使函數可全域訪問
+                    window.changeSlide = changeSlide;
+                    window.currentSlide = currentSlide;
+
                     $(document).ready(function () {
+                        // 初始化輪播功能
+                        initCarousel();
+                        
+                        // 為輪播幻燈片添加點擊事件（使用事件委派）
+                        $(document).on('click', '.carousel-slide', function(e) {
+                            // 如果點擊的是箭頭按鈕或導航點，則不處理
+                            if ($(e.target).closest('.carousel-btn, .carousel-indicators').length > 0) {
+                                return;
+                            }
+                            
+                            var storeId = $(this).data('store-id');
+                            console.log('廣告點擊，商店ID:', storeId); // 調試信息
+                            
+                            if (storeId && storeId !== 'undefined' && storeId !== null) {
+                                // 導航到商店頁面
+                                window.location.href = '/advertisment/storeItems?storeId=' + storeId;
+                            } else {
+                                console.warn('廣告沒有有效的商店ID');
+                                // 可選：顯示提示信息
+                                alert('很抱歉，該廣告暫時無法連接到商店頁面。');
+                            }
+                        });
                         // 收藏功能
                         $(document).on('click', '.add-to-favorite-btn', function (e) {
                             e.stopPropagation();
@@ -710,7 +1058,6 @@
         </div>
     </div>
 
-    <!-- 右下角購物車浮動按鈕 -->
     <button id="cart-fab" title="查看購物車">
         <span class="material-icons">shopping_cart</span>
     </button>

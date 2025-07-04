@@ -112,6 +112,9 @@
                         <div class="form-group">
                             <label>上傳圖片：</label>
                             <input type="file" name="adImage" id="imageInput" accept="image/*" required>
+                            <small style="color: #666; margin-top: 5px; display: block;">
+                                支援格式：JPG、PNG、GIF等圖片格式，檔案大小不超過 10MB
+                            </small>
                             
                             <!-- 圖片預覽區域 -->
                             <div id="imagePreview" style="display: none; margin-top: 10px;">
@@ -169,9 +172,9 @@
                     return;
                 }
                 
-                // 檢查檔案大小 (限制為 5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('圖片檔案大小不能超過 5MB');
+                // 檢查檔案大小 (限制為 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('圖片檔案大小不能超過 10MB');
                     this.value = '';
                     previewDiv.style.display = 'none';
                     return;

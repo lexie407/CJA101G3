@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -870,6 +871,42 @@ public class AdController {
 		} catch (Exception e) {
 			redirectAttributes.addFlashAttribute("errorMessage", "停用失敗: " + e.getMessage());
 		}
-		return "redirect:/advertisment/admin/reviewed";
-	}
+		        return "redirect:/advertisment/admin/reviewed";
+    }
+    
+    /**
+     * 獲取活躍廣告列表，用於前端輪播
+     * @return JSON格式的活躍廣告列表
+     */
+    @GetMapping("/getActiveAds")
+    @ResponseBody
+    public List<AdVO> getActiveAds() {
+        try {
+            // 獲取所有廣告
+            List<AdVO> allAds = adSvc.getAll();
+            
+            // 檢查並下架過期廣告
+            checkAndDeactivateExpiredAds(allAds);
+            
+            // 過濾出活躍的廣告（已審核通過且在有效期內）
+            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+            
+            List<AdVO> activeAds = allAds.stream()
+                .filter(ad -> ad.getAdStatus() != null && 
+                             ad.getAdStatus().equals(AdVO.STATUS_APPROVED) &&
+                             ad.getAdStartTime() != null && 
+                             ad.getAdEndTime() != null &&
+                             ad.getAdStartTime().before(currentTime) &&
+                             ad.getAdEndTime().after(currentTime))
+                .limit(10) // 限制最多10個廣告
+                .collect(Collectors.toList());
+            
+            return activeAds;
+            
+        } catch (Exception e) {
+            System.err.println("獲取活躍廣告失敗: " + e.getMessage());
+            e.printStackTrace();
+            return java.util.Collections.emptyList();
+        }
+    }
 }
