@@ -215,17 +215,17 @@ window.deleteAct = function (actId, hostId) {
     fetch(`/api/act/${actId}/status/3?operatorId=${hostId}&admin=false`, {
       method: "PUT",
     })
-      .then((response) => {
-        if (response.ok) {
-          location.reload();
-        } else {
+        .then((response) => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            alert("刪除失敗，請稍後再試");
+          }
+        })
+        .catch((error) => {
+          console.error("刪除失敗:", error);
           alert("刪除失敗，請稍後再試");
-        }
-      })
-      .catch((error) => {
-        console.error("刪除失敗:", error);
-        alert("刪除失敗，請稍後再試");
-      });
+        });
   }
 };
 
@@ -236,18 +236,18 @@ window.deleteAct = function (actId, hostId) {
 window.memberDeleteAct = function (actId) {
   if (confirm("確定要刪除這個活動嗎？此操作無法復原。")) {
     GroupActivityAPI.memberDeleteActivity(actId)
-      .then((response) => {
-        if (response.success) {
-          alert("活動刪除成功");
-          location.reload();
-        } else {
-          alert(response.error || "刪除失敗，請稍後再試");
-        }
-      })
-      .catch((error) => {
-        console.error("刪除失敗:", error);
-        alert("刪除失敗，請稍後再試");
-      });
+        .then((response) => {
+          if (response.success) {
+            alert("活動刪除成功");
+            location.reload();
+          } else {
+            alert(response.error || "刪除失敗，請稍後再試");
+          }
+        })
+        .catch((error) => {
+          console.error("刪除失敗:", error);
+          alert("刪除失敗，請稍後再試");
+        });
   }
 };
 
@@ -260,23 +260,25 @@ window.joinActivity = function (actId) {
   const currentMemId = window.currentMemId;
   if (!currentMemId) {
     alert("請先登入");
-    window.location.href = "/members/login";
+    // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
+    const currentUrl = encodeURIComponent(window.location.href);
+    window.location.href = `/members/login?redirect=${currentUrl}`;
     return;
   }
 
   GroupActivityAPI.joinActivity(actId, currentMemId)
-    .then((response) => {
-      if (response.success) {
-        alert("報名成功！");
-        location.reload();
-      } else {
-        alert(response.error || "報名失敗，請稍後再試");
-      }
-    })
-    .catch((error) => {
-      console.error("報名失敗:", error);
-      alert("報名失敗，請稍後再試");
-    });
+      .then((response) => {
+        if (response.success) {
+          alert("報名成功！");
+          location.reload();
+        } else {
+          alert(response.error || "報名失敗，請稍後再試");
+        }
+      })
+      .catch((error) => {
+        console.error("報名失敗:", error);
+        alert("報名失敗，請稍後再試");
+      });
 };
 
 /**
@@ -292,21 +294,23 @@ window.cancelParticipation = function (actId) {
   const currentMemId = window.currentMemId;
   if (!currentMemId) {
     alert("請先登入");
-    window.location.href = "/members/login";
+    // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
+    const currentUrl = encodeURIComponent(window.location.href);
+    window.location.href = `/members/login?redirect=${currentUrl}`;
     return;
   }
 
   GroupActivityAPI.leaveActivity(actId, currentMemId)
-    .then((response) => {
-      if (response.success) {
-        alert("取消報名成功");
-        location.reload();
-      } else {
-        alert(response.error || "取消報名失敗，請稍後再試");
-      }
-    })
-    .catch((error) => {
-      console.error("取消報名失敗:", error);
-      alert("取消報名失敗，請稍後再試");
-    });
+      .then((response) => {
+        if (response.success) {
+          alert("取消報名成功");
+          location.reload();
+        } else {
+          alert(response.error || "取消報名失敗，請稍後再試");
+        }
+      })
+      .catch((error) => {
+        console.error("取消報名失敗:", error);
+        alert("取消報名失敗，請稍後再試");
+      });
 };

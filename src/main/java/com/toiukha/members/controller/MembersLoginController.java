@@ -23,19 +23,25 @@ public class MembersLoginController {
 
     @Autowired
     private MembersService membersService;
-    
+
     @Autowired
     private EmailService emailService;
-    
+
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
     @GetMapping("/login")
-    public String showLoginForm(HttpSession session) {
+    public String showLoginForm(HttpSession session, @RequestParam(required = false) String redirect) {
         // 如果已經有 member，就不用再看登入頁，直接導到 /members/view
         if (session.getAttribute("member") != null) {
             return "redirect:/members/view";
         }
+
+        // 如果有redirect參數，保存到session中
+        if (redirect != null && !redirect.trim().isEmpty()) {
+            session.setAttribute("location", redirect);
+        }
+
         // 否則才顯示登入表單
         return "front-end/members/login";
     }
@@ -123,21 +129,21 @@ public class MembersLoginController {
             "success", "若信箱存在，重設連結已寄出，請至信箱查看。");
         return "redirect:/members/forgotPasswordSent";
     }
-    
+
     //顯示重設密碼連結已寄出提示畫面
     @GetMapping("/forgotPasswordSent")
     public String showForgotPasswordSentPage() {
         return "front-end/members/forgotPasswordSent";
     }
-    
-    
-    
+
+
+
 //      處理點擊重設密碼連結的畫面顯示
-    
+
     @GetMapping("/resetPassword")
     public String showResetPasswordForm(@RequestParam("token") String token, Model model) {
         Integer memId = emailService.verifyResetToken(token);
-        
+
         if (memId == null) {
             model.addAttribute("errorMsg", "重設連結已失效，請重新申請。");
             return "front-end/members/resetPasswordError"; // 錯誤頁面
@@ -146,8 +152,8 @@ public class MembersLoginController {
         model.addAttribute("token", token);
         return "front-end/members/resetPassword"; // 顯示輸入新密碼頁面
     }
-    
-    
+
+
  // 處理新密碼提交
     @PostMapping("/resetPassword")
     public String processResetPassword(@RequestParam("token") String token,
@@ -171,16 +177,16 @@ public class MembersLoginController {
 
         // 刪除 token，避免被重複使用
         redisTemplate.delete("reset:" + token);
-        
+
         redirectAttrs.addFlashAttribute("successMsg", " 密碼已重設成功，請使用新密碼登入！");
 
         return "redirect:/members/login"; // 重設成功，導向登入
     }
-    
+
     @PostMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();      // 銷毀整個 session
-        return "redirect:/";       
+        return "redirect:/";
     }
-    
+
 }
