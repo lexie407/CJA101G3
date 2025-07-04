@@ -26,6 +26,163 @@
   text-align: center;
 }
 
+/*============= Hero Banner 樣式 ===================*/
+
+/* 通用 Hero Banner 樣式 */
+.hero-banner {
+  width: 100%;
+  padding: 60px 20px;
+  background: linear-gradient(
+    135deg,
+    var(--md-sys-color-primary),
+    var(--md-sys-color-primary-fixed),
+    var(--md-sys-color-inverse-primary)
+  );
+  color: var(--md-sys-color-on-primary);
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 32px;
+}
+
+.hero-banner-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-banner h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--md-sys-color-on-primary);
+}
+
+.hero-banner p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  color: var(--md-sys-color-on-primary);
+  opacity: 0.9;
+}
+
+/* 搜尋頁面 Hero Banner */
+.hero-banner.search-hero {
+  background: linear-gradient(
+    135deg,
+    var(--md-sys-color-primary),
+    /*var(--md-sys-color-primary-fixed),*/
+    /*var(--md-sys-color-inverse-primary)*/
+    var(--md-sys-color-secondary)
+  );
+}
+
+/* 我的活動 Hero Banner */
+.hero-banner.my-act-hero {
+  background: linear-gradient(
+    135deg,
+    var(--md-sys-color-primary),
+    var(--md-sys-color-primary-fixed)
+    /*var(--md-sys-color-inverse-primary)*/
+  );
+}
+
+/* 我參加的活動 Hero Banner */
+.hero-banner.my-join-hero {
+  background: linear-gradient(
+    135deg,
+    var(--md-sys-color-primary),
+    var(--md-sys-color-primary-fixed)
+    /*var(--md-sys-color-inverse-primary)*/
+  );
+}
+
+/* Hero 搜尋表單 */
+.hero-search-form {
+  display: flex;
+  justify-content: center;
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: var(--md-sys-color-surface);
+  border-radius: 50px;
+  padding: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.hero-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  padding: 0 15px;
+}
+
+.hero-search-input-wrapper i {
+  margin-right: 10px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 1.2rem;
+}
+
+.hero-search-input {
+  border: none;
+  outline: none;
+  flex-grow: 1;
+  padding: 8px 0;
+  font-size: 1rem;
+  color: var(--md-sys-color-on-surface);
+  background-color: transparent;
+}
+
+.hero-search-input::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.7;
+}
+
+.hero-search-btn {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  padding: 12px 25px;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-search-btn:hover {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Hero Banner 響應式設計 */
+@media (max-width: 768px) {
+  .hero-banner {
+    padding: 40px 16px;
+  }
+
+  .hero-banner h1 {
+    font-size: 2rem;
+  }
+
+  .hero-banner p {
+    font-size: 1rem;
+  }
+
+  .hero-search-form {
+    flex-direction: column;
+    border-radius: 12px;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .hero-search-input-wrapper {
+    padding: 0;
+  }
+
+  .hero-search-btn {
+    border-radius: 8px;
+  }
+}
+
 /*============= 卡片樣式===================*/
 
 /* 卡片容器 */
@@ -608,4 +765,123 @@
   color: #374151;
   margin-bottom: 8px;
   display: block;
+}
+
+/*============= 我的活動頁面專用樣式 ===================*/
+
+/* 我的活動頁面專用搜尋表單佈局 */
+.listMyAct .act-search-form,
+.listMyJoin .act-search-form {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+@media (max-width: 1024px) {
+  .listMyAct .act-search-form,
+  .listMyJoin .act-search-form {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .listMyAct .act-search-form,
+  .listMyJoin .act-search-form {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* 日期區間樣式 */
+.act-date-range-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.act-date-input {
+  flex: 1;
+  min-width: 140px;
+}
+
+.act-date-separator {
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .act-date-range-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .act-date-separator {
+    display: none;
+  }
+
+  .act-date-input {
+    min-width: unset;
+  }
+}
+
+/* 統一搜尋欄位寬度與外觀 */
+.act-search-group .act-search-input,
+.act-search-group .act-type-select-box {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 6px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  padding: 10px 12px;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.act-search-group .act-type-select-box:focus-within,
+.act-search-group .act-search-input:focus {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 0.2rem var(--md-sys-color-primary-container);
+  outline: none;
+}
+
+.act-type-select-box {
+  cursor: pointer;
+  min-height: 42px;
+  position: relative;
+  background: var(--md-sys-color-surface);
+}
+
+.act-type-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.act-type-placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.act-type-options {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 100%;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 10;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 8px 0;
 }

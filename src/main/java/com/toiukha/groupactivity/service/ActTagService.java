@@ -22,8 +22,8 @@ public class ActTagService {
     private RedisTemplate<String, String> redisTemplate;
     
     // 精簡Redis Key設計
-    private static final String ACT_TAGS = "act:tags:"; // act:tags:{actId} -> Set<tag>
-    private static final String TAG_ACTS = "tag:acts:"; // tag:acts:{tag} -> Set<actId>
+    private static final String ACT_TAGS = "groupactivity:act:tags:"; // groupactivity:act:tags:{actId} -> Set<tag>
+    private static final String TAG_ACTS = "groupactivity:tag:acts:"; // groupactivity:tag:acts:{tag} -> Set<actId>
     
     /**
      * 儲存活動標籤（類型+縣市）

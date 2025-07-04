@@ -10,11 +10,10 @@
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <!-- GroupActivity 模組 CSS -->
-    <link
-      rel="stylesheet"
-      th:href="@{/css/groupactivity/styleAct_common.css}"
-    />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   </head>
   <body class="light">
     <div class="app-container">
@@ -22,55 +21,70 @@
 
       <div class="main-content act-page">
         <div th:insert="~{/subnavActFront :: subnav('search')}"></div>
+        
+        <!-- Hero Banner 區塊 -->
+        <div class="hero-banner search-hero">
+          <div class="hero-banner-content">
+            <h1>揪團去！探索台灣精彩活動</h1>
+            <p>與同好一起，發現最適合您的主題活動，開啟難忘旅程！</p>
+            <form id="heroSearchForm" class="hero-search-form" autocomplete="off">
+              <div class="hero-search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="heroActNameInput" name="actName" class="hero-search-input" placeholder="搜尋活動名稱、地點、類型..." />
+              </div>
+              <button type="submit" class="hero-search-btn">立即搜尋</button>
+            </form>
+          </div>
+        </div>
+
         <div class="content-area-main act-area">
-          <h1 class="act-front-title">搜尋活動</h1>
-          <!-- 搜尋區域 -->
+          <!-- 篩選區域 -->
           <div class="act-search-container">
-            <form id="searchForm" class="act-search-form">
-              <div class="act-search-group">
-                <label for="actNameInput" class="act-search-label"
-                  >關鍵字搜尋</label
-                >
-                <input
-                  type="text"
-                  id="actNameInput"
-                  name="actName"
-                  class="act-search-input"
-                  placeholder="輸入活動名稱關鍵字"
-                />
+            <form id="searchForm" class="act-search-form" autocomplete="off">
+              <!-- 人數選項 -->
+              <div class="act-search-group people-group">
+                <label for="maxCapInput" class="act-search-label">人數選項</label>
+                <select id="maxCapInput" name="maxCap" class="act-search-input">
+                  <option value="">請選擇</option>
+                  <option value="3">1~3人</option>
+                  <option value="6">4~6人</option>
+                  <option value="10">6~10人</option>
+                  <option value="11">10人以上</option>
+                </select>
               </div>
-
-              <div class="act-search-group">
-                <label for="maxCapInput" class="act-search-label"
-                  >需求人數</label
-                >
-                <input
-                  type="number"
-                  id="maxCapInput"
-                  name="maxCap"
-                  class="act-search-input"
-                  placeholder="輸入最低人數需求"
-                  min="1"
-                />
+              <!-- 地點 -->
+              <div class="act-search-group city-group">
+                <label for="actCityInput" class="act-search-label">地點</label>
+                <select id="actCityInput" name="actCity" class="act-search-input">
+                  <option value="">請選擇</option>
+                  <option value="NORTH">北部</option>
+                  <option value="CENTRAL">中部</option>
+                  <option value="SOUTH">南部</option>
+                  <option value="EAST">東部</option>
+                  <option value="ISLANDS">離島</option>
+                </select>
               </div>
-
-              <div class="act-search-group">
-                <label for="dateRangeStart" class="act-search-label"
-                  >活動開始日期</label
-                >
-                <input
-                  type="date"
-                  id="dateRangeStart"
-                  name="dateRangeStart"
-                  class="act-search-input"
-                  placeholder="選擇日期後的活動"
-                />
+              <!-- 活動類型 -->
+              <div class="act-search-group act-type-multiselect type-group" style="position:relative;">
+                <label class="act-search-label">活動類型</label>
+                <div id="actTypeSelect" class="act-type-select-box act-search-input" tabindex="0">
+                  <div id="selectedActTypes" class="act-type-pills"></div>
+                  <span id="actTypePlaceholder" class="act-type-placeholder">請選擇活動類型</span>
+                </div>
+                <div id="actTypeOptions" class="act-type-options" style="display:none;"></div>
               </div>
-
-              <div class="act-search-actions">
-                <button type="submit" class="act-btn act-btn-primary">
-                  搜尋活動
-                </button>
+              <!-- 日期區間 -->
+              <div class="act-search-group act-date-range act-date-range-group">
+                <label class="act-search-label">活動日期區間</label>
+                <div class="act-date-range-row">
+                  <input type="date" id="dateRangeStart" name="dateRangeStart" class="act-search-input" />
+                  <span class="act-date-range-sep">至</span>
+                  <input type="date" id="dateRangeEnd" name="dateRangeEnd" class="act-search-input" />
+                </div>
+              </div>
+              <!-- 搜尋按鈕 -->
+              <div class="act-search-btn-group btn-group">
+                <button type="submit" class="act-btn act-btn-primary">篩選活動</button>
               </div>
             </form>
           </div>
@@ -104,10 +118,92 @@
       const currentMemId = /*[[${currentMemId}]]*/ null;
       window.currentMemId = currentMemId;
 
-      // 頁面變數
+      // ====== 活動類型多選互動 ======
+      const availableTypes = [
+        { value: 'ARTS', label: '藝文' },
+        { value: 'ECOLOGY', label: '生態' },
+        { value: 'OUTDOOR', label: '戶外' },
+        { value: 'SPORTS', label: '運動' },
+        { value: 'FOOD', label: '美食' },
+        { value: 'FAMILY', label: '親子' },
+        { value: 'SENIOR', label: '銀髮' },
+        { value: 'PET', label: '寵物' }
+      ];
+      let selectedTypes = [];
+      const actTypeSelect = document.getElementById('actTypeSelect');
+      const actTypeOptions = document.getElementById('actTypeOptions');
+      const selectedActTypes = document.getElementById('selectedActTypes');
+      const actTypePlaceholder = document.getElementById('actTypePlaceholder');
       const searchForm = document.getElementById("searchForm");
+      const heroSearchForm = document.getElementById("heroSearchForm");
+      const heroActNameInput = document.getElementById("heroActNameInput");
       const searchResults = document.getElementById("searchResults");
       const initialState = document.getElementById("initialState");
+
+      function renderTypePills() {
+        selectedActTypes.innerHTML = '';
+        if (selectedTypes.length === 0) {
+          actTypePlaceholder.style.display = '';
+        } else {
+          actTypePlaceholder.style.display = 'none';
+          selectedTypes.forEach(type => {
+            const typeObj = availableTypes.find(t => t.value === type);
+            const pill = document.createElement('span');
+            pill.className = 'act-type-pill';
+            pill.textContent = typeObj ? typeObj.label : type;
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'act-type-pill-remove';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.onclick = (e) => {
+              e.stopPropagation();
+              selectedTypes = selectedTypes.filter(t => t !== type);
+              renderTypePills();
+              renderTypeOptions();
+            };
+            pill.appendChild(removeBtn);
+            selectedActTypes.appendChild(pill);
+          });
+        }
+      }
+
+      function renderTypeOptions() {
+        actTypeOptions.innerHTML = '';
+        availableTypes.forEach(typeObj => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'act-type-option-btn';
+          btn.textContent = typeObj.label;
+          if (selectedTypes.includes(typeObj.value)) {
+            btn.classList.add('selected');
+          }
+          btn.onclick = (e) => {
+            e.preventDefault();
+            if (selectedTypes.includes(typeObj.value)) {
+              selectedTypes = selectedTypes.filter(t => t !== typeObj.value);
+            } else {
+              selectedTypes.push(typeObj.value);
+            }
+            renderTypePills();
+            renderTypeOptions();
+          };
+          actTypeOptions.appendChild(btn);
+        });
+      }
+
+      actTypeSelect.addEventListener('click', function (e) {
+        e.stopPropagation();
+        actTypeOptions.style.display = actTypeOptions.style.display === 'none' ? 'grid' : 'none';
+        renderTypeOptions();
+      });
+      document.addEventListener('mousedown', function (e) {
+        if (!actTypeSelect.contains(e.target) && !actTypeOptions.contains(e.target)) {
+          actTypeOptions.style.display = 'none';
+        }
+      });
+      renderTypePills();
+
+      // ====== 查詢參數組合 ======
       let currentPage = 0;
       let isLastPage = false;
 
@@ -129,17 +225,60 @@
       async function searchActivities(isNewSearch = false) {
         try {
           const formData = new FormData(searchForm);
-          const params = {
-            actName: formData.get("actName")?.trim(),
-            maxCap: formData.get("maxCap"),
-            actStart: formData.get("dateRangeStart"),
-          };
-
+          
+          // 檢查是否有標籤搜尋條件
+          const hasTypeFilter = selectedTypes.length > 0;
+          const hasCityFilter = formData.get("actCity") && formData.get("actCity").trim() !== "";
+          
           // 隱藏初始狀態
           initialState.style.display = "none";
           searchResults.style.display = "block";
 
-          const url = buildSearchUrl(params, isNewSearch ? 0 : currentPage + 1);
+          let url;
+          
+          if (hasTypeFilter || hasCityFilter) {
+            // 使用標籤搜尋端點
+            url = "/api/act/searchByTags?";
+            let queryArr = [];
+            
+            // 處理活動類型（多選）
+            if (hasTypeFilter) {
+              selectedTypes.forEach(type => {
+                queryArr.push(`type=${encodeURIComponent(type)}`);
+              });
+            }
+            
+            // 處理城市
+            if (hasCityFilter) {
+              queryArr.push(`city=${encodeURIComponent(formData.get("actCity"))}`);
+            }
+            
+            url += queryArr.join('&');
+            url += (queryArr.length > 0 ? '&' : '') + `page=${isNewSearch ? 0 : currentPage + 1}`;
+          } else {
+            // 使用一般搜尋端點
+            let params = {
+              actName: heroActNameInput.value.trim() || formData.get("actName")?.trim(),
+              maxCap: formData.get("maxCap"),
+            };
+            
+            // 處理日期範圍（轉換為 LocalDateTime 格式）
+            const dateRangeStart = formData.get("dateRangeStart");
+            if (dateRangeStart && dateRangeStart.trim() !== "") {
+              params.actStart = dateRangeStart + "T00:00:00";
+            }
+            
+            // 組合查詢字串
+            let queryArr = [];
+            Object.entries(params).forEach(([key, val]) => {
+              if (val && val.trim() !== "") {
+                queryArr.push(`${key}=${encodeURIComponent(val)}`);
+              }
+            });
+            url = "/api/act/search?" + queryArr.join('&');
+            url += (queryArr.length > 0 ? '&' : '') + `page=${isNewSearch ? 0 : currentPage + 1}`;
+          }
+
           const result = await loadPaginatedResults(
             url,
             searchResults,
@@ -170,28 +309,23 @@
         }
       }
 
-      // 表單提交處理
+      // Hero Banner 搜尋表單提交
+      heroSearchForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        searchActivities(true);
+      });
+
+      // 下方篩選表單提交
       searchForm.addEventListener("submit", function (e) {
         e.preventDefault();
         searchActivities(true);
       });
 
-      // 頁面載入時自動載入公開活動（最新優先）
+      // 頁面載入時自動載入公開活動
       document.addEventListener("DOMContentLoaded", () => {
-        // 直接呼叫 searchActivities(true) 來載入公開活動
         searchActivities(true);
-
-        // 隱藏初始狀態，以立即載入資料
         initialState.style.display = "none";
       });
-
-      function loadAllActivities() {
-        searchForm.reset();
-        currentPage = 0;
-        const formData = new FormData(searchForm);
-        const searchUrl = buildSearchUrl(formData, currentPage);
-        fetchActivities(searchUrl, true);
-      }
     </script>
   </body>
 </html>

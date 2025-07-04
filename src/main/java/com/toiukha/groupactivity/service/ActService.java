@@ -83,7 +83,7 @@ public interface ActService {
     Map<String, ActTag> getActTags(Integer actId);
 
     //根據標籤搜尋活動
-    Page<ActCardDTO> searchByTags(ActTag typeTag, ActTag cityTag, Pageable pageable);
+    Page<ActCardDTO> searchByTags(List<ActTag> typeTags, List<ActTag> cityTags, Pageable pageable);
 
 
     //===========測試寫入DB===========

@@ -8,7 +8,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service("actService")
 public class ActServiceImpl implements ActService {
@@ -27,6 +30,12 @@ public class ActServiceImpl implements ActService {
     
     @Autowired
     private com.toiukha.participant.model.PartRepository partRepo;
+    
+    @Autowired
+    private com.toiukha.participant.model.PartService partSvc;
+    
+    @Autowired
+    private com.toiukha.notification.model.NotificationService notificationService;
 
 
 
@@ -127,7 +136,7 @@ public class ActServiceImpl implements ActService {
         List<ActVO> joinedActs = getJoinedActs(memId);
         return joinedActs.stream()
                 .map(ActCardDTO::fromVO)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 
 
@@ -247,6 +256,52 @@ public class ActServiceImpl implements ActService {
         }
         act.setRecruitStatus(status);
         actRepo.save(act);
+
+        // 當狀態變更為成團、取消、凍結時，發送通知給團員和團主
+        if (status == ActStatus.FULL.getValue() || 
+            status == ActStatus.CANCELLED.getValue() || 
+            status == ActStatus.FROZEN.getValue()) {
+            
+            String statusMessage = "";
+            switch (status) {
+                case 1: // FULL
+                    statusMessage = "已成團";
+                    break;
+                case 3: // CANCELLED
+                    statusMessage = "已取消";
+                    break;
+                case 4: // FROZEN
+                    statusMessage = "已凍結";
+                    break;
+                default:
+                    statusMessage = "狀態已變更";
+            }
+            
+            // 通知團員
+            List<Integer> memberIds = partSvc.getParticipants(actId);
+            for (Integer memId : memberIds) {
+                com.toiukha.notification.model.NotificationVO noti = 
+                    new com.toiukha.notification.model.NotificationVO(
+                        "活動狀態通知",
+                        "活動「" + act.getActName() + "」" + statusMessage,
+                        memId,
+                        new java.sql.Timestamp(System.currentTimeMillis())
+                    );
+                notificationService.addOneNoti(noti);
+            }
+            
+            // 通知團主（如果團主不在團員列表中）
+            if (!memberIds.contains(act.getHostId())) {
+                com.toiukha.notification.model.NotificationVO hostNoti = 
+                    new com.toiukha.notification.model.NotificationVO(
+                        "活動狀態通知",
+                        "您的活動「" + act.getActName() + "」" + statusMessage,
+                        act.getHostId(),
+                        new java.sql.Timestamp(System.currentTimeMillis())
+                    );
+                notificationService.addOneNoti(hostNoti);
+            }
+        }
     }
 
     //檢查活動狀態（招募中）
@@ -308,33 +363,45 @@ public class ActServiceImpl implements ActService {
 
     //根據標籤搜尋活動
     @Override
-    public Page<ActCardDTO> searchByTags(ActTag typeTag, ActTag cityTag, Pageable pageable) {
-        // 建立搜尋標籤集合
-        java.util.Set<ActTag> searchTags = new java.util.HashSet<>();
-        if (typeTag != null) searchTags.add(typeTag);
-        if (cityTag != null) searchTags.add(cityTag);
-
-        java.util.Set<Integer> actIds;
-        if (searchTags.isEmpty()) {
-            // 無標籤條件：返回所有公開活動
+    public Page<ActCardDTO> searchByTags(List<ActTag> typeTags, List<ActTag> cityTags, Pageable pageable) {
+        Set<Integer> actIds = new HashSet<>();
+        // 只選地區
+        if ((typeTags == null || typeTags.isEmpty()) && cityTags != null && !cityTags.isEmpty()) {
+            for (ActTag cityTag : cityTags) {
+                actIds.addAll(tagService.getActsByTag(cityTag));
+            }
+        }
+        // 只選類型
+        else if ((cityTags == null || cityTags.isEmpty()) && typeTags != null && !typeTags.isEmpty()) {
+            for (ActTag typeTag : typeTags) {
+                actIds.addAll(tagService.getActsByTag(typeTag));
+            }
+        }
+        // 同時選類型與地區，取聯集
+        else if (typeTags != null && !typeTags.isEmpty() && cityTags != null && !cityTags.isEmpty()) {
+            for (ActTag typeTag : typeTags) {
+                actIds.addAll(tagService.getActsByTag(typeTag));
+            }
+            for (ActTag cityTag : cityTags) {
+                actIds.addAll(tagService.getActsByTag(cityTag));
+            }
+        }
+        // 沒有標籤，回傳所有公開活動
+        else {
             return searchPublicActs(null, null, null, null, null, pageable);
-        } else {
-            // 有標籤條件：按標籤搜尋
-            actIds = tagService.getActsByTags(searchTags);
         }
 
         if (actIds.isEmpty()) {
             return new org.springframework.data.domain.PageImpl<>(List.of(), pageable, 0);
         }
 
-        // 查詢並分頁
         List<ActCardDTO> results = actRepo.findAllById(actIds).stream()
                 .filter(act -> act.getIsPublic() == 1)
                 .sorted((a, b) -> b.getActStart().compareTo(a.getActStart()))
                 .skip(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .map(ActCardDTO::fromVO)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
 
         return new org.springframework.data.domain.PageImpl<>(results, pageable, actIds.size());
     }

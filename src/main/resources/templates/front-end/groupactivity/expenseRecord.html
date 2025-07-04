@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${act.actName} + ' - 分帳紀錄'">分帳紀錄 | 島遊kha</title>
+
+    <!-- 模板與樣式 -->
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/light.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+
+    <style>
+      /* 分帳紀錄頁面樣式 */
+      .expense-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .expense-header {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .expense-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .expense-title h2 {
+        margin: 0;
+        color: #333;
+      }
+
+      .expense-controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .expense-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+        transition: background 0.2s;
+      }
+
+      .expense-btn-primary {
+        background: #007bff;
+        color: white;
+      }
+
+      .expense-btn-primary:hover {
+        background: #0056b3;
+      }
+
+      .expense-btn-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .expense-btn-success:hover {
+        background: #1e7e34;
+      }
+
+      .expense-btn-warning {
+        background: #ffc107;
+        color: #333;
+      }
+
+      .expense-btn-warning:hover {
+        background: #e0a800;
+      }
+
+      .expense-btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+
+      .expense-btn-danger:hover {
+        background: #c82333;
+      }
+
+      .expense-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .expense-info-section,
+      .google-sheets-section {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .expense-info {
+        margin-bottom: 20px;
+      }
+
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .info-item:last-child {
+        border-bottom: none;
+      }
+
+      .info-label {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .info-value {
+        color: #666;
+      }
+
+      .google-sheets-placeholder {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+      }
+
+      .google-sheets-icon {
+        font-size: 64px;
+        color: #4285f4;
+        margin-bottom: 20px;
+      }
+
+      .google-sheets-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .google-sheets-description {
+        font-size: 16px;
+        line-height: 1.6;
+        margin-bottom: 30px;
+      }
+
+      .google-sheets-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .google-sheets-btn {
+        background: #4285f4;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .google-sheets-btn:hover {
+        background: #3367d6;
+      }
+
+      .google-sheets-btn.secondary {
+        background: #34a853;
+      }
+
+      .google-sheets-btn.secondary:hover {
+        background: #2d8f47;
+      }
+
+      .google-sheets-btn.warning {
+        background: #fbbc04;
+        color: #333;
+      }
+
+      .google-sheets-btn.warning:hover {
+        background: #f9ab00;
+      }
+
+      .google-sheets-embed {
+        width: 100%;
+        height: 600px;
+        border: none;
+        border-radius: 8px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .sheet-url-display {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        margin-top: 20px;
+      }
+
+      .sheet-url-label {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .sheet-url-input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .sheet-url-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .copy-btn {
+        background: #6c757d;
+        color: white;
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .copy-btn:hover {
+        background: #545b62;
+      }
+
+      .open-btn {
+        background: #007bff;
+        color: white;
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        text-decoration: none;
+      }
+
+      .open-btn:hover {
+        background: #0056b3;
+      }
+
+      .template-section {
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+      }
+
+      .template-title {
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .template-description {
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.6;
+      }
+
+      .template-structure {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        font-family: monospace;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #333;
+        overflow-x: auto;
+      }
+
+      /* 模態框樣式 */
+      .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        position: relative;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover {
+        color: #000;
+      }
+
+      .modal-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .modal-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .form-group label {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      /* 響應式設計 */
+      @media (max-width: 768px) {
+        .expense-container {
+          padding: 10px;
+        }
+
+        .expense-content {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+
+        .expense-controls {
+          flex-direction: column;
+        }
+
+        .expense-title {
+          flex-direction: column;
+          gap: 10px;
+          align-items: flex-start;
+        }
+
+        .modal-content {
+          width: 95%;
+          margin: 5% auto;
+        }
+
+        .google-sheets-controls {
+          max-width: 100%;
+        }
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        border: 1px solid #c3e6cb;
+      }
+
+      .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        border: 1px solid #f5c6cb;
+      }
+    </style>
+  </head>
+  <body class="light">
+    <div class="app-container">
+      <div th:insert="~{/navTemplate :: navbar}"></div>
+      <div class="main-content act-page">
+        <div
+          th:insert="~{/subnavActFrontGroup :: subnav('expense', ${act.actId})}"
+        ></div>
+        <main class="content-area-main act-area">
+          <div class="expense-container">
+            <!-- 分帳紀錄標題和控制項 -->
+            <div class="expense-header">
+              <div class="expense-title">
+                <h2 th:text="${act.actName} + ' - 分帳紀錄'">分帳紀錄</h2>
+                <div class="expense-controls">
+                  <button id="createSheetBtn" class="expense-btn expense-btn-primary">
+                    <i class="fab fa-google"></i> 建立 Google Sheet
+                  </button>
+                  <button id="connectSheetBtn" class="expense-btn expense-btn-success">
+                    <i class="fas fa-link"></i> 連接現有 Sheet
+                  </button>
+                  <button id="templateBtn" class="expense-btn expense-btn-warning">
+                    <i class="fas fa-file-alt"></i> 查看範本格式
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 分帳內容區域 -->
+            <div class="expense-content">
+              <!-- 活動資訊 -->
+              <div class="expense-info-section">
+                <h3>活動資訊</h3>
+                <div class="expense-info">
+                  <div class="info-item">
+                    <span class="info-label">活動名稱：</span>
+                    <span class="info-value" th:text="${act.actName}">活動名稱</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">開始時間：</span>
+                    <span class="info-value" th:text="${#temporals.format(act.actStart, 'yyyy-MM-dd HH:mm')}">開始時間</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">結束時間：</span>
+                    <span class="info-value" th:text="${#temporals.format(act.actEnd, 'yyyy-MM-dd HH:mm')}">結束時間</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">參與人數：</span>
+                    <span class="info-value" th:text="${memberList.size()} + ' 人'">參與人數</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">團主：</span>
+                    <span class="info-value" th:text="${act.hostName}">團主</span>
+                  </div>
+                </div>
+
+                <div class="template-section">
+                  <div class="template-title">建議的分帳表格格式</div>
+                  <div class="template-description">
+                    您可以建立一個 Google Sheets 來記錄分帳資訊，建議包含以下欄位：
+                  </div>
+                  <div class="template-structure">
+日期 | 支出項目 | 金額 | 付款人 | 分攤人數 | 每人分攤 | 備註
+----|---------|------|--------|----------|----------|------
+2024-01-15 | 午餐費用 | 1200 | 小明 | 4 | 300 | 團隊午餐
+2024-01-15 | 交通費 | 800 | 小華 | 4 | 200 | 計程車費
+2024-01-15 | 門票 | 1500 | 小明 | 4 | 375 | 景點門票
+                  </div>
+                </div>
+              </div>
+
+              <!-- Google Sheets 整合區域 -->
+              <div class="google-sheets-section">
+                <div id="googleSheetsPlaceholder" class="google-sheets-placeholder">
+                  <div class="google-sheets-icon">
+                    <i class="fab fa-google-drive"></i>
+                  </div>
+                  <div class="google-sheets-title">Google Sheets 分帳管理</div>
+                  <div class="google-sheets-description">
+                    使用 Google Sheets 來管理您的分帳紀錄，方便團隊成員查看和編輯。<br>
+                    您可以建立新的分帳表格或連接現有的 Google Sheets。
+                  </div>
+                  <div class="google-sheets-controls">
+                    <button id="createNewSheetBtn" class="google-sheets-btn">
+                      <i class="fas fa-plus"></i> 建立新的分帳表格
+                    </button>
+                    <button id="connectExistingSheetBtn" class="google-sheets-btn secondary">
+                      <i class="fas fa-link"></i> 連接現有表格
+                    </button>
+                    <button id="viewTemplateBtn" class="google-sheets-btn warning">
+                      <i class="fas fa-file-alt"></i> 查看範本格式
+                    </button>
+                  </div>
+                </div>
+
+                <div id="sheetUrlSection" class="sheet-url-display" style="display: none;">
+                  <div class="sheet-url-label">Google Sheets 連結</div>
+                  <input type="text" id="sheetUrlInput" class="sheet-url-input" readonly placeholder="Google Sheets URL">
+                  <div class="sheet-url-actions">
+                    <button id="copyUrlBtn" class="copy-btn">複製連結</button>
+                    <a id="openSheetBtn" class="open-btn" target="_blank">開啟表格</a>
+                  </div>
+                </div>
+
+                <div id="googleSheetEmbed" class="google-sheets-embed hidden">
+                  <!-- Google Sheets 嵌入框架將在這裡顯示 -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- 連接 Google Sheets 模態框 -->
+    <div id="connectSheetModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeConnectModal()">&times;</span>
+        <div class="modal-title">連接現有的 Google Sheets</div>
+        <form id="connectSheetForm" class="modal-form">
+          <div class="form-group">
+            <label for="sheetUrl">Google Sheets URL</label>
+            <input type="url" id="sheetUrl" name="sheetUrl" required 
+                   placeholder="https://docs.google.com/spreadsheets/d/...">
+          </div>
+          <div class="form-group">
+            <label for="sheetName">表格名稱（可選）</label>
+            <input type="text" id="sheetName" name="sheetName" 
+                   placeholder="例如：台北三日遊分帳表">
+          </div>
+          <div class="form-group">
+            <label for="sheetDescription">描述（可選）</label>
+            <textarea id="sheetDescription" name="sheetDescription" 
+                      placeholder="表格用途或注意事項..."></textarea>
+          </div>
+          <div class="expense-controls">
+            <button type="submit" class="expense-btn expense-btn-primary">連接</button>
+            <button type="button" class="expense-btn expense-btn-secondary" onclick="closeConnectModal()">取消</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 範本格式模態框 -->
+    <div id="templateModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeTemplateModal()">&times;</span>
+        <div class="modal-title">分帳表格範本格式</div>
+        <div class="template-description">
+          建議在您的 Google Sheets 中使用以下格式來記錄分帳資訊：
+        </div>
+        <div class="template-structure">
+<table style="width: 100%; border-collapse: collapse;">
+<tr style="background: #f8f9fa; font-weight: bold;">
+  <td style="border: 1px solid #ddd; padding: 8px;">日期</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">支出項目</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">金額</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">付款人</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">分攤人數</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">每人分攤</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">備註</td>
+</tr>
+<tr>
+  <td style="border: 1px solid #ddd; padding: 8px;">2024-01-15</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">午餐費用</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">1200</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">小明</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">4</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">300</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">團隊午餐</td>
+</tr>
+<tr>
+  <td style="border: 1px solid #ddd; padding: 8px;">2024-01-15</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">交通費</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">800</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">小華</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">4</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">200</td>
+  <td style="border: 1px solid #ddd; padding: 8px;">計程車費</td>
+</tr>
+</table>
+        </div>
+        <div class="template-description" style="margin-top: 20px;">
+          <strong>欄位說明：</strong><br>
+          • <strong>日期</strong>：支出發生的日期<br>
+          • <strong>支出項目</strong>：支出的名稱或類別<br>
+          • <strong>金額</strong>：總支出金額<br>
+          • <strong>付款人</strong>：實際付款的成員<br>
+          • <strong>分攤人數</strong>：參與分攤的成員數量<br>
+          • <strong>每人分攤</strong>：每人應分攤的金額（金額÷分攤人數）<br>
+          • <strong>備註</strong>：額外說明或注意事項
+        </div>
+        <div class="expense-controls" style="margin-top: 20px;">
+          <button type="button" class="expense-btn expense-btn-primary" onclick="closeTemplateModal()">了解</button>
+        </div>
+      </div>
+    </div>
+
+    <script th:inline="javascript">
+      // 全域變數
+      const actId = /*[[${act.actId}]]*/ null;
+      const isHost = /*[[${isHost}]]*/ false;
+      const memberList = /*[[${memberList}]]*/ [];
+      let currentSheetUrl = null;
+
+      // 頁面載入時初始化
+      document.addEventListener('DOMContentLoaded', function() {
+        setupEventListeners();
+        loadExistingSheetUrl();
+      });
+
+      // 設定事件監聽器
+      function setupEventListeners() {
+        // 建立 Google Sheet 按鈕
+        document.getElementById('createSheetBtn').addEventListener('click', createGoogleSheet);
+        document.getElementById('createNewSheetBtn').addEventListener('click', createGoogleSheet);
+        
+        // 連接 Google Sheet 按鈕
+        document.getElementById('connectSheetBtn').addEventListener('click', showConnectModal);
+        document.getElementById('connectExistingSheetBtn').addEventListener('click', showConnectModal);
+        
+        // 查看範本按鈕
+        document.getElementById('templateBtn').addEventListener('click', showTemplateModal);
+        document.getElementById('viewTemplateBtn').addEventListener('click', showTemplateModal);
+        
+        // 表單提交
+        document.getElementById('connectSheetForm').addEventListener('submit', handleConnectSheet);
+        
+        // 複製連結按鈕
+        document.getElementById('copyUrlBtn').addEventListener('click', copySheetUrl);
+      }
+
+      // 載入現有的 Google Sheets URL
+      function loadExistingSheetUrl() {
+        // 這裡可以從 localStorage 或 API 載入已儲存的 URL
+        const savedUrl = localStorage.getItem(`expense_sheet_${actId}`);
+        if (savedUrl) {
+          currentSheetUrl = savedUrl;
+          showSheetUrl(savedUrl);
+        }
+      }
+
+      // 建立 Google Sheet
+      function createGoogleSheet() {
+        showInfo('建立 Google Sheet 功能開發中...');
+        
+        // TODO: 實作 Google Sheets API 建立功能
+        // 這裡可以呼叫 Google Sheets API 來建立新的表格
+        // 並自動填入範本格式
+        
+        // 暫時顯示範例 URL
+        const exampleUrl = 'https://docs.google.com/spreadsheets/d/example123/edit#gid=0';
+        showSheetUrl(exampleUrl);
+        showSuccess('Google Sheet 建立成功！');
+      }
+
+      // 顯示連接模態框
+      function showConnectModal() {
+        document.getElementById('connectSheetModal').style.display = 'block';
+      }
+
+      // 關閉連接模態框
+      function closeConnectModal() {
+        document.getElementById('connectSheetModal').style.display = 'none';
+        document.getElementById('connectSheetForm').reset();
+      }
+
+      // 顯示範本模態框
+      function showTemplateModal() {
+        document.getElementById('templateModal').style.display = 'block';
+      }
+
+      // 關閉範本模態框
+      function closeTemplateModal() {
+        document.getElementById('templateModal').style.display = 'none';
+      }
+
+      // 處理連接 Google Sheet
+      function handleConnectSheet(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const sheetUrl = formData.get('sheetUrl');
+        const sheetName = formData.get('sheetName');
+        const sheetDescription = formData.get('sheetDescription');
+        
+        // 驗證 URL 格式
+        if (!isValidGoogleSheetsUrl(sheetUrl)) {
+          showError('請輸入有效的 Google Sheets URL');
+          return;
+        }
+        
+        // 儲存 URL
+        currentSheetUrl = sheetUrl;
+        localStorage.setItem(`expense_sheet_${actId}`, sheetUrl);
+        
+        // 顯示 URL
+        showSheetUrl(sheetUrl);
+        
+        // 關閉模態框
+        closeConnectModal();
+        
+        showSuccess('Google Sheets 連接成功！');
+      }
+
+      // 顯示 Google Sheets URL
+      function showSheetUrl(url) {
+        document.getElementById('googleSheetsPlaceholder').style.display = 'none';
+        document.getElementById('sheetUrlSection').style.display = 'block';
+        
+        document.getElementById('sheetUrlInput').value = url;
+        document.getElementById('openSheetBtn').href = url;
+      }
+
+      // 複製 Google Sheets URL
+      function copySheetUrl() {
+        const urlInput = document.getElementById('sheetUrlInput');
+        urlInput.select();
+        urlInput.setSelectionRange(0, 99999); // 支援手機
+        
+        try {
+          document.execCommand('copy');
+          showSuccess('連結已複製到剪貼簿！');
+        } catch (err) {
+          showError('複製失敗，請手動複製連結');
+        }
+      }
+
+      // 驗證 Google Sheets URL
+      function isValidGoogleSheetsUrl(url) {
+        const googleSheetsPattern = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[a-zA-Z0-9-_]+/;
+        return googleSheetsPattern.test(url);
+      }
+
+      // 顯示成功訊息
+      function showSuccess(message) {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'success-message';
+        successDiv.textContent = message;
+        
+        const container = document.querySelector('.expense-container');
+        container.insertBefore(successDiv, container.firstChild);
+        
+        setTimeout(() => {
+          successDiv.remove();
+        }, 5000);
+      }
+
+      // 顯示錯誤訊息
+      function showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        
+        const container = document.querySelector('.expense-container');
+        container.insertBefore(errorDiv, container.firstChild);
+        
+        setTimeout(() => {
+          errorDiv.remove();
+        }, 5000);
+      }
+
+      // 顯示資訊訊息
+      function showInfo(message) {
+        alert('資訊: ' + message);
+      }
+    </script>
+  </body>
+</html> 
