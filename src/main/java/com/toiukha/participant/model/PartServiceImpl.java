@@ -40,10 +40,7 @@ public class PartServiceImpl implements PartService {
     
     @Override
     public List<PartDTO> getParticipantsAsDTO(Integer actId) {
-        List<PartVO> participants = partRepo.findByActId(actId);
-        return participants.stream()
-                .map(vo -> PartDTO.fromVO(vo, memSvc.getOneMember(vo.getMemId()) != null ? memSvc.getOneMember(vo.getMemId()).getMemName() : null))
-                .collect(Collectors.toList());
+        return partRepo.findMemberNamesAndStatusByActId(actId);
     }
     
     @Override

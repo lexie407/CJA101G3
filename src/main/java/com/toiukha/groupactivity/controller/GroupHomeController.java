@@ -67,6 +67,7 @@ public class GroupHomeController {
         model.addAttribute("memberList", filteredList);
         model.addAttribute("act", act);
         model.addAttribute("isHost", isHost);
+        model.addAttribute("currentMemberId", memberInfo.getMemId());
 //        model.addAttribute("expenseSheetUrl", expenseSheetService.getSheetUrl(actId));
         return "front-end/groupactivity/groupHome";
     }

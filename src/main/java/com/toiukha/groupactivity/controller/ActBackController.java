@@ -32,6 +32,12 @@ public class ActBackController {
     @Autowired
     private DefaultImageService defaultImageService;
 
+    @ModelAttribute("recruitStatusMap")
+    public Map<Byte, String> getRecruitStatusMap() {
+        return ActStatus.getStatusMap();
+    }
+
+
     //列出所有的活動
     @GetMapping("/listAllAct")
     public String listAllAct(Model model) {
@@ -46,13 +52,6 @@ public class ActBackController {
         return "back-end/groupactivity/viewAct";
     }
 
-    //編輯活動頁面
-    @GetMapping("/editAct/{actId}")
-    public String editAct(@PathVariable Integer actId, Model model) {
-        model.addAttribute("actVo", actSvc.getOneAct(actId));
-        return "back-end/groupactivity/editAct";
-    }
-
     //新增活動頁面
     @GetMapping("/addAct")
     public String addActPage(Model model) {
@@ -60,34 +59,9 @@ public class ActBackController {
         return "back-end/groupactivity/addAct";
     }
 
-    @ModelAttribute("recruitStatusMap")
-    public Map<Byte, String> getRecruitStatusMap() {
-        return ActStatus.getStatusMap();
-    }
-
-    @PostMapping("/update")
-    public String updateAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
-                            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
-        // 如果沒有上傳新圖片，保留原有圖片
-        if (file != null && !file.isEmpty()) {
-            actDto.setActImg(file.getBytes());
-        } else {
-            // 取得原有活動資料，保留原有圖片
-            ActVO originalAct = actSvc.getOneAct(actDto.getActId());
-            if (originalAct != null && originalAct.getActImg() != null && originalAct.getActImg().length > 0) {
-                actDto.setActImg(originalAct.getActImg());
-            } else {
-                // 如果原本就沒有圖片，使用預設圖片
-                actDto.setActImg(defaultImageService.getDefaultImage());
-            }
-        }
-        actSvc.updateAct(actDto);
-        return "redirect:/act/admin/listAllAct";
-    }
-
     @PostMapping("/insert")
     public String insertAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
-                           @RequestParam(value = "upFile", required = false) MultipartFile file) throws IOException {
+                            @RequestParam(value = "upFile", required = false) MultipartFile file) throws IOException {
         if (file != null && !file.isEmpty()) {
             actDto.setActImg(file.getBytes());
         } else {
@@ -115,6 +89,34 @@ public class ActBackController {
 //        actSvc.addAct(actDto);
 //        return "redirect:/act/admin/listAllAct";
 //    }
+
+    //編輯活動頁面
+    @GetMapping("/editAct/{actId}")
+    public String editAct(@PathVariable Integer actId, Model model) {
+        model.addAttribute("actVo", actSvc.getOneAct(actId));
+        return "back-end/groupactivity/editAct";
+    }
+
+    @PostMapping("/update")
+    public String updateAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
+                            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+        // 如果沒有上傳新圖片，保留原有圖片
+        if (file != null && !file.isEmpty()) {
+            actDto.setActImg(file.getBytes());
+        } else {
+            // 取得原有活動資料，保留原有圖片
+            ActVO originalAct = actSvc.getOneAct(actDto.getActId());
+            if (originalAct != null && originalAct.getActImg() != null && originalAct.getActImg().length > 0) {
+                actDto.setActImg(originalAct.getActImg());
+            } else {
+                // 如果原本就沒有圖片，使用預設圖片
+                actDto.setActImg(defaultImageService.getDefaultImage());
+            }
+        }
+        actSvc.updateAct(actDto);
+        return "redirect:/act/admin/listAllAct";
+    }
+
 
     @PostMapping("/delete/{actId}")
     public String deleteAct(@PathVariable Integer actId) {

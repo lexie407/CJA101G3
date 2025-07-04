@@ -28,12 +28,7 @@ public class GroupChatController {
                                        GroupChatMsgDTO groupChatMsgDTO,
                                        SimpMessageHeaderAccessor headerAccessor) {
         try {
-            HttpSession httpSession = getHttpSession(headerAccessor);
-            if (httpSession == null) {
-                return GroupChatMsgDTO.createSystemMessage("無效的會話", actId);
-            }
-
-            MembersVO member = (MembersVO) httpSession.getAttribute("member");
+            MembersVO member = getMemberVO(headerAccessor);
             if (member == null) {
                 return GroupChatMsgDTO.createSystemMessage("請先登入", actId);
             }
@@ -68,12 +63,7 @@ public class GroupChatController {
                                    GroupChatMsgDTO groupChatMsgDTO,
                                    SimpMessageHeaderAccessor headerAccessor) {
         try {
-            HttpSession httpSession = getHttpSession(headerAccessor);
-            if (httpSession == null) {
-                return GroupChatMsgDTO.createSystemMessage("無效的會話", actId);
-            }
-
-            MembersVO member = (MembersVO) httpSession.getAttribute("member");
+            MembersVO member = getMemberVO(headerAccessor);
             if (member == null) {
                 return GroupChatMsgDTO.createSystemMessage("用戶未登入", actId);
             }
@@ -99,13 +89,24 @@ public class GroupChatController {
         }
     }
 
-    // 從SimpMessageHeaderAccessor獲取HttpSession
-    private HttpSession getHttpSession(SimpMessageHeaderAccessor headerAccessor) {
+    // 優先從WebSocket session attributes取得memberVO
+    private MembersVO getMemberVO(SimpMessageHeaderAccessor headerAccessor) {
         try {
-            return (HttpSession) headerAccessor.getSessionAttributes().get("HTTP_SESSION");
+            Object memberObj = headerAccessor.getSessionAttributes().get("memberVO");
+            if (memberObj instanceof MembersVO) {
+                return (MembersVO) memberObj;
+            }
+            // 相容舊邏輯：從HttpSession取得
+            HttpSession httpSession = (HttpSession) headerAccessor.getSessionAttributes().get("HTTP_SESSION");
+            if (httpSession != null) {
+                Object sessionMember = httpSession.getAttribute("member");
+                if (sessionMember instanceof MembersVO) {
+                    return (MembersVO) sessionMember;
+                }
+            }
         } catch (Exception e) {
-            System.err.println("獲取HttpSession錯誤: " + e.getMessage());
-            return null;
+            System.err.println("獲取會員資訊錯誤: " + e.getMessage());
         }
+        return null;
     }
 } 

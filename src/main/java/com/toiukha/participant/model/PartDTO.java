@@ -23,6 +23,7 @@ public class PartDTO implements Serializable {
         super();
     }
     
+    //僅查詢participant
     public PartDTO(Integer actId, Integer memId, String memType,
                    LocalDateTime joinTime, Byte joinStatus) {
         this.actId = actId;
@@ -30,6 +31,17 @@ public class PartDTO implements Serializable {
         this.memType = memType;
         this.joinTime = joinTime;
         this.joinStatus = joinStatus;
+    }
+
+    //join 會員資料查詢
+    public PartDTO(Integer actId, Integer memId, String memType,
+                   LocalDateTime joinTime, Byte joinStatus, String memName) {
+        this.actId = actId;
+        this.memId = memId;
+        this.memType = memType;
+        this.joinTime = joinTime;
+        this.joinStatus = joinStatus;
+        this.memName = memName;
     }
     
     // ===== Getter / Setter =====

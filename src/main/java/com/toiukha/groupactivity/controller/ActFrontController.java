@@ -44,7 +44,7 @@ public class ActFrontController {
     public String addActPage(HttpServletRequest request, Model model) {
         HttpSession session = request.getSession();
         AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
-        model.addAttribute("currentMemId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);
+        model.addAttribute("currentMemId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);//僅從會員訊息確認是否登入
         return "front-end/groupactivity/addAct_ajax";
     }
 
@@ -196,10 +196,11 @@ public class ActFrontController {
                 return "redirect:/act/member/listMyJoin/" + memberInfo.getMemId();
             }
         }
+        //memId:用來讓後端查詢符合身分是參團者的的活動getJoinedActsAsCard()
         AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
         model.addAttribute("memId", authorizedMemId);
         model.addAttribute("currentPage", "groups");
-        // 新增：傳入 currentMemId
+        // currentMemId:用來讓前端判斷用戶身分，控制UI顯示的內容
         model.addAttribute("currentMemId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);
         return "front-end/groupactivity/listMyJoinAct";
     }

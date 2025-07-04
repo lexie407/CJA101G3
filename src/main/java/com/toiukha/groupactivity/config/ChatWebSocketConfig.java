@@ -1,5 +1,6 @@
 package com.toiukha.groupactivity.config;
 
+import com.toiukha.members.model.MembersVO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.ServerHttpRequest;
@@ -51,6 +52,10 @@ public class ChatWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
                 if (httpSession != null) {
                     attributes.put("HTTP_SESSION", httpSession); // 將HttpSession存儲到WebSocket session
+                    Object memberObj = httpSession.getAttribute("member");
+                    if (memberObj instanceof MembersVO) {
+                        attributes.put("memberVO", memberObj); // 直接存入會員物件
+                    }
                 }
             }
 

@@ -522,95 +522,91 @@
     <script th:inline="javascript">
       const actId = /*[[${act.actId}]]*/ null;
       const isHost = /*[[${isHost}]]*/ false;
+      const currentMemberId = /*[[${currentMemberId}]]*/ null;
+      let memId = currentMemberId;
+      // let memId = 38;
+      console.log("actId:", actId, "isHost", isHost,"currentMemberId:", /*[[${currentMemberId}]]*/ null);
 
-      // 處理開發模式和正式模式的不同 session 格式
-      let memId = null;
-      const sessionMember = /*[[${session.member}]]*/ null;
+      //有關聊天室相關的功能
+      // let stompClient = null;
 
-      if (sessionMember) {
-        if (
-          typeof sessionMember === "string" &&
-          sessionMember.startsWith("DEV_USER_")
-        ) {
-          // 開發模式：從 "DEV_USER_30" 提取數字
-          memId = parseInt(sessionMember.substring(9));
-        } else if (sessionMember.memId) {
-          // 正式模式：使用 MembersVO 的 memId
-          memId = sessionMember.memId;
-        }
-      }
+      // function connectWebSocket() {
+      //   const socket = new SockJS("/ws");
+      //   stompClient = Stomp.over(socket);
+      //   stompClient.connect({}, function (frame) {
+      //     stompClient.subscribe("/topic/chat/" + actId, function (message) {
+      //       showMessage(JSON.parse(message.body));
+      //     });
+      //     loadChatHistory();
+      //   });
+      // }
 
-      let stompClient = null;
+      // function sendMessage() {
+      //   const input = document.getElementById("messageInput");
+      //   const msg = input.value.trim();
+      //   if (msg && stompClient) {
+      //     stompClient.send(
+      //       "/app/chat/" + actId,
+      //       {},
+      //       JSON.stringify({
+      //         senderId: memId,
+      //         message: msg,
+      //         timestamp: new Date(),
+      //       })
+      //     );
+      //     input.value = "";
+      //   }
+      // }
 
-      function connectWebSocket() {
-        const socket = new SockJS("/ws");
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, function (frame) {
-          stompClient.subscribe("/topic/chat/" + actId, function (message) {
-            showMessage(JSON.parse(message.body));
-          });
-          loadChatHistory();
-        });
-      }
+      // function showMessage(msg) {
+      //   const chatMessages = document.getElementById("chatMessages");
+      //   const div = document.createElement("div");
+      //   div.className = "chat-message";
+      //   div.innerHTML = `<b>會員${msg.senderId}：</b>${
+      //     msg.message
+      //   } <span class="timestamp">${new Date(
+      //     msg.timestamp
+      //   ).toLocaleTimeString()}</span>`;
+      //   chatMessages.appendChild(div);
+      //   chatMessages.scrollTop = chatMessages.scrollHeight;
+      // }
 
-      function sendMessage() {
-        const input = document.getElementById("messageInput");
-        const msg = input.value.trim();
-        if (msg && stompClient) {
-          stompClient.send(
-            "/app/chat/" + actId,
-            {},
-            JSON.stringify({
-              senderId: memId,
-              message: msg,
-              timestamp: new Date(),
-            })
-          );
-          input.value = "";
-        }
-      }
+      //載入聊天室歷史訊息
+      // function loadChatHistory() {
+      //   // fetch(`/api/chat/${actId}/history`)
+      //   fetch(`/act/group/${actId}/chat/history`)
+      //     .then((res) => res.json())
+      //     .then((list) => {
+      //       const chatMessages = document.getElementById("chatMessages");
+      //       chatMessages.innerHTML = "";
+      //       list.forEach(showMessage);
+      //     });
+      // }
 
-      function showMessage(msg) {
-        const chatMessages = document.getElementById("chatMessages");
-        const div = document.createElement("div");
-        div.className = "chat-message";
-        div.innerHTML = `<b>會員${msg.senderId}：</b>${
-          msg.message
-        } <span class="timestamp">${new Date(
-          msg.timestamp
-        ).toLocaleTimeString()}</span>`;
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
+      // function createExpenseSheet() {
+      //   fetch(`/api/expense/${actId}/create`, { method: "POST" })
+      //     .then((res) => res.json())
+      //     .then((data) => {
+      //       if (data.success) {
+      //         location.reload();
+      //       } else {
+      //         alert(data.error || "建立失敗");
+      //       }
+      //     });
+      // }
 
-      function loadChatHistory() {
-        fetch(`/api/chat/${actId}/history`)
-          .then((res) => res.json())
-          .then((list) => {
-            const chatMessages = document.getElementById("chatMessages");
-            chatMessages.innerHTML = "";
-            list.forEach(showMessage);
-          });
-      }
-
-      function createExpenseSheet() {
-        fetch(`/api/expense/${actId}/create`, { method: "POST" })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.success) {
-              location.reload();
-            } else {
-              alert(data.error || "建立失敗");
-            }
-          });
-      }
-
+      //顯示團員列表
       function showMemberManagement() {
+        console.log("showMemberManagement 被呼叫");
         document.getElementById("memberManagementModal").style.display =
           "block";
-        fetch(`/api/group/${actId}/members`)
-          .then((res) => res.json())
+        fetch(`/api/participate/${actId}/members`)
+          .then((res) => {
+            console.log("fetch /api/participate/ 成功，res:", res);
+            return res.json();
+          })
           .then((list) => {
+            console.log("取得團員列表:", list);
             const container = document.getElementById("memberManagementList");
             container.innerHTML = "";
             list.forEach((mem) => {
@@ -626,11 +622,17 @@
         document.getElementById("memberManagementModal").style.display = "none";
       }
 
+      //修改團員狀態
       function kickMember(memberId) {
+        console.log("kickMember 被呼叫, memberId:", memberId);
         if (confirm("確定要剔除該團員？")) {
           fetch(`/api/group/${actId}/member/${memberId}`, { method: "DELETE" })
-            .then((res) => res.json())
+            .then((res) => {
+              console.log("kickMember fetch 回應:", res);
+              return res.json();
+            })
             .then((data) => {
+              console.log("kickMember 回傳資料:", data);
               if (data.success) {
                 showMemberManagement();
               } else {
@@ -656,21 +658,28 @@
         }
       }
 
-      // 編輯模式切換
+      // 修改成員狀態
       let isEditing = false;
       let pendingStatus = {};
       document.getElementById("editMemberBtn").onclick = function () {
+        // console.log("editMemberBtn 被點擊");//切換成員狀態編輯模式
         isEditing = true;
+
         document
           .querySelectorAll(".toggle-switch")
           .forEach((sw) => (sw.style.display = "inline-block"));
+
         document
           .querySelectorAll(".toggle-label")
           .forEach((lbl) => (lbl.style.display = "none"));
+
         document.getElementById("editMemberBtn").style.display = "none";
         document.getElementById("saveMemberBtn").style.display = "inline-block";
       };
-      document.getElementById("saveMemberBtn").onclick = function () {
+
+      document.getElementById("saveMemberBtn").onclick = function (e) {
+        if (e) e.preventDefault(); // 阻止表單預設提交
+        console.log("saveMemberBtn 被點擊");
         isEditing = false;
         document
           .querySelectorAll(".toggle-switch")
@@ -682,25 +691,34 @@
         document.getElementById("saveMemberBtn").style.display = "none";
         // 批次送出所有變更
         const updates = Object.entries(pendingStatus);
-        if (updates.length === 0) return;
+        console.log("pendingStatus updates:", updates);//更新狀態
+        if (updates.length === 0) {
+          console.log("沒有任何狀態變更，return");
+          return;
+        }
         Promise.all(
-          updates.map(([memId, newStatus]) =>
-            fetch(
-              `/api/participate/${actId}/status/${memId}?joinStatus=${newStatus}`,
+          updates.map(([memId, newStatus]) => {
+            console.log("即將送出PUT", actId, memId, newStatus);
+            return fetch(
+              `/api/participate/${actId}/members/${memId}/status?joinStatus=${newStatus}`,
               { method: "PUT" }
-            )
-          )
-        ).then(() => location.reload());
+            );
+          })
+        ).then((results) => {
+          console.log(results);
+          location.reload()
+        });
       };
       document.querySelectorAll(".status-toggle-switch").forEach((sw) => {
         sw.onchange = function () {
           const memId = this.getAttribute("data-mem-id");
           const newStatus = this.checked ? 1 : 2;
           pendingStatus[memId] = newStatus;
+          console.log("狀態切換 memId:", memId, "newStatus:", newStatus, "pendingStatus:", pendingStatus);
         };
       });
 
-      connectWebSocket();
+      // connectWebSocket();
     </script>
   </body>
 </html>
