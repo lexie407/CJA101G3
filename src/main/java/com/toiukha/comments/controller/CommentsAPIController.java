@@ -122,8 +122,17 @@ public class CommentsAPIController {
 		@PostMapping("/deleteComments")
 		public void deleteComments(
 				@RequestParam("commId") Integer commId) {
+			System.out.println("刪除留言：" + commId);
 			commentsService.changeSta(commId, (byte)2);
 		}
+
+	//刪除留言
+	@PostMapping("/adminDeleteComments")
+	public void adminDeleteComments(
+			@RequestParam("commId") Integer commId) {
+		System.out.println("刪除留言：" + commId);
+		commentsService.changeSta(commId, (byte)2);
+	}
 		
 	
 	

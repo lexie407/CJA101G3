@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>討論區 | 前台 | 島遊kha</title>
-    <th:block th:fragment="headResources">
+    <th:block th:fragment="~{/navTemplate :: headResources}">
         <link rel="stylesheet" th:href="@{/css/light.css}">
         <link rel="stylesheet" th:href="@{/css/style.css}">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -32,20 +31,19 @@
 
 <!--        內容區塊-->
         <main class="content-area-main">
+            <div class="container">
+                <!--            努力跑跑跑！-->
+                <div class="article-list" id="articleList">
 
+                    <!-- 文章卡片會透過 AJAX 動態插入這裡 -->
 
-            <!--            努力跑跑跑！-->
-            <div class="article-list" id="articleList">
+                </div>
 
-                <!-- 文章卡片會透過 AJAX 動態插入這裡 -->
-
+                <!--載入更多按鈕-->
+                <div class="load-more-wrapper" style="text-align: center; margin-top: 20px;">
+                    <button id="loadMoreBtn" class="material-button" style="margin: 0 auto;">載入更多</button>
+                </div>
             </div>
-
-            <!--載入更多按鈕-->
-            <div class="load-more-wrapper" style="text-align: center; margin-top: 20px;">
-                <button id="loadMoreBtn" class="material-button" style="margin: 0 auto;">載入更多</button>
-            </div>
-
 
 
         </main>

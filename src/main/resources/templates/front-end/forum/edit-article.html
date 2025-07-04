@@ -239,7 +239,7 @@
                     ['link', 'image']
                 ]
             },
-            placeholder: '請輸入文章內容...'
+            placeholder: '來寫點什麼吧……'
         });
         
         // 從 URL 參數取得文章 ID
@@ -317,15 +317,49 @@
     }
     
     // 儲存文章
-    function saveArticle() {
+    async  function saveArticle() {
         // 顯示載入狀態
         showLoading();
         hideMessages();
-        
+
+        // ----------- 圖片處理區塊 -----------
+        const temp = document.createElement('div');
+        temp.innerHTML = quill.root.innerHTML;
+
+        const imgElements = temp.querySelectorAll('img');
+        for (let img of imgElements) {
+            const src = img.getAttribute('src');
+            if (src && src.startsWith('data:')) {
+                const timestamp = Date.now();
+                const blob = await fetch(src).then(res => res.blob());
+                const formData = new FormData();
+                formData.append('image', blob, `upload_${timestamp}.png`);
+
+                try {
+                    const res = await fetch('/forum/artImage/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await res.json();
+                    img.setAttribute('src', `/forum/artImage/${result.id}`);
+                } catch (error) {
+                    console.error('圖片上傳失敗:', error);
+                    hideLoading();
+                    showError('圖片上傳失敗');
+                    return;
+                }
+            }
+        }
+        const finalHtml = temp.innerHTML;
+        // ----------- 圖片處理區塊結束 -----------
+
         // 取得編輯器內容
-        const content = quill.root.innerHTML;
-        document.getElementById('artCon').value = content;
-        
+        // const content = quill.root.innerHTML;
+
+        // 將處理好的文章內容填入到隱藏的輸入框中
+        document.getElementById('artCon').value = finalHtml;
+
         // 準備表單資料
         const formData = new FormData(document.getElementById('editArticleForm'));
         const articleData = {
@@ -335,9 +369,9 @@
             artSta: currentArticleData.artSta, // 使用載入時的原始值
             artCon: formData.get('artCon')
         };
-        
+
         // 發送更新請求
-        fetch(`/article/${currentArticleId}`, {
+        fetch(`/article/${currentArticleId}/update`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

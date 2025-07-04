@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文章管理 | 後台 | 島遊kha</title>
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
-    <!--前台CSS-->
-    <link rel="stylesheet" th:href="@{/css/light.css}">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!--後台CSS-->
+    <link rel="stylesheet" th:href="@{/css/back_light.css}">
+    <link rel="stylesheet" th:href="@{/css/back_style.css}">
     <!--次導覽列CSS-->
 <!--    <link rel="stylesheet" th:href="@{/css/subnav.css}">-->
 
@@ -39,9 +39,8 @@
     <div th:insert="~{/navBackTemplate :: navbar}"></div>
 
     <div class="main-content">
-        <!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
-        <div th:insert="~{back-end/forum/subnavForum :: subnav('select')}"></div>
-
+        <!--前台:頂部次導覽-->
+        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>
         <!--main 以下為頁面主要內容 -->
         <main class="content-area-main">
             <h4><span>資料查詢:</span></h4>

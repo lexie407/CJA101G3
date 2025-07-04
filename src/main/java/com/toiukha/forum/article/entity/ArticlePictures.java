@@ -21,13 +21,14 @@ public class ArticlePictures implements Serializable{
 	private Integer artId;
 
 	@Lob
-	@Column(name = "PICTURE", columnDefinition = "LONGTEXT")
-	private String picture;
+	@Column(name = "PICTURE", columnDefinition = "LONGBLOB")
+	private byte[] picture;
 
 	@Column(name = "PICCRETIME", insertable = false, updatable = false)
 	private Date picCreateTime;
 
 	//圖片的MIME類型，例如image/jpeg, image/png等
+	@Column(name = "PICMIME")
 	private String mimeType;
 
 	public ArticlePictures() {
@@ -50,11 +51,11 @@ public class ArticlePictures implements Serializable{
 		this.artId = artId;
 	}
 
-	public String getPicture() {
+	public byte[] getPicture() {
 		return picture;
 	}
 
-	public void setPicture(String picture) {
+	public void setPicture(byte[] picture) {
 		this.picture = picture;
 	}
 

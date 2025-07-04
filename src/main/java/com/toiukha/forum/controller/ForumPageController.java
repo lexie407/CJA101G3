@@ -2,23 +2,26 @@ package com.toiukha.forum.controller;
 
 import com.toiukha.forum.article.dto.ArticleDTO;
 import com.toiukha.forum.article.entity.Article;
+import com.toiukha.forum.article.model.ArticlePicturesService;
 import com.toiukha.forum.article.model.ArticleService;
 import com.toiukha.forum.util.Debug;
 import com.toiukha.members.model.MembersVO;
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.toiukha.forum.article.model.ArticleServiceImpl.ArticleSortField.ARTICLE_CREATINE;
 import static com.toiukha.forum.article.model.ArticleServiceImpl.SortDirection.DESC;
 
 // 文章相關的頁面Controller
-/* 這個Controller負責處理討論區相關的頁面請求，包括首頁、文章新增、文章查詢等功能
+/* 這個Controller負責處理討論區前台相關的頁面請求，包括首頁、文章新增、文章查詢等功能
     PS.前後端分離的做法，不會有 return string，會通通用 URL 導向，然後 JS 用 fetch 去跟 RESTful API Controller 拿資料。
  */
 @Controller
@@ -27,6 +30,20 @@ public class ForumPageController {
 
     @Autowired
     ArticleService articleService;
+
+    @Autowired
+    ArticlePicturesService apService;
+
+    // 從HTML中提取圖片ID
+    public List<Integer> getImageIdsFromHtml(String html) {
+        List<Integer> result = new ArrayList<>();
+        Pattern pattern = Pattern.compile("/forum/artImage/(\\d+)");
+        Matcher matcher = pattern.matcher(html);
+        while (matcher.find()) {
+            result.add(Integer.parseInt(matcher.group(1)));
+        }
+        return result;
+    }
 
     // 討論區首頁
     @GetMapping
@@ -40,9 +57,13 @@ public class ForumPageController {
 
     // 新增文章的處理與重導向
     @PostMapping("/article/insert")
-    public String insertArticle(@ModelAttribute Article art, Model model) {
+    public String insertArticle(@ModelAttribute Article art, Model model, HttpSession session) {
         model.addAttribute("currentPage", "forum");
-
+        MembersVO member = (MembersVO) session.getAttribute("member");
+        if (member == null) {
+            Debug.log("未登入會員，無法新增文章");
+            return "redirect:/login";
+        }
         if (art == null) {
             Debug.log("文章資料為空，無法新增文章");
             return "redirect:/forum/article/edit";
@@ -53,7 +74,18 @@ public class ForumPageController {
                 "文章內容：" + art.getArtCon());
 
         // 存進資料庫
-        articleService.add(art.getArtCat(),art.getArtSta(),art.getArtHol(),art.getArtTitle(),art.getArtCon());
+        Article newArt = articleService.add(art.getArtCat(),art.getArtSta(), member.getMemId(), art.getArtTitle(),art.getArtCon());
+
+        // 若有文章圖片，圖片綁定文章ID
+        List<Integer> picIds = getImageIdsFromHtml(art.getArtCon());
+        if (!picIds.isEmpty()) {
+            apService.bindPicturesToArticle(picIds, newArt.getArtId());
+            Debug.log("綁定圖片ID：" + picIds + " 到文章ID：" + newArt.getArtId());
+        } else {
+            Debug.log("沒有圖片需要綁定到文章");
+        }
+
+
         // 是Spring MVC的重導向方法，會將請求轉發到指定的URL
         return "redirect:/forum";
     }
@@ -71,7 +103,6 @@ public class ForumPageController {
     @GetMapping("/article/add")
     public String addArticle(Model model){
         model.addAttribute("currentPage", "forum");
-
         return "front-end/forum/add-article";
     }
 

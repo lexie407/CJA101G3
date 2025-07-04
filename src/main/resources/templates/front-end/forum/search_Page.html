@@ -54,21 +54,24 @@
                 <div class="results-list">
                     <div th:if="${errorMessage != null}" style="margin-bottom: 1em;" th:text="${errorMessage}"></div>
                     <div th:each="article : ${articleList}" class="result-item">
-                        <span class="chip" th:switch="${article.artCat}">
+                        <a class="result-link" th:href="@{'/forum/article?artId=' + ${article.artId}}">
+                            <span class="chip" th:switch="${article.artCat}">
                                 <span th:case="1">文章</span>
                                 <span th:case="2">發問中</span>
                                 <span th:case="3">已解決</span>
                                 <span th:case="*">文章*</span>
                         </span>
-                        <a th:href="@{'/forum/article?artId=' + ${article.artId}}" class="result-title" th:text="${article.artTitle}">文章標題</a>
-                        <div class="result-snippet" th:utext="${#strings.abbreviate(article.artCon, 150)}">文章內容只放150個字</div>
-                        <div class="result-meta">
+                            <span  class="result-title" th:text="${article.artTitle}">文章標題</span>
+                            <div class="result-snippet" th:utext="${#strings.abbreviate(article.artCon, 150)}">文章內容只放150個字</div>
+                            <div class="result-meta">
                             <span>
                                 <span class="material-icons" style="font-size: 14px;">schedule</span>
                                 <span th:text="${#dates.format(article.artCreTime, 'yyyy年MM月dd日')}">2025年5月55日</span>
                             </span>
 
-                        </div>
+                            </div>
+                        </a>
+
                     </div>
                 </div>
             </div>

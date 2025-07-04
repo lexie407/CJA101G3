@@ -29,6 +29,9 @@
                     <p>分享您的想法或提出問題，與社群一起交流討論</p>
                 </div>
 
+<!--                TODO: 現在是已確認會員資料有載入-->
+                <p id="current-user-info">會員資料載入中...</p>
+
                 <div class="form-card">
                     <form id="articleForm" th:action="@{/forum/article/insert}" method="post">
                         <div class="form-group">
@@ -57,12 +60,12 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <div class="input-field">
-                                <input type="number" id="artHol" name="artHol" required min="1" value="1">
-                                <label for="artHol" class="floating-label">會員編號</label>
-                            </div>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <div class="input-field">-->
+<!--                                <input type="number" id="artHol" name="artHol" required min="1" value="1">-->
+<!--                                <label for="artHol" class="floating-label">會員編號</label>-->
+<!--                            </div>-->
+<!--                        </div>-->
 
                         <input type="hidden" id="artSta" name="artSta" value="1">
 
@@ -87,6 +90,10 @@
                         </div>
                     </form>
                 </div>
+
+<!--                查看輸出內容(測試用)-->
+<!--                <button onclick="getContent()">查看輸出內容</button>-->
+<!--                <pre id="output"></pre>-->
             </div>
 
 
@@ -158,7 +165,7 @@
     const quill = new Quill('#editor', {
         modules: {
             toolbar: [
-                [{ 'size': ['small', false, 'large', 'huge'] }, 'bold', 'italic', 'underline', 'strike', 'blockquote'],        // toggled buttons
+                ['bold', 'italic', 'underline', 'strike'],
                 ['link', 'image', 'video'],
 
                 [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],

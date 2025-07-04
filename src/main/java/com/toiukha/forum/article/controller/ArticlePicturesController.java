@@ -1,11 +1,17 @@
 package com.toiukha.forum.article.controller;
 
 import com.toiukha.forum.article.entity.ArticlePictures;
+import com.toiukha.forum.article.exception.ImageUploadException;
 import com.toiukha.forum.article.model.ArticlePicturesService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -15,32 +21,57 @@ public class ArticlePicturesController {
 
     @Autowired
     private ArticlePicturesService apService;
-//    private ArticlePicturesRepository apRepo;
 
-    @PostMapping("/uploadBase64")
-    public ResponseEntity<Integer> uploadBase64Image(@RequestBody Map<String, String> body) {
-        String base64 = body.get("imageData");
-        if (base64 == null || !base64.startsWith("data:image/")) {
-            return ResponseEntity.badRequest().build();
+    // 上傳圖片，並回傳圖片ID
+    @PostMapping("/upload")
+    @ResponseBody
+    public Map<String, Object> uploadImage(@RequestParam("image") MultipartFile file) {
+        Map<String, Object> response = new HashMap<>(); // 用來回傳結果的Map
+        Integer picId = apService.saveImage(file, null); // 有錯會自動拋例外
+
+        response.put("success", true);
+        response.put("message", "圖片上傳成功");
+        response.put("id", picId);
+        return response;
+    }
+
+    // 根據圖片ID取得圖片資料
+    @GetMapping("/{id}")
+    public ResponseEntity<byte[]> getImage(@PathVariable Integer id) {
+        ArticlePictures pic = apService.getImageById(id);
+
+        if (pic == null || pic.getPicture() == null) {
+            return ResponseEntity.notFound().build(); // 找不到圖片
         }
 
-        ArticlePictures pic = new ArticlePictures();
-        pic.setPicture(base64);
-
-        ArticlePictures savedPic = apService.saveArticlePicture(pic);
-
-        // 回傳 ID，前端可以用 <img src="/forum/artImage/showBase64/{id}">
-        return ResponseEntity.ok(pic.getPicId());
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(pic.getMimeType()))
+                .body(pic.getPicture()); // 回傳圖片原始位元資料
     }
 
-    // 回傳base64
-    @GetMapping("/showBase64/{id}")
-    public ResponseEntity<String> getBase64Image(@PathVariable Integer id) {
-        Optional<ArticlePictures> opt = apService.findById(id);
-        if (opt.isEmpty()) return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(opt.get().getPicture());
-    }
+//    @PostMapping("/uploadBase64")
+//    public ResponseEntity<Integer> uploadBase64Image(@RequestBody Map<String, String> body) {
+//        String base64 = body.get("imageData");
+//        if (base64 == null || !base64.startsWith("data:image/")) {
+//            return ResponseEntity.badRequest().build();
+//        }
+//
+//        ArticlePictures pic = new ArticlePictures();
+//        pic.setPicture(base64);
+//
+//        ArticlePictures savedPic = apService.saveArticlePicture(pic);
+//
+//        return ResponseEntity.ok(pic.getPicId());
+//    }
+//
+//    // 回傳base64
+//    @GetMapping("/showBase64/{id}")
+//    public ResponseEntity<String> getBase64Image(@PathVariable Integer id) {
+//        Optional<ArticlePictures> opt = apService.findById(id);
+//        if (opt.isEmpty()) return ResponseEntity.notFound().build();
+//
+//        return ResponseEntity.ok(opt.get().getPicture());
+//    }
 
     /*
 
@@ -96,9 +127,23 @@ public class ArticlePicturesController {
 
      */
 
+
+    /************************* 錯誤處理 *************************/
+
     // 輸入格式的錯誤處理，由uploadBase64Image丟出IllegalArgumentException時被呼叫
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException e){
         return ResponseEntity.badRequest().body(e.getMessage());
     }
+
+    // 圖片上傳失敗的錯誤處理，由uploadImage丟出ImageUploadException時被呼叫
+    @ExceptionHandler(ImageUploadException.class)
+    public ResponseEntity<?> handleImageUpload(ImageUploadException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+        ));
+    }
+
+
 }
