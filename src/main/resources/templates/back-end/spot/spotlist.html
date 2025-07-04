@@ -1,28 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>景點管理 - 後台管理系統</title>
-    <th:block th:fragment="head">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <!-- 景點模組通用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
-        <!-- 景點列表專用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-list.css}">
-        <script th:src="@{/js/spot/back-end/list.js?v=8}" defer></script>
-        <!-- CSRF Token 暫時註解
-        <meta name="_csrf" th:content="${_csrf.token}"/>
-        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-        -->
-    </th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 引入後台模板的頭部資源 -->
+    <th:block th:replace="~{navBackTemplate :: headResources}"></th:block>
+    
+    <!-- 景點模組專用樣式 -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-list.css}">
+    <script th:src="@{/js/spot/back-end/list.js?v=8}" defer></script>
+    
+    <!-- 🔧 過度階段：註解掉CSRF token -->
+    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
-<body>
-    <!-- This div will be passed as the 'subnav' parameter to the layout -->
-    <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='spotlist')}"></div>
+<body class="light">
+    <div class="app-container">
+        <!-- 引入後台左側導航 -->
+        <th:block th:replace="~{navBackTemplate :: navbar}"></th:block>
+        
+        <div class="main-content">
+            <!-- 頂部導航 -->
+            <div th:replace="~{subnavContentBack :: subnav(activeItem='spotlist')}"></div>
 
-    <main th:fragment="main" class="spot-list-page">
+            <main class="content-area-main spot-list-page">
         <!-- 頁面標題區域 -->
         <div class="page-header-section">
             <div class="header-content">
@@ -256,6 +261,10 @@
         </div>
     </main>
 
+            </main>
+        </div>
+    </div>
+    
     <!-- 將批量操作選單移到此處，成為 body 的直屬子元素，以解決層級與 overflow 裁切問題 -->
     <div id="batchMenu">
         <button type="button" class="dropdown-item" data-action="activate">
@@ -268,7 +277,5 @@
             <span class="material-icons icon-danger">delete</span> 批量刪除
         </button>
     </div>
-
-   
 </body>
 </html> 

@@ -294,10 +294,13 @@
 		</dependency>
 		
 		<!-- Spring Security -->
+		<!-- 🔧 過度階段：註解掉Spring Security依賴，改用會員模組統一攔截器 -->
+		<!--
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		-->
 
 		<!-- OAuth2 Client for Google Login - 已移除，改用會員模組登入 -->
 		<!--
