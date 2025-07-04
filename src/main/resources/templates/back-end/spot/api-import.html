@@ -1,29 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>API資料匯入 - 後台管理系統</title>
-    <th:block th:fragment="head">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <!-- 景點模組通用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
-        <!-- API匯入專用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-api-import.css}">
-        <!-- CSRF Token 暫時註解
-        <!-- 🔧 過度階段：註解掉CSRF token -->
-        <!-- <meta name="_csrf" th:content="${_csrf.token}"/> -->
-        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-        -->
-    </th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 引入後台模板的頭部資源 -->
+    <th:block th:replace="~{navBackTemplate :: headResources}"></th:block>
+    
+    <!-- 景點模組專用樣式 -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-api-import.css}">
+    
+    <!-- 🔧 過度階段：註解掉CSRF token -->
+    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
-<body>
-    <!-- 頂部導航 -->
-    <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='api-import')}"></div>
+<body class="light">
+    <div class="app-container">
+        <!-- 引入後台左側導航 -->
+        <th:block th:replace="~{navBackTemplate :: navbar}"></th:block>
         
-    <!-- 主要內容 -->
-    <main th:fragment="main" class="spot-api-import-page">
+        <div class="main-content">
+            <!-- 頂部導航 -->
+            <div th:replace="~{subnavContentBack :: subnav(activeItem='api-import')}"></div>
+            
+            <!-- 主要內容 -->
+            <main class="spot-api-import-page">
         <!-- 頁面標題與圖片區域 -->
         <div class="page-header-section">
             <div class="header-content">
@@ -80,7 +84,6 @@
                 </button>
                 <div id="test-spinner" class="loading-spinner">
                     <div class="spinner"></div>
-                    <p>正在測試API連線...</p>
                 </div>
             </div>
             <div id="test-result" class="result-area" style="display:none;">
@@ -99,7 +102,8 @@
                     <i class="material-icons">map</i>
                     全台景點資料匯入
                 </h2>
-                <p class="section-desc">一次性匯入全台灣的熱門景點資料，建議首次使用時執行</p>
+                <p class="section-desc">一次性匯入全台灣的熱門景點資料，建議首次使用時執行<br/>
+                <small style="color: #666;">✨ 新功能：全台匯入現在會隨機混合各地區景點，讓匯入結果更加多樣化！</small></p>
             </div>
             
             <div class="form-group">
@@ -120,6 +124,7 @@
                         <li>匯入過程可能需要數分鐘，請耐心等待</li>
                         <li>系統會自動跳過重複的景點</li>
                         <li>建議在非尖峰時段執行大量匯入</li>
+                        <li>🎲 全台匯入會隨機打亂景點順序，避免同地區景點集中匯入</li>
                     </ul>
                 </div>
             </div>
@@ -132,7 +137,6 @@
                 
                 <div id="import-spinner" class="loading-spinner">
                     <div class="spinner"></div>
-                    <p>正在匯入景點資料，請稍候...</p>
                 </div>
             </div>
             
@@ -168,6 +172,7 @@
             <div class="city-selection">
                 <h4 class="selection-title">選擇縣市</h4>
                 <div class="city-grid">
+                    <!-- 直轄市 -->
                     <button class="city-btn" data-city="Taipei" type="button">
                         <i class="material-icons">location_on</i>
                         <span>台北市</span>
@@ -192,6 +197,54 @@
                         <i class="material-icons">location_on</i>
                         <span>高雄市</span>
                     </button>
+                    
+                    <!-- 省轄市 -->
+                    <button class="city-btn" data-city="Keelung" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>基隆市</span>
+                    </button>
+                    <button class="city-btn" data-city="Hsinchu" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>新竹市</span>
+                    </button>
+                    <button class="city-btn" data-city="Chiayi" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>嘉義市</span>
+                    </button>
+                    
+                    <!-- 縣 -->
+                    <button class="city-btn" data-city="HsinchuCounty" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>新竹縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Miaoli" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>苗栗縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Changhua" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>彰化縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Nantou" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>南投縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Yunlin" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>雲林縣</span>
+                    </button>
+                    <button class="city-btn" data-city="ChiayiCounty" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>嘉義縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Pingtung" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>屏東縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Yilan" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>宜蘭縣</span>
+                    </button>
                     <button class="city-btn" data-city="Hualien" type="button">
                         <i class="material-icons">location_on</i>
                         <span>花蓮縣</span>
@@ -200,20 +253,23 @@
                         <i class="material-icons">location_on</i>
                         <span>台東縣</span>
                     </button>
-                    <button class="city-btn" data-city="Nantou" type="button">
+                    <button class="city-btn" data-city="Penghu" type="button">
                         <i class="material-icons">location_on</i>
-                        <span>南投縣</span>
+                        <span>澎湖縣</span>
                     </button>
-                    <button class="city-btn" data-city="Yilan" type="button">
+                    <button class="city-btn" data-city="Kinmen" type="button">
                         <i class="material-icons">location_on</i>
-                        <span>宜蘭縣</span>
+                        <span>金門縣</span>
+                    </button>
+                    <button class="city-btn" data-city="Lienchiang" type="button">
+                        <i class="material-icons">location_on</i>
+                        <span>連江縣</span>
                     </button>
                 </div>
             </div>
             
             <div id="city-spinner" class="loading-spinner">
                 <div class="spinner"></div>
-                <p>正在匯入縣市景點資料...</p>
             </div>
             
             <div id="city-result" class="result-area" style="display:none;">
@@ -252,6 +308,8 @@
         </div>
         <!-- API匯入專用腳本 -->
         <script th:src="@{/js/spot/back-end/spot-api-import.js}" defer></script>
-    </main>
+            </main>
+        </div>
+    </div>
 </body>
 </html> 

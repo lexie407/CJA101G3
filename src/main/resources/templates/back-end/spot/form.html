@@ -1,27 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title th:text="${isEdit != null and isEdit ? '編輯景點' : '新增景點'} + ' - 後台管理系統'"></title>
-    <th:block th:fragment="head">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <!-- 景點模組通用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
-        <!-- 景點表單專用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-form.css}">
-        <!-- CSRF Token -->
-        <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-        <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
-    </th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 引入後台模板的頭部資源 -->
+    <th:block th:replace="~{navBackTemplate :: headResources}"></th:block>
+    
+    <!-- 景點模組專用樣式 -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-form.css}">
+    
+    <!-- 🔧 過度階段：註解掉CSRF token -->
+    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
-<body>
-    <!-- 頂部導航 -->
-    <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem=${isEdit != null and isEdit ? 'edit' : 'add'})}"></div>
+<body class="light">
+    <div class="app-container">
+        <!-- 引入後台左側導航 -->
+        <th:block th:replace="~{navBackTemplate :: navbar}"></th:block>
         
-    <!-- 主要內容 -->
-    <main th:fragment="main" class="spot-review-page">
+        <div class="main-content">
+            <!-- 頂部導航 -->
+            <div th:replace="~{subnavContentBack :: subnav(activeItem=${isEdit != null and isEdit ? 'edit' : 'add'})}"></div>
+            
+            <!-- 主要內容 -->
+            <main class="spot-review-page">
         <div class="spot-form-page">
             <!-- 頁面標題與圖片區域 -->
             <div class="page-header-section">
@@ -162,6 +168,8 @@
         
         <!-- 表單頁面專用腳本 -->
         <script th:src="@{/js/spot/back-end/form.js}" defer></script>
-    </main>
+            </main>
+        </div>
+    </div>
 </body>
 </html> 

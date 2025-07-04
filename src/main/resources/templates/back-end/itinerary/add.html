@@ -1,27 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>新增行程 - 後台管理系統</title>
-    <th:block th:fragment="head">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <!-- 行程模組通用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-common.css}">
-        <!-- 行程表單專用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-form.css}">
-        <!-- CSRF Token -->
-        <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-        <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
-    </th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 引入後台模板的頭部資源 -->
+    <th:block th:replace="~{navBackTemplate :: headResources}"></th:block>
+    
+    <!-- 行程模組專用樣式 -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-common.css}">
+    <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-form.css}">
+    
+    <!-- 🔧 過度階段：註解掉CSRF token -->
+    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
-<body>
-    <!-- 頂部導航 -->
-    <div id="subnav" th:replace="~{subnavItinerary :: subnav('add')}"></div>
+<body class="light">
+    <div class="app-container">
+        <!-- 引入後台左側導航 -->
+        <th:block th:replace="~{navBackTemplate :: navbar}"></th:block>
         
-    <!-- 主要內容 -->
-    <main th:fragment="main" class="itinerary-review-page">
+        <div class="main-content">
+            <!-- 頂部導航 -->
+            <div th:replace="~{subnavContentBack :: subnav(activeItem='itn-add')}"></div>
+            
+            <!-- 主要內容 -->
+            <main class="itinerary-review-page">
         <!-- 英雄區塊全寬 -->
         <div class="page-header-section">
             <div class="header-content">
@@ -148,6 +154,8 @@
                 console.log('新增行程頁面載入完成，按鈕數量:', buttons.length);
             });
         </script>
-    </main>
+            </main>
+        </div>
+    </div>
 </body>
 </html> 

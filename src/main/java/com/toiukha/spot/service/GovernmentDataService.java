@@ -123,7 +123,12 @@ public class GovernmentDataService {
             }
             
             try (InputStream bomInputStream = new BOMInputStream(resource.getInputStream())) {
-                processJsonFile(bomInputStream, crtId, result, limit, city);
+                // 如果是全台匯入（沒有指定城市），使用隨機匯入方式
+                if (city == null || city.trim().isEmpty()) {
+                    processJsonFileWithRandomOrder(bomInputStream, crtId, result, limit);
+                } else {
+                    processJsonFile(bomInputStream, crtId, result, limit, city);
+                }
             }
             
         } catch (IOException e) {
@@ -136,6 +141,81 @@ public class GovernmentDataService {
                     result.getSuccessCount(), result.getSkippedCount(), result.getErrorCount());
         
         return result;
+    }
+
+    /**
+     * 使用隨機順序處理 JSON 檔案 (全台匯入時使用)
+     */
+    private void processJsonFileWithRandomOrder(InputStream inputStream, Integer crtId, ImportResult result, int limit) throws IOException {
+        JsonFactory jsonFactory = new JsonFactory();
+        InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        JsonParser jsonParser = jsonFactory.createParser(reader);
+        
+        List<GovernmentSpotData> allSpots = new ArrayList<>();
+        
+        // 首先讀取所有景點資料到記憶體中
+        if (navigateToInfoArray(jsonParser)) {
+            logger.info("開始讀取所有景點資料...");
+            
+            while (jsonParser.nextToken() == JsonToken.START_OBJECT) {
+                try {
+                    GovernmentSpotData govData = objectMapper.readValue(jsonParser, GovernmentSpotData.class);
+                    allSpots.add(govData);
+                } catch (Exception e) {
+                    logger.warn("讀取單筆資料時發生錯誤", e);
+                    result.incrementErrorCount();
+                }
+            }
+        }
+        
+        jsonParser.close();
+        
+        logger.info("讀取完成，共 {} 筆景點資料，開始隨機打亂順序...", allSpots.size());
+        
+        // 隨機打亂順序
+        java.util.Collections.shuffle(allSpots, new java.util.Random());
+        
+        // 按照隨機順序處理景點
+        List<SpotVO> batch = new ArrayList<>();
+        int processedCount = 0;
+        
+        for (GovernmentSpotData govData : allSpots) {
+            // 如果已達到匯入上限，則停止
+            if (limit != -1 && result.getSuccessCount() >= limit) {
+                logger.info("已達到指定的匯入上限: {}", limit);
+                break;
+            }
+            
+            try {
+                // 轉換為 SpotVO 並加入批次
+                SpotVO spot = convertToSpotVO(govData, crtId);
+                if (spot != null) {
+                    batch.add(spot);
+                } else {
+                    result.incrementSkippedCount();
+                }
+                
+                // 當批次達到指定大小時進行處理
+                if (batch.size() >= BATCH_SIZE) {
+                    processBatch(batch, result, limit);
+                    batch.clear();
+                    
+                    processedCount += BATCH_SIZE;
+                    logger.info("已處理 {} 筆資料 (隨機順序)", processedCount);
+                }
+                
+            } catch (Exception e) {
+                logger.warn("處理單筆資料時發生錯誤", e);
+                result.incrementErrorCount();
+            }
+        }
+        
+        // 處理剩餘的資料
+        if (!batch.isEmpty()) {
+            processBatch(batch, result, limit);
+            processedCount += batch.size();
+            logger.info("處理完成，總計 {} 筆資料 (隨機順序)", processedCount);
+        }
     }
 
     /**
@@ -273,7 +353,12 @@ public class GovernmentDataService {
         // 政府資料相關欄位
         spot.setGovtId(govData.getId());
         spot.setZone(govData.getZone());
-        spot.setRegion(govData.getRegion());
+        // 標準化地區名稱 - 將"臺"字轉換為"台"字以保持一致性
+        String region = govData.getRegion();
+        if (region != null) {
+            region = region.replace("臺", "台");
+        }
+        spot.setRegion(region);
         spot.setTown(govData.getTown());
         spot.setZipcode(govData.getZipcode());
         spot.setTel(govData.getTel());
