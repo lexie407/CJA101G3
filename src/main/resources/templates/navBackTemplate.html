@@ -23,8 +23,16 @@
             </div>
 	            <ul>
 	                <li th:classappend="${currentPage == 'accounts' ? 'active' : ''}"><a href="#"><span class="material-icons">manage_accounts</span>人員</a></li>
-	                <li th:classappend="${currentPage == 'content' ? 'active' : ''}"><a href="#"><span class="material-icons">folder</span>內容管理</a></li>
-	                <li th:classappend="${currentPage == 'partner' ? 'active' : ''}"><a href="#"><span class="material-icons">group_work</span>廠商管理</a></li>
+	                <li th:classappend="${currentPage == 'content' ? 'active' : ''}" class="has-submenu">
+	                	<a th:href="@{/admin/spot/list}"><span class="material-icons">folder</span>內容管理</a>
+<!-- 	                	<ul class="submenu"> 保留-->
+<!-- 	                		<li><a th:href="@{/admin/spot/list}">景點管理</a></li> -->
+<!-- 	                		<li><a th:href="@{/admin/itinerary/list}">行程管理</a></li> -->
+<!-- 	                		<li><a th:href="@{/act/admin/listAllAct}">揪團管理</a></li> -->
+<!-- 	                		<li><a th:href="@{/forum/admin}">討論區管理</a></li> -->
+<!-- 	                	</ul> -->
+	                </li>
+	                <li th:classappend="${currentPage == 'partner' ? 'active' : ''}"><a th:href="@{/item/listAllItem_admin}"><span class="material-icons">group_work</span>廠商管理</a></li>
 	                <li th:classappend="${currentPage == 'notifications' ? 'active' : ''}"><a th:href="@{/notification/unSendNotification}"><span class="material-icons">notifications</span>通知管理</a></li>
 	                <li th:classappend="${currentPage == 'report' ? 'active' : ''}"><a th:href="@{/Articlereport/allReportList}"><span class="material-icons">report</span>檢舉管理</a></li>
 	                <li th:classappend="${currentPage == 'support_agent' ? 'active' : ''}"><a th:href="@{/report/allReportList}"><span class="material-icons">support_agent</span>異常回報</a></li>
