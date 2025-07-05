@@ -24,16 +24,8 @@ public class EmailService {
      * @param email 收信者信箱
      * @param memId 會員ID（存進 Redis 用來之後找會員）
      */
-    public void sendVerificationEmail(String email, Integer memId) {
-        // 產生唯一驗證碼
-        String token = UUID.randomUUID().toString();
-
-        // 存進 Redis，30 分鐘有效
-        redisTemplate.opsForValue().set("verify:" + token, memId.toString(), 30, TimeUnit.MINUTES);
-
-        // 組驗證連結
-        String link = "http://localhost:8080/members/verifyEmail?token=" + token;
-
+    public void sendVerificationEmail(String email, String link) {
+        
         try {
             // 設定 Gmail SMTP 屬性
             Properties props = new Properties();
@@ -77,14 +69,8 @@ public class EmailService {
         return Integer.parseInt(memIdStr);
     }
     
-    public void sendResetPasswordEmail(String email, Integer memId) {
-        String token = UUID.randomUUID().toString();
+    public void sendResetPasswordEmail(String email, String resetLink) {
 
-        // Redis 存入 token 對應 memId，有效時間 15 分鐘
-        redisTemplate.opsForValue().set("reset:" + token, memId.toString(), 15, TimeUnit.MINUTES);
-
-        // 建立重設密碼連結
-        String resetLink = "http://localhost:8080/members/resetPassword?token=" + token;
 
         try {
             Properties props = new Properties();
@@ -122,14 +108,8 @@ public class EmailService {
     
     //寄送「商家重設密碼」信
     
-    public void sendStoreResetPasswordEmail(String email, Integer storeId) {
-        String token = UUID.randomUUID().toString();
-        // 存 Redis，15 分鐘有效
-        redisTemplate.opsForValue()
-            .set("store:reset:" + token, storeId.toString(), 15, TimeUnit.MINUTES);
+    public void sendStoreResetPasswordEmail(String email, String resetLink) {
 
-        // 重設連結
-        String resetLink = "http://localhost:8080/store/resetPassword?token=" + token;
 
         try {
             Properties props = new Properties();

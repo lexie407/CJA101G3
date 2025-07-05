@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -22,12 +26,15 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.toiukha.members.model.MembersVO;
 import com.toiukha.email.EmailService;
 import com.toiukha.members.model.MembersService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
@@ -36,6 +43,9 @@ import jakarta.validation.Valid;
 public class MembersController {
 	@Autowired
 	private MembersService membersService;
+	 @Autowired
+	    private StringRedisTemplate redisTemplate;
+
 	@Autowired
 	private EmailService emailService;
 
@@ -143,16 +153,39 @@ public class MembersController {
 	public String resendVerification(@RequestParam("email") String email, RedirectAttributes redirectAttr) {
 
 		/*************************** 1.接收請求參數 - 取得 email ************************/
-		// email 由 @RequestParam 拿到
+		MembersVO member = membersService.getByEmail(email);
 
 		/***************************
 		 * 2.執行重發驗證信
 		 *****************************************/
-		MembersVO member = membersService.getByEmail(email);
+		
 		if (member != null && member.getMemStatus() == 0) {
-			new Thread(() -> {
-				emailService.sendVerificationEmail(email, member.getMemId());
-			}).start();
+			
+			
+			 // 產生唯一驗證碼
+			String token = UUID.randomUUID().toString();
+			// 存進 Redis，30 分鐘有效
+		    redisTemplate.opsForValue()
+		        .set("verify:" + token, 
+		        		member.getMemId().toString(), 
+		             30, 
+		             TimeUnit.MINUTES);
+			
+			
+		 //  抓 baseUrl 組 link
+            ServletRequestAttributes attrs =
+                (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpServletRequest req = attrs.getRequest();
+            String baseUrl = req.getScheme() + "://"
+                           + req.getServerName() + ":"
+                           + req.getServerPort()
+                           + req.getContextPath();
+            String link = baseUrl + "/members/verifyEmail?token=" + token;
+
+            //  非同步發信
+            new Thread(() -> emailService.sendVerificationEmail(email, link))
+                .start();
+			
 			redirectAttr.addFlashAttribute("msg", "驗證信已重新發送，請查收！");
 		} else {
 			redirectAttr.addFlashAttribute("msg", "此信箱尚未註冊或已啟用。");
@@ -187,6 +220,7 @@ public class MembersController {
 	public String showUpdatePage(HttpSession session, Model model) {
 		MembersVO sessionMember = (MembersVO) session.getAttribute("member");
 		model.addAttribute("currentPage", "account");
+		model.addAttribute("activeItem", "profile");
 		model.addAttribute("membersVO", sessionMember);
 		return "front-end/members/update";
 	}
@@ -234,6 +268,7 @@ public class MembersController {
 					.collect(Collectors.toList());
 			model.addAttribute("errorMsgs", errorMsgs);
 			model.addAttribute("currentPage", "accounts");
+			model.addAttribute("activeItem", "profile");
 			return "front-end/members/update";
 		}
 

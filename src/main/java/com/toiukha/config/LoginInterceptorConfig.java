@@ -193,8 +193,8 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
         		"/manageFunction/*",	
         		
         		//景點模組
-        		"/admin/spot/",		//管理員功能
-        		"/admin/itinerary/",	//行程管理員功能
+        		"/admin/spot/**",		//管理員功能
+        		"/admin/itinerary/**",	//行程管理員功能
 
 
         		//揪團模組

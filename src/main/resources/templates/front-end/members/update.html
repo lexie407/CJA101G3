@@ -145,7 +145,7 @@
 	<div class="app-container">
 		<div th:insert="~{/navTemplate :: navbar}"></div>
 		<div class="main-content">
-			<div th:replace="~{subnavMembers :: subnav(activeItem='profile')}"></div>
+			<div th:replace="~{subnavMembers :: subnav}"></div>
 			<main class="content-area-main">
 				<div class="md-card register-container">
 					<h2 class="md-headline">會員資料修改</h2>
@@ -255,7 +255,7 @@
 <!-- 									alt="頭像框預覽" /> <span th:unless="${membersVO.memId != null}" -->
 <!-- 									class="material-icons avatar-placeholder">crop_square</span> -->
 <!-- 							</div> -->
-						</div>
+<!-- 						</div> -->
 
 						<div class="form-actions">
 							<button type="button" onclick="window.location.href = '/members/view'"

@@ -24,8 +24,8 @@
 				</a>
 					<ul class="dropdown">
 						<li><a th:href="@{/item-report/my-orders}">商品檢舉</a></li>
-						<li><a th:href="@{/members/report-status/processed}">xx檢舉</a></li>
-						<li><a th:href="@{/members/report-status/all}">xx檢舉</a></li>
+						<li><a th:href="@{/Articlereport/memberReportList}">文章檢舉</a></li>
+						<li><a th:href="@{/CommentsReports/memberReportList}">留言檢舉</a></li>
 					</ul></li>
 				<li class="has-dropdown"><a th:href="@{/members/favorites}"
 					th:classappend="${activeItem=='favorites'}? 'active' : ''"> <span
@@ -33,7 +33,8 @@
 				</a>
 					<ul class="dropdown">
 						<li><a th:href="@{/productfav/myFavorites}">收藏商品</a></li>
-						<li><a th:href="@{/members/favorites/shops}">收藏</a></li>
+						<li><a th:href="@{/articleCollection/allList}">文章收藏</a></li>
+						<li><a th:href="@{/members/favorites/events}">收藏</a></li>
 						<li><a th:href="@{/members/favorites/events}">收藏</a></li>
 					</ul></li>
 				<li><a th:href="@{/order/listCompletedOrders}"
