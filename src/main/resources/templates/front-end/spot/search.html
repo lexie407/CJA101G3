@@ -333,7 +333,9 @@
     <!-- Toast 通知 -->
     <div id="toastContainer" class="spot-search-toast-container" aria-live="polite"></div>
 
-    <!-- JavaScript -->
-    <script th:src="@{/js/spot/front-end/search.js}"></script>
+    <!-- 景點模組通用腳本 -->
+    <script th:src="@{/js/spot/front-end/spot-common.js}" defer></script>
+    <!-- 景點搜尋頁面腳本 -->
+    <script th:src="@{/js/spot/front-end/search.js}" defer></script>
 </body>
 </html> 

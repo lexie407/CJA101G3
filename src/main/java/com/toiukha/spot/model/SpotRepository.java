@@ -45,7 +45,7 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
      * @param pageable 分頁資訊
      * @return 景點分頁結果
      */
-    Page<SpotVO> findBySpotStatus(Integer spotStatus, Pageable pageable);
+    Page<SpotVO> findBySpotStatus(Byte spotStatus, Pageable pageable);
     
     /**
      * 根據建立者查詢景點
@@ -106,6 +106,24 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
      */
     @Query("SELECT s FROM SpotVO s WHERE s.spotLat IS NULL OR s.spotLng IS NULL ORDER BY s.spotCreateAt DESC")
     List<SpotVO> findSpotsWithoutCoordinates();
+    
+    /**
+     * 根據景點名稱模糊搜索，並指定狀態
+     * @param spotName 景點名稱（模糊匹配）
+     * @param spotStatus 景點狀態
+     * @return 符合條件的景點列表
+     */
+    @Query("SELECT s FROM SpotVO s WHERE LOWER(s.spotName) LIKE :spotName AND s.spotStatus = :spotStatus")
+    List<SpotVO> findBySpotNameLikeAndSpotStatus(String spotName, Byte spotStatus);
+    
+    /**
+     * 根據景點名稱模糊搜索，排除指定狀態
+     * @param spotName 景點名稱（模糊匹配）
+     * @param spotStatus 要排除的景點狀態
+     * @return 符合條件的景點列表
+     */
+    @Query("SELECT s FROM SpotVO s WHERE LOWER(s.spotName) LIKE :spotName AND s.spotStatus != :spotStatus")
+    List<SpotVO> findBySpotNameLikeAndSpotStatusNot(String spotName, Byte spotStatus);
 
     long countBySpotStatus(Integer status);
     
@@ -271,4 +289,6 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
         @Param("status") Integer status, 
         @Param("region") String region, 
         org.springframework.data.domain.Sort sort);
+        
+    // 移除 findByIsPublic 和 findBySpotStatusAndIsPublic 方法
 } 

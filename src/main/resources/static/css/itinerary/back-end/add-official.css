@@ -1,0 +1,95 @@
+/* =================
+   官方行程表單頁面樣式
+   依賴 itinerary-common.css 和 itinerary-form.css
+   ================= */
+
+/* 官方行程特有樣式 */
+.radio-group {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.radio-option input[type="radio"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.radio-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+}
+
+/* 字數統計樣式 */
+.char-count {
+    color: #666;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
+.char-count.warning {
+    color: #ff9800;
+}
+
+.char-count.error {
+    color: #f44336;
+}
+
+/* 表單驗證提示樣式 */
+.form-control.invalid {
+    border-color: #f44336;
+}
+
+.validation-message {
+    color: #f44336;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: none;
+}
+
+.validation-message.active {
+    display: block;
+}
+
+/* 官方行程標籤樣式 */
+.official-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: #4caf50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.official-badge .material-icons {
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+/* 行程狀態樣式 */
+.status-draft {
+    background-color: #9e9e9e;
+}
+
+.status-published {
+    background-color: #4caf50;
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .radio-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+} 

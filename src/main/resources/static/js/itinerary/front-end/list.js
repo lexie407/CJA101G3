@@ -82,8 +82,7 @@ function bindFavoriteButtons() {
         if (e.target.closest('.itinerary-list-card__favorite')) {
             e.preventDefault();
             const button = e.target.closest('.itinerary-list-card__favorite');
-            const itineraryId = button.dataset.itineraryId;
-            toggleFavorite(itineraryId, button);
+            toggleFavorite(button);
         }
     });
 }
@@ -91,53 +90,59 @@ function bindFavoriteButtons() {
 /**
  * 切換收藏狀態
  */
-function toggleFavorite(itineraryId, button) {
+function toggleFavorite(button) {
+    const itineraryId = button.dataset.itineraryId;
     if (!itineraryId) {
         console.error('行程 ID 不存在');
         return;
     }
     
-    // 視覺回饋
-    button.disabled = true;
+    button.disabled = true; // 禁用按鈕，防止重複點擊
     const icon = button.querySelector('.material-icons');
-    const originalText = icon.textContent;
     
-    // 切換圖示
-    icon.textContent = icon.textContent === 'favorite_border' ? 'favorite' : 'favorite_border';
-    
-    // 模擬 API 呼叫
-    fetch(`/api/itinerary/${itineraryId}/favorite`, {
+    // 呼叫收藏API
+    fetch(`/favItn`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        body: JSON.stringify({
+            favItnId: itineraryId,
+            memId: 10  // 暫時使用測試會員ID
+        })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('伺服器回應錯誤');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            // 更新按鈕狀態
-            if (icon.textContent === 'favorite') {
+            // 完全根據後端回傳的真實狀態來更新UI
+            if (data.isFavorited) {
+                // 如果回傳是「已收藏」
                 button.classList.add('favorited');
+                icon.textContent = 'favorite';
                 showToast('已加入收藏', 'success');
             } else {
+                // 如果回傳是「未收藏」
                 button.classList.remove('favorited');
+                icon.textContent = 'favorite_border';
                 showToast('已取消收藏', 'info');
             }
         } else {
-            // 恢復原始狀態
-            icon.textContent = originalText;
+            // 處理後端回傳的操作失敗訊息
             showToast(data.message || '操作失敗', 'error');
         }
     })
     .catch(error => {
         console.error('收藏操作失敗:', error);
-        // 恢復原始狀態
-        icon.textContent = originalText;
         showToast('網路錯誤，請稍後再試', 'error');
     })
     .finally(() => {
-        button.disabled = false;
+        button.disabled = false; // 無論成功或失敗，最後都重新啟用按鈕
     });
 }
 
@@ -327,22 +332,169 @@ function formatDate(dateString) {
 }
 
 /**
- * 重置搜尋
+ * 重置搜尋表單
  */
 function resetSearchForm() {
-    // 清空表單
-    const searchForm = document.querySelector('.itinerary-list-search-form');
-    if (searchForm) {
-        searchForm.reset();
+    document.getElementById('keyword').value = '';
+    document.getElementById('isPublic').value = '';
+    document.querySelector('.itinerary-list-search-form').submit();
+}
+
+// 切換行程公開/私人狀態
+function toggleVisibility(button, makePublic) {
+    const itineraryId = button.getAttribute('data-itinerary-id');
+    const loadingText = makePublic ? '正在設為公開...' : '正在設為私人...';
+    
+    // 禁用按鈕並顯示載入中
+    button.disabled = true;
+    const originalText = button.innerHTML;
+    button.innerHTML = `<span class="material-icons">hourglass_empty</span> ${loadingText}`;
+    
+    // 發送AJAX請求
+    fetch(`/itinerary/toggle-visibility/${itineraryId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 顯示成功訊息
+            showToast(data.message);
+            
+            // 重新載入頁面以更新UI
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            // 顯示錯誤訊息
+            showToast(data.message, 'error');
+            
+            // 恢復按鈕原始狀態
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('切換公開/私人狀態失敗:', error);
+        showToast('操作失敗，請稍後再試', 'error');
+        
+        // 恢復按鈕原始狀態
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+// 顯示提示訊息
+function showToast(message, type = 'success') {
+    // 檢查是否已存在toast元素，如果有則移除
+    const existingToast = document.querySelector('.itinerary-toast');
+    if (existingToast) {
+        existingToast.remove();
     }
     
-    // 清空 URL 參數並重新載入
-    const url = new URL(window.location);
-    url.search = '';
-    window.location.href = url.toString();
+    // 創建toast元素
+    const toast = document.createElement('div');
+    toast.className = `itinerary-toast itinerary-toast--${type}`;
+    toast.innerHTML = `
+        <span class="material-icons">${type === 'success' ? 'check_circle' : 'error'}</span>
+        <span>${message}</span>
+    `;
+    
+    // 添加到頁面
+    document.body.appendChild(toast);
+    
+    // 添加CSS樣式
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.backgroundColor = type === 'success' ? '#4CAF50' : '#F44336';
+    toast.style.color = 'white';
+    toast.style.padding = '12px 20px';
+    toast.style.borderRadius = '4px';
+    toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+    toast.style.display = 'flex';
+    toast.style.alignItems = 'center';
+    toast.style.zIndex = '9999';
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease-in-out';
+    
+    // 設置圖標樣式
+    const icon = toast.querySelector('.material-icons');
+    icon.style.marginRight = '8px';
+    
+    // 顯示toast
+    setTimeout(() => {
+        toast.style.opacity = '1';
+    }, 10);
+    
+    // 3秒後隱藏toast
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 3000);
 }
 
 // 全域函數，供 HTML 直接呼叫
-window.toggleFavorite = toggleFavorite;
 window.loadMoreItineraries = loadMoreItineraries;
-window.resetSearchForm = resetSearchForm; 
+window.resetSearchForm = resetSearchForm;
+window.toggleVisibility = toggleVisibility; 
+
+// 監聽收藏狀態變更事件
+window.addEventListener('storage', function(e) {
+    if (e.key === 'favoriteChange') {
+        const data = JSON.parse(e.newValue);
+        updateFavoriteButton(data.itineraryId, data.isFavorited);
+    }
+});
+
+function updateFavoriteButton(itineraryId, isFavorited) {
+    const button = document.querySelector(`button[data-itinerary-id="${itineraryId}"]`);
+    if (button) {
+        button.classList.toggle('favorited', isFavorited);
+        const icon = button.querySelector('.material-icons');
+        icon.textContent = isFavorited ? 'favorite' : 'favorite_border';
+        button.title = isFavorited ? '取消收藏' : '加入收藏';
+    }
+}
+
+function toggleFavorite(button) {
+    const itineraryId = button.dataset.itineraryId;
+    if (!itineraryId) return;
+
+    fetch(`/api/itinerary/${itineraryId}/favorite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // 更新按鈕狀態
+            button.classList.toggle('favorited');
+            const icon = button.querySelector('.material-icons');
+            if (data.isFavorited) {
+                icon.textContent = 'favorite';
+                button.title = '取消收藏';
+            } else {
+                icon.textContent = 'favorite_border';
+                button.title = '加入收藏';
+            }
+
+            // 通知其他頁面
+            localStorage.setItem('favoriteChange', JSON.stringify({
+                itineraryId: itineraryId,
+                isFavorited: data.isFavorited,
+                timestamp: new Date().getTime()
+            }));
+
+            showToast(data.isFavorited ? '已加入收藏' : '已取消收藏', 'info');
+        } else {
+            showToast('操作失敗，請稍後再試', 'error');
+        }
+    })
+    .catch(() => showToast('網路錯誤', 'error'));
+} 

@@ -563,14 +563,6 @@
     font-size: 1.1rem;
 }
 
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 0 1.5rem 1.5rem;
-}
-
 /* 卡片底部膠囊型按鈕 */
 .itn-capsule-btn {
     background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-primary-fixed-dim) 100%);
@@ -628,13 +620,57 @@
     text-decoration: none;
 }
 
+/* === 行程卡片底部按鈕優化 === */
 .card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1.5rem;
-    padding: 0 1.5rem 1.5rem;
+    gap: 1.2rem;
+    padding: 0 1.2rem 1.2rem;
 }
+
+.itn-capsule-btn, .itn-capsule-outline-btn {
+    min-width: 120px;
+    max-width: 200px;
+    flex: 1 1 0;
+    height: 48px;
+    font-size: 1.08rem;
+    border-radius: 28px;
+    padding: 0 1.2rem;
+    margin: 0;
+    justify-content: center;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(41, 171, 194, 0.10);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.itn-capsule-btn .material-icons,
+.itn-capsule-outline-btn .material-icons {
+    font-size: 1.3rem;
+}
+
+.itn-capsule-btn:hover, .itn-capsule-outline-btn:hover {
+    transform: translateY(-2px) scale(1.045);
+    box-shadow: 0 6px 18px rgba(41, 171, 194, 0.18);
+}
+
+@media (max-width: 900px) {
+    .card-footer {
+        flex-direction: column;
+        gap: 0.7rem;
+        align-items: stretch;
+        padding: 0 0.7rem 1rem;
+    }
+    .itn-capsule-btn, .itn-capsule-outline-btn {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        height: 44px;
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+}
+
 @media (max-width: 768px) {
     .card-footer {
         flex-direction: column;

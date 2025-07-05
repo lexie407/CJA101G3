@@ -15,7 +15,7 @@
 /* 如果需要，可以在這裡添加列表頁專用的標題樣式覆蓋 */
 
 .spot-list-page {
-    padding-top: 20px;
+    padding-top: 40px;
     padding-left: 50px;
     padding-right: 50px;
 }
@@ -1319,4 +1319,6 @@
     font-size: 14px;
 }
 
-.helper-text { 
+.helper-text {
+
+}

@@ -55,16 +55,16 @@
                                     <p class="spot-map-hero__subtitle">探索台灣美景，用地圖發現更多精彩景點</p>
                                     <div class="spot-map-hero__features">
                                         <div class="spot-map-hero__feature">
-                                            <span class="material-icons">location_on</span>
-                                            <span>精準定位</span>
+                                            <!-- <span class="material-icons">location_on</span> -->
+                                            <!-- <span>精準定位</span> -->
                                         </div>
                                         <div class="spot-map-hero__feature">
-                                            <span class="material-icons">filter_list</span>
-                                            <span>智能篩選</span>
+                                            <!-- <span class="material-icons">filter_list</span> -->
+                                            <!-- <span>智能篩選</span> -->
                                         </div>
                                         <div class="spot-map-hero__feature">
-                                            <span class="material-icons">explore</span>
-                                            <span>互動探索</span>
+                                            <!-- <span class="material-icons">explore</span> -->
+                                            <!-- <span>互動探索</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -219,7 +219,11 @@
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script th:src="@{/js/notification/websocket.js}"></script>
     
-    <!-- 地圖頁面功能 -->
-    <script th:src="@{/js/spot/front-end/map.js}"></script>
+    <!-- Google Maps API 將由 JavaScript 動態載入 -->
+    
+    <!-- 景點模組通用腳本 -->
+    <script th:src="@{/js/spot/front-end/spot-common.js}" defer></script>
+    <!-- 景點地圖頁面腳本 -->
+    <script th:src="@{/js/spot/front-end/map.js}" defer></script>
 </body>
 </html> 

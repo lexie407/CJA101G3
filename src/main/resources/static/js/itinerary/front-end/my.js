@@ -100,8 +100,16 @@ function bindItineraryActions() {
         if (e.target.closest('.edit-btn')) {
             e.preventDefault();
             const button = e.target.closest('.edit-btn');
-            const itineraryId = button.dataset.id;
-            editItinerary(itineraryId);
+            const itineraryId = button.dataset.id || button.getAttribute('data-id');
+            if (itineraryId) {
+                editItinerary(itineraryId);
+            } else {
+                // 如果無法從data-id獲取，嘗試從href獲取
+                const href = button.getAttribute('href');
+                if (href) {
+                    window.location.href = href;
+                }
+            }
         }
         
         // 複製按鈕
@@ -117,9 +125,7 @@ function bindItineraryActions() {
             e.preventDefault();
             const button = e.target.closest('.delete-btn');
             const itineraryId = button.dataset.id;
-            const card = button.closest('.itinerary-card');
-            const title = card.querySelector('.card-title').textContent;
-            deleteItinerary(itineraryId, title);
+            deleteItinerary(itineraryId);
         }
         
         // 公開狀態切換
@@ -185,18 +191,133 @@ function bindModalEvents() {
  * 載入我的行程
  */
 function loadMyItineraries() {
-    // 模擬載入資料
-    currentItineraries = generateMockData();
-    filteredItineraries = [...currentItineraries];
+    // 檢查頁面上是否已經有行程數據
+    const itineraryGrid = document.getElementById('itineraryGrid');
+    const existingCards = itineraryGrid ? itineraryGrid.querySelectorAll('.itinerary-card') : [];
     
-    // 更新統計
-    updateStatistics();
+    // 如果已經有行程卡片，則從DOM中提取數據
+    if (existingCards.length > 0) {
+        console.log('從頁面提取行程數據');
+        
+        // 提取行程數據
+        currentItineraries = Array.from(existingCards).map(card => {
+            const id = card.querySelector('.action-btn.edit-btn').getAttribute('href').split('/').pop();
+            const name = card.querySelector('.card-title').textContent;
+            const description = card.querySelector('.card-description').textContent;
+            const isPublic = card.querySelector('.status-badge').classList.contains('status-public');
+            const createdAt = card.querySelector('.meta-item span:last-child').textContent;
+            
+            return {
+                id: id,
+                name: name,
+                description: description,
+                isPublic: isPublic,
+                createdAt: createdAt
+            };
+        });
+        
+        // 更新過濾後的行程
+        filteredItineraries = [...currentItineraries];
+        
+        // 更新統計
+        updateStatisticsFromDOM();
+        
+        // 綁定事件
+        bindItineraryActions();
+        
+        return;
+    }
     
-    // 渲染行程列表
-    renderItineraries();
+    // 如果沒有現有數據，則從API獲取
+    showLoading();
     
-    // 檢查空狀態
-    checkEmptyState();
+    // 從 API 獲取數據
+    fetch('/api/itinerary/my')
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 401) {
+                    // 未登入，重定向到登入頁面
+                    window.location.href = '/members/login?redirect=/itinerary/my';
+                    throw new Error('請先登入會員');
+                }
+                throw new Error(`API 錯誤 (${response.status})`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || '載入失敗');
+            }
+            
+            console.log('成功載入我的行程數據:', data);
+            
+            // 更新全局數據
+            currentItineraries = data.itineraries || [];
+            filteredItineraries = [...currentItineraries];
+            
+            // 更新統計
+            updateStatistics(data.stats);
+            
+            // 渲染行程列表
+            renderItineraries();
+            
+            // 檢查空狀態
+            checkEmptyState();
+            
+            // 隱藏載入中狀態
+            hideLoading();
+        })
+        .catch(error => {
+            console.error('載入我的行程失敗:', error);
+            
+            // 顯示錯誤狀態
+            showError(error.message);
+            
+            // 隱藏載入中狀態
+            hideLoading();
+        });
+}
+
+/**
+ * 顯示載入中狀態
+ */
+function showLoading() {
+    const grid = document.getElementById('itineraryGrid');
+    if (grid) {
+        grid.innerHTML = `
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>載入中，請稍候...</p>
+            </div>
+        `;
+    }
+}
+
+/**
+ * 隱藏載入中狀態
+ */
+function hideLoading() {
+    // 載入完成後會被 renderItineraries 替換，不需要額外處理
+}
+
+/**
+ * 顯示錯誤狀態
+ */
+function showError(message) {
+    const grid = document.getElementById('itineraryGrid');
+    if (grid) {
+        grid.innerHTML = `
+            <div class="error-state">
+                <span class="material-icons">error</span>
+                <p>載入失敗</p>
+                <p class="error-message">${message}</p>
+                <button onclick="loadMyItineraries()" class="itn-capsule-btn">
+                    <span class="material-icons">refresh</span>
+                    重試
+                </button>
+            </div>
+        `;
+    }
 }
 
 /**
@@ -210,8 +331,8 @@ function performSearch() {
         filteredItineraries = [...currentItineraries];
     } else {
         filteredItineraries = currentItineraries.filter(itinerary => 
-            itinerary.name.toLowerCase().includes(keyword) ||
-            itinerary.description.toLowerCase().includes(keyword)
+            (itinerary.name && itinerary.name.toLowerCase().includes(keyword)) ||
+            (itinerary.description && itinerary.description.toLowerCase().includes(keyword))
         );
     }
     
@@ -360,14 +481,21 @@ function copyItinerary(itineraryId) {
 
 /**
  * 刪除行程
+ * @param {string} itineraryId - 行程ID
  */
-function deleteItinerary(itineraryId, itineraryName) {
+function deleteItinerary(itineraryId) {
     if (!itineraryId) return;
     
+    // 找到行程名稱
+    const card = document.querySelector(`.itinerary-card [data-id="${itineraryId}"]`).closest('.itinerary-card');
+    const title = card ? card.querySelector('.card-title').textContent : '此行程';
+    
+    // 確認對話框
     showConfirmModal(
-        `確定要刪除行程「${itineraryName}」嗎？`,
-        '此操作無法復原，請謹慎考慮。',
-        () => {
+        '刪除行程', 
+        `確定要刪除「${title}」嗎？此操作無法復原。`,
+        function() {
+            // 使用者確認後執行
             performDeleteItinerary(itineraryId);
         }
     );
@@ -380,89 +508,142 @@ function performDeleteItinerary(itineraryId) {
     const deleteBtn = document.querySelector(`[data-id="${itineraryId}"].delete-btn`);
     
     if (deleteBtn) {
+        // 禁用按鈕並顯示載入中
         deleteBtn.disabled = true;
         const originalHtml = deleteBtn.innerHTML;
         deleteBtn.innerHTML = '<span class="material-icons">hourglass_empty</span>';
         
-        // 模擬 API 呼叫
-        setTimeout(() => {
-            // 從資料中移除
-            currentItineraries = currentItineraries.filter(item => item.id != itineraryId);
-            filteredItineraries = filteredItineraries.filter(item => item.id != itineraryId);
-            
-            // 移除 DOM 元素
-            const card = deleteBtn.closest('.itinerary-card');
-            if (card) {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(-20px)';
-                setTimeout(() => {
-                    card.remove();
-                    checkEmptyState();
-                }, 300);
+        // 發送API請求
+        fetch(`/itinerary/delete/${itineraryId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`API 錯誤 (${response.status})`);
             }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // 顯示成功訊息
+                showToast(data.message || '行程刪除成功', 'success');
+                
+                // 移除 DOM 元素
+                const card = deleteBtn.closest('.itinerary-card');
+                if (card) {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(-20px)';
+                    setTimeout(() => {
+                        card.remove();
+                        
+                        // 檢查是否需要顯示空狀態
+                        const remainingCards = document.querySelectorAll('.itinerary-card');
+                        if (remainingCards.length === 0) {
+                            // 重新載入頁面以顯示空狀態
+                            window.location.reload();
+                        }
+                    }, 300);
+                }
+            } else {
+                // 顯示錯誤訊息
+                showToast(data.message || '刪除失敗', 'error');
+                
+                // 恢復按鈕狀態
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = originalHtml;
+            }
+        })
+        .catch(error => {
+            console.error('刪除行程失敗:', error);
+            showToast('操作失敗，請稍後再試', 'error');
             
-            // 更新統計
-            updateStatistics();
-            
-            showToast('行程刪除成功', 'success');
-        }, 1000);
+            // 恢復按鈕狀態
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = originalHtml;
+        });
     }
 }
 
 /**
- * 切換公開狀態
+ * 切換行程公開/私人狀態
+ * @param {string} itineraryId - 行程ID
+ * @param {boolean} currentPublic - 當前是否公開
+ * @param {HTMLElement} button - 按鈕元素
  */
 function togglePublicStatus(itineraryId, currentPublic, button) {
-    if (!itineraryId || !button) return;
+    // 確認對話框
+    const newStatus = !currentPublic;
+    const confirmMessage = newStatus 
+        ? '確定要將此行程設為公開嗎？公開後所有人都能查看此行程。' 
+        : '確定要將此行程設為私人嗎？設為私人後只有您能查看此行程。';
     
-    const newPublic = !currentPublic;
-    const action = newPublic ? '設為公開' : '設為私人';
-    
-    // 視覺回饋
-    button.disabled = true;
-    const originalHtml = button.innerHTML;
-    button.innerHTML = '<span class="material-icons">hourglass_empty</span>處理中...';
-    
-    // 模擬 API 呼叫
-    setTimeout(() => {
-        // 更新資料
-        const itinerary = currentItineraries.find(item => item.id == itineraryId);
-        if (itinerary) {
-            itinerary.isPublic = newPublic;
-            
-            // 更新按鈕
-            button.dataset.public = newPublic;
-            if (newPublic) {
-                button.innerHTML = '<span class="material-icons">lock</span>設為私人';
-                button.className = 'itn-capsule-outline-btn toggle-public-btn';
-            } else {
-                button.innerHTML = '<span class="material-icons">public</span>設為公開';
-                button.className = 'itn-capsule-outline-btn toggle-public-btn';
-            }
-            
-            // 更新狀態徽章
-            const card = button.closest('.itinerary-card');
-            const statusBadge = card.querySelector('.status-badge');
-            if (statusBadge) {
-                if (newPublic) {
-                    statusBadge.className = 'status-badge status-public';
-                    statusBadge.innerHTML = '<span class="material-icons">public</span>公開';
-                } else {
-                    statusBadge.className = 'status-badge status-private';
-                    statusBadge.innerHTML = '<span class="material-icons">lock</span>私人';
-                }
-            }
-            
-            // 更新統計
-            updateStatistics();
-            
-            showToast(`${action}成功`, 'success');
-        } else {
-            showToast(`${action}失敗`, 'error');
+    showConfirmModal(
+        '切換行程狀態', 
+        confirmMessage,
+        function() {
+            // 使用者確認後執行
+            performTogglePublic(itineraryId, newStatus, button);
         }
+    );
+}
+
+/**
+ * 執行切換公開狀態
+ * @param {string} itineraryId - 行程ID
+ * @param {boolean} makePublic - 是否設為公開
+ * @param {HTMLElement} button - 按鈕元素
+ */
+function performTogglePublic(itineraryId, makePublic, button) {
+    // 顯示載入中
+    button.disabled = true;
+    const originalText = button.innerHTML;
+    const loadingText = makePublic ? '正在設為公開...' : '正在設為私人...';
+    button.innerHTML = `<span class="material-icons">hourglass_empty</span> ${loadingText}`;
+    
+    // 發送API請求
+    fetch(`/itinerary/toggle-visibility/${itineraryId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`API 錯誤 (${response.status})`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // 顯示成功訊息
+            showToast(data.message, 'success');
+            
+            // 重新載入頁面以更新UI
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            // 顯示錯誤訊息
+            showToast(data.message || '操作失敗', 'error');
+            
+            // 恢復按鈕狀態
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('切換公開狀態失敗:', error);
+        showToast('操作失敗，請稍後再試', 'error');
         
+        // 恢復按鈕狀態
         button.disabled = false;
-    }, 800);
+        button.innerHTML = originalText;
+    });
 }
 
 /**
@@ -498,113 +679,181 @@ function renderItineraries(clearFirst = true) {
     const grid = document.getElementById('itineraryGrid');
     if (!grid) return;
     
+    // 計算當前頁的數據
+    const startIndex = 0;
+    const endIndex = Math.min(currentPage * itemsPerPage, filteredItineraries.length);
+    const currentPageData = filteredItineraries.slice(startIndex, endIndex);
+    
+    // 是否清空現有內容
     if (clearFirst) {
         grid.innerHTML = '';
-        currentPage = 1;
     }
     
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const itemsToShow = filteredItineraries.slice(startIndex, endIndex);
+    // 如果沒有數據，顯示空狀態
+    if (currentPageData.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <span class="material-icons">info</span>
+                <p>尚未建立任何行程</p>
+                <a href="/itinerary/add" class="itn-capsule-btn">
+                    <span class="material-icons">add</span>
+                    建立新行程
+                </a>
+            </div>
+        `;
+        return;
+    }
     
-    itemsToShow.forEach(itinerary => {
-        const card = createItineraryCard(itinerary);
-        grid.appendChild(card);
+    // 生成行程卡片 HTML
+    let cardsHtml = '';
+    currentPageData.forEach(itinerary => {
+        cardsHtml += createItineraryCard(itinerary);
     });
     
-    // 更新載入更多按鈕顯示
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    if (loadMoreBtn) {
-        const totalPages = Math.ceil(filteredItineraries.length / itemsPerPage);
-        loadMoreBtn.style.display = currentPage >= totalPages ? 'none' : 'block';
+    // 添加到網格
+    grid.innerHTML = cardsHtml;
+    
+    // 如果有更多數據，顯示載入更多按鈕
+    const loadMoreContainer = document.getElementById('loadMoreContainer');
+    if (loadMoreContainer) {
+        if (endIndex < filteredItineraries.length) {
+            loadMoreContainer.style.display = 'flex';
+            
+            // 更新剩餘數量
+            const remainingCount = filteredItineraries.length - endIndex;
+            const loadMoreText = document.getElementById('loadMoreText');
+            if (loadMoreText) {
+                loadMoreText.textContent = `載入更多 (${remainingCount})`;
+            }
+        } else {
+            loadMoreContainer.style.display = 'none';
+        }
     }
 }
 
 /**
- * 建立行程卡片
+ * 創建行程卡片
+ * @param {Object} itinerary - 行程數據
+ * @returns {string} 行程卡片 HTML
  */
 function createItineraryCard(itinerary) {
-    const article = document.createElement('article');
-    article.className = 'itinerary-card';
+    const isPublic = itinerary.isPublic === true;
+    const statusBadge = isPublic
+        ? `<span class="status-badge status-public"><span class="material-icons">public</span>公開</span>`
+        : `<span class="status-badge status-private"><span class="material-icons">lock</span>私人</span>`;
     
-    const statusClass = itinerary.isPublic ? 'status-public' : 'status-private';
-    const statusIcon = itinerary.isPublic ? 'public' : 'lock';
-    const statusText = itinerary.isPublic ? '公開' : '私人';
+    const createdDate = itinerary.createdAt ? formatDate(itinerary.createdAt) : '';
     
-    const toggleIcon = itinerary.isPublic ? 'lock' : 'public';
-    const toggleText = itinerary.isPublic ? '設為私人' : '設為公開';
-    
-    article.innerHTML = `
-        <div class="card-header">
-            <div class="card-status">
-                <span class="status-badge ${statusClass}">
-                    <span class="material-icons">${statusIcon}</span>
-                    ${statusText}
-                </span>
-            </div>
-            <div class="card-actions">
-                <button class="action-btn edit-btn" title="編輯行程" data-id="${itinerary.id}">
-                    <span class="material-icons">edit</span>
-                </button>
-                <button class="action-btn copy-btn" title="複製行程" data-id="${itinerary.id}">
-                    <span class="material-icons">content_copy</span>
-                </button>
-                <button class="action-btn delete-btn" title="刪除行程" data-id="${itinerary.id}">
-                    <span class="material-icons">delete</span>
-                </button>
-            </div>
-        </div>
-        <div class="card-content">
-            <h3 class="card-title">${itinerary.name}</h3>
-            <p class="card-description">${itinerary.description}</p>
-            <div class="card-meta">
-                <div class="meta-item">
-                    <span class="material-icons">schedule</span>
-                    <span>${formatDate(itinerary.createdAt)}</span>
+    return `
+        <article class="itinerary-card">
+            <div class="card-header">
+                <div class="card-status">
+                    ${statusBadge}
                 </div>
-                <div class="meta-item">
-                    <span class="material-icons">place</span>
-                    <span>${itinerary.spotCount}個景點</span>
+                <div class="card-actions">
+                    <a href="/itinerary/edit/${itinerary.id}" class="action-btn edit-btn" title="編輯行程">
+                        <span class="material-icons">edit</span>
+                    </a>
+                    <button class="action-btn delete-btn" title="刪除行程" data-id="${itinerary.id}" onclick="deleteItinerary('${itinerary.id}')">
+                        <span class="material-icons">delete</span>
+                    </button>
                 </div>
-                <div class="meta-item">
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">${itinerary.name || '未命名行程'}</h3>
+                <p class="card-description">${itinerary.description ? (itinerary.description.length > 100 ? itinerary.description.substring(0, 100) + '...' : itinerary.description) : '暫無描述'}</p>
+                <div class="card-meta">
+                    <div class="meta-item">
+                        <span class="material-icons">schedule</span>
+                        <span>${createdDate}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="/itinerary/detail/${itinerary.id}" class="itn-capsule-btn">
                     <span class="material-icons">visibility</span>
-                    <span>${itinerary.viewCount}次瀏覽</span>
-                </div>
+                    查看行程
+                </a>
+                ${isPublic ? `
+                    <button class="itn-capsule-outline-btn toggle-public-btn" 
+                            data-id="${itinerary.id}" 
+                            data-public="true"
+                            onclick="togglePublicStatus('${itinerary.id}', true, this)">
+                        <span class="material-icons">lock</span>
+                        設為私人
+                    </button>
+                ` : `
+                    <button class="itn-capsule-outline-btn toggle-public-btn" 
+                            data-id="${itinerary.id}" 
+                            data-public="false"
+                            onclick="togglePublicStatus('${itinerary.id}', false, this)">
+                        <span class="material-icons">public</span>
+                        設為公開
+                    </button>
+                `}
             </div>
-        </div>
-        <div class="card-footer">
-            <a href="/itinerary/detail/${itinerary.id}" class="itn-capsule-btn">
-                <span class="material-icons">visibility</span>
-                查看行程
-            </a>
-            <button class="itn-capsule-outline-btn toggle-public-btn" data-id="${itinerary.id}" data-public="${itinerary.isPublic}">
-                <span class="material-icons">${toggleIcon}</span>
-                ${toggleText}
-            </button>
-        </div>
+        </article>
     `;
-    
-    return article;
 }
 
 /**
  * 更新統計資訊
  */
-function updateStatistics() {
+function updateStatistics(stats = {}) {
     const totalCount = document.getElementById('totalCount');
     const publicCount = document.getElementById('publicCount');
     const privateCount = document.getElementById('privateCount');
     const totalSpots = document.getElementById('totalSpots');
     
-    const total = currentItineraries.length;
-    const publicItineraries = currentItineraries.filter(item => item.isPublic).length;
-    const privateItineraries = total - publicItineraries;
-    const spots = currentItineraries.reduce((sum, item) => sum + item.spotCount, 0);
+    // 使用 API 返回的統計數據或計算當前數據
+    const total = stats.total || currentItineraries.length;
+    const publicItineraries = stats.public || currentItineraries.filter(item => item.isPublic === 1).length;
+    const privateItineraries = stats.private || (total - publicItineraries);
     
+    // 總景點數可能需要計算
+    let spots = 0;
+    if (stats.spots) {
+        spots = stats.spots;
+    } else {
+        // 如果 API 沒有提供，則從行程數據計算
+        spots = currentItineraries.reduce((sum, item) => {
+            // 檢查是否有 itnSpots 屬性，如果有則使用其長度，否則使用 spotCount 或默認為 0
+            const spotCount = item.itnSpots ? item.itnSpots.length : (item.spotCount || 0);
+            return sum + spotCount;
+        }, 0);
+    }
+    
+    // 更新 DOM
     if (totalCount) totalCount.textContent = total;
     if (publicCount) publicCount.textContent = publicItineraries;
     if (privateCount) privateCount.textContent = privateItineraries;
     if (totalSpots) totalSpots.textContent = spots;
+}
+
+/**
+ * 從 DOM 中更新統計資訊
+ */
+function updateStatisticsFromDOM() {
+    const totalCount = document.getElementById('totalCount');
+    const publicCount = document.getElementById('publicCount');
+    const privateCount = document.getElementById('privateCount');
+    const totalSpots = document.getElementById('totalSpots');
+    
+    // 如果頁面上已有統計數據，則不需要再計算
+    if (totalCount && publicCount && privateCount) {
+        return;
+    }
+    
+    // 否則，從當前行程數據計算
+    const total = currentItineraries.length;
+    const publicItineraries = currentItineraries.filter(item => item.isPublic).length;
+    const privateItineraries = total - publicItineraries;
+    
+    // 更新 DOM
+    if (totalCount) totalCount.textContent = total;
+    if (publicCount) publicCount.textContent = publicItineraries;
+    if (privateCount) privateCount.textContent = privateItineraries;
+    if (totalSpots) totalSpots.textContent = '計算中...'; // 無法從DOM中獲取景點數量
 }
 
 /**
@@ -668,21 +917,54 @@ function hideModal() {
 /**
  * 顯示 Toast 通知
  */
-function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
+function showToast(message, type = 'success') {
+    // 檢查是否已存在toast元素，如果有則移除
+    const existingToast = document.querySelector('.itinerary-toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
     
-    toast.textContent = message;
-    toast.className = `toast ${type}`;
+    // 創建toast元素
+    const toast = document.createElement('div');
+    toast.className = `itinerary-toast itinerary-toast--${type}`;
+    toast.innerHTML = `
+        <span class="material-icons">${type === 'success' ? 'check_circle' : 'error'}</span>
+        <span>${message}</span>
+    `;
     
-    // 顯示
+    // 添加到頁面
+    document.body.appendChild(toast);
+    
+    // 添加CSS樣式
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.backgroundColor = type === 'success' ? '#4CAF50' : '#F44336';
+    toast.style.color = 'white';
+    toast.style.padding = '12px 20px';
+    toast.style.borderRadius = '4px';
+    toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+    toast.style.display = 'flex';
+    toast.style.alignItems = 'center';
+    toast.style.zIndex = '9999';
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease-in-out';
+    
+    // 設置圖標樣式
+    const icon = toast.querySelector('.material-icons');
+    icon.style.marginRight = '8px';
+    
+    // 顯示toast
     setTimeout(() => {
-        toast.classList.add('show');
-    }, 100);
+        toast.style.opacity = '1';
+    }, 10);
     
-    // 隱藏
+    // 3秒後隱藏toast
     setTimeout(() => {
-        toast.classList.remove('show');
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
     }, 3000);
 }
 

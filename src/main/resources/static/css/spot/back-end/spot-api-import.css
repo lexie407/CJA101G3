@@ -470,6 +470,37 @@
     box-shadow: none !important;
 }
 
+/* 添加匯入中按鈕的樣式 */
+.city-btn.importing {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: pulse 1.5s infinite;
+}
+
+/* 添加已成功匯入的按鈕樣式 */
+.city-btn.imported {
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 /* 管理操作區域 */
 .action-section {
     background: var(--md-sys-color-surface);

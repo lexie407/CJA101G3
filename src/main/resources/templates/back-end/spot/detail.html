@@ -12,10 +12,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-detail.css}">
-    
-    <!-- 🔧 過度階段：註解掉CSRF token -->
-    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
 <body class="light">
     <div class="app-container">
@@ -28,17 +24,6 @@
             
             <!-- 主要內容 -->
             <main class="spot-detail-page">
-        <div class="page-header-section">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1>景點詳情</h1>
-                    <p>查看景點的完整資訊和管理狀態</p>
-                </div>
-                <div class="header-image">
-                    <img src="/images/logo.png" alt="景點管理系統" class="header-logo">
-                </div>
-            </div>
-        </div>
         <div class="content-container">
             <!-- 基本資訊卡片 -->
             <div class="detail-card">
@@ -199,8 +184,6 @@
                     </a>
                     
                     <form th:action="@{/admin/spot/delete/{id}(id=${spot.spotId})}" method="post" class="delete-form">
-                        <!-- 🔧 過度階段：註解掉CSRF token -->
-                        <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/> -->
                         <button type="submit" class="btn btn-danger" onclick="return confirm('確定要刪除這個景點嗎？此操作無法復原！')">
                             <i class="material-icons">delete</i>
                             <span>刪除景點</span>

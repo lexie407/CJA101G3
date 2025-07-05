@@ -4,9 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的收藏 - 島遊Kha</title>
+    
+    <!-- 引用景點模組的樣式基礎 -->
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/itinerary/front-end/my2.css}">
+    <!-- 行程列表專用樣式 -->
+    <link rel="stylesheet" th:href="@{/css/itinerary/front-end/list.css}">
+    <!-- 會員次導覽列樣式 -->
+    <link rel="stylesheet" th:href="@{/css/members/secNav.css}" />
 </head>
 <body class="light">
     <div class="app-container">
@@ -15,315 +20,64 @@
         
         <div class="main-content">
             <!-- 頂部次導覽列 -->
-            <div th:replace="~{subnavItnFront :: subnav('favorites')}"></div>
+            <div th:replace="~{subnavMembers :: subnav}"></div>
             
             <main class="content-area-main">
                 <!-- 英雄區塊 -->
-                <section class="hero-section">
-                    <div class="hero-content">
-                        <div class="hero-text">
-                            <h1 class="hero-title">
-                                <div class="hero-icon-wrapper">
-                                    <span class="material-icons hero-icon">favorite</span>
-                                </div>
+                <section class="itinerary-list-hero">
+                    <span class="itinerary-list-hero__illustration material-icons" aria-hidden="true">favorite</span>
+                    <div class="itinerary-list-hero__content">
+                        <h1 class="itinerary-list-hero__title">
+                            <span class="material-icons" aria-hidden="true">favorite</span>
                                 我的收藏
                             </h1>
-                            <p class="hero-subtitle">管理您收藏的所有精選行程，輕鬆瀏覽與複製旅遊計畫</p>
-                        </div>
-                        <div class="hero-decoration">
-                            <div class="floating-icon">
-                                <span class="material-icons">star</span>
-                            </div>
-                            <div class="floating-dots">
-                                <div class="dot dot-1"></div>
-                                <div class="dot dot-2"></div>
-                                <div class="dot dot-3"></div>
-                            </div>
-                        </div>
+                        <p class="itinerary-list-hero__subtitle">管理您收藏的精彩行程</p>
                     </div>
-                    <div class="hero-pattern"></div>
                 </section>
 
-                <!-- 收藏統計區塊 -->
-                <section class="stats-section">
-                    <div class="stats-container">
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-icon">
+                <!-- 工具列區域 -->
+                <section class="itinerary-list-toolbar">
+                    <div class="container">
+                        <div class="itinerary-list-toolbar__content">
+                            <div class="itinerary-list-toolbar__left">
+                                <div class="itinerary-list-stats">
                                     <span class="material-icons">favorite</span>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-number" id="favoriteCount">5</div>
-                                    <div class="stat-label">收藏行程數</div>
+                                    <span class="itinerary-list-stats__text">
+                                        共 <strong id="favorites-count">0</strong> 個收藏
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 收藏行程列表 -->
-                <section class="itinerary-list-section">
-                    <div class="list-container">
-                        <div id="favoritesGrid" class="itinerary-grid">
-                            <!-- 收藏卡片範例 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-public">
-                                            <span class="material-icons">public</span>
-                                            公開
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn delete-btn" title="取消收藏" data-id="101">
-                                            <span class="material-icons">favorite</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="101">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
+                <!-- 收藏列表主要內容 -->
+                <section class="itinerary-list-main">
+                    <div class="container">
+                        <!-- 收藏行程網格 -->
+                        <div id="favorites-grid" class="itinerary-list-grid">
+                            <!-- 動態載入的收藏行程卡片將插入這裡 -->
+                                </div>
+                        
+                        <!-- 載入中提示 -->
+                        <div id="favorites-loading" class="itinerary-list-empty" style="display: none;">
+                            <div class="itinerary-list-empty__content">
+                                <div class="spinner"></div>
+                                <p>載入中...</p>
                                     </div>
                                 </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">台南古都之旅</h3>
-                                    <p class="card-description">探索台南的歷史文化，品嚐道地小吃，感受古都的魅力與風情。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">person</span>
-                                            <span>建立者：Bob</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>6個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">favorite</span>
-                                            <span>25次收藏</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-06-19</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a href="/itinerary/detail/101" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
+                        
+                        <!-- 無收藏時顯示 -->
+                        <div id="favorites-empty" class="itinerary-list-empty" style="display: none;">
+                            <div class="itinerary-list-empty__content">
+                                <span class="material-icons">favorite_border</span>
+                                <h3>尚未收藏任何行程</h3>
+                                <p>快去探索並收藏喜歡的行程吧！</p>
+                                <a th:href="@{/itinerary/itnlist}" class="itinerary-list-empty__action">
+                                    <span class="material-icons">search</span>
+                                    瀏覽行程
                                     </a>
-                                    <button class="itn-capsule-outline-btn" data-id="101">
-                                        <span class="material-icons">favorite</span>
-                                        取消收藏
-                                    </button>
                                 </div>
-                            </article>
-
-                            <!-- 收藏行程2 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-public">
-                                            <span class="material-icons">public</span>
-                                            公開
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn delete-btn" title="取消收藏" data-id="102">
-                                            <span class="material-icons">favorite</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="102">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">花蓮自然風光</h3>
-                                    <p class="card-description">體驗花蓮的壯麗山海景色，享受大自然的美好與寧靜。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">person</span>
-                                            <span>建立者：Carol</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>4個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">favorite</span>
-                                            <span>18次收藏</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-06-17</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a href="/itinerary/detail/102" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn" data-id="102">
-                                        <span class="material-icons">favorite</span>
-                                        取消收藏
-                                    </button>
-                                </div>
-                            </article>
-
-                            <!-- 收藏行程3 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-public">
-                                            <span class="material-icons">public</span>
-                                            公開
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn delete-btn" title="取消收藏" data-id="103">
-                                            <span class="material-icons">favorite</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="103">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">高雄港都巡禮</h3>
-                                    <p class="card-description">感受高雄港都的現代活力，欣賞城市天際線與海港風光。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">person</span>
-                                            <span>建立者：David</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>5個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">favorite</span>
-                                            <span>12次收藏</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-06-16</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a href="/itinerary/detail/103" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn" data-id="103">
-                                        <span class="material-icons">favorite</span>
-                                        取消收藏
-                                    </button>
-                                </div>
-                            </article>
-
-                            <!-- 收藏行程4 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-public">
-                                            <span class="material-icons">public</span>
-                                            公開
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn delete-btn" title="取消收藏" data-id="104">
-                                            <span class="material-icons">favorite</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="104">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">日月潭湖光山色</h3>
-                                    <p class="card-description">環遊日月潭，欣賞湖光山色，體驗原住民文化與自然之美。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">person</span>
-                                            <span>建立者：Eve</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>3個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">favorite</span>
-                                            <span>30次收藏</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-06-14</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a href="/itinerary/detail/104" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn" data-id="104">
-                                        <span class="material-icons">favorite</span>
-                                        取消收藏
-                                    </button>
-                                </div>
-                            </article>
-
-                            <!-- 收藏行程5 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-public">
-                                            <span class="material-icons">public</span>
-                                            公開
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn delete-btn" title="取消收藏" data-id="105">
-                                            <span class="material-icons">favorite</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="105">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">阿里山日出之旅</h3>
-                                    <p class="card-description">追逐阿里山的絕美日出，漫步在千年神木群中，感受大自然的震撼。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">person</span>
-                                            <span>建立者：Frank</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>4個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">favorite</span>
-                                            <span>45次收藏</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-06-12</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a href="/itinerary/detail/105" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn" data-id="105">
-                                        <span class="material-icons">favorite</span>
-                                        取消收藏
-                                    </button>
-                                </div>
-                            </article>
                         </div>
                     </div>
                 </section>
@@ -332,24 +86,6 @@
     </div>
 
     <!-- JavaScript -->
-    <script>
-        function removeFavorite(itnId) {
-            if (confirm('確定要取消收藏這個行程嗎？')) {
-                // 這裡之後會調用後端API
-                console.log('取消收藏行程 ID:', itnId);
-                alert('已取消收藏！');
-                // 實際實作時會重新載入頁面或移除DOM元素
-                location.reload();
-            }
-        }
-
-        function copyItinerary(itnId) {
-            if (confirm('確定要複製這個行程到您的行程中嗎？')) {
-                // 這裡之後會調用後端API
-                console.log('複製行程 ID:', itnId);
-                alert('行程複製成功！您可以在「我的行程」中查看。');
-            }
-        }
-    </script>
+    <script th:src="@{/js/itinerary/front-end/favorites.js}"></script>
 </body>
 </html>

@@ -1,0 +1,232 @@
+/* 景點選擇器樣式 */
+.spot-selector-section {
+    margin-bottom: 2rem;
+}
+
+.spot-search-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.spot-search-input {
+    flex: 1;
+    position: relative;
+}
+
+.spot-search-input input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.spot-search-input input:focus {
+    border-color: var(--primary-color, #1976d2);
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    outline: none;
+}
+
+.spot-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.spot-search-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-color, #1976d2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.spot-search-btn:hover {
+    background: var(--primary-dark-color, #1565c0);
+}
+
+.spot-list-container {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.spot-pool {
+    flex: 1;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 12px;
+    padding: 1rem;
+    background: #f9f9f9;
+    height: 400px;
+    overflow-y: auto;
+}
+
+.spot-selected {
+    flex: 1;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 12px;
+    padding: 1rem;
+    background: #f0f7ff;
+    height: 400px;
+    overflow-y: auto;
+}
+
+.spot-pool-header, .spot-selected-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color, #ddd);
+}
+
+.spot-pool-title, .spot-selected-title {
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-count {
+    background: #e0e0e0;
+    color: #333;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.spot-card {
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: white;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.spot-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    border-color: var(--primary-color, #1976d2);
+}
+
+.spot-card-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.spot-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-light-color, #bbdefb);
+    color: var(--primary-color, #1976d2);
+}
+
+.spot-card-info {
+    flex: 1;
+}
+
+.spot-card-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.spot-card-location {
+    font-size: 0.8rem;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spot-card-action {
+    color: var(--primary-color, #1976d2);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.spot-card-action:hover {
+    background: rgba(25, 118, 210, 0.1);
+}
+
+.spot-selected .spot-card {
+    background: #e3f2fd;
+    border-left: 4px solid var(--primary-color, #1976d2);
+}
+
+.spot-selected .spot-card-number {
+    font-weight: 700;
+    color: var(--primary-color, #1976d2);
+    margin-right: 0.5rem;
+}
+
+.spot-selected .spot-card {
+    position: relative;
+}
+
+.spot-drag-handle {
+    cursor: grab;
+    color: #999;
+}
+
+.spot-drag-handle:active {
+    cursor: grabbing;
+}
+
+.spot-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #666;
+}
+
+.spot-empty-icon {
+    font-size: 2.5rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+}
+
+.spot-empty-text {
+    font-size: 0.9rem;
+}
+
+/* 拖拽時的樣式 */
+.spot-card.dragging {
+    opacity: 0.5;
+    border: 2px dashed var(--primary-color, #1976d2);
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .spot-list-container {
+        flex-direction: column;
+    }
+    
+    .spot-pool, .spot-selected {
+        height: 300px;
+    }
+} 

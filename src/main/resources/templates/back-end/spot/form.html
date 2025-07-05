@@ -12,10 +12,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-form.css}">
-    
-    <!-- 🔧 過度階段：註解掉CSRF token -->
-    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
 <body class="light">
     <div class="app-container">
@@ -29,22 +25,6 @@
             <!-- 主要內容 -->
             <main class="spot-review-page">
         <div class="spot-form-page">
-            <!-- 頁面標題與圖片區域 -->
-            <div class="page-header-section">
-                <div class="header-content">
-                    <div class="header-text">
-                        <h1 th:text="${isEdit != null and isEdit ? '編輯景點' : '新增景點'}">新增景點</h1>
-                        <p th:text="${isEdit != null and isEdit ? '修改景點資訊並儲存變更' : '填寫景點資訊以建立新項目'}">填寫景點資訊以建立新項目</p>
-
-                    </div>
-                    <div class="header-image">
-                        <div class="header-icon-container">
-                            <i class="material-icons header-icon" th:text="${isEdit != null and isEdit ? 'edit_location' : 'add_location'}">add_location</i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- 成功/錯誤訊息 -->
             <div th:if="${successMessage}" class="alert alert-success">
                 <i class="material-icons">check_circle</i>

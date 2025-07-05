@@ -58,9 +58,10 @@ public class ItineraryAdminController {
             // 查詢所有行程資料（不使用分頁，前端自己處理）
             List<ItineraryVO> allItineraries = itineraryService.getAllItineraries();
             
-            // 過濾只保留基本行程資料（ID 1-9），排除揪團模組行程（ID 10+）
+            // 過濾排除揪團模組行程（ID 10-20），保留會員和管理員建立的行程
             allItineraries = allItineraries.stream()
-                .filter(itinerary -> itinerary.getItnId() != null && itinerary.getItnId() < 10)
+                .filter(itinerary -> itinerary.getItnId() != null && 
+                        (itinerary.getItnId() < 10 || itinerary.getItnId() > 20))
                 .collect(java.util.stream.Collectors.toList());
             
             // 創建簡化的 DTO 物件，避免 Hibernate 懶加載序列化問題
@@ -118,9 +119,10 @@ public class ItineraryAdminController {
             // 查詢所有行程資料（不使用分頁，前端自己處理）
             List<ItineraryVO> allItineraries = itineraryService.getAllItineraries();
             
-            // 過濾只保留基本行程資料（ID 1-9），排除揪團模組行程（ID 10+）
+            // 過濾排除揪團模組行程（ID 10-20），保留會員和管理員建立的行程
             allItineraries = allItineraries.stream()
-                .filter(itinerary -> itinerary.getItnId() != null && itinerary.getItnId() < 10)
+                .filter(itinerary -> itinerary.getItnId() != null && 
+                        (itinerary.getItnId() < 10 || itinerary.getItnId() > 20))
                 .collect(java.util.stream.Collectors.toList());
             
             // 創建簡化的 DTO 物件，避免 Hibernate 懶加載序列化問題
@@ -174,33 +176,57 @@ public class ItineraryAdminController {
      * 處理新增行程
      */
     @PostMapping("/add")
-    public String processAdd(@Valid @ModelAttribute ItineraryVO itinerary,
-                           BindingResult result,
+    public String processAdd(@RequestParam String itnName,
+                           @RequestParam String itnDesc,
+                           @RequestParam(required = false) String isPublic,
+                           @RequestParam(required = false) List<Integer> spotIds,
+                           HttpSession session,
                            RedirectAttributes redirectAttr) {
         
-        if (result.hasErrors()) {
-            redirectAttr.addFlashAttribute("errorMessage", "資料驗證失敗：" + formatValidationErrors(result));
+        try {
+            // 驗證行程名稱
+            if (itnName == null || itnName.trim().isEmpty() || itnName.length() < 2 || itnName.length() > 50) {
+                redirectAttr.addFlashAttribute("errorMessage", "行程名稱必須為2-50個字元");
             return "redirect:/admin/itinerary/add";
         }
         
-        try {
-            // 設定預設值
-            if (itinerary.getIsPublic() == null) {
-                itinerary.setIsPublic((byte) 0); // 預設為私人
-            }
-            if (itinerary.getItnStatus() == null) {
-                itinerary.setItnStatus((byte) 1); // 預設為上架
-            }
-            if (itinerary.getCrtId() == null) {
-                // 使用基本行程模組的會員ID範圍 (1-3)
-                int[] validMemberIds = {1, 2, 3};
-                int randomIndex = (int) (Math.random() * validMemberIds.length);
-                itinerary.setCrtId(validMemberIds[randomIndex]);
-                logger.info("未提供建立者ID，隨機選擇會員ID: {}", itinerary.getCrtId());
+            // 驗證行程描述
+            if (itnDesc == null || itnDesc.trim().isEmpty() || itnDesc.length() < 10 || itnDesc.length() > 500) {
+                redirectAttr.addFlashAttribute("errorMessage", "行程描述必須為10-500個字元");
+                return "redirect:/admin/itinerary/add";
             }
             
-            itineraryService.addItinerary(itinerary);
-            redirectAttr.addFlashAttribute("successMessage", "行程新增成功！");
+            // 從 session 中獲取當前登入的管理員
+            AdministrantVO admin = (AdministrantVO) session.getAttribute("admin");
+            if (admin == null) {
+                redirectAttr.addFlashAttribute("errorMessage", "請先登入後台系統");
+                return "redirect:/admin/login";
+            }
+            
+            // 創建新行程物件
+            ItineraryVO itinerary = new ItineraryVO();
+            itinerary.setItnName(itnName);
+            itinerary.setItnDesc(itnDesc);
+            itinerary.setCrtId(admin.getAdminId()); // 使用管理員ID作為創建者
+            itinerary.setCreatorType((byte) 2); // 2=管理員建立
+            
+            // 設置公開狀態
+            itinerary.setIsPublic(isPublic != null ? (byte) 1 : (byte) 0);
+            
+            // 設置行程狀態（預設為已發布）
+            itinerary.setItnStatus((byte) 1);
+            
+            // 保存行程
+            ItineraryVO savedItinerary = itineraryService.addItinerary(itinerary);
+            
+            // 如果有選擇景點，則添加到行程中
+            if (spotIds != null && !spotIds.isEmpty()) {
+                // 添加景點到行程
+                itineraryService.addSpotsToItinerary(savedItinerary.getItnId(), spotIds);
+                logger.info("已添加 {} 個景點到行程 ID: {}", spotIds.size(), savedItinerary.getItnId());
+            }
+            
+            redirectAttr.addFlashAttribute("successMessage", "官方行程新增成功！");
             return "redirect:/admin/itinerary/itnlist";
             
         } catch (Exception e) {
@@ -435,51 +461,6 @@ public class ItineraryAdminController {
         return "redirect:/admin/itinerary/itnlist";
     }
 
-    /**
-     * 後台登入頁面
-     */
-    @GetMapping("/login")
-    public String adminLoginPage() {
-        return "back-end/itinerary/login";
-    }
-
-    /**
-     * 處理後台登入
-     */
-    @PostMapping("/login")
-    public String processLogin(@RequestParam String adminAcc, 
-                              @RequestParam String adminPwd, 
-                              HttpSession session,
-                              Model model) {
-        try {
-            // 使用 findByAdminAcc 方法查找管理員
-            Optional<AdministrantVO> adminOpt = administrantService.findByAdminAcc(adminAcc);
-            if (adminOpt.isPresent()) {
-                AdministrantVO admin = adminOpt.get();
-                // 檢查密碼
-                if (admin.getAdminPwd().equals(adminPwd)) {
-                    session.setAttribute("loggedInAdmin", admin);
-                    return "redirect:/admin/itinerary/itnlist";
-                }
-            }
-            model.addAttribute("errorMessage", "帳號或密碼錯誤");
-            return "back-end/itinerary/login";
-        } catch (Exception e) {
-            logger.error("登入時發生錯誤", e);
-            model.addAttribute("errorMessage", "登入失敗：" + e.getMessage());
-            return "back-end/itinerary/login";
-        }
-    }
-
-    /**
-     * 後台登出
-     */
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/admin/itinerary/login";
-    }
-
     // ===================================================================================
     // API 端點
     // ===================================================================================
@@ -503,10 +484,19 @@ public class ItineraryAdminController {
     }
 
     /**
+     * 權限不足頁面
+     * @return 重定向到管理員登入頁面
+     */
+    @GetMapping("/forbidden")
+    public String forbiddenPage() {
+        return "redirect:/admins/login";
+    }
+
+    /**
      * 重定向到列表頁
      */
     @GetMapping({"", "/"})
     public String redirectToList() {
-        return "redirect:/admin/itinerary/itnlist";
+        return "redirect:/admins/dashboard";
     }
 } 

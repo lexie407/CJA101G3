@@ -90,12 +90,16 @@
 /* 3. 主要內容區域 */
 .itinerary-add-main {
     padding: var(--section-spacing) 0;
+    max-width: 92%; /* 將整體內容區域縮小，留出兩側間距 */
+    margin: 0 auto; /* 居中顯示 */
 }
 
 .itinerary-add-form {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    width: 95%; /* 表單寬度縮小 */
+    margin: 0 auto; /* 居中顯示 */
 }
 
 /* 4. 卡片設計 */
@@ -106,6 +110,8 @@
     transition: all var(--itinerary-transition);
     border: 2px solid transparent;
     overflow: hidden;
+    width: 96%; /* 卡片寬度縮小 */
+    margin: 0 auto; /* 居中顯示 */
 }
 
 .itinerary-add-card::before {
@@ -130,10 +136,13 @@
     opacity: 1;
 }
 
+/* 卡片標題區域 */
 .itinerary-add-card__header {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     padding: 1.5rem 2rem;
     border-bottom: 1px solid #e0e0e0;
+    width: 96%; /* 寬度縮小 */
+    margin: 0 auto; /* 居中顯示 */
 }
 
 .itinerary-add-card__title {
@@ -158,8 +167,9 @@
     line-height: 1.4;
 }
 
+/* 卡片內容區域 */
 .itinerary-add-card__content {
-    padding: 2rem;
+    padding: 2rem 1rem; /* 調整內邊距，減少左右邊距 */
 }
 
 /* 5. 錯誤訊息 */
@@ -198,6 +208,7 @@
 /* 6. 表單元素 */
 .itinerary-form-group {
     margin-bottom: 1.5rem;
+    padding: 0 1rem; /* 增加左右內邊距 */
 }
 
 .itinerary-form-label {
@@ -222,7 +233,7 @@
 
 .itinerary-form-input,
 .itinerary-form-textarea {
-    width: 100%;
+    width: 98%; /* 輸入框寬度縮小 */
     padding: 1rem 1.2rem;
     border: 2px solid #e0e0e0;
     border-radius: 12px;
@@ -233,6 +244,8 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     font-family: inherit;
     resize: vertical;
+    margin: 0 auto; /* 居中顯示 */
+    display: block; /* 確保margin: 0 auto生效 */
 }
 
 .itinerary-form-input:focus,
@@ -251,9 +264,13 @@
 
 /* 6. 公開設定選項 */
 .itinerary-visibility-options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    width: 98%; /* 寬度縮小 */
+    margin-left: auto; /* 居中顯示 */
+    margin-right: auto; /* 居中顯示 */
 }
 
 .itinerary-visibility-option {
@@ -329,12 +346,15 @@
 /* 7. 景點搜尋 */
 .itinerary-spot-search {
     margin-bottom: 2rem;
+    padding: 0 1rem; /* 增加左右內邊距 */
 }
 
 .itinerary-search-wrapper {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 1.5rem;
+    background: #f5f7fa;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin: 0 auto; /* 居中顯示 */
+    width: 98%; /* 寬度縮小 */
 }
 
 .itinerary-search-input-group {
@@ -389,15 +409,19 @@
     box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
 }
 
-/* 8. 區段副標題 */
+/* 景點區域標題 */
 .itinerary-section-subtitle {
     font-size: 1.1rem;
     font-weight: 600;
     color: #333;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
+    padding: 0 1rem; /* 增加左右內邊距，與其他元素保持一致 */
+    margin-left: auto; /* 居中顯示 */
+    margin-right: auto; /* 居中顯示 */
+    width: 98%; /* 寬度縮小 */
 }
 
 .itinerary-section-subtitle .material-icons {
@@ -418,19 +442,32 @@
 /* 9. 景點卡片網格 */
 .itinerary-spots-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.2rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 增加卡片最小寬度 */
+    gap: 16px; /* 增加間距 */
+    margin-top: 1rem;
+    width: 98%; /* 寬度縮小 */
+    margin-left: auto; /* 居中顯示 */
+    margin-right: auto; /* 居中顯示 */
 }
 
+/* 可選景點區域 */
+.itinerary-available-spots {
+    margin-bottom: 2rem;
+    padding: 0 1rem; /* 增加左右內邊距 */
+}
+
+/* 調整景點卡片樣式，使其更加緊湊 */
 .itinerary-spot-card {
     background: #fff;
     border-radius: 12px;
-    border: 2px solid #e0e0e0;
-    transition: all var(--itinerary-transition);
-    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s;
+    position: relative;
+    border: 1px solid #e0e0e0;
+    height: 110px; /* 增加高度，避免內容被截斷 */
+    padding-right: 40px; /* 為添加按鈕留出空間 */
 }
 
 .itinerary-spot-card:hover {
@@ -441,11 +478,13 @@
 
 .itinerary-spot-card__image {
     background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
-    height: 80px;
+    width: 80px; /* 固定寬度 */
+    height: 100%; /* 填滿卡片高度 */
     display: flex;
     align-items: center;
     justify-content: center;
-    border-bottom: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
+    flex-shrink: 0; /* 防止縮小 */
 }
 
 .itinerary-spot-card__image .material-icons {
@@ -454,53 +493,75 @@
 }
 
 .itinerary-spot-card__content {
-    padding: 1rem;
+    padding: 12px;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* 內容均勻分布 */
+    min-width: 0; /* 防止內容溢出 */
 }
 
 .itinerary-spot-card__name {
     font-size: 1rem;
     font-weight: 600;
     color: #333;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 6px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 長名稱顯示省略號 */
 }
 
 .itinerary-spot-card__location {
     font-size: 0.85rem;
     color: #666;
-    margin: 0 0 0.8rem 0;
+    margin: 0 0 8px 0;
     display: flex;
     align-items: center;
     gap: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 長地址顯示省略號 */
 }
 
 .itinerary-spot-card__location .material-icons {
     font-size: 1rem;
     color: #1976d2;
+    flex-shrink: 0; /* 防止圖標縮小 */
 }
 
 .itinerary-spot-card__rating {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.2rem; /* 減小間距 */
     font-size: 0.85rem;
     color: #666;
+    margin-top: auto; /* 將評分推到底部 */
+    padding-bottom: 4px; /* 增加底部間距 */
 }
 
 .itinerary-spot-card__rating .material-icons {
-    font-size: 1rem;
+    font-size: 0.9rem; /* 減小星號大小 */
     color: #ff9800;
+    flex-shrink: 0; /* 防止星星圖標縮小 */
+}
+
+/* 評分數字樣式 */
+.itinerary-spot-card__rating span:last-child {
+    margin-left: 4px;
+    font-weight: 600;
+    color: #333;
 }
 
 .itinerary-spot-card__add {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 50%; /* 垂直居中 */
+    right: 10px;
+    transform: translateY(-50%); /* 垂直居中調整 */
     background: #fff;
     border: 2px solid #e0e0e0;
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -514,7 +575,7 @@
     background: #4caf50;
     border-color: #4caf50;
     color: white;
-    transform: scale(1.1);
+    transform: translateY(-50%) scale(1.1); /* 保持垂直居中的同時放大 */
     box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
@@ -523,11 +584,20 @@
 }
 
 /* 10. 已選景點列表 */
+.itinerary-selected-spots {
+    margin-top: 2rem;
+    padding: 0 1rem; /* 增加左右內邊距 */
+}
+
 .itinerary-selected-list {
-    background: #f8f9fa;
+    background: #f5f7fa;
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1.2rem;
+    margin-top: 1rem;
     min-height: 120px;
+    width: 98%; /* 寬度縮小 */
+    margin-left: auto; /* 居中顯示 */
+    margin-right: auto; /* 居中顯示 */
 }
 
 .itinerary-empty-state {
@@ -555,16 +625,21 @@
     line-height: 1.4;
 }
 
+/* 調整已選景點列表項目 */
 .itinerary-selected-item {
-    background: #fff;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 0.8rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 0.8rem 1rem;
+    background: #fff;
+    border-radius: 10px;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     border: 1px solid #e0e0e0;
+    transition: all 0.2s;
+    position: relative;
+    width: 96%; /* 寬度縮小 */
+    margin-left: auto; /* 居中顯示 */
+    margin-right: auto; /* 居中顯示 */
 }
 
 .itinerary-selected-item:last-child {
@@ -626,11 +701,13 @@
 /* 11. 操作按鈕 */
 .itinerary-add-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: flex-end;
     gap: 1rem;
     margin-top: 2rem;
-    padding: 1.5rem 0;
+    padding: 0 1rem; /* 增加左右內邊距 */
+    width: 98%; /* 寬度縮小 */
+    margin-left: auto; /* 居中顯示 */
+    margin-right: auto; /* 居中顯示 */
 }
 
 .itinerary-btn {
@@ -678,85 +755,128 @@
 /* 12. 響應式設計 */
 @media (max-width: 768px) {
     :root {
-        --section-spacing: 1rem;
-        --itinerary-hero-height: 140px;
+        --itinerary-hero-height: 160px;
+        --section-spacing: 1.2rem;
     }
-
-    .itinerary-add-hero {
-        margin: 0.5rem 1rem;
+    
+    .itinerary-add-main {
+        max-width: 96%; /* 在較小螢幕上增加寬度 */
     }
-
-    .itinerary-add-hero__content {
-        padding: 0 1rem;
+    
+    .itinerary-add-form {
+        width: 98%; /* 在較小螢幕上增加寬度 */
     }
-
-    .itinerary-add-hero__title {
-        gap: 0.5rem;
+    
+    .itinerary-add-card {
+        width: 98%; /* 在較小螢幕上增加寬度 */
     }
-
-    .itinerary-add-hero__illustration {
-        font-size: 3rem;
-        top: 15px;
-        right: 20px;
-    }
-
+    
     .itinerary-add-card__header {
         padding: 1.2rem 1.5rem;
+        width: 98%; /* 在較小螢幕上增加寬度 */
     }
-
+    
     .itinerary-add-card__content {
-        padding: 1.5rem;
+        padding: 1.5rem 0.8rem;
     }
-
+    
     .itinerary-visibility-options {
-        grid-template-columns: 1fr;
-    }
-
-    .itinerary-spots-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .itinerary-add-actions {
-        flex-direction: column-reverse;
+        flex-direction: column; /* 在較小螢幕上改為垂直排列 */
         gap: 1rem;
     }
-
+    
+    .itinerary-spots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* 中等屏幕減小卡片尺寸 */
+        gap: 12px;
+    }
+    
+    .itinerary-add-actions {
+        flex-direction: column-reverse; /* 按鈕垂直排列，主要按鈕在上 */
+        gap: 0.8rem;
+        align-items: stretch; /* 按鈕佔滿整行 */
+    }
+    
     .itinerary-btn {
         width: 100%;
+        margin: 0;
     }
 }
 
 @media (max-width: 576px) {
     .itinerary-add-hero {
-        margin: 0.5rem;
-        height: 120px;
+        height: auto;
+        padding: 2rem 1rem;
+        margin: 0.8rem;
         border-radius: 16px;
     }
-
+    
+    .itinerary-add-main {
+        max-width: 100%; /* 在最小螢幕上使用全寬 */
+        padding: var(--section-spacing) 0.5rem;
+    }
+    
+    .itinerary-add-form {
+        width: 100%; /* 在最小螢幕上使用全寬 */
+        gap: 1.5rem;
+    }
+    
+    .itinerary-add-card {
+        width: 100%; /* 在最小螢幕上使用全寬 */
+        border-radius: 12px;
+    }
+    
     .itinerary-add-hero__content {
-        padding: 0 0.75rem;
+        padding: 0 1rem;
     }
-
+    
     .itinerary-add-hero__title {
-        gap: 0.5rem;
+        font-size: 1.5rem;
     }
-
+    
     .itinerary-add-hero__illustration {
-        font-size: 2.5rem;
-        top: 10px;
-        right: 15px;
+        display: none; /* 在最小螢幕上隱藏裝飾圖示 */
     }
-
+    
     .itinerary-add-card__header {
         padding: 1rem;
+        width: 100%; /* 在最小螢幕上使用全寬 */
     }
-
+    
     .itinerary-add-card__content {
-        padding: 1rem;
+        padding: 1.2rem 0.6rem;
     }
-
+    
     .itinerary-search-wrapper {
         padding: 1rem;
+        width: 100%; /* 在最小螢幕上使用全寬 */
+    }
+    
+    .itinerary-section-subtitle {
+        width: 100%; /* 在最小螢幕上使用全寬 */
+        padding: 0 0.6rem;
+    }
+    
+    .itinerary-spots-grid,
+    .itinerary-selected-list,
+    .itinerary-visibility-options,
+    .itinerary-add-actions {
+        width: 100%; /* 在最小螢幕上使用全寬 */
+    }
+    
+    .itinerary-spot-card {
+        height: 100px; /* 小屏幕減小高度 */
+    }
+    
+    .itinerary-spot-card__image {
+        width: 70px; /* 小屏幕減小圖片區域 */
+    }
+    
+    .itinerary-spot-card__content {
+        padding: 8px;
+    }
+    
+    .itinerary-selected-item {
+        width: 100%; /* 在最小螢幕上使用全寬 */
     }
 }
 
@@ -845,4 +965,84 @@
     .itinerary-search-btn {
         background: #000;
     }
+} 
+
+/* 載入狀態 */
+.itinerary-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+    color: #666;
+    text-align: center;
+    width: 100%;
+}
+
+.itinerary-loading .material-icons {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #1976d2;
+    animation: spin 1.5s infinite linear;
+}
+
+.itinerary-loading p {
+    font-size: 1rem;
+    margin: 0;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 錯誤狀態 */
+.itinerary-error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+    color: #d32f2f;
+    text-align: center;
+    width: 100%;
+}
+
+.itinerary-error-state .material-icons {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.itinerary-error-state p {
+    font-size: 1rem;
+    margin: 0 0 1.5rem;
+}
+
+.itinerary-error-state button {
+    margin-top: 1rem;
+}
+
+/* 字數統計器 */
+.character-counter {
+    font-size: 0.8rem;
+    color: #666;
+    text-align: right;
+    margin-top: 0.3rem;
+    transition: color 0.3s;
+}
+
+.character-counter.warning {
+    color: #ff9800;
+}
+
+.character-counter.error {
+    color: #f44336;
+}
+
+.character-counter.success {
+    color: #4caf50;
 } 

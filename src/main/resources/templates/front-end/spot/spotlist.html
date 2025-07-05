@@ -276,10 +276,8 @@
         </div>
     </div>
     
-    <!-- 必要腳本 -->
-    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
-    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-    <script src="/js/notification/websocket.js"></script>
+    <!-- 景點模組通用腳本 -->
+    <script th:src="@{/js/spot/front-end/spot-common.js}" defer></script>
     <!-- 景點列表頁專用腳本 -->
     <script th:src="@{/js/spot/front-end/list.js}" defer></script>
 </body>
