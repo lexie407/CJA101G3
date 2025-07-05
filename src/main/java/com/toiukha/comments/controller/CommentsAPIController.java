@@ -106,9 +106,9 @@ public class CommentsAPIController {
 			
 		}
 
-		commentsService.changeComm(commId, commCon, commImg);
+		CommentsVO commentsVO = commentsService.changeComm(commId, commCon, commImg);
 		
-		return CommentsDTO.from(commentsService.getOne(commId), membersService.getById(commentsService.getOne(commId).getCommHol()).getMemName());
+		return CommentsDTO.from(commentsVO, membersService.getById(commentsService.getOne(commId).getCommHol()).getMemName());
 	}
 	
 	//最佳解
