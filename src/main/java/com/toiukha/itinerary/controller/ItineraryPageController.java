@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -56,18 +57,18 @@ public class ItineraryPageController {
             // 根據參數決定查詢方式
             if (keyword != null && !keyword.trim().isEmpty()) {
                 if (isPublic != null && isPublic) {
-                    // 搜尋公開行程
-                    itineraryList = itineraryService.searchPublicItineraries(keyword.trim());
+                    // 搜尋公開行程（不包含揪團模組行程）
+                    itineraryList = itineraryService.searchPublicItinerariesNotFromActivity(keyword.trim());
                 } else {
                     // 搜尋所有行程 (需要實作此方法，暫時使用名稱搜尋)
                     itineraryList = itineraryService.searchItinerariesByName(keyword.trim());
                 }
             } else if (isPublic != null && isPublic) {
-                // 只顯示公開行程
-                itineraryList = itineraryService.getPublicItineraries();
+                // 只顯示公開行程（不包含揪團模組行程）
+                itineraryList = itineraryService.getPublicItinerariesNotFromActivity();
             } else {
-                // 顯示所有公開行程 (預設只顯示公開的)
-                itineraryList = itineraryService.getPublicItineraries();
+                // 顯示所有公開行程（不包含揪團模組行程）(預設只顯示公開的)
+                itineraryList = itineraryService.getPublicItinerariesNotFromActivity();
             }
             
             model.addAttribute("itineraryList", itineraryList);
@@ -140,8 +141,14 @@ public class ItineraryPageController {
      * 建立行程頁面
      */
     @GetMapping("/add")
-    public String addPage() {
-        // TODO: 開發階段暫時繞過權限檢查，正式環境需要加入攔截器
+    public String addPage(HttpSession session, Model model) {
+        // 檢查會員是否已登入
+        Integer memId = getMemIdFromSession(session);
+        if (memId == null) {
+            // 未登入，重定向到登入頁面
+            return "redirect:/members/login?redirect=/itinerary/add";
+        }
+        
         return "front-end/itinerary/add";
     }
 
@@ -150,21 +157,76 @@ public class ItineraryPageController {
      */
     @PostMapping("/add")
     public String addItinerary(@RequestParam String itnName,
-                              @RequestParam(required = false) String itnDesc,
-                              @RequestParam(defaultValue = "1") Byte isPublic,
-                              Model model) {
+                          @RequestParam String itnDesc,
+                          @RequestParam(defaultValue = "1") Byte isPublic,
+                          @RequestParam(required = false) List<Integer> spotIds,
+                          HttpSession session,
+                          Model model) {
+        // 檢查會員是否已登入
+        Integer memId = getMemIdFromSession(session);
+        if (memId == null) {
+            // 未登入，重定向到登入頁面
+            return "redirect:/members/login?redirect=/itinerary/add";
+        }
+        
         try {
+            // 驗證行程名稱
+            if (itnName == null || itnName.trim().isEmpty()) {
+                model.addAttribute("errorMessage", "行程名稱不能為空");
+                return returnFormWithData(model, itnName, itnDesc, isPublic);
+            }
+            
+            if (itnName.length() < 2 || itnName.length() > 50) {
+                model.addAttribute("errorMessage", "行程名稱長度必須在2-50字之間");
+                return returnFormWithData(model, itnName, itnDesc, isPublic);
+            }
+            
+            // 檢查特殊字符
+            if (containsSpecialCharacters(itnName)) {
+                model.addAttribute("errorMessage", "行程名稱不能包含特殊字符: < > { } [ ] | \\ \" '");
+                return returnFormWithData(model, itnName, itnDesc, isPublic);
+            }
+            
+            // 驗證行程描述
+            if (itnDesc == null || itnDesc.trim().isEmpty()) {
+                model.addAttribute("errorMessage", "行程描述不能為空");
+                return returnFormWithData(model, itnName, itnDesc, isPublic);
+            }
+            
+            if (itnDesc.length() < 10 || itnDesc.length() > 500) {
+                model.addAttribute("errorMessage", "行程描述長度必須在10-500字之間");
+                return returnFormWithData(model, itnName, itnDesc, isPublic);
+            }
+            
+            // 驗證景點選擇
+            if (spotIds == null || spotIds.isEmpty()) {
+                model.addAttribute("errorMessage", "請至少選擇一個景點");
+                return returnFormWithData(model, itnName, itnDesc, isPublic);
+            }
+            
             // 建立新的行程物件
             ItineraryVO newItinerary = new ItineraryVO();
             newItinerary.setItnName(itnName);
             newItinerary.setItnDesc(itnDesc);
             newItinerary.setIsPublic(isPublic);
-            
-            // TODO: 開發階段暫時使用固定會員 ID，正式環境需要從 Session 取得
-            newItinerary.setCrtId(1); // 暫時使用會員 ID = 1
+            newItinerary.setCrtId(memId); // 使用當前登入會員ID
+            newItinerary.setItnStatus((byte) 1); // 預設為上架狀態
+            newItinerary.setCreatorType((byte) 1); // 會員建立
             
             // 儲存行程
             ItineraryVO savedItinerary = itineraryService.addItinerary(newItinerary);
+            
+            // 添加景點到行程
+            if (spotIds != null && !spotIds.isEmpty()) {
+                for (Integer spotId : spotIds) {
+                    try {
+                        itineraryService.addSpotToItinerary(savedItinerary.getItnId(), spotId);
+                    } catch (Exception e) {
+                        // 記錄錯誤但繼續處理其他景點
+                        System.err.println("添加景點失敗 ID=" + spotId + ": " + e.getMessage());
+                    }
+                }
+            }
             
             // 導向到行程詳情頁面
             return "redirect:/itinerary/detail/" + savedItinerary.getItnId();
@@ -172,11 +234,43 @@ public class ItineraryPageController {
         } catch (Exception e) {
             // 如果發生錯誤，回到建立頁面並顯示錯誤訊息
             model.addAttribute("errorMessage", "建立行程失敗：" + e.getMessage());
-            model.addAttribute("itnName", itnName);
-            model.addAttribute("itnDesc", itnDesc);
-            model.addAttribute("isPublic", isPublic);
-            return "front-end/itinerary/add";
+            return returnFormWithData(model, itnName, itnDesc, isPublic);
         }
+    }
+
+    /**
+     * 返回表單並保留已填寫的數據
+     */
+    private String returnFormWithData(Model model, String itnName, String itnDesc, Byte isPublic) {
+        model.addAttribute("itnName", itnName);
+        model.addAttribute("itnDesc", itnDesc);
+        model.addAttribute("isPublic", isPublic);
+        return "front-end/itinerary/add";
+    }
+
+    /**
+     * 檢查字串是否包含特殊字符
+     */
+    private boolean containsSpecialCharacters(String text) {
+        String specialChars = "<>{}[]|\\\"\\'";
+        for (char c : specialChars.toCharArray()) {
+            if (text.indexOf(c) != -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 從 Session 中獲取會員 ID
+     */
+    private Integer getMemIdFromSession(HttpSession session) {
+        Object memberObj = session.getAttribute("member");
+        if (memberObj instanceof com.toiukha.members.model.MembersVO) {
+            com.toiukha.members.model.MembersVO member = (com.toiukha.members.model.MembersVO) memberObj;
+            return member.getMemId();
+        }
+        return null;
     }
 
     /**

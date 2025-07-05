@@ -61,6 +61,21 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
     List<ItineraryVO> findPublicItineraries();
 
     /**
+     * 查詢所有非揪團模組的公開行程
+     * @return 非揪團模組的公開行程列表，按建立時間倒序排列
+     */
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.creatorType = 1 OR i.creatorType = 2) ORDER BY i.itnCreateDat DESC")
+    List<ItineraryVO> findPublicItinerariesNotFromActivity();
+
+    /**
+     * 查詢非揪團模組的公開行程（分頁）
+     * @param pageable 分頁資訊
+     * @return 非揪團模組的公開行程分頁結果
+     */
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.creatorType = 1 OR i.creatorType = 2)")
+    Page<ItineraryVO> findPublicItinerariesNotFromActivity(Pageable pageable);
+
+    /**
      * 查詢公開行程（分頁）
      * @param pageable 分頁資訊
      * @return 公開行程分頁結果
@@ -76,6 +91,25 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
     @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND " +
            "i.itnName LIKE %:keyword% ORDER BY i.itnCreateDat DESC")
     List<ItineraryVO> searchPublicItineraries(@Param("keyword") String keyword);
+
+    /**
+     * 複合搜尋：根據名稱搜尋非揪團模組的公開行程
+     * @param keyword 搜尋關鍵字
+     * @return 符合條件的非揪團模組公開行程列表
+     */
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.creatorType = 1 OR i.creatorType = 2) AND " +
+           "i.itnName LIKE %:keyword% ORDER BY i.itnCreateDat DESC")
+    List<ItineraryVO> searchPublicItinerariesNotFromActivity(@Param("keyword") String keyword);
+
+    /**
+     * 複合搜尋：根據名稱搜尋非揪團模組的公開行程（分頁）
+     * @param keyword 搜尋關鍵字
+     * @param pageable 分頁資訊
+     * @return 符合條件的非揪團模組公開行程分頁結果
+     */
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.creatorType = 1 OR i.creatorType = 2) AND " +
+           "i.itnName LIKE %:keyword%")
+    Page<ItineraryVO> searchPublicItinerariesNotFromActivity(@Param("keyword") String keyword, Pageable pageable);
 
     /**
      * 複合搜尋：根據名稱搜尋公開行程（分頁）
@@ -145,6 +179,5 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
                                      @Param("status") Integer status, 
                                      @Param("isPublic") Integer isPublic, 
                                      Pageable pageable);
-
-
 } 
+

@@ -117,6 +117,23 @@ public class ItineraryService {
     }
 
     /**
+     * 查詢所有非揪團模組的公開行程
+     * @return 非揪團模組的公開行程列表
+     */
+    public List<ItineraryVO> getPublicItinerariesNotFromActivity() {
+        return itineraryRepository.findPublicItinerariesNotFromActivity();
+    }
+
+    /**
+     * 查詢非揪團模組的公開行程（分頁）
+     * @param pageable 分頁參數
+     * @return 非揪團模組的公開行程分頁結果
+     */
+    public Page<ItineraryVO> getPublicItinerariesNotFromActivity(Pageable pageable) {
+        return itineraryRepository.findPublicItinerariesNotFromActivity(pageable);
+    }
+
+    /**
      * 查詢公開行程（分頁）
      * @param pageable 分頁參數
      * @return 公開行程分頁結果
@@ -160,6 +177,25 @@ public class ItineraryService {
      */
     public List<ItineraryVO> getPrivateItinerariesByCrtId(Integer crtId) {
         return itineraryRepository.findPrivateItinerariesByCrtId(crtId);
+    }
+
+    /**
+     * 搜尋非揪團模組的公開行程
+     * @param keyword 搜尋關鍵字
+     * @return 符合條件的非揪團模組公開行程列表
+     */
+    public List<ItineraryVO> searchPublicItinerariesNotFromActivity(String keyword) {
+        return itineraryRepository.searchPublicItinerariesNotFromActivity(keyword);
+    }
+
+    /**
+     * 搜尋非揪團模組的公開行程（分頁）
+     * @param keyword 搜尋關鍵字
+     * @param pageable 分頁參數
+     * @return 符合條件的非揪團模組公開行程分頁結果
+     */
+    public Page<ItineraryVO> searchPublicItinerariesNotFromActivity(String keyword, Pageable pageable) {
+        return itineraryRepository.searchPublicItinerariesNotFromActivity(keyword, pageable);
     }
 
     // ========== 3. 搜尋功能 ==========
