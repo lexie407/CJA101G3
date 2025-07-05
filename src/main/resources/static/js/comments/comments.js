@@ -711,6 +711,17 @@ function initComments(shadowRoot) {
 
 	// --- 初始化：立即載入留言 ---
 	fetchComments();
+
+
+	// --- 監聽表單高度變化，以調整 statusMessage 的位置 ---
+	const resizeObserver = new ResizeObserver(() => {
+		if (commentForm.classList.contains('sticky')) {
+			const formHeight = commentForm.offsetHeight;
+			statusMessage.style.top = `${topNavHeight + formHeight}px`;
+		}
+	});
+
+	resizeObserver.observe(commentForm);
 } // This is the missing brace for initComments function
 
 // --- 主程式進入點：直接呼叫 initComments ---
