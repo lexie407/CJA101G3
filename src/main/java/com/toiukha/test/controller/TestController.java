@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class TestController {
 	@GetMapping("/")
 	public String testMethod() {
-		return "index";
+		return "redirect:/spot/";
 	}
 
 }
