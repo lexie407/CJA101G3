@@ -54,7 +54,49 @@ public class ItineraryAdminController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             Model model) {
-        listPage(keyword, status, isPublic, sort, direction, page, size, model);
+        try {
+            // 查詢所有行程資料（不使用分頁，前端自己處理）
+            List<ItineraryVO> allItineraries = itineraryService.getAllItineraries();
+            
+            // 過濾只保留基本行程資料（ID 1-9），排除揪團模組行程（ID 10+）
+            allItineraries = allItineraries.stream()
+                .filter(itinerary -> itinerary.getItnId() != null && itinerary.getItnId() < 10)
+                .collect(java.util.stream.Collectors.toList());
+            
+            // 創建簡化的 DTO 物件，避免 Hibernate 懶加載序列化問題
+            List<Map<String, Object>> simplifiedItineraries = allItineraries.stream()
+                .map(itinerary -> {
+                    Map<String, Object> dto = new HashMap<>();
+                    dto.put("itnId", itinerary.getItnId());
+                    dto.put("itnName", itinerary.getItnName());
+                    dto.put("itnDesc", itinerary.getItnDesc());
+                    dto.put("crtId", itinerary.getCrtId());
+                    dto.put("isPublic", itinerary.getIsPublic());
+                    dto.put("itnStatus", itinerary.getItnStatus());
+                    dto.put("itnCreateDat", itinerary.getItnCreateDat());
+                    dto.put("itnUpdateDat", itinerary.getItnUpdateDat());
+                    dto.put("spotCount", itinerary.getSpotCount());
+                    dto.put("publicStatusText", itinerary.getPublicStatusText());
+                    dto.put("statusText", itinerary.getStatusText());
+                    return dto;
+                })
+                .collect(java.util.stream.Collectors.toList());
+            
+            // 添加到模型
+            model.addAttribute("itineraries", allItineraries); // 用於 Thymeleaf 模板渲染
+            model.addAttribute("simplifiedItineraries", simplifiedItineraries); // 用於 JavaScript
+            model.addAttribute("currentPage", page);
+            model.addAttribute("size", size);
+            model.addAttribute("sort", sort);
+            model.addAttribute("direction", direction);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("status", status);
+            model.addAttribute("isPublic", isPublic);
+            
+        } catch (Exception e) {
+            logger.error("載入行程列表時發生錯誤", e);
+            model.addAttribute("errorMessage", "載入行程列表失敗：" + e.getMessage());
+        }
         return "back-end/itinerary/itnlist";
     }
 
@@ -75,6 +117,11 @@ public class ItineraryAdminController {
         try {
             // 查詢所有行程資料（不使用分頁，前端自己處理）
             List<ItineraryVO> allItineraries = itineraryService.getAllItineraries();
+            
+            // 過濾只保留基本行程資料（ID 1-9），排除揪團模組行程（ID 10+）
+            allItineraries = allItineraries.stream()
+                .filter(itinerary -> itinerary.getItnId() != null && itinerary.getItnId() < 10)
+                .collect(java.util.stream.Collectors.toList());
             
             // 創建簡化的 DTO 物件，避免 Hibernate 懶加載序列化問題
             List<Map<String, Object>> simplifiedItineraries = allItineraries.stream()
@@ -145,7 +192,11 @@ public class ItineraryAdminController {
                 itinerary.setItnStatus((byte) 1); // 預設為上架
             }
             if (itinerary.getCrtId() == null) {
-                itinerary.setCrtId(1); // 預設建立者ID
+                // 使用基本行程模組的會員ID範圍 (1-3)
+                int[] validMemberIds = {1, 2, 3};
+                int randomIndex = (int) (Math.random() * validMemberIds.length);
+                itinerary.setCrtId(validMemberIds[randomIndex]);
+                logger.info("未提供建立者ID，隨機選擇會員ID: {}", itinerary.getCrtId());
             }
             
             itineraryService.addItinerary(itinerary);

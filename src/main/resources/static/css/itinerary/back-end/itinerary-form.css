@@ -551,4 +551,203 @@
     font-weight: 600;
 } 
 
+/* 表單驗證樣式 */
+/* 錯誤狀態 */
+.form-control.error {
+    border-color: var(--md-sys-color-error);
+    background-color: rgba(255, 235, 238, 0.1);
+}
+
+.has-error .input-icon {
+    color: var(--md-sys-color-error);
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--md-sys-color-error);
+    font-size: var(--font-size-sm);
+    margin-top: 6px;
+    animation: fadeIn 0.3s ease;
+}
+
+.error-message .material-icons {
+    font-size: 16px;
+}
+
+/* 警告狀態 */
+.form-control.warning {
+    border-color: #f59e0b;
+    background-color: rgba(255, 248, 230, 0.1);
+}
+
+.has-warning .input-icon {
+    color: #f59e0b;
+}
+
+.warning-message {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #b45309;
+    font-size: var(--font-size-sm);
+    margin-top: 6px;
+    animation: fadeIn 0.3s ease;
+}
+
+.warning-message .material-icons {
+    font-size: 16px;
+}
+
+/* 成功狀態 */
+.form-control.success {
+    border-color: #10b981;
+    background-color: rgba(236, 253, 245, 0.1);
+}
+
+.has-success .input-icon {
+    color: #10b981;
+}
+
+.success-icon {
+    position: absolute;
+    right: 12px;
+    font-size: 18px !important;
+    color: #10b981;
+    animation: fadeIn 0.3s ease;
+}
+
+/* 表單驗證錯誤容器 */
+.form-validation-error {
+    margin-bottom: 20px;
+}
+
+/* 字數計數器顏色 */
+.char-count {
+    transition: color 0.3s ease;
+}
+
+.char-count.normal {
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.char-count.success {
+    color: #10b981;
+}
+
+.char-count.warning {
+    color: #f59e0b;
+}
+
+.char-count.danger {
+    color: var(--md-sys-color-error);
+}
+
+/* 動畫效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+} 
+
+/* 提交按鈕狀態 */
+.btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--md-sys-color-surface-variant) !important;
+    color: var(--md-sys-color-on-surface-variant) !important;
+    box-shadow: none !important;
+}
+
+.btn.loading {
+    cursor: wait;
+    opacity: 0.8;
+}
+
+/* 載入中動畫 */
+.spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 表單輸入框 placeholder 樣式 */
+.form-control::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.7;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* 表單驗證訊息增強 */
+.error-message, .warning-message {
+    font-weight: 500;
+    padding: 4px 0;
+}
+
+/* 表單驗證動畫增強 */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.has-error .form-control:focus {
+    animation: pulse 0.5s ease;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.has-warning .form-control:focus {
+    animation: pulse 0.5s ease;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+.has-success .form-control:focus {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* 表單驗證錯誤容器增強 */
+.form-validation-error .alert {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+} 
+
  

@@ -5,184 +5,197 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>景點收藏 - 島遊Kha</title>
     
+    <!-- 必要資源引用 -->
+    <th:block th:replace="~{navTemplate :: headResources}"></th:block>
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 景點收藏頁面樣式 -->
-    <link rel="stylesheet" th:href="@{/css/spot/favorites.css}">
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/favorites.css}">
 </head>
 
 <body class="light">
-    <!-- 景點收藏內容區域 - 會員模組可以引入這個區域 -->
-    <div th:fragment="spot-favorites-content" class="spot-favorites-container">
-        <div class="container">
-            <!-- 英雄區塊 -->
-            <section class="spot-favorites-hero">
-                <div class="container">
-                    <div class="spot-favorites-hero__content">
-                        <!-- 頁面標題 -->
-                        <div class="spot-favorites-hero__header">
-                            <div class="spot-favorites-hero__info">
-                                <h1 class="spot-favorites-hero__title">景點收藏</h1>
-                                <p class="spot-favorites-hero__subtitle">您珍藏的精選景點，隨時重溫美好回憶</p>
-                                <div class="spot-favorites-hero__features">
-                                    <div class="spot-favorites-hero__feature">
-                                        <span class="material-icons">collections</span>
-                                        <span>精選收藏</span>
+    <div class="app-container">
+        <!-- 左側側邊欄 - 根據來源決定使用哪個導覽列 -->
+        <aside th:if="${param.from} == 'member'" th:replace="~{navTemplate :: navbar}"></aside>
+        <aside th:unless="${param.from} == 'member'" th:replace="~{navTemplate :: navbar}"></aside>
+        
+        <div class="main-content">
+            <!-- 頂部次導覽列 - 根據來源決定是否顯示導覽列 -->
+            <div th:if="${param.from} == 'member'" th:replace="~{subnavMembers :: subnav(activeItem='favorites')}"></div>
+            <div th:unless="${param.from} == 'member'" th:replace="~{subnavSpotFront :: subnav(activeItem='favorites')}"></div>
+                        
+            <main class="content-area-main">
+                <!-- 景點收藏內容區域 -->
+                <div class="spot-favorites-container">
+                    <div class="container">
+                        <!-- 英雄區塊 -->
+                        <section class="spot-favorites-hero">
+                            <div class="container">
+                                <div class="spot-favorites-hero__content">
+                                    <!-- 頁面標題 -->
+                                    <div class="spot-favorites-hero__header">
+                                        <div class="spot-favorites-hero__info">
+                                            <h1 class="spot-favorites-hero__title">景點收藏</h1>
+                                            <p class="spot-favorites-hero__subtitle">您珍藏的精選景點，隨時重溫美好回憶</p>
+                                            <div class="spot-favorites-hero__features">
+                                                <div class="spot-favorites-hero__feature">
+                                                    <span class="material-icons">collections</span>
+                                                    <span>精選收藏</span>
+                                                </div>
+                                                <div class="spot-favorites-hero__feature">
+                                                    <span class="material-icons">schedule</span>
+                                                    <span>收藏時間</span>
+                                                </div>
+                                                <div class="spot-favorites-hero__feature">
+                                                    <span class="material-icons">visibility</span>
+                                                    <span>隨時查看</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="spot-favorites-hero__icon">
+                                            <div class="spot-favorites-hero__icon-container">
+                                                <span class="material-icons">favorite</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="spot-favorites-hero__feature">
-                                        <span class="material-icons">schedule</span>
-                                        <span>收藏時間</span>
-                                    </div>
-                                    <div class="spot-favorites-hero__feature">
-                                        <span class="material-icons">share</span>
-                                        <span>輕鬆分享</span>
+
+                                    <!-- 統計資訊 -->
+                                    <div class="spot-favorites-hero__stats">
+                                        <div class="spot-favorites-count">
+                                            共 <strong th:text="${favoriteRecords != null ? favoriteRecords.size() : 0}">0</strong> 個景點
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="spot-favorites-hero__icon">
-                                <div class="spot-favorites-hero__icon-container">
-                                    <span class="material-icons">favorite</span>
-                                </div>
+                        </section>
+
+                        <!-- 錯誤訊息 -->
+                        <div th:if="${errorMessage}" 
+                             class="spot-favorites-alert spot-favorites-alert--error" 
+                             role="alert" 
+                             aria-live="assertive">
+                            <div class="spot-favorites-alert__icon">
+                                <span class="material-icons">error</span>
                             </div>
+                            <div class="spot-favorites-alert__content">
+                                <span th:text="${errorMessage}">錯誤訊息</span>
+                            </div>
+                            <button type="button" 
+                                    class="spot-favorites-alert__close" 
+                                    aria-label="關閉提示"
+                                    onclick="this.parentElement.style.display='none'">
+                                <span class="material-icons">close</span>
+                            </button>
                         </div>
 
-                        <!-- 統計資訊 -->
-                        <div class="spot-favorites-hero__stats">
-                            <div class="spot-favorites-count">
-                                共 <strong th:text="${favoriteRecords != null ? favoriteRecords.size() : 0}">0</strong> 個景點
+                        <!-- 收藏列表 -->
+                        <section th:if="${favoriteRecords != null and favoriteRecords.size() > 0}" 
+                                 class="spot-favorites-content">
+                            <div class="spot-favorites-grid">
+                                <article th:each="record, iterStat : ${favoriteRecords}" 
+                                         class="spot-favorites-card"
+                                         th:data-spot-id="${record.spot.spotId}">
+                                    <!-- 移除收藏按鈕 -->
+                                    <button class="spot-favorites-card__remove-btn" 
+                                            th:data-spot-id="${record.spot.spotId}"
+                                            th:aria-label="'取消收藏 ' + ${record.spot.spotName}"
+                                            title="取消收藏">
+                                        <span class="material-icons">close</span>
+                                    </button>
+
+                                    <!-- 景點圖片 -->
+                                    <div class="spot-favorites-card__image-container">
+                                        <img th:if="${record.spot.firstPictureUrl != null and !record.spot.firstPictureUrl.trim().isEmpty()}"
+                                             th:src="${record.spot.firstPictureUrl}"
+                                             class="spot-favorites-card__image"
+                                             th:alt="${record.spot.spotName} + ' 的圖片'"
+                                             loading="lazy"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="spot-favorites-card__image-placeholder" 
+                                             th:style="${record.spot.firstPictureUrl != null and !record.spot.firstPictureUrl.trim().isEmpty() ? 'display: none;' : 'display: flex;'}">
+                                            <span class="material-icons">image</span>
+                                            <span>暫無圖片</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 卡片內容 -->
+                                    <div class="spot-favorites-card__content">
+                                        <!-- 景點名稱 -->
+                                        <h2 class="spot-favorites-card__title" th:text="${record.spot.spotName}">景點名稱</h2>
+                                        
+                                        <!-- 景點描述 -->
+                                        <p class="spot-favorites-card__description">
+                                            <span th:if="${record.spot.spotDesc != null and !record.spot.spotDesc.trim().isEmpty()}"
+                                                  th:text="${#strings.abbreviate(record.spot.spotDesc, 100)}">
+                                                景點描述...
+                                            </span>
+                                            <span th:unless="${record.spot.spotDesc != null and !record.spot.spotDesc.trim().isEmpty()}"
+                                                  class="spot-favorites-card__description--empty">
+                                                暫無詳細描述
+                                            </span>
+                                        </p>
+                                        
+                                        <!-- 景點資訊 -->
+                                        <div class="spot-favorites-card__info">
+                                            <div class="spot-favorites-card__location">
+                                                <span class="material-icons" aria-hidden="true">location_on</span>
+                                                <span th:text="${record.spot.spotLoc ?: '地址未提供'}">景點地址</span>
+                                            </div>
+                                            
+                                            <div class="spot-favorites-card__date">
+                                                <span class="material-icons" aria-hidden="true">schedule</span>
+                                                <span>收藏於 <time th:datetime="${#dates.format(record.favCreateAt, 'yyyy-MM-dd')}"
+                                                                th:text="${#dates.format(record.favCreateAt, 'yyyy-MM-dd HH:mm')}">收藏時間</time></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 操作按鈕 -->
+                                        <div class="spot-favorites-card__actions">
+                                            <a th:href="@{/spot/detail/{id}(id=${record.spot.spotId})}" 
+                                               class="spot-favorites-card__view-btn">
+                                                <span class="material-icons" aria-hidden="true">visibility</span>
+                                                查看詳情
+                                            </a>
+                                        </div>
+                                    </div>
+                                </article>
                             </div>
-                        </div>
+                        </section>
+
+                        <!-- 空狀態 -->
+                        <section th:if="${favoriteRecords == null or favoriteRecords.size() == 0}" 
+                                 class="spot-favorites-empty" 
+                                 role="status" 
+                                 aria-live="polite">
+                            <div class="spot-favorites-empty__icon">
+                                <span class="material-icons" aria-hidden="true">heart_broken</span>
+                            </div>
+                            <h2 class="spot-favorites-empty__title">還沒有收藏任何景點</h2>
+                            <p class="spot-favorites-empty__description">
+                                快去探索精彩的台灣景點，加入您的收藏清單吧！
+                            </p>
+                            <div class="spot-favorites-empty__actions">
+                                <a th:href="@{/spot/spotlist}" class="spot-favorites-empty__action-btn spot-favorites-empty__action-btn--primary">
+                                    <span class="material-icons" aria-hidden="true">search</span>
+                                    探索景點
+                                </a>
+                                <a th:href="@{/spot/}" class="spot-favorites-empty__action-btn spot-favorites-empty__action-btn--secondary">
+                                    <span class="material-icons" aria-hidden="true">home</span>
+                                    回到首頁
+                                </a>
+                            </div>
+                        </section>
                     </div>
                 </div>
-            </section>
-
-            <!-- 錯誤訊息 -->
-            <div th:if="${errorMessage}" 
-                 class="spot-favorites-alert spot-favorites-alert--error" 
-                 role="alert" 
-                 aria-live="assertive">
-                <div class="spot-favorites-alert__icon">
-                    <span class="material-icons">error</span>
-                </div>
-                <div class="spot-favorites-alert__content">
-                    <span th:text="${errorMessage}">錯誤訊息</span>
-                </div>
-                <button type="button" 
-                        class="spot-favorites-alert__close" 
-                        aria-label="關閉提示"
-                        onclick="this.parentElement.style.display='none'">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-
-            <!-- 收藏列表 -->
-            <section th:if="${favoriteRecords != null and favoriteRecords.size() > 0}" 
-                     class="spot-favorites-content">
-                <div class="spot-favorites-grid">
-                    <article th:each="record, iterStat : ${favoriteRecords}" 
-                             class="spot-favorites-card"
-                             th:data-spot-id="${record.spot.spotId}">
-                        <!-- 移除收藏按鈕 -->
-                        <button class="spot-favorites-card__remove-btn" 
-                                th:data-spot-id="${record.spot.spotId}"
-                                th:aria-label="'取消收藏 ' + ${record.spot.spotName}"
-                                title="取消收藏">
-                            <span class="material-icons">close</span>
-                        </button>
-
-                        <!-- 景點圖片 -->
-                        <div class="spot-favorites-card__image-container">
-                            <img th:if="${record.spot.firstPictureUrl != null and !record.spot.firstPictureUrl.trim().isEmpty()}"
-                                 th:src="${record.spot.firstPictureUrl}"
-                                 class="spot-favorites-card__image"
-                                 th:alt="${record.spot.spotName} + ' 的圖片'"
-                                 loading="lazy"
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <div class="spot-favorites-card__image-placeholder" 
-                                 th:style="${record.spot.firstPictureUrl != null and !record.spot.firstPictureUrl.trim().isEmpty() ? 'display: none;' : 'display: flex;'}">
-                                <span class="material-icons">image</span>
-                                <span>暫無圖片</span>
-                            </div>
-                        </div>
-
-                        <!-- 卡片內容 -->
-                        <div class="spot-favorites-card__content">
-                            <!-- 景點名稱 -->
-                            <h2 class="spot-favorites-card__title" th:text="${record.spot.spotName}">景點名稱</h2>
-                            
-                            <!-- 景點描述 -->
-                            <p class="spot-favorites-card__description">
-                                <span th:if="${record.spot.spotDesc != null and !record.spot.spotDesc.trim().isEmpty()}"
-                                      th:text="${#strings.abbreviate(record.spot.spotDesc, 100)}">
-                                    景點描述...
-                                </span>
-                                <span th:unless="${record.spot.spotDesc != null and !record.spot.spotDesc.trim().isEmpty()}"
-                                      class="spot-favorites-card__description--empty">
-                                    暫無詳細描述
-                                </span>
-                            </p>
-                            
-                            <!-- 景點資訊 -->
-                            <div class="spot-favorites-card__info">
-                                <div class="spot-favorites-card__location">
-                                    <span class="material-icons" aria-hidden="true">location_on</span>
-                                    <span th:text="${record.spot.spotLoc ?: '地址未提供'}">景點地址</span>
-                                </div>
-                                
-                                <div class="spot-favorites-card__date">
-                                    <span class="material-icons" aria-hidden="true">schedule</span>
-                                    <span>收藏於 <time th:datetime="${#dates.format(record.favCreateAt, 'yyyy-MM-dd')}"
-                                                    th:text="${#dates.format(record.favCreateAt, 'yyyy-MM-dd HH:mm')}">收藏時間</time></span>
-                                </div>
-                            </div>
-                            
-                            <!-- 操作按鈕 -->
-                            <div class="spot-favorites-card__actions">
-                                <a th:href="@{/spot/detail/{id}(id=${record.spot.spotId})}" 
-                                   class="spot-favorites-card__view-btn">
-                                    <span class="material-icons" aria-hidden="true">visibility</span>
-                                    查看詳情
-                                </a>
-                                <button class="spot-favorites-card__share-btn"
-                                        th:data-spot-id="${record.spot.spotId}"
-                                        th:data-spot-name="${record.spot.spotName}"
-                                        title="分享景點">
-                                    <span class="material-icons" aria-hidden="true">share</span>
-                                    分享
-                                </button>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            <!-- 空狀態 -->
-            <section th:if="${favoriteRecords == null or favoriteRecords.size() == 0}" 
-                     class="spot-favorites-empty" 
-                     role="status" 
-                     aria-live="polite">
-                <div class="spot-favorites-empty__icon">
-                    <span class="material-icons" aria-hidden="true">heart_broken</span>
-                </div>
-                <h2 class="spot-favorites-empty__title">還沒有收藏任何景點</h2>
-                <p class="spot-favorites-empty__description">
-                    快去探索精彩的台灣景點，加入您的收藏清單吧！
-                </p>
-                <div class="spot-favorites-empty__actions">
-                                                    <a th:href="@{/spot/spotlist}" class="spot-favorites-empty__action-btn spot-favorites-empty__action-btn--primary">
-                        <span class="material-icons" aria-hidden="true">search</span>
-                        探索景點
-                    </a>
-                    <a th:href="@{/spot/}" class="spot-favorites-empty__action-btn spot-favorites-empty__action-btn--secondary">
-                        <span class="material-icons" aria-hidden="true">home</span>
-                        回到首頁
-                    </a>
-                </div>
-            </section>
+            </main>
         </div>
     </div>
 
+    <!-- 必要腳本 -->
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="/js/notification/websocket.js"></script>
     <!-- 景點收藏頁面腳本 -->
-    <script th:src="@{/js/spot/favorites.js}"></script>
+    <script th:src="@{/js/spot/front-end/favorites.js}" defer></script>
 </body>
 </html> 

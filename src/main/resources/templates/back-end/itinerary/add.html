@@ -77,13 +77,53 @@
                                 </div>
                                 <div class="helper-text">請輸入行程的正式名稱，最多50個字元 <span class="char-count">(0/50)</span></div>
                             </div>
+                            
+                            <!-- 新增會員ID選擇欄位 -->
+                            <div class="form-group">
+                                <label for="crtId" class="form-label">
+                                    建立者會員ID <span class="required">*</span>
+                                </label>
+                                <div class="input-container">
+                                    <i class="material-icons input-icon">person</i>
+                                    <select id="crtId" name="crtId" class="form-control" required>
+                                        <option value="">請選擇建立者</option>
+                                        <!-- 系統預設會員 -->
+                                        <option value="1">1 - Alice</option>
+                                        <option value="2">2 - Bob</option>
+                                        <option value="3">3 - Charlie</option>
+                                        <!-- 景點行程模組會員 -->
+                                        <option value="10">10 - John</option>
+                                        <option value="11">11 - Emma</option>
+                                        <option value="12">12 - Leo</option>
+                                        <option value="13">13 - Sophia</option>
+                                        <option value="14">14 - David</option>
+                                        <option value="15">15 - Grace</option>
+                                        <option value="16">16 - Ryan</option>
+                                        <option value="17">17 - Lily</option>
+                                        <option value="18">18 - Kevin</option>
+                                        <option value="19">19 - Amy</option>
+                                        <option value="20">20 - Alex</option>
+                                        <option value="21">21 - Mia</option>
+                                        <option value="22">22 - Jake</option>
+                                        <option value="23">23 - Zoe</option>
+                                        <option value="24">24 - Noah</option>
+                                        <option value="25">25 - Chloe</option>
+                                        <option value="26">26 - Ethan</option>
+                                        <option value="27">27 - Ava</option>
+                                        <option value="28">28 - Lucas</option>
+                                        <option value="29">29 - Isabella</option>
+                                    </select>
+                                </div>
+                                <div class="helper-text">選擇此行程的建立者會員</div>
+                                <div class="helper-text">請優先選擇基本行程模組會員 (ID 1-3)，避免使用揪團模組會員 (ID 10-29)</div>
+                            </div>
 
                             <div class="form-group form-group-full">
                                 <label for="itnDesc" class="form-label">行程描述</label>
                                 <textarea id="itnDesc" class="form-control form-textarea" 
                                           name="itnDesc" maxlength="500" rows="4"
-                                          placeholder="詳細描述行程特色、路線安排或遊覽重點..."></textarea>
-                                <div class="helper-text">詳細描述行程特色、路線安排或遊覽重點，最多500個字元 <span class="char-count">(0/500)</span></div>
+                                          placeholder="簡單介紹這趟行程的特色或亮點..."></textarea>
+                                <div class="helper-text">簡單介紹行程特色或亮點，最多500個字元 <span class="char-count">(0/500)</span></div>
                             </div>
                         </div>
                     </div>

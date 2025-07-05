@@ -623,107 +623,7 @@ function updateBookmarkButton() {
     }
 }
 
-// ========== 6. 分享功能 ==========
-
-/**
- * 分享景點
- */
-function shareSpot() {
-    if (!spotData) {
-        showToast('景點資料載入中，請稍候', 'warning');
-        return;
-    }
-    
-    const shareData = {
-        title: `${spotData.spotName} - 島遊Kha`,
-        text: `來看看這個景點：${spotData.spotName}`,
-        url: window.location.href
-    };
-    
-    // 使用 Web Share API（如果支援）
-    if (navigator.share) {
-        navigator.share(shareData)
-            .then(() => showToast('分享成功', 'success'))
-            .catch(err => {
-                console.log('分享取消或失敗:', err);
-                fallbackShare();
-            });
-    } else {
-        fallbackShare();
-    }
-}
-
-/**
- * 備用分享方法
- */
-function fallbackShare() {
-    // 複製連結到剪貼簿
-    copyLink();
-}
-
-/**
- * 分享到 Facebook
- */
-function shareToFacebook() {
-    if (!spotData) {
-        showToast('景點資料載入中，請稍候', 'warning');
-        return;
-    }
-    
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(`來看看這個景點：${spotData.spotName}`);
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`;
-    
-    window.open(facebookUrl, '_blank', 'width=600,height=400');
-    showToast('正在開啟 Facebook 分享', 'info');
-}
-
-/**
- * 分享到 LINE
- */
-function shareToLine() {
-    if (!spotData) {
-        showToast('景點資料載入中，請稍候', 'warning');
-        return;
-    }
-    
-    const text = encodeURIComponent(`來看看這個景點：${spotData.spotName} ${window.location.href}`);
-    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${text}`;
-    
-    window.open(lineUrl, '_blank', 'width=600,height=400');
-    showToast('正在開啟 LINE 分享', 'info');
-}
-
-/**
- * 複製連結
- */
-async function copyLink() {
-    try {
-        await navigator.clipboard.writeText(window.location.href);
-        showToast('連結已複製到剪貼簿', 'success');
-    } catch (err) {
-        console.error('複製失敗:', err);
-        
-        // 備用方法
-        const textArea = document.createElement('textarea');
-        textArea.value = window.location.href;
-        textArea.style.position = 'fixed';
-        textArea.style.opacity = '0';
-        document.body.appendChild(textArea);
-        textArea.select();
-        
-        try {
-            document.execCommand('copy');
-            showToast('連結已複製到剪貼簿', 'success');
-        } catch (err) {
-            showToast('複製失敗，請手動複製網址', 'error');
-        }
-        
-        document.body.removeChild(textArea);
-    }
-}
-
-// ========== 7. 快速操作功能 ==========
+// ========== 6. 快速操作功能 ==========
 
 /**
  * 加入行程
@@ -869,10 +769,6 @@ function showToast(message, type = 'info', duration = 3000) {
 // 將主要函數暴露到全域範圍，供 HTML 呼叫
 window.toggleFavorite = toggleFavorite;
 window.toggleBookmark = toggleBookmark;
-window.shareSpot = shareSpot;
-window.shareToFacebook = shareToFacebook;
-window.shareToLine = shareToLine;
-window.copyLink = copyLink;
 window.scrollToMap = scrollToMap;
 window.openInGoogleMaps = openInGoogleMaps;
 window.addToItinerary = addToItinerary;

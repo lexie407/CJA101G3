@@ -100,11 +100,6 @@
                                                 title="收藏景點">
                                             <span class="material-icons" th:text="${isFavorited ? 'favorite' : 'favorite_border'}">favorite_border</span>
                                         </button>
-                                        <button class="spot-detail-action-btn spot-detail-action-btn--share"
-                                                onclick="shareSpot()"
-                                                title="分享景點">
-                                            <span class="material-icons">share</span>
-                                        </button>
                                         <button class="spot-detail-action-btn spot-detail-action-btn--bookmark"
                                                 onclick="toggleBookmark()"
                                                 title="加入書籤">
@@ -309,30 +304,7 @@
                                     </div>
 
                                     <!-- 分享卡片 -->
-                                    <div class="spot-detail-info-card">
-                                        <div class="spot-detail-info-card__header">
-                                            <h3 class="spot-detail-info-card__title">
-                                                <span class="material-icons">share</span>
-                                                分享景點
-                                            </h3>
-                                        </div>
-                                        <div class="spot-detail-info-card__content">
-                                            <div class="spot-detail-share-buttons">
-                                                <button class="spot-detail-share-btn" onclick="shareToFacebook()">
-                                                    <span class="material-icons">facebook</span>
-                                                    <span>Facebook</span>
-                                                </button>
-                                                <button class="spot-detail-share-btn" onclick="shareToLine()">
-                                                    <span class="material-icons">chat</span>
-                                                    <span>LINE</span>
-                                                </button>
-                                                <button class="spot-detail-share-btn" onclick="copyLink()">
-                                                    <span class="material-icons">link</span>
-                                                    <span>複製連結</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <!-- 已移除：分享景點功能卡片 -->
                                 </aside>
                             </div>
                         </div>
