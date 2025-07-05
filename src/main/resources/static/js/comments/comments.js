@@ -157,7 +157,7 @@ function initComments(shadowRoot) {
 		}
 
 		// 顯示留言內容
-		const contentParagraph = document.createElement('p');
+		const contentParagraph = document.createElement('pre');
 		contentParagraph.className = 'comment-content-display';
 		contentParagraph.textContent = comment.commCon;
 		commentItem.appendChild(contentParagraph);
