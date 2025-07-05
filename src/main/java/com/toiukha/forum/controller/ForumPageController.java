@@ -12,8 +12,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +62,7 @@ public class ForumPageController {
     // 新增文章的處理與重導向
     @PostMapping("/article/insert")
     public String insertArticle(@ModelAttribute Article art, Model model, HttpSession session) {
+
         model.addAttribute("currentPage", "forum");
         MembersVO member = (MembersVO) session.getAttribute("member");
         if (member == null) {
@@ -68,6 +73,20 @@ public class ForumPageController {
             Debug.log("文章資料為空，無法新增文章");
             return "redirect:/forum/article/edit";
         }
+
+        // ======= 手動驗證區塊 =======
+        List<String> errors = new ArrayList<>();
+        if (art.getArtCat() == null) errors.add("請選擇分類");
+        if (art.getArtSta() == null) errors.add("請選擇狀態");
+        if (art.getArtTitle() == null || art.getArtTitle().trim().isEmpty()) errors.add("標題不可空白");
+        if (art.getArtCon() == null || art.getArtCon().trim().isEmpty()) errors.add("內容不可空白");
+
+        if (!errors.isEmpty()) {
+            model.addAttribute("errors", errors);
+            model.addAttribute("articleForm", art); // 回傳原本輸入的內容
+            return "front-end/forum/add-article";
+        }
+
         Debug.log("文章標題：" + art.getArtTitle(),
                 "文章分類：" + art.getArtCat(),
                 "文章上架狀態：" + art.getArtSta(),

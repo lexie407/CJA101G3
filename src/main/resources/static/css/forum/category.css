@@ -1,0 +1,14 @@
+.category-1 {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.category-2 {
+    background-color: rgb(255, 241, 184); /* 橘黃色 */
+    color: rgb(176, 114, 43);
+}
+
+.category-3 {
+    background-color: #d4f4dd;  /* 淺綠 */
+    color: #47884a;             /* 深綠字體 */
+}
