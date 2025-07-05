@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /*
@@ -151,6 +152,7 @@ public class ActBackController {
     // 測試相關端點 - 開發完成後可移除
     // ========================================
 
+    // ---未使用--- 測試端點 - 建立測試資料
     /**
      * 測試端點 - 建立測試資料
      * 用途：快速建立測試用的活動資料
@@ -160,11 +162,18 @@ public class ActBackController {
     @ResponseBody
     public Map<String, Object> createTestData() {
         try {
+            // 動態取得第一個公開行程，如果沒有則使用null
+            Integer testItnId = null;
+            List<com.toiukha.itinerary.model.ItineraryVO> publicItineraries = actSvc.getPublicItineraries();
+            if (!publicItineraries.isEmpty()) {
+                testItnId = publicItineraries.get(0).getItnId();
+            }
+            
             // 建立測試活動
             ActDTO testAct = new ActDTO();
             testAct.setActName("測試活動 " + System.currentTimeMillis());
             testAct.setActDesc("這是一個測試活動的內容");
-            testAct.setItnId(1); // 假設行程ID為1
+            testAct.setItnId(testItnId);
             testAct.setHostId(1); // 假設團主ID為1
             testAct.setSignupStart(LocalDateTime.now());
             testAct.setSignupEnd(LocalDateTime.now().plusDays(1));
@@ -195,6 +204,7 @@ public class ActBackController {
         }
     }
 
+    // ---未使用--- 測試端點 - 驗證編輯功能
     /**
      * 測試端點 - 驗證編輯功能
      * 用途：檢查編輯頁面是否能正確載入活動資料

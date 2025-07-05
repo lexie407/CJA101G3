@@ -16,6 +16,12 @@ public class ActCardDTO implements Serializable {
     private Integer hostId; // 雖然卡片沒顯示，但未來可能需要
     private Byte isPublic; // 公開狀態
     private Boolean isCurrentUserParticipant; // 當前用戶是否已參與
+    private Byte joinStatus; // 當前用戶在該活動中的參加狀態 (1=已參加, 2=已剔除, 3=已退出)
+    
+    // 行程相關欄位
+    private Integer itnId; // 行程ID
+    private String itnName; // 行程名稱
+    private String itnDesc; // 行程描述
 
     public Integer getActId() {
         return actId;
@@ -79,6 +85,30 @@ public class ActCardDTO implements Serializable {
 
     public void setHostId(Integer hostId) {
         this.hostId = hostId;
+    }
+
+    public Integer getItnId() {
+        return itnId;
+    }
+
+    public void setItnId(Integer itnId) {
+        this.itnId = itnId;
+    }
+
+    public String getItnName() {
+        return itnName;
+    }
+
+    public void setItnName(String itnName) {
+        this.itnName = itnName;
+    }
+
+    public String getItnDesc() {
+        return itnDesc;
+    }
+
+    public void setItnDesc(String itnDesc) {
+        this.itnDesc = itnDesc;
     }
 
     /**
@@ -151,6 +181,14 @@ public class ActCardDTO implements Serializable {
         this.isCurrentUserParticipant = isCurrentUserParticipant;
     }
 
+    public Byte getJoinStatus() {
+        return joinStatus;
+    }
+
+    public void setJoinStatus(Byte joinStatus) {
+        this.joinStatus = joinStatus;
+    }
+
     // ===== Utility Methods =====
     
     /**
@@ -167,7 +205,20 @@ public class ActCardDTO implements Serializable {
         dto.setRecruitStatus(actVO.getRecruitStatus());
         dto.setHostId(actVO.getHostId());
         dto.setIsPublic(actVO.getIsPublic());
+        dto.setItnId(actVO.getItnId());
         dto.setIsCurrentUserParticipant(null); // 預設為 null，需要時另外設定
+        return dto;
+    }
+
+    /**
+     * 從 ActVO 轉換為 ActCardDTO（包含行程資訊）
+     */
+    public static ActCardDTO fromVOWithItinerary(ActVO actVO, com.toiukha.itinerary.model.ItineraryVO itinerary) {
+        ActCardDTO dto = fromVO(actVO);
+        if (itinerary != null) {
+            dto.setItnName(itinerary.getItnName());
+            dto.setItnDesc(itinerary.getItnDesc());
+        }
         return dto;
     }
 } 

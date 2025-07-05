@@ -258,7 +258,7 @@ public class ActApiController {
         return "statusChanged";
     }
 
-    //查詢所有活動(測試用api)
+    // ---未使用--- 查詢所有活動(測試用api)
     @GetMapping("/all")
     public List<ActCardDTO> getAllAct() {
         List<ActVO> allActs = actSvc.getAll();
@@ -560,6 +560,7 @@ public class ActApiController {
     // 測試相關端點 - 開發完成後可移除
     // ========================================
 
+    // ---未使用--- 測試端點 - 檢查資料庫狀態
     /**
      * 測試端點 - 檢查資料庫狀態
      * 用途：檢查資料庫中的活動資料和圖片狀態
@@ -579,6 +580,7 @@ public class ActApiController {
         );
     }
 
+    // ---未使用--- 測試端點 - 圖片上傳
     /**
      * 測試端點 - 圖片上傳
      * 用途：測試前端傳送的 base64 圖片是否能正確解碼
@@ -588,7 +590,7 @@ public class ActApiController {
         String base64 = (String) request.get("actImgBase64");
         if (base64 != null && !base64.isEmpty()) {
             try {
-                byte[] imageBytes = java.util.Base64.getDecoder().decode(base64);
+                byte[] imageBytes = Base64.getDecoder().decode(base64);
                 return Map.of(
                     "success", true,
                     "imageSize", imageBytes.length,
@@ -609,6 +611,7 @@ public class ActApiController {
         }
     }
 
+    // ---未使用--- 測試端點 - 圖片回傳
     /**
      * 測試端點 - 圖片回傳
      * 用途：檢查特定活動的圖片資料格式和狀態
@@ -629,6 +632,7 @@ public class ActApiController {
         }
     }
 
+    // ---未使用--- 測試端點 - 預設圖片
     /**
      * 測試端點 - 預設圖片
      * 用途：檢查預設圖片功能是否正常
@@ -651,6 +655,7 @@ public class ActApiController {
         }
     }
     
+    // ---未使用--- 測試端點 - 活動狀態排程器
     /**
      * 測試端點 - 活動狀態排程器
      * 用途：手動觸發活動狀態檢查（僅供開發測試用）
@@ -685,6 +690,7 @@ public class ActApiController {
         }
     }
     
+    // ---未使用--- 批量注入活動標籤測試端點
     /**
      * 批量注入活動標籤測試端點
      * 一次性為現有的 10 個活動注入標籤資料
@@ -847,6 +853,76 @@ public class ActApiController {
             result.addError(fieldError);
         }
         return result;
+    }
+
+    // ========== 行程相關 API ==========
+
+    /**
+     * 取得所有公開行程
+     * @return 公開行程列表
+     */
+    @GetMapping("/itineraries")
+    public ResponseEntity<?> getPublicItineraries() {
+        try {
+            List<com.toiukha.itinerary.model.ItineraryVO> itineraries = actSvc.getPublicItineraries();
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "data", itineraries
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", "取得行程列表失敗: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * 驗證行程是否存在
+     * @param itnId 行程ID
+     * @return 驗證結果
+     */
+    @GetMapping("/validate-itinerary/{itnId}")
+    public ResponseEntity<?> validateItinerary(@PathVariable Integer itnId) {
+        try {
+            boolean isValid = actSvc.validateItinerary(itnId);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "valid", isValid
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", "驗證行程失敗: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * 取得行程詳情
+     * @param itnId 行程ID
+     * @return 行程詳情
+     */
+    @GetMapping("/itinerary/{itnId}")
+    public ResponseEntity<?> getItineraryDetail(@PathVariable Integer itnId) {
+        try {
+            com.toiukha.itinerary.model.ItineraryVO itinerary = actSvc.getItineraryById(itnId);
+            if (itinerary == null) {
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "error", "行程不存在"
+                ));
+            }
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "data", itinerary
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", "取得行程詳情失敗: " + e.getMessage()
+            ));
+        }
     }
 
 }

@@ -37,14 +37,53 @@ public class ActServiceImpl implements ActService {
     @Autowired
     private com.toiukha.notification.model.NotificationService notificationService;
 
+    @Autowired
+    private com.toiukha.itinerary.service.ItineraryService itineraryService;
 
+    // ========== 行程相關方法 ==========
 
+    /**
+     * 驗證行程是否存在
+     * @param itnId 行程ID
+     * @return true 如果行程存在
+     */
+    public boolean validateItinerary(Integer itnId) {
+        if (itnId == null) {
+            return false;
+        }
+        return itineraryService.isItineraryExists(itnId);
+    }
+
+    /**
+     * 取得行程詳情
+     * @param itnId 行程ID
+     * @return 行程VO，不存在則返回null
+     */
+    public com.toiukha.itinerary.model.ItineraryVO getItineraryById(Integer itnId) {
+        if (itnId == null) {
+            return null;
+        }
+        return itineraryService.getItineraryById(itnId);
+    }
+
+    /**
+     * 取得所有公開行程
+     * @return 公開行程列表
+     */
+    public List<com.toiukha.itinerary.model.ItineraryVO> getPublicItineraries() {
+        return itineraryService.getPublicItineraries();
+    }
 
     //=======前後台通用基本功能==========
 
     //新增活動
     @Override
     public void addAct(ActDTO actDto) {
+        // 驗證行程是否存在
+        if (actDto.getItnId() != null && !validateItinerary(actDto.getItnId())) {
+            throw new IllegalArgumentException("指定的行程不存在");
+        }
+        
         ActVO actVo = actDto.toVO();
         // 若未上傳圖片，則保留原圖或設定預設圖
         if (actVo.getActImg() == null || actVo.getActImg().length == 0) {
@@ -61,6 +100,11 @@ public class ActServiceImpl implements ActService {
     //更新活動
     @Override
     public void updateAct(ActDTO actDto) {
+        // 驗證行程是否存在
+        if (actDto.getItnId() != null && !validateItinerary(actDto.getItnId())) {
+            throw new IllegalArgumentException("指定的行程不存在");
+        }
+        
         ActVO actVo = actDto.toVO();
 
         // 若未上傳圖片，則保留原圖或設定預設圖
@@ -126,16 +170,35 @@ public class ActServiceImpl implements ActService {
         return actRepo.findByHostIdOrderByActIdDesc(hostId);
     }
 
-    @Override
-    public List<ActVO> getJoinedActs(Integer memId) {
-        return actHandlerSvc.getJoinedActivities(memId); // 使用 ActHandlerService 來查詢，避免循環依賴
-    }
+    // ---未使用--- @Override
+    // ---未使用--- public List<ActVO> getJoinedActs(Integer memId) {
+    // ---未使用---     return actHandlerSvc.getJoinedActivities(memId); // 使用 ActHandlerService 來查詢，避免循環依賴
+    // ---未使用--- }
 
     @Override
     public List<ActCardDTO> getJoinedActsAsCard(Integer memId) {
-        List<ActVO> joinedActs = getJoinedActs(memId);
+        // 直接使用 ActHandlerService 來查詢，避免循環依賴
+        List<ActVO> joinedActs = actHandlerSvc.getJoinedActivities(memId);
+        
+        // 查詢每個活動的團員狀態
         return joinedActs.stream()
-                .map(ActCardDTO::fromVO)
+                .map(actVO -> {
+                    ActCardDTO dto = ActCardDTO.fromVO(actVO);
+                    
+                    // 查詢該會員在此活動中的參加狀態
+                    try {
+                        com.toiukha.participant.model.PartVO part = partRepo.findByActIdAndMemId(actVO.getActId(), memId)
+                                .orElse(null);
+                        if (part != null) {
+                            dto.setJoinStatus(part.getJoinStatus());
+                        }
+                    } catch (Exception e) {
+                        System.err.println("查詢團員狀態時發生錯誤: " + e.getMessage());
+                        dto.setJoinStatus(null);
+                    }
+                    
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -148,24 +211,24 @@ public class ActServiceImpl implements ActService {
 
 
     //===========分頁查詢===========
-    //後台複合查詢（不分頁）
-    @Override
-    public List<ActVO> searchActsAll(Specification<ActVO> spec) {
-        return actRepo.findAll(spec);
-    }
+    // ---未使用--- 後台複合查詢（不分頁）
+    // ---未使用--- @Override
+    // ---未使用--- public List<ActVO> searchActsAll(Specification<ActVO> spec) {
+    // ---未使用---     return actRepo.findAll(spec);
+    // ---未使用--- }
 
 
-    //前台查詢（分頁）
-    @Override
-    public Page<ActVO> searchActs(Specification<ActVO> spec, Pageable pageable) {
-        return actRepo.findAll(spec, pageable);
-    }
+    // ---未使用--- 前台查詢（分頁）
+    // ---未使用--- @Override
+    // ---未使用--- public Page<ActVO> searchActs(Specification<ActVO> spec, Pageable pageable) {
+    // ---未使用---     return actRepo.findAll(spec, pageable);
+    // ---未使用--- }
 
-    @Override
-    public Page<ActCardDTO> searchActsAsCard(Specification<ActVO> spec, Pageable pageable) {
-        Page<ActVO> actPage = actRepo.findAll(spec, pageable);
-        return actPage.map(ActCardDTO::fromVO);
-    }
+    // ---未使用--- @Override
+    // ---未使用--- public Page<ActCardDTO> searchActsAsCard(Specification<ActVO> spec, Pageable pageable) {
+    // ---未使用---     Page<ActVO> actPage = actRepo.findAll(spec, pageable);
+    // ---未使用---     return actPage.map(ActCardDTO::fromVO);
+    // ---未使用--- }
 
     //分頁查詢已公開活動
     @Override
@@ -195,7 +258,20 @@ public class ActServiceImpl implements ActService {
             )
         );
         Page<ActVO> actPage = actRepo.findAll(spec, sortedPageable);
-        return actPage.map(ActCardDTO::fromVO);
+        
+        // 轉換為 ActCardDTO 並加入行程資訊
+        return actPage.map(actVO -> {
+            ActCardDTO dto = ActCardDTO.fromVO(actVO);
+            // 如果有行程ID，查詢行程資訊
+            if (actVO.getItnId() != null) {
+                com.toiukha.itinerary.model.ItineraryVO itinerary = getItineraryById(actVO.getItnId());
+                if (itinerary != null) {
+                    dto.setItnName(itinerary.getItnName());
+                    dto.setItnDesc(itinerary.getItnDesc());
+                }
+            }
+            return dto;
+        });
     }
 
     //分頁查詢已公開活動（含當前用戶參與狀態）
@@ -407,25 +483,32 @@ public class ActServiceImpl implements ActService {
     }
 
 
-    //===========測試資料寫入DB，回傳 JSON 結果===========
-    @Override
-    public ActVO saveTestAct() {
-        ActVO actVo = new ActVO();
-        actVo.setActName("測試活動");
-        actVo.setActDesc("這是一個測試活動");
-        actVo.setItnId(1);
-        actVo.setHostId(1);
-        actVo.setSignupStart(LocalDateTime.now());
-        actVo.setSignupEnd(LocalDateTime.now().plusDays(7));
-        actVo.setMaxCap(10);
-        actVo.setActStart(LocalDateTime.now().plusDays(14));
-        actVo.setActEnd(LocalDateTime.now().plusDays(16));
-        actVo.setIsPublic((byte) 1);
-        actVo.setAllowCancel((byte) 1);
-        actVo.setRecruitStatus(ActStatus.OPEN.getValue());
-        
-        return actRepo.save(actVo);
-    }
+    // ---未使用--- ===========測試資料寫入DB，回傳 JSON 結果===========
+    // ---未使用--- @Override
+    // ---未使用--- public ActVO saveTestAct() {
+    // ---未使用---     // 動態取得第一個公開行程，如果沒有則使用null
+    // ---未使用---     Integer testItnId = null;
+    // ---未使用---     List<com.toiukha.itinerary.model.ItineraryVO> publicItineraries = getPublicItineraries();
+    // ---未使用---     if (!publicItineraries.isEmpty()) {
+    // ---未使用---         testItnId = publicItineraries.get(0).getItnId();
+    // ---未使用---     }
+    // ---未使用---     
+    // ---未使用---     ActVO actVo = new ActVO();
+    // ---未使用---     actVo.setActName("測試活動");
+    // ---未使用---     actVo.setActDesc("這是一個測試活動");
+    // ---未使用---     actVo.setItnId(testItnId);
+    // ---未使用---     actVo.setHostId(1);
+    // ---未使用---     actVo.setSignupStart(LocalDateTime.now());
+    // ---未使用---     actVo.setSignupEnd(LocalDateTime.now().plusDays(7));
+    // ---未使用---     actVo.setMaxCap(10);
+    // ---未使用---     actVo.setActStart(LocalDateTime.now().plusDays(14));
+    // ---未使用---     actVo.setActEnd(LocalDateTime.now().plusDays(16));
+    // ---未使用---     actVo.setIsPublic((byte) 1);
+    // ---未使用---     actVo.setAllowCancel((byte) 1);
+    // ---未使用---     actVo.setRecruitStatus(ActStatus.OPEN.getValue());
+    // ---未使用---     
+    // ---未使用---     return actRepo.save(actVo);
+    // ---未使用--- }
 
 
 }

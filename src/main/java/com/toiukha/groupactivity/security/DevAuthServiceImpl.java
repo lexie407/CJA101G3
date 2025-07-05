@@ -1,4 +1,4 @@
-package com.toiukha.groupactivity.security;//package com.toiukha.groupactivity.security;
+package com.toiukha.groupactivity.security;//package com.toiukha.groupactivity.security;//package com.toiukha.groupactivity.security;
 //
 //import jakarta.servlet.http.HttpSession;
 //import org.springframework.stereotype.Service;
@@ -10,7 +10,6 @@ package com.toiukha.groupactivity.security;//package com.toiukha.groupactivity.s
 // * 開發階段的權限驗證實作
 // * 只處理一般會員的權限檢查，管理員將有獨立模組
 // */
-//@Service
 ////@Primary  // 開發模式：優先使用此實作
 //public class DevAuthServiceImpl implements AuthService {
 //

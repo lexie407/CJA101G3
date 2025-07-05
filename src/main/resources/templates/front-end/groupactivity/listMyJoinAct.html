@@ -162,6 +162,9 @@
         const isPublic = formData.get("isPublic");
 
         let filtered = allActivities;
+        // 新增：只顯示已參加的活動
+        // filtered = filtered.filter(act => act.joinStatus == 1);
+
 
         // 按名稱篩選
         if (actName && actName.trim()) {

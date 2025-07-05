@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 參加者服務實作，處理報名與取消邏輯
@@ -43,25 +42,25 @@ public class PartServiceImpl implements PartService {
         return partRepo.findMemberNamesAndStatusByActId(actId);
     }
     
-    @Override
-    public PartDTO getParticipantAsDTO(Integer actId, Integer memId) {
-        return partRepo.findByActIdAndMemId(actId, memId)
-                .map(PartDTO::fromVO)
-                .orElse(null);
-    }
+    // ---未使用--- @Override
+    // ---未使用--- public PartDTO getParticipantAsDTO(Integer actId, Integer memId) {
+    // ---未使用---     return partRepo.findByActIdAndMemId(actId, memId)
+    // ---未使用---             .map(PartDTO::fromVO)
+    // ---未使用---             .orElse(null);
+    // ---未使用--- }
     
-    @Override
-    public List<Integer> getJoinedActivities(Integer memId) {
-        return partRepo.findActIdsByMemId(memId);
-    }
+    // ---未使用--- @Override
+    // ---未使用--- public List<Integer> getJoinedActivities(Integer memId) {
+    // ---未使用---     return partRepo.findActIdsByMemId(memId);
+    // ---未使用--- }
     
-    @Override
-    public List<PartDTO> getJoinedActivitiesAsDTO(Integer memId) {
-        List<PartVO> joinedActivities = partRepo.findByMemId(memId);
-        return joinedActivities.stream()
-                .map(PartDTO::fromVO)
-                .collect(Collectors.toList());
-    }
+    // ---未使用--- @Override
+    // ---未使用--- public List<PartDTO> getJoinedActivitiesAsDTO(Integer memId) {
+    // ---未使用---     List<PartVO> joinedActivities = partRepo.findByMemId(memId);
+    // ---未使用---     return joinedActivities.stream()
+    // ---未使用---             .map(PartDTO::fromVO)
+    // ---未使用---             .collect(Collectors.toList());
+    // ---未使用--- }
 
     @Override
     public void updateJoinStatus(Integer actId, Integer memId, Byte joinStatus) {

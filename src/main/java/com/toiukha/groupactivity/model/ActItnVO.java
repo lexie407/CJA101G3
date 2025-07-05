@@ -28,15 +28,19 @@ public class ActItnVO implements Serializable {
     @JoinColumn(name = "ACTID", insertable = false, updatable = false, nullable = false)
     private ActVO actVO;
 
+    /** 行程實體關聯 */
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ITNID", insertable = false, updatable = false, nullable = false)
+    private com.toiukha.itinerary.model.ItineraryVO itinerary;
+
     //待行程模組上傳後更新
 //    /** 行程實體關聯 */
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "ACTID", insertable = false, nullable = false)
 //    private ItineraryVO itnVO;
 
-    //不需要的欄位
-//    @Column(name = "DAYORDER")
-//    private Integer dayOrder;
+
 
     // ===== Constructor =====
 
@@ -68,6 +72,14 @@ public class ActItnVO implements Serializable {
 
     public void setItnId(Integer itnId) {
         this.itnId = itnId;
+    }
+
+    public com.toiukha.itinerary.model.ItineraryVO getItinerary() {
+        return itinerary;
+    }
+
+    public void setItinerary(com.toiukha.itinerary.model.ItineraryVO itinerary) {
+        this.itinerary = itinerary;
     }
 
     //待行程模組上傳後更新

@@ -121,6 +121,7 @@ window.GroupActivityAPI = (function () {
    * @param {number} actId - 活動 ID
    * @returns {Promise} 活動詳情
    */
+  // ---未使用---
   function getActivity(actId) {
     return request(`${API_BASE}/${actId}`);
   }
@@ -213,6 +214,7 @@ window.GroupActivityAPI = (function () {
    * @param {boolean} isAdmin - 是否為管理員
    * @returns {Promise} 更新結果
    */
+  // ---未使用---
   function updateActivityStatus(actId, status, operatorId, isAdmin = false) {
     return request(
       `${API_BASE}/${actId}/status/${status}?operatorId=${operatorId}&admin=${isAdmin}`,
@@ -229,6 +231,7 @@ window.GroupActivityAPI = (function () {
    * @param {boolean} isAdmin - 是否為管理員
    * @returns {Promise} 刪除結果
    */
+  // ---未使用---
   function deleteActivity(actId, operatorId, isAdmin = false) {
     return updateActivityStatus(actId, 3, operatorId, isAdmin);
   }
@@ -238,6 +241,7 @@ window.GroupActivityAPI = (function () {
    * @param {number} actId - 活動 ID
    * @returns {Promise} 成員列表
    */
+  // ---未使用---
   function getActivityMembers(actId) {
     return request(`${API_BASE}/${actId}/members`);
   }
@@ -248,6 +252,7 @@ window.GroupActivityAPI = (function () {
    * @param {number} memberId - 成員 ID
    * @returns {Promise} 參加結果
    */
+  // ---未使用---
   function joinActivity(actId, memberId) {
     return request(`/api/participate/${actId}/signup/${memberId}`, {
       method: "POST",
@@ -263,6 +268,7 @@ window.GroupActivityAPI = (function () {
    * @param {number} memberId - 成員 ID
    * @returns {Promise} 退出結果
    */
+  // ---未使用---
   function leaveActivity(actId, memberId) {
     return request(`/api/participate/${actId}/signup/${memberId}`, {
       method: "DELETE",
@@ -277,6 +283,7 @@ window.GroupActivityAPI = (function () {
    * @param {number} actId - 活動 ID
    * @returns {Promise} 刪除結果
    */
+  // ---未使用---
   function memberDeleteActivity(actId) {
     return request(`${API_BASE}/member/delete/${actId}`, {
       method: "DELETE",

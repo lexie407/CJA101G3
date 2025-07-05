@@ -48,6 +48,7 @@ window.GroupActivityCore = (function () {
    * @param {number} wait - 等待時間（毫秒）
    * @returns {Function} 防抖後的函數
    */
+  // ---未使用---
   function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -66,6 +67,7 @@ window.GroupActivityCore = (function () {
    * @param {number} limit - 時間限制（毫秒）
    * @returns {Function} 節流後的函數
    */
+  // ---未使用---
   function throttle(func, limit) {
     let inThrottle;
     return function (...args) {
@@ -83,6 +85,7 @@ window.GroupActivityCore = (function () {
    * @param {*} defaultValue - 預設值
    * @returns {*} 解析結果或預設值
    */
+  // ---未使用---
   function safeJsonParse(jsonString, defaultValue = null) {
     try {
       return JSON.parse(jsonString);
@@ -97,6 +100,7 @@ window.GroupActivityCore = (function () {
    * @param {HTMLElement} element - 目標元素
    * @param {string} message - 載入訊息
    */
+  // ---未使用---
   function showLoading(element, message = "載入中...") {
     element.classList.add("act-loading");
     element.innerHTML = message;
@@ -106,6 +110,7 @@ window.GroupActivityCore = (function () {
    * 隱藏載入狀態
    * @param {HTMLElement} element - 目標元素
    */
+  // ---未使用---
   function hideLoading(element) {
     element.classList.remove("act-loading");
   }
@@ -116,6 +121,7 @@ window.GroupActivityCore = (function () {
    * @param {string} message - 錯誤訊息
    * @param {string} details - 詳細訊息
    */
+  // ---未使用---
   function showError(element, message = "發生錯誤", details = "") {
     element.innerHTML = `
       <div class="act-error-container">
@@ -131,7 +137,8 @@ window.GroupActivityCore = (function () {
    * @param {string} title - 標題
    * @param {string} message - 訊息
    */
-  function showEmptyState(element, title = "沒有資料", message = "") {
+  // ---未使用---
+  function showEmptyState(element, title = "没有資料", message = "") {
     element.innerHTML = `
       <div class="act-empty-state">
         <h3>${title}</h3>
@@ -145,6 +152,7 @@ window.GroupActivityCore = (function () {
    * @param {string} email - 電子郵件地址
    * @returns {boolean} 是否有效
    */
+  // ---未使用---
   function isValidEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
@@ -156,6 +164,7 @@ window.GroupActivityCore = (function () {
    * @param {string} endDate - 結束日期
    * @returns {boolean} 是否有效
    */
+  // ---未使用---
   function isValidDateRange(startDate, endDate) {
     if (!startDate || !endDate) return true; // 允許空值
     return new Date(startDate) <= new Date(endDate);
@@ -215,17 +224,17 @@ window.deleteAct = function (actId, hostId) {
     fetch(`/api/act/${actId}/status/3?operatorId=${hostId}&admin=false`, {
       method: "PUT",
     })
-        .then((response) => {
-          if (response.ok) {
-            location.reload();
-          } else {
-            alert("刪除失敗，請稍後再試");
-          }
-        })
-        .catch((error) => {
-          console.error("刪除失敗:", error);
+      .then((response) => {
+        if (response.ok) {
+          location.reload();
+        } else {
           alert("刪除失敗，請稍後再試");
-        });
+        }
+      })
+      .catch((error) => {
+        console.error("刪除失敗:", error);
+        alert("刪除失敗，請稍後再試");
+      });
   }
 };
 
@@ -236,18 +245,18 @@ window.deleteAct = function (actId, hostId) {
 window.memberDeleteAct = function (actId) {
   if (confirm("確定要刪除這個活動嗎？此操作無法復原。")) {
     GroupActivityAPI.memberDeleteActivity(actId)
-        .then((response) => {
-          if (response.success) {
-            alert("活動刪除成功");
-            location.reload();
-          } else {
-            alert(response.error || "刪除失敗，請稍後再試");
-          }
-        })
-        .catch((error) => {
-          console.error("刪除失敗:", error);
-          alert("刪除失敗，請稍後再試");
-        });
+      .then((response) => {
+        if (response.success) {
+          alert("活動刪除成功");
+          location.reload();
+        } else {
+          alert(response.error || "刪除失敗，請稍後再試");
+        }
+      })
+      .catch((error) => {
+        console.error("刪除失敗:", error);
+        alert("刪除失敗，請稍後再試");
+      });
   }
 };
 
@@ -267,18 +276,18 @@ window.joinActivity = function (actId) {
   }
 
   GroupActivityAPI.joinActivity(actId, currentMemId)
-      .then((response) => {
-        if (response.success) {
-          alert("報名成功！");
-          location.reload();
-        } else {
-          alert(response.error || "報名失敗，請稍後再試");
-        }
-      })
-      .catch((error) => {
-        console.error("報名失敗:", error);
-        alert("報名失敗，請稍後再試");
-      });
+    .then((response) => {
+      if (response.success) {
+        alert("報名成功！");
+        location.reload();
+      } else {
+        alert(response.error || "報名失敗，請稍後再試");
+      }
+    })
+    .catch((error) => {
+      console.error("報名失敗:", error);
+      alert("報名失敗，請稍後再試");
+    });
 };
 
 /**
@@ -301,16 +310,16 @@ window.cancelParticipation = function (actId) {
   }
 
   GroupActivityAPI.leaveActivity(actId, currentMemId)
-      .then((response) => {
-        if (response.success) {
-          alert("取消報名成功");
-          location.reload();
-        } else {
-          alert(response.error || "取消報名失敗，請稍後再試");
-        }
-      })
-      .catch((error) => {
-        console.error("取消報名失敗:", error);
-        alert("取消報名失敗，請稍後再試");
-      });
+    .then((response) => {
+      if (response.success) {
+        alert("取消報名成功");
+        location.reload();
+      } else {
+        alert(response.error || "取消報名失敗，請稍後再試");
+      }
+    })
+    .catch((error) => {
+      console.error("取消報名失敗:", error);
+      alert("取消報名失敗，請稍後再試");
+    });
 };

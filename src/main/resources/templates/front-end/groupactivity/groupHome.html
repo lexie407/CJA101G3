@@ -9,6 +9,9 @@
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link rel="stylesheet" th:href="@{/css/light.css}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <!-- GroupActivity 模組 CSS -->
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
     <!--    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front_enhanced.css}">-->
 
     <style>
@@ -390,6 +393,121 @@
         font-weight: bold;
         font-size: 14px;
       }
+
+      /* 團員狀態切換開關樣式 */
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 24px;
+        vertical-align: middle;
+        margin-left: 8px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #dc3545; /* 紅色表示剔除狀態 */
+        transition: 0.3s;
+        border-radius: 24px;
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+      }
+
+      .toggle-switch input:checked + .toggle-slider {
+        background-color: #28a745; /* 綠色表示已參加狀態 */
+      }
+
+      .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(24px);
+      }
+
+      .toggle-label {
+        margin-left: 8px;
+        font-weight: bold;
+        font-size: 14px;
+        color: #495057;
+      }
+
+      /* 狀態文字顏色 */
+      .status-joined {
+        color: #28a745;
+      }
+
+      .status-removed {
+        color: #dc3545;
+      }
+
+      .status-quit {
+        color: #6c757d;
+      }
+
+      /* 活動狀態更新區域樣式 */
+      .status-update-section {
+        margin-top: 10px;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+      }
+
+      .status-update-section label {
+        font-size: 14px;
+        margin-right: 8px;
+        font-weight: 500;
+        color: #495057;
+      }
+
+      .status-update-section select {
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        background: white;
+        font-size: 13px;
+        min-width: 100px;
+      }
+
+      .status-update-section select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      }
+
+      .status-update-section button {
+        margin-left: 8px;
+        padding: 4px 12px;
+        font-size: 12px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .status-update-section button:hover {
+        background: #545b62;
+      }
     </style>
   </head>
   <body class="light">
@@ -401,6 +519,8 @@
         ></div>
         <main class="content-area-main act-area">
           <div class="group-home-container">
+
+            <!-- 活動資料 -->
             <div class="activity-info-section" style="position: relative">
               <div class="activity-banner-img">
                 <img
@@ -412,7 +532,7 @@
               <div class="activity-details">
                 <p th:text="${act.actDesc}">活動描述</p>
                 <div class="activity-meta">
-                  <span>行程編號：<span th:text="${act.itnId}"></span></span>
+<!--                  <span>行程編號：<span th:text="${act.itnId}"></span></span>-->
                   <span
                     >開始時間：<span
                       th:text="${#temporals.format(act.actStart, 'yyyy-MM-dd HH:mm')}"
@@ -428,7 +548,6 @@
                       th:text="${act.signupCnt} + '/' + ${act.maxCap}"
                     ></span
                   ></span>
-                  <!-- 狀態標籤 -->
                   <span
                     >狀態：
                     <span th:switch="${act.recruitStatus}">
@@ -451,17 +570,33 @@
                   </span>
                 </div>
               </div>
+              <!-- 團主控制標籤 -->
               <div
-                th:if="${isHost}"
-                style="position: absolute; right: 20px; bottom: 20px"
-              >
-                <a
-                  th:href="@{'/act/member/edit/' + ${act.actId}}"
-                  class="act-btn act-btn-primary"
-                  >編輯</a
+                  th:if="${isHost}"
+                  style="position: absolute; right: 20px; bottom: 20px"
                 >
-              </div>
+<!--                  <a-->
+<!--                    th:href="@{'/act/member/edit/' + ${act.actId}}"-->
+<!--                    class="act-btn act-btn-primary"-->
+<!--                    >編輯</a-->
+<!--                  >-->
+                  <!-- 活動狀態更新下拉選單 -->
+                  <div class="status-update-section">
+                    <label for="statusSelect"></label>
+                    <select id="statusSelect" th:data-current-status="${act.recruitStatus}">
+<!--                      <option value="0" th:selected="${act.recruitStatus == 0}">招募中</option>-->
+                      <option value="1" th:selected="${act.recruitStatus == 1}">成團</option>
+                      <option value="3" th:selected="${act.recruitStatus == 3}">已取消</option>
+                      <option value="5" th:selected="${act.recruitStatus == 5}">已結束</option>
+                    </select>
+                    <button onclick="updateActivityStatus()">
+                      更新
+                    </button>
+                  </div>
+                </div>
             </div>
+
+            <!-- 團員名單 -->
             <div class="member-list-section" style="position: relative">
               <h3>團隊成員 (<span th:text="${memberList.size()}"></span>人)</h3>
               <ul class="member-list">
@@ -481,22 +616,27 @@
                         class="status-toggle-switch"
                         th:data-mem-id="${mem.memId}"
                         th:checked="${mem.joinStatus == 1}"
+                        th:data-current-status="${mem.joinStatus}"
                       />
                       <span class="toggle-slider"></span>
                     </label>
                     <span
                       class="toggle-label"
                       th:if="${mem.memId != act.hostId}"
+                      th:class="${'toggle-label ' + (mem.joinStatus == 1 ? 'status-joined' : (mem.joinStatus == 2 ? 'status-removed' : (mem.joinStatus == 3 ? 'status-quit' : '')))}"
                       th:text="${mem.joinStatus == 1 ? '已參加' : (mem.joinStatus == 2 ? '已剔除' : (mem.joinStatus == 3 ? '已退出' : '未知'))}"
                     ></span>
                     <span
                       class="status-label"
                       th:if="${mem.memId == act.hostId}"
+                      th:class="${'status-label ' + (mem.joinStatus == 1 ? 'status-joined' : (mem.joinStatus == 2 ? 'status-removed' : (mem.joinStatus == 3 ? 'status-quit' : '')))}"
                       th:text="${mem.joinStatus == 1 ? '已參加' : (mem.joinStatus == 2 ? '已剔除' : (mem.joinStatus == 3 ? '已退出' : '未知'))}"
                     ></span>
+
                   </span>
                 </li>
               </ul>
+              <!-- 團主控制標籤 -->
               <div
                 th:if="${isHost}"
                 style="position: absolute; right: 20px; bottom: 20px"
@@ -513,6 +653,7 @@
                 </button>
               </div>
             </div>
+
           </div>
         </main>
       </div>
@@ -524,10 +665,191 @@
       const isHost = /*[[${isHost}]]*/ false;
       const currentMemberId = /*[[${currentMemberId}]]*/ null;
       let memId = currentMemberId;
-      // let memId = 38;
       console.log("actId:", actId, "isHost", isHost,"currentMemberId:", /*[[${currentMemberId}]]*/ null);
 
-      //有關聊天室相關的功能
+      //--未使用:編輯活動詳情
+      // function editActivity() {
+      //   window.location.href = "/act/member/edit/" + actId;
+      // }
+
+      //更新活動狀態
+      function updateActivityStatus() {
+        const statusSelect = document.getElementById('statusSelect');
+        const status = statusSelect.value;
+        const currentStatus = statusSelect.getAttribute('data-current-status');
+
+        // 檢查是否真的改變了狀態
+        if (status === currentStatus) {
+          alert('請選擇不同的狀態');
+          return;
+        }
+
+        if (confirm(`確定要將活動狀態更改為 ${statusSelect.options[statusSelect.selectedIndex].text} 嗎？`)) {
+          // 構建URL參數
+          const url = `/api/act/${actId}/status/${status}?operatorId=${currentMemberId}&admin=false`;
+
+          fetch(url, { method: "PUT" })
+                  .then((res) => {
+                    if (res.ok) {
+                      alert('活動狀態更新成功！');
+                      location.reload();
+                    } else {
+                      return res.text().then(text => {
+                        throw new Error(text || '狀態更新失敗');
+                      });
+                    }
+                  })
+                  .catch((error) => {
+                    console.error('更新活動狀態時發生錯誤:', error);
+                    alert('更新活動狀態時發生錯誤：' + error.message);
+                  });
+        }
+      }
+
+      //--未使用:顯示團員列表
+      // function showMemberManagement() {
+      //   console.log("showMemberManagement 被呼叫");
+      //   document.getElementById("memberManagementModal").style.display =
+      //     "block";
+      //   // fetch(`/api/group/${actId}/members`)
+      //   fetch(`/api/participate/${actId}/members`)
+      //     .then((res) => res.json())
+      //     .then((list) => {
+      //       const container = document.getElementById("memberManagementList");
+      //       container.innerHTML = "";
+      //       list.forEach((mem) => {
+      //         const div = document.createElement("div");
+      //         div.className = "member-item";
+      //         div.innerHTML = `會員${mem.memId} <button onclick="kickMember(${mem.memId})" class="act-btn act-btn-danger">剔除</button>`;
+      //         container.appendChild(div);
+      //       });
+      //     });
+      // }
+      //--未使用:關閉團員列表
+      // function closeMemberManagement() {
+      //   document.getElementById("memberManagementModal").style.display = "none";
+      // }
+
+      // 批次編輯團員狀態
+      let isEditing = false;
+      let pendingStatus = {};
+      document.getElementById("editMemberBtn").onclick = function () {
+        isEditing = true;
+        document
+                .querySelectorAll(".toggle-switch")
+                .forEach((sw) => (sw.style.display = "inline-block"));
+        document
+                .querySelectorAll(".toggle-label")
+                .forEach((lbl) => (lbl.style.display = "none"));
+        document.getElementById("editMemberBtn").style.display = "none";
+        document.getElementById("saveMemberBtn").style.display = "inline-block";
+      };
+      document.getElementById("saveMemberBtn").onclick = function () {
+        isEditing = false;
+        document
+                .querySelectorAll(".toggle-switch")
+                .forEach((sw) => (sw.style.display = "none"));
+        document
+                .querySelectorAll(".toggle-label")
+                .forEach((lbl) => (lbl.style.display = "inline-block"));
+        document.getElementById("editMemberBtn").style.display = "inline-block";
+        document.getElementById("saveMemberBtn").style.display = "none";
+
+        // 批次送出所有變更
+        const updates = Object.entries(pendingStatus);
+        console.log('準備更新團員狀態:', updates);
+
+        if (updates.length === 0) {
+          console.log('沒有需要更新的團員狀態');
+          return;
+        }
+
+        Promise.all(
+                updates.map(([memId, newStatus]) => {
+                  const url = `/api/participate/${actId}/members/${memId}/status?joinStatus=${newStatus}`;
+                  console.log(`發送請求: ${url}`);
+
+                  return fetch(url, { method: "PUT" })
+                          .then((res) => {
+                            console.log(`團員 ${memId} 狀態更新回應:`, res.status, res.statusText);
+                            if (!res.ok) {
+                              return res.text().then(text => {
+                                throw new Error(`團員 ${memId} 狀態更新失敗: ${text}`);
+                              });
+                            }
+                            return res;
+                          });
+                })
+        )
+                .then(() => {
+                  console.log('所有團員狀態更新成功');
+                  alert('團員狀態更新成功！');
+                  location.reload();
+                })
+                .catch((error) => {
+                  console.error('批次更新團員狀態時發生錯誤:', error);
+                  alert('更新團員狀態時發生錯誤：' + error.message);
+                });
+      };
+      document.querySelectorAll(".status-toggle-switch").forEach((sw) => {
+        sw.onchange = function () {
+          const memId = this.getAttribute("data-mem-id");
+          const currentStatus = parseInt(this.getAttribute("data-current-status"));
+
+          // 切換邏輯：已參加(1) <-> 已剔除(2)
+          const newStatus = this.checked ? 1 : 2;
+          pendingStatus[memId] = newStatus;
+
+          console.log(`團員 ${memId} 狀態切換: ${currentStatus} -> ${newStatus} (${this.checked ? '已參加' : '已剔除'})`);
+
+          // 更新當前狀態屬性
+          this.setAttribute("data-current-status", newStatus);
+
+          // 即時更新顯示文字和顏色
+          const toggleLabel = this.parentElement.nextElementSibling;
+          if (toggleLabel && toggleLabel.classList.contains('toggle-label')) {
+            toggleLabel.textContent = this.checked ? '已參加' : '已剔除';
+
+            // 更新顏色類別
+            toggleLabel.classList.remove('status-joined', 'status-removed');
+            if (this.checked) {
+              toggleLabel.classList.add('status-joined');
+            } else {
+              toggleLabel.classList.add('status-removed');
+            }
+          }
+
+          // 顯示狀態變更提示
+          const statusText = this.checked ? '已參加' : '已剔除';
+          console.log(`團員 ${memId} 狀態變更為: ${statusText}`);
+        };
+      });
+
+      //--未使用:剔除團員
+      //  function kickMember(memberId) {
+      //    if (confirm("確定要剔除該團員？")) {
+      //      // 使用現有的API端點，將團員狀態設為已剔除(2)
+      //      const url = `/api/participate/${actId}/members/${memberId}/status?joinStatus=2`;
+      //
+      //      fetch(url, { method: "PUT" })
+      //        .then((res) => {
+      //          if (res.ok) {
+      //            alert('團員剔除成功！');
+      //            location.reload();
+      //          } else {
+      //            return res.text().then(text => {
+      //              throw new Error(text || '剔除團員失敗');
+      //            });
+      //          }
+      //        })
+      //        .catch((error) => {
+      //          console.error('剔除團員時發生錯誤:', error);
+      //          alert('剔除團員時發生錯誤：' + error.message);
+      //        });
+      //    }
+      //  }
+
+      //============有關聊天室相關的功能=======================================
       // let stompClient = null;
 
       // function connectWebSocket() {
@@ -594,129 +916,6 @@
       //       }
       //     });
       // }
-
-      //顯示團員列表
-      function showMemberManagement() {
-        console.log("showMemberManagement 被呼叫");
-        document.getElementById("memberManagementModal").style.display =
-          "block";
-        fetch(`/api/participate/${actId}/members`)
-          .then((res) => {
-            console.log("fetch /api/participate/ 成功，res:", res);
-            return res.json();
-          })
-          .then((list) => {
-            console.log("取得團員列表:", list);
-            const container = document.getElementById("memberManagementList");
-            container.innerHTML = "";
-            list.forEach((mem) => {
-              const div = document.createElement("div");
-              div.className = "member-item";
-              div.innerHTML = `會員${mem.memId} <button onclick="kickMember(${mem.memId})" class="act-btn act-btn-danger">剔除</button>`;
-              container.appendChild(div);
-            });
-          });
-      }
-
-      function closeMemberManagement() {
-        document.getElementById("memberManagementModal").style.display = "none";
-      }
-
-      //修改團員狀態
-      function kickMember(memberId) {
-        console.log("kickMember 被呼叫, memberId:", memberId);
-        if (confirm("確定要剔除該團員？")) {
-          fetch(`/api/group/${actId}/member/${memberId}`, { method: "DELETE" })
-            .then((res) => {
-              console.log("kickMember fetch 回應:", res);
-              return res.json();
-            })
-            .then((data) => {
-              console.log("kickMember 回傳資料:", data);
-              if (data.success) {
-                showMemberManagement();
-              } else {
-                alert(data.error || "操作失敗");
-              }
-            });
-        }
-      }
-
-      function editActivity() {
-        window.location.href = "/act/member/edit/" + actId;
-      }
-
-      function updateActivityStatus() {
-        const status = prompt("請輸入新狀態代碼（1:成團,3:取消,5:結束）");
-        if (status) {
-          fetch(`/api/group/${actId}/status/${status}`, { method: "PUT" })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.success) location.reload();
-              else alert(data.error || "狀態更新失敗");
-            });
-        }
-      }
-
-      // 修改成員狀態
-      let isEditing = false;
-      let pendingStatus = {};
-      document.getElementById("editMemberBtn").onclick = function () {
-        // console.log("editMemberBtn 被點擊");//切換成員狀態編輯模式
-        isEditing = true;
-
-        document
-          .querySelectorAll(".toggle-switch")
-          .forEach((sw) => (sw.style.display = "inline-block"));
-
-        document
-          .querySelectorAll(".toggle-label")
-          .forEach((lbl) => (lbl.style.display = "none"));
-
-        document.getElementById("editMemberBtn").style.display = "none";
-        document.getElementById("saveMemberBtn").style.display = "inline-block";
-      };
-
-      document.getElementById("saveMemberBtn").onclick = function (e) {
-        if (e) e.preventDefault(); // 阻止表單預設提交
-        console.log("saveMemberBtn 被點擊");
-        isEditing = false;
-        document
-          .querySelectorAll(".toggle-switch")
-          .forEach((sw) => (sw.style.display = "none"));
-        document
-          .querySelectorAll(".toggle-label")
-          .forEach((lbl) => (lbl.style.display = "inline-block"));
-        document.getElementById("editMemberBtn").style.display = "inline-block";
-        document.getElementById("saveMemberBtn").style.display = "none";
-        // 批次送出所有變更
-        const updates = Object.entries(pendingStatus);
-        console.log("pendingStatus updates:", updates);//更新狀態
-        if (updates.length === 0) {
-          console.log("沒有任何狀態變更，return");
-          return;
-        }
-        Promise.all(
-          updates.map(([memId, newStatus]) => {
-            console.log("即將送出PUT", actId, memId, newStatus);
-            return fetch(
-              `/api/participate/${actId}/members/${memId}/status?joinStatus=${newStatus}`,
-              { method: "PUT" }
-            );
-          })
-        ).then((results) => {
-          console.log(results);
-          location.reload()
-        });
-      };
-      document.querySelectorAll(".status-toggle-switch").forEach((sw) => {
-        sw.onchange = function () {
-          const memId = this.getAttribute("data-mem-id");
-          const newStatus = this.checked ? 1 : 2;
-          pendingStatus[memId] = newStatus;
-          console.log("狀態切換 memId:", memId, "newStatus:", newStatus, "pendingStatus:", pendingStatus);
-        };
-      });
 
       // connectWebSocket();
     </script>
