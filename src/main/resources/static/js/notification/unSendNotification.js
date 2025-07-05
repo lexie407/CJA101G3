@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", function(){
 
+	sessionStorage.setItem("oriUrl", window.location.pathname);
+	
 	let getUriElement = document.getElementsByClassName("main-content")[0];
 
 	//待發送通知數計算

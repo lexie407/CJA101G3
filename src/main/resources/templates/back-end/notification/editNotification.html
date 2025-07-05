@@ -30,7 +30,7 @@
 							<span class="material-icons">arrow_back</span> 返回
 						</button>
 						<button
-							th:if="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}"
+							th:if="${notificationVO.notiStatus == 9}"
 							id="deleteAdminNotificationBtn"
 							class="material-button delete-btn error"
 							th:attr="data-notiId=${notificationVO.notiId}"
@@ -41,9 +41,9 @@
 
 					<div class="admin-notification-form">
 						<h2
-							th:if="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">編輯通知</h2>
+							th:if="${notificationVO.notiStatus == 9}">編輯通知</h2>
 						<h2
-							th:unless="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">通知詳情</h2>
+							th:unless="${notificationVO.notiStatus == 9}">通知詳情</h2>
 
 						<form id="notificationEditForm" method="post"
 							th:action="@{/notification/updateNotification}">
@@ -56,10 +56,6 @@
 								<label for="notificationMemberId">通知會員 ID:</label> <input
 									type="text" id="notificationMemberId" name="memId"
 									th:value="${notificationVO.memId}" readonly>
-							</div>
-							<div class="form-group">
-								<label for="notificationMemberName">會員名稱:</label> <input
-									type="text" id="notificationMemberName" value="開發中..." readonly>
 							</div>
 							<div class="form-group">
 								<label for="notificationStatus">通知狀態:</label> <input
@@ -85,7 +81,7 @@
 							</div>
 
 							<div
-								th:if="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">
+								th:if="${notificationVO.notiStatus == 9}">
 								<div class="form-group">
 									<label for="notificationSentAt">通知發送時間:</label> <input
 										type="datetime-local" name="notiSendAt"
@@ -105,7 +101,7 @@
 								</div>
 							</div>
 							<div
-								th:unless="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">
+								th:unless="${notificationVO.notiStatus == 9}">
 								<div class="form-group">
 									<label for="notificationSentAt">通知發送時間:</label> <input
 										type="datetime-local" th:value="${notificationVO.notiSendAt}"
@@ -124,7 +120,7 @@
 							</div>
 
 							<div class="form-actions"
-								th:if="${notificationVO.notiSendAt > nowTime and notificationVO.notiStatus != 3}">
+								th:if="${notificationVO.notiStatus == 9}">
 								<button type="submit" class="material-button">
 									<span class="material-icons">check_circle</span> 確定修改
 								</button>

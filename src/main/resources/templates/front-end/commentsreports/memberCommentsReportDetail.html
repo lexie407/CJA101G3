@@ -14,11 +14,7 @@
 	<div class="app-container">
 		<div th:insert="~{/navTemplate :: navbar}"></div>
 		<div class="main-content">
-			<header class="secondary-nav">
-				<ul>
-				
-				</ul>
-			</header>
+			<div th:replace="~{subnavMembers :: subnav(activeItem='reports')}"></div>
 			<main class="content-area-main">
 
 				<div class="notification-detail-container">

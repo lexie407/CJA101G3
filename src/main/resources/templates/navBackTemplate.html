@@ -32,7 +32,7 @@
 <!-- 	                		<li><a th:href="@{/forum/admin}">討論區管理</a></li> -->
 <!-- 	                	</ul> -->
 	                </li>
-	                <li th:classappend="${currentPage == 'partner' ? 'active' : ''}"><a th:href="@{/item/listAllItem_admin}"><span class="material-icons">group_work</span>廠商管理</a></li>
+	                <li th:classappend="${currentPage == 'partner' ? 'active' : ''}"><a th:href="@{/store/selectPage}"><span class="material-icons">group_work</span>廠商管理</a></li>
 	                <li th:classappend="${currentPage == 'notifications' ? 'active' : ''}"><a th:href="@{/notification/unSendNotification}"><span class="material-icons">notifications</span>通知管理</a></li>
 	                <li th:classappend="${currentPage == 'report' ? 'active' : ''}"><a th:href="@{/Articlereport/allReportList}"><span class="material-icons">report</span>檢舉管理</a></li>
 	                <li th:classappend="${currentPage == 'support_agent' ? 'active' : ''}"><a th:href="@{/report/allReportList}"><span class="material-icons">support_agent</span>異常回報</a></li>

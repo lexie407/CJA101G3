@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
 
+	sessionStorage.removeItem("oriUrl", window.location.pathname);
+	
 	//時間邏輯判斷
 	let startTimeInput = document.getElementById('notificationTimeStart');
 	let endTimeInput = document.getElementById('notificationTimeEnd');
@@ -48,24 +50,26 @@ document.addEventListener("DOMContentLoaded", function() {
 		}
 	});
 
-	//查詢結果綁定事件可以進入詳情
-	let searchResult = document.getElementsByClassName("noti-table-line");
-	for (let i = 0; i < searchResult.length; i++) {
-		searchResult[i].addEventListener("click", function() {
+	// 使用事件委派來處理動態生成的 tr 元素的點擊事件
+	$('#notificationSearchResultsTable tbody').on('click', 'tr.noti-table-line', function() {
+		// this 現在指向被點擊的 tr 元素
+		let notiId = $(this).data('notiid'); // 使用 jQuery 的 .data() 方法獲取 data-notiId 屬性值
+
+		if (notiId) {
 			let form = document.createElement("form");
 			form.method = "post";
-			form.action = "/notification/editNotification";
+			form.action = "/notification/editNotification"; // 將目標 action 改為編輯頁面
 
 			let notiInput = document.createElement("input");
 			notiInput.type = "hidden";
 			notiInput.name = "notiId";
-			notiInput.value = searchResult[i].getAttribute("data-notiId");
+			notiInput.value = notiId;
 			form.appendChild(notiInput);
 
 			document.body.appendChild(form);
 			form.submit();
-		});
-	}
+		}
+	});
 
 	// 將 selectedMemberIds 定義在更高層級的作用域
 	let selectedMemberIds = new Set(); // 使用 let 或 const，確保它在整個 DOMContentLoaded 範圍內可見

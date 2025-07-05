@@ -21,14 +21,6 @@ let conversationId = "";
         const messageContent = document.createElement("div");
         messageContent.classList.add("message-content");
 
-        if (sender === "ai") {
-            const avatar = document.createElement("img");
-            avatar.src = "/images/user.png"; 
-            avatar.alt = "AI";
-            avatar.classList.add("ai-avatar");
-            messageBubble.appendChild(avatar);
-        }
-
         if (isLoading) {
             const loadingDots = document.createElement('span');
             loadingDots.classList.add('loading-dots');

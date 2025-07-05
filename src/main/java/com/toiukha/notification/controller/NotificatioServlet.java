@@ -162,9 +162,8 @@ public class NotificatioServlet {
 	//搜尋頁面
 	@GetMapping("searchNotification")
 	public String searchNotification(HttpServletRequest req, ModelMap model) {
-		
-		List<MembersVO> list = membersService.findAllMembers();
-		model.addAttribute("memList", list);
+		List<MembersVO> memList = membersService.findAllMembers();
+		model.addAttribute("memList", memList);
 		model.addAttribute("currentPage", "notifications");
 		model.addAttribute("currentPage2", "searchNotification");
 		return "back-end/notification/searchNotification";
@@ -187,6 +186,7 @@ public class NotificatioServlet {
 		model.addAttribute("map", map);
 		model.addAttribute("currentPage", "notifications");
 		model.addAttribute("currentPage2", "searchNotification");
+		req.getSession().setAttribute("originalPage", "/notification/searchNotification");
 		req.getSession().setAttribute("searchMap", map);
 		return "back-end/notification/searchNotification";
 	}

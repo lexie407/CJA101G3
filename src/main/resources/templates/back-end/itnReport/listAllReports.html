@@ -415,12 +415,19 @@
     </style>
 </head>
 <body class="light">
-    <div class="app-container">
-        <div th:insert="~{/navBackTemplate :: navbar}"></div>
+
+<div class="app-container">
+    <div th:insert="~{/navBackTemplate :: navbar}"></div>
+    
+    <div class="main-content" style="padding: 0px;">
+        <header class="secondary-nav">
+            	<th:block th:insert="~{/back-end/report/navBackEndReport :: secNavResources}"></th:block>
+        </header>
         
-        <div class="main-content">
+        <div class="main-content2" style="padding: 24px;">
+        
             <!-- 引入全域下拉導航 -->
-            <div th:insert="~{/navBackDropdownTemplate :: topNavigation}"></div>
+<!--             <div th:insert="~{/navBackDropdownTemplate :: topNavigation}"></div> -->
             
             <div class="admin-container">
                 <div class="page-header">
@@ -561,6 +568,7 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
             </div>
         </div>
     </div>

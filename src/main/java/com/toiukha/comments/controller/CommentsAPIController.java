@@ -1,6 +1,8 @@
 package com.toiukha.comments.controller;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,7 @@ public class CommentsAPIController {
 	ArticleServiceImpl articleServiceImpl;
 	@Autowired
 	MembersService membersService;
+
 	
 	//========== 前台後台通用 ==========//
 	
@@ -58,7 +61,7 @@ public class CommentsAPIController {
 	}
 	
 	@PostMapping("/addComments")
-	public CommentsVO addComments(
+	public CommentsDTO addComments(
 	        @RequestParam("commHol") Integer commHol,
 	        @RequestParam("commArt") Integer commArt,
 	        @RequestParam("commCon") String commCon,
@@ -78,7 +81,8 @@ public class CommentsAPIController {
 	        CommentsVO commentsVO = new CommentsVO(commCat, commHol, commArt, commCon, commImg);
 
 	        CommentsVO newcommentsVO = commentsService.editOne(commentsVO);
-	        return commentsService.getOne(newcommentsVO.getCommId());
+	        newcommentsVO.setCommCreTime(Timestamp.from(Instant.now()));
+	        return CommentsDTO.from(newcommentsVO, membersService.getById(newcommentsVO.getCommHol()).getMemName());
 	        
 	    } catch (IOException e) {
 	        e.printStackTrace();
@@ -88,7 +92,7 @@ public class CommentsAPIController {
 	
 	//修改留言
 	@PostMapping("/updateComments")
-	public CommentsVO updateComments(
+	public CommentsDTO updateComments(
 			@RequestParam(value = "commImg", required = false)MultipartFile part,
 			@RequestParam("commCon") String commCon,
 			@RequestParam("commId") Integer commId) {
@@ -104,7 +108,7 @@ public class CommentsAPIController {
 
 		commentsService.changeComm(commId, commCon, commImg);
 		
-		return commentsService.getOne(commId);
+		return CommentsDTO.from(commentsService.getOne(commId), membersService.getById(commentsService.getOne(commId).getCommHol()).getMemName());
 	}
 	
 	//最佳解

@@ -246,19 +246,19 @@
 							</div>
 						</div>
 
-						<div class="form-group">
-							<label for="memAvatarFrame">頭像框圖片:</label> <input type="file"
-								name="memAvatarFrameFile" id="memAvatarFrame" accept="image/*">
-							<div class="avatar-preview">
-								<img id="avatarFramePreview"
-									th:src="@{/members/DBGifReader(memId=${membersVO.memId}, type='memAvatarFrame')}"
-									alt="頭像框預覽" /> <span th:unless="${membersVO.memId != null}"
-									class="material-icons avatar-placeholder">crop_square</span>
-							</div>
+<!-- 						<div class="form-group"> -->
+<!-- 							<label for="memAvatarFrame">頭像框圖片:</label>  -->
+							<input type="file" name="memAvatarFrameFile" id="memAvatarFrame" accept="image/*" style="display: none">
+<!-- 							<div class="avatar-preview"> -->
+<!-- 								<img id="avatarFramePreview" -->
+<!-- 									th:src="@{/members/DBGifReader(memId=${membersVO.memId}, type='memAvatarFrame')}" -->
+<!-- 									alt="頭像框預覽" /> <span th:unless="${membersVO.memId != null}" -->
+<!-- 									class="material-icons avatar-placeholder">crop_square</span> -->
+<!-- 							</div> -->
 						</div>
 
 						<div class="form-actions">
-							<button type="button" onclick="history.back()"
+							<button type="button" onclick="window.location.href = '/members/view'"
 								class="material-button md-primary-button">
 								<span class="material-icons">arrow_back</span> 返回
 							</button>
