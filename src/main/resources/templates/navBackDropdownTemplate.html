@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ZH-Hant" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>島遊Kha後台管理</title>
+    <th:block th:fragment="headResources">
+	    <link rel="stylesheet" th:href="@{/css/back_light.css}">
+	    <link rel="stylesheet" th:href="@{/css/back_style.css}">
+	    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	    
+	    <!-- 下拉選單樣式 -->
+	    <style>
+	        .dropdown-nav {
+	            display: flex;
+	            align-items: center;
+	            background-color: var(--surface-color);
+	            border-bottom: 1px solid var(--border-color);
+	            padding: 0;
+	            margin: 0;
+	            list-style: none;
+	            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	            justify-content: flex-end; /* 靠右對齊 */
+	        }
+	        
+	        .dropdown-nav > li {
+	            position: relative;
+	        }
+	        
+	        .dropdown-nav > li > a {
+	            display: flex;
+	            align-items: center;
+	            gap: 8px;
+	            padding: 16px 24px;
+	            color: var(--text-color-primary);
+	            text-decoration: none;
+	            transition: all 0.3s ease;
+	            font-weight: 500;
+	            border-bottom: 3px solid transparent;
+	        }
+	        
+	        .dropdown-nav > li > a:hover,
+	        .dropdown-nav > li.active > a {
+	            background-color: var(--primary-color);
+	            color: white;
+	            border-bottom-color: var(--primary-accent);
+	        }
+	        
+	        .dropdown-nav .material-icons {
+	            font-size: 18px;
+	        }
+	        
+	        /* 下拉選單容器 */
+	        .dropdown-menu {
+	            position: absolute;
+	            top: 100%;
+	            right: 0; /* 從右邊對齊 */
+	            background-color: white;
+	            min-width: 200px;
+	            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	            border-radius: 0 0 8px 8px;
+	            border: 1px solid var(--border-color);
+	            border-top: none;
+	            opacity: 0;
+	            visibility: hidden;
+	            transform: translateY(-10px);
+	            transition: all 0.3s ease;
+	            z-index: 1000;
+	        }
+	        
+	        .dropdown-nav > li:hover .dropdown-menu {
+	            opacity: 1;
+	            visibility: visible;
+	            transform: translateY(0);
+	        }
+	        
+	        .dropdown-menu li {
+	            border-bottom: 1px solid #f0f0f0;
+	        }
+	        
+	        .dropdown-menu li:last-child {
+	            border-bottom: none;
+	        }
+	        
+	        .dropdown-menu a {
+	            display: flex;
+	            align-items: center;
+	            gap: 10px;
+	            padding: 12px 20px;
+	            color: var(--text-color-primary);
+	            text-decoration: none;
+	            transition: all 0.2s ease;
+	            font-size: 14px;
+	        }
+	        
+	        .dropdown-menu a:hover {
+	            background-color: #f8f9fa;
+	            color: var(--primary-color);
+	            padding-left: 24px;
+	        }
+	        
+	        .dropdown-menu .material-icons {
+	            font-size: 16px;
+	            color: var(--text-color-secondary);
+	        }
+	        
+	        .dropdown-menu a:hover .material-icons {
+	            color: var(--primary-color);
+	        }
+	        
+	        /* 箭頭指示器 */
+	        .dropdown-trigger::after {
+	            content: 'keyboard_arrow_down';
+	            font-family: 'Material Icons';
+	            margin-left: 4px;
+	            transition: transform 0.3s ease;
+	        }
+	        
+	        .dropdown-nav > li:hover .dropdown-trigger::after {
+	            transform: rotate(180deg);
+	        }
+	        
+	        /* 響應式設計 */
+	        @media (max-width: 768px) {
+	            .dropdown-nav {
+	                flex-direction: column;
+	                align-items: stretch;
+	                justify-content: stretch;
+	            }
+	            
+	            .dropdown-nav > li {
+	                width: 100%;
+	            }
+	            
+	            .dropdown-menu {
+	                position: static;
+	                opacity: 1;
+	                visibility: visible;
+	                transform: none;
+	                box-shadow: none;
+	                border: none;
+	                background-color: #f8f9fa;
+	                margin-left: 20px;
+	                right: auto;
+	            }
+	        }
+	    </style>
+    </th:block>
+</head>
+
+<body class="light">
+    <div class="app-container">
+        <aside th:fragment="navbar" class="left-nav">
+            <div class="logo-area">
+                <p class="site-name">島遊<span class="site-name2">Kha</span></p>
+                <p>後台</p>
+            </div>
+	            <ul>
+	                <li th:classappend="${currentPage == 'accounts' ? 'active' : ''}"><a href="#"><span class="material-icons">manage_accounts</span>人員</a></li>
+	                <li th:classappend="${currentPage == 'content' ? 'active' : ''}"><a href="#"><span class="material-icons">folder</span>內容管理</a></li>
+	                <li th:classappend="${currentPage == 'partner' ? 'active' : ''}"><a href="#"><span class="material-icons">group_work</span>廠商管理</a></li>
+	                <li th:classappend="${currentPage == 'notifications' ? 'active' : ''}"><a href="#"><span class="material-icons">notifications</span>通知管理</a></li>
+	                <li th:classappend="${currentPage == 'report' ? 'active' : ''}"><a href="#"><span class="material-icons">report</span>檢舉管理</a></li>
+	                <li th:classappend="${currentPage == 'support_agent' ? 'active' : ''}"><a href="#"><span class="material-icons">support_agent</span>與我聊聊</a></li>
+	           
+	           		<hr>
+	           
+					<li>
+			            <div class="member-info-area">
+			                <img th:src="@{/images/user.png}" alt="User Avatar" class="member-avatar"> <span class="member-name">管理員名稱</span>
+			            </div>
+		            </li>
+		            <li>
+			            <div class="logout-area">
+			                <button class="logout-btn material-button">
+			                    <span class="material-icons">logout</span> 登出
+			                </button>
+			            </div>
+		            </li>
+		       </ul>
+            </aside>
+
+        <div class="main-content">
+            <!-- 全域下拉導航 -->
+            <nav th:fragment="topNavigation" class="top-navigation">
+                <ul class="dropdown-nav">
+                    <li>
+                        <a href="/advertisment/admin/dashboard" class="dropdown-trigger">
+                            <span class="material-icons">campaign</span>
+                            廣告管理
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/advertisment/admin/dashboard">
+                                <span class="material-icons">dashboard</span>
+                                管理員儀表板
+                            </a></li>
+                            <li><a href="/advertisment/admin/pending">
+                                <span class="material-icons">pending</span>
+                                待審核廣告
+                            </a></li>
+                            <li><a href="/advertisment/admin/reviewed">
+                                <span class="material-icons">check_circle</span>
+                                已審核廣告
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <li>
+                        <a href="/admin/reports/list" class="dropdown-trigger">
+                            <span class="material-icons">report</span>
+                            檢舉管理
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/admin/reports/list">
+                                <span class="material-icons">list</span>
+                                全部檢舉
+                            </a></li>
+                            <li><a href="/admin/reports/pending">
+                                <span class="material-icons">pending</span>
+                                待處理檢舉
+                            </a></li>
+                            <li><a href="/admin/reports/approved">
+                                <span class="material-icons">check_circle</span>
+                                檢舉通過
+                            </a></li>
+                            <li><a href="/admin/reports/rejected">
+                                <span class="material-icons">cancel</span>
+                                檢舉未通過
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+            
+            <header class="secondary-nav">
+                <ul>
+<!--              放自己的內容 -->
+                </ul>
+            </header>
+
+            <main class="content-area-main">
+<!--              放自己的內容                 -->
+            </main>
+        </div>
+        
+    </div>
+
+    <script src="#"></script>
+
+</body>
+
+</html> 

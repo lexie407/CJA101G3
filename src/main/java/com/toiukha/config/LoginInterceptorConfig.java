@@ -46,6 +46,16 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 						//景點模組
 					    "/spot/add", //新增景點
 					    "/api/spot/favorites",	//景點收藏api
+					    "/spot/favorites",              //景點收藏
+					    "/itinerary/add",               //新增行程
+					    "/itinerary/edit/**",           //編輯行程
+					    "/itinerary/my",                //我的行程
+					    "/itinerary/favorites",         //我的收藏行程
+					    "/api/itinerary/add",           //新增行程API
+					    "/api/itinerary/my",            //我的行程API
+					    "/api/itinerary/favorites",     //我的收藏API
+					    "/api/itinerary/*/favorite",    //收藏切換API
+					    "/api/itinerary/*/copy",         //複製行程API
 
 
 
@@ -102,7 +112,18 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 						        "/articleCollection/allList",  //收藏文章-明細
 						        "/ArticleCollectionAPI/api",  //收藏文章
 						        "/ArticlereportI/memberReportList",  //檢舉文章明細
-						        "/CommentsReports/memberReportList"  //檢舉留言明細
+						        "/CommentsReports/memberReportList",  //檢舉留言明細
+						        "/forum/article/insert",
+						        "/forum/article/edit",
+						        "/forum/article/add",
+						        "/forum/members/**",
+						        "/article/like",
+						        "/article/isLiked",
+						        "/article/collect",
+						        "/article/isCollected",
+						        "/article/*/update",
+						        "/article/*/delete",
+						        "/forum/artImage/upload" //圖片上傳
 
 						
 						

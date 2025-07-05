@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,6 +24,7 @@ import com.toiukha.itnReport.model.ItnRptVO;
 import com.toiukha.itnReport.model.OrderItemDTO;
 import com.toiukha.item.model.ItemService;
 import com.toiukha.item.model.ItemVO;
+import com.toiukha.itnReport.model.ReportWithItemDTO;
 import com.toiukha.members.model.MembersVO;
 
 import jakarta.servlet.http.HttpSession;
@@ -456,10 +458,10 @@ class ItemReportController {
 	}
 	
 	/**
-	 * 顯示會員的訂單列表（用於檢舉）
+	 * 顯示會員的檢舉記錄
 	 */
 	@GetMapping("/my-orders")
-	public String showMyOrders(HttpSession session, Model model) {
+	public String showMyReports(HttpSession session, Model model) {
 		// 檢查會員登入狀態
 		if (!isMemberLoggedIn(session)) {
 			return "redirect:/members/login";
@@ -468,14 +470,51 @@ class ItemReportController {
 		MembersVO member = getCurrentMember(session);
 		Integer memId = member.getMemId();
 		
-		// 獲取會員的購買記錄
-		List<OrderItemDTO> orderItems = getMemberOrderItems(memId);
+		// 獲取會員的檢舉記錄
+		List<ItnRptVO> reports = itnRptService.getReportsByMemberId(memId);
 		
-		model.addAttribute("orderItems", orderItems);
+		// 為每個檢舉記錄補充商品資訊
+		List<ReportWithItemDTO> reportItems = new ArrayList<>();
+		for (ItnRptVO report : reports) {
+			if (report.getItemId() != null) {
+				ItemVO item = itemService.getOneItem(report.getItemId());
+				if (item != null) {
+					ReportWithItemDTO dto = new ReportWithItemDTO();
+					dto.setReport(report);
+					dto.setItem(item);
+					reportItems.add(dto);
+				}
+			}
+		}
+		
+		model.addAttribute("reportItems", reportItems);
 		model.addAttribute("member", member);
 		model.addAttribute("currentPage", "report");
 		model.addAttribute("currentPage2", "itemReport");
 		return "front-end/itnReport/myOrders";
+	}
+	
+	/**
+	 * 獲取檢舉圖片（會員端）
+	 */
+	@GetMapping("/image/{repId}")
+	public ResponseEntity<byte[]> getReportImage(@PathVariable Integer repId, HttpSession session) {
+		// 檢查會員登入狀態
+		if (!isMemberLoggedIn(session)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		
+		MembersVO member = getCurrentMember(session);
+		ItnRptVO report = itnRptService.getOneItnRpt(repId);
+		
+		// 檢查檢舉記錄是否存在且屬於當前會員
+		if (report != null && report.getMemId().equals(member.getMemId()) && report.getRepImg() != null) {
+			return ResponseEntity.ok()
+					.contentType(MediaType.IMAGE_JPEG)
+					.body(report.getRepImg());
+		}
+		
+		return ResponseEntity.notFound().build();
 	}
 	
 	/**

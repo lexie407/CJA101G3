@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>後台管理 - 島遊Kha</title>
     
-    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/navBackDropdownTemplate :: headResources}"></th:block>
     
     <style>
         .admin-container {
@@ -30,9 +30,14 @@
         }
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 25px;
             margin-top: 30px;
+        }
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
         }
         .dashboard-card {
             background-color: #fff;
@@ -73,9 +78,6 @@
         }
         .icon-notification {
             background-color: #ffc107;
-        }
-        .icon-activity {
-            background-color: #dc3545;
         }
         .card-title {
             font-size: 1.3rem;
@@ -147,150 +149,104 @@
 
 	<div class="app-container">
 		<div th:insert="~{/navBackTemplate :: navbar}"></div>
+		
 		<div class="main-content">
-			<header class="secondary-nav">
-                <ul>
-					<li><a href="/advertisment/admin/dashboard" class="active">管理員儀表板</a></li>
-                </ul>
-            </header>
+			<!-- 引入全域下拉導航 -->
+			<div th:insert="~{/navBackDropdownTemplate :: topNavigation}"></div>
+			
 			<main class="content-area-main">
 				<div class="admin-container">
-				    <div class="page-header">
-				        <h1 class="page-title">後台管理系統</h1>
-				        <p class="page-subtitle">歡迎使用島遊Kha後台管理系統</p>
-				    </div>
-				    
-				    <!-- 統計資訊 -->
-				    <div class="stats-section">
-				        <h3 style="margin-bottom: 20px; color: #333;">系統概況</h3>
-				        <div class="stats-grid">
-				            <div class="stat-item">
-				                <div class="stat-number" th:text="${pendingAdsCount != null ? pendingAdsCount : 0}">0</div>
-				                <div class="stat-label">待審核廣告</div>
-				            </div>
-				            <div class="stat-item">
-				                <div class="stat-number" th:text="${approvedAdsCount != null ? approvedAdsCount : 0}">0</div>
-				                <div class="stat-label">已通過廣告</div>
-				            </div>
-				            <div class="stat-item">
-				                <div class="stat-number" th:text="${totalMembersCount != null ? totalMembersCount : 0}">0</div>
-				                <div class="stat-label">總會員數</div>
-				            </div>
-				            <div class="stat-item">
-				                <div class="stat-number" th:text="${totalNotificationsCount != null ? totalNotificationsCount : 0}">0</div>
-				                <div class="stat-label">總通知數</div>
-				            </div>
-				        </div>
-				    </div>
-				    
-				    <!-- 功能卡片 -->
-				    <div class="dashboard-grid">
-				        <!-- 廣告管理 -->
-				        <a href="/advertisment/admin/pending" class="dashboard-card">
-				            <div class="card-header">
-				                <div class="card-icon icon-advertisment">
-				                    <span class="material-icons">campaign</span>
-				                </div>
-				                <h3 class="card-title">廣告管理</h3>
-				            </div>
-				            <p class="card-description">
-				                管理所有廣告內容，包括審核新廣告、查看已審核廣告、停用不當廣告等功能。
-				            </p>
-				            <div class="card-actions">
-				                <span class="btn btn-primary">進入管理</span>
-				            </div>
-				        </a>
-				        
-				        <!-- 會員管理 -->
-				        <a href="/members/selectPage" class="dashboard-card">
-				            <div class="card-header">
-				                <div class="card-icon icon-members">
-				                    <span class="material-icons">people</span>
-				                </div>
-				                <h3 class="card-title">會員管理</h3>
-				            </div>
-				            <p class="card-description">
-				                管理會員資料，查看會員資訊、處理會員相關問題。
-				            </p>
-				            <div class="card-actions">
-				                <span class="btn btn-primary">進入管理</span>
-				            </div>
-				        </a>
-				        
-				        <!-- 通知管理 -->
-				        <a href="/notification/addNotification" class="dashboard-card">
-				            <div class="card-header">
-				                <div class="card-icon icon-notification">
-				                    <span class="material-icons">notifications</span>
-				                </div>
-				                <h3 class="card-title">通知管理</h3>
-				            </div>
-				            <p class="card-description">
-				                發送系統通知、管理通知內容、查看通知發送狀態。
-				            </p>
-				            <div class="card-actions">
-				                <span class="btn btn-primary">進入管理</span>
-				            </div>
-				        </a>
-				        
-				        <!-- 活動管理 -->
-				        <a href="/groupactivity/admin-listAllAct" class="dashboard-card">
-				            <div class="card-header">
-				                <div class="card-icon icon-activity">
-				                    <span class="material-icons">event</span>
-				                </div>
-				                <h3 class="card-title">活動管理</h3>
-				            </div>
-				            <p class="card-description">
-				                管理團體活動，審核活動內容、查看活動參與情況。
-				            </p>
-				            <div class="card-actions">
-				                <span class="btn btn-primary">進入管理</span>
-				            </div>
-				        </a>
-				        
-				        <!-- 檢舉管理 -->
-				        <a href="/admin/reports/list" class="dashboard-card">
-				            <div class="card-header">
-				                <div class="card-icon" style="background-color: #e83e8c;">
-				                    <span class="material-icons">report</span>
-				                </div>
-				                <h3 class="card-title">檢舉管理</h3>
-				            </div>
-				            <p class="card-description">
-				                管理用戶檢舉，審核檢舉內容，處理檢舉案件。
-				            </p>
-				            <div class="card-actions">
-				                <span class="btn btn-primary">進入管理</span>
-				            </div>
-				        </a>
-				        
-				        <!-- 過期廣告檢查 -->
-				        <a href="/advertisment/admin/checkExpiredAds" class="dashboard-card">
-				            <div class="card-header">
-				                <div class="card-icon" style="background-color: #6f42c1;">
-				                    <span class="material-icons">schedule</span>
-				                </div>
-				                <h3 class="card-title">過期廣告檢查</h3>
-				            </div>
-				            <p class="card-description">
-				                手動檢查並自動下架過期廣告。系統每小時會自動執行一次。
-				            </p>
-				            <div class="card-actions">
-				                <span class="btn btn-primary">立即檢查</span>
-				            </div>
-				        </a>
-				    </div>
-				    
-				    <div style="margin-top: 40px; text-align: center; padding: 20px; background-color: #fff; border-radius: 8px;">
-				        <p style="color: #666; margin: 0;">
-				            <strong>測試狀態：</strong>模板解析成功！
-				            <br>
-				            <small>如果您看到此頁面，表示基本模板已正常工作。</small>
-				        </p>
-				    </div>
+					<div class="page-header">
+						<h1 class="page-title">
+							<i class="material-icons">dashboard</i>
+							管理員儀表板
+						</h1>
+						<p class="page-subtitle">歡迎回到島遊Kha後台管理系統</p>
+					</div>
+					
+					<!-- 統計資訊 -->
+					<div class="stats-section">
+						<h3 style="margin-bottom: 20px; color: #333;">廣告統計</h3>
+						<div class="stats-grid">
+							<div class="stat-item">
+								<div class="stat-number" th:text="${pendingAdsCount != null ? pendingAdsCount : 0}">0</div>
+								<div class="stat-label">待審核廣告</div>
+							</div>
+							<div class="stat-item">
+								<div class="stat-number" th:text="${approvedAdsCount != null ? approvedAdsCount : 0}">0</div>
+								<div class="stat-label">已通過廣告</div>
+							</div>
+							<div class="stat-item">
+								<div class="stat-number" th:text="${rejectedAdsCount != null ? rejectedAdsCount : 0}">0</div>
+								<div class="stat-label">已拒絕廣告</div>
+							</div>
+							<div class="stat-item">
+								<div class="stat-number" th:text="${inactiveAdsCount != null ? inactiveAdsCount : 0}">0</div>
+								<div class="stat-label">已停用廣告</div>
+							</div>
+						</div>
+					</div>
+					
+					<!-- 功能選項 -->
+					<div class="dashboard-grid">
+						<!-- 待審核廣告 -->
+						<a href="/advertisment/admin/pending" class="dashboard-card">
+							<div class="card-header">
+								<div class="card-icon icon-advertisment">
+									<span class="material-icons">pending</span>
+								</div>
+								<h3 class="card-title">待審核廣告</h3>
+							</div>
+							<p class="card-description">
+								審核新提交的廣告，通過或拒絕廣告申請。
+							</p>
+							<div class="card-actions">
+								<span class="btn btn-primary">進入審核</span>
+							</div>
+						</a>
+						
+						<!-- 已審核廣告 -->
+						<a href="/advertisment/admin/reviewed" class="dashboard-card">
+							<div class="card-header">
+								<div class="card-icon icon-members">
+									<span class="material-icons">check_circle</span>
+								</div>
+								<h3 class="card-title">已審核廣告</h3>
+							</div>
+							<p class="card-description">
+								查看已通過和已拒絕的廣告，管理廣告狀態。
+							</p>
+							<div class="card-actions">
+								<span class="btn btn-primary">查看管理</span>
+							</div>
+						</a>
+						
+						<!-- 廣告統計總覽 -->
+						<div class="dashboard-card" style="background-color: #f8f9fa; cursor: default;">
+							<div class="card-header">
+								<div class="card-icon icon-notification">
+									<span class="material-icons">analytics</span>
+								</div>
+								<h3 class="card-title">廣告統計</h3>
+							</div>
+							<p class="card-description">
+								系統自動過濾過期廣告，確保用戶只看到有效內容。
+							</p>
+							<div class="card-actions">
+								<span class="btn btn-secondary" style="cursor: default;">自動管理中</span>
+							</div>
+						</div>
+					</div>
+					
+					<div style="margin-top: 40px; text-align: center; padding: 20px; background-color: #fff; border-radius: 8px;">
+						<p style="color: #666; margin: 0;">
+							<strong>系統狀態：</strong>廣告管理系統運行正常
+							<br>
+							<small>您可以透過上方功能選項管理廣告內容</small>
+						</p>
+					</div>
 				</div>
-            </main>
+			</main>
 		</div>
 	</div>
     

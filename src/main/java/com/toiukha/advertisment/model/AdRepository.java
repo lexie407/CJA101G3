@@ -1,10 +1,12 @@
 package com.toiukha.advertisment.model;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.*;
 
 public interface AdRepository extends JpaRepository<AdVO, Integer>{
@@ -27,12 +29,22 @@ public interface AdRepository extends JpaRepository<AdVO, Integer>{
 	    // JPA 會根據方法名稱自動實作 SQL：SELECT * FROM advertisment WHERE storeId = ?
 	    List<AdVO> findByStoreId(Integer storeId);
 	    
-	    // 根據狀態查詢廣告
-	    List<AdVO> findByAdStatus(Byte adStatus);
+	        // 根據狀態查詢廣告
+    List<AdVO> findByAdStatus(Byte adStatus);
+    
+    // 查詢有效的已審核通過廣告（排除過期的）
+    @Query("FROM AdVO WHERE adStatus = :status AND (adEndTime IS NULL OR adEndTime > CURRENT_TIMESTAMP)")
+    List<AdVO> findActiveAdsByStatus(@Param("status") Byte status);
 	    
 	    // 根據狀態排序查詢廣告
 	    List<AdVO> findByAdStatusOrderByAdCreatedTimeDesc(Byte adStatus);
-	}
+	
 
 	
 	// 有需要自訂查詢再往下補
+
+	//查今天會上架的廣告
+	@Query(value = "FROM AdVO WHERE :now BETWEEN adStartTime AND adEndTime")
+	public List<AdVO> getTodayAds(Timestamp now);
+	
+}
