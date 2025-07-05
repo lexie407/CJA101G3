@@ -103,6 +103,12 @@ function initComments(shadowRoot) {
 				commentForm.reset(); // 清空表單
 				imagePreviewContainer.innerHTML = ""; // 清空圖片預覽
 				imagePreviewContainer.style.display = 'none';
+
+				// 手動移除 MaterializeCSS textareaAutoResize 可能殘留的隱藏 div
+				const hiddendiv = shadowRoot.querySelector('.hiddendiv.common');
+				if (hiddendiv) {
+					hiddendiv.remove();
+				}
 			} else {
 				const errorData = await response.json();
 				showStatusMessage(`留言新增失敗: ${errorData.message || response.statusText}`, 'error');
