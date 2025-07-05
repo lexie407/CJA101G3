@@ -12,10 +12,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-common.css}">
     <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-form.css}">
-    
-    <!-- 🔧 過度階段：註解掉CSRF token -->
-    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
 <body class="light">
     <div class="app-container">
@@ -24,22 +20,10 @@
         
         <div class="main-content">
             <!-- 頂部導航 -->
-            <div th:replace="~{subnavContentBack :: subnav(activeItem='itn-list')}"></div>
+            <div th:replace="~{subnavContentBack :: subnav(activeItem='itnlist')}"></div>
             
             <!-- 主要內容 -->
             <main class="itinerary-review-page">
-        <!-- 英雄區塊全寬 -->
-        <div class="page-header-section">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1>編輯行程</h1>
-                    <p>修改行程資訊，更新行程內容</p>
-                </div>
-                <div class="header-image">
-                    <img src="/images/logo.png" alt="行程管理系統" class="header-logo">
-                </div>
-            </div>
-        </div>
         <div class="itinerary-form-page">
 
             <!-- 成功/錯誤訊息 -->

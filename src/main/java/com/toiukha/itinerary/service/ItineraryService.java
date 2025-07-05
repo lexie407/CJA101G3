@@ -2,6 +2,7 @@ package com.toiukha.itinerary.service;
 
 import com.toiukha.itinerary.model.ItineraryVO;
 import com.toiukha.itinerary.repository.ItineraryRepository;
+import com.toiukha.favItn.model.FavItnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,9 @@ public class ItineraryService {
     @Qualifier("itnSpotService")
     private ItnSpotService itnSpotService;
 
+    @Autowired
+    private FavItnService favItnService;
+
     // ========== 1. 行程基本 CRUD 操作 ==========
 
     /**
@@ -39,9 +43,15 @@ public class ItineraryService {
      */
     @Transactional
     public ItineraryVO addItinerary(ItineraryVO itineraryVO) {
-        // 預設為公開狀態
+        // 設定預設值
         if (itineraryVO.getIsPublic() == null) {
-            itineraryVO.setIsPublic((byte) 1);
+            itineraryVO.setIsPublic((byte) 1); // 預設為公開
+        }
+        if (itineraryVO.getItnStatus() == null) {
+            itineraryVO.setItnStatus((byte) 1); // 預設為上架
+        }
+        if (itineraryVO.getCreatorType() == null) {
+            itineraryVO.setCreatorType((byte) 1); // 預設為會員建立
         }
         return itineraryRepository.save(itineraryVO);
     }
@@ -131,6 +141,35 @@ public class ItineraryService {
      */
     public Page<ItineraryVO> getPublicItinerariesNotFromActivity(Pageable pageable) {
         return itineraryRepository.findPublicItinerariesNotFromActivity(pageable);
+    }
+    
+    /**
+     * 批量添加景點到行程中
+     * @param itnId 行程ID
+     * @param spotIds 景點ID列表
+     * @return 添加的景點數量
+     */
+    @Transactional
+    public int addSpotsToItinerary(Integer itnId, List<Integer> spotIds) {
+        if (itnId == null || spotIds == null || spotIds.isEmpty()) {
+            return 0;
+        }
+        
+        // 先清空現有的關聯（如果有）
+        itnSpotService.clearItinerarySpots(itnId);
+        
+        // 按順序添加景點
+        int count = 0;
+        for (Integer spotId : spotIds) {
+            try {
+                itnSpotService.addSpotToItinerary(itnId, spotId);
+                count++;
+            } catch (Exception e) {
+                // 忽略添加失敗的景點
+            }
+        }
+        
+        return count;
     }
 
     /**
@@ -228,6 +267,41 @@ public class ItineraryService {
         return itineraryRepository.searchPublicItineraries(keyword, pageable);
     }
 
+    /**
+     * 搜尋行程
+     */
+    public List<ItineraryVO> searchItineraries(String keyword, Integer isPublic) {
+        if (isPublic != null) {
+            return itineraryRepository.findByItnNameContainingAndIsPublic(keyword, isPublic.byteValue());
+        }
+        return itineraryRepository.findByItnNameContaining(keyword);
+    }
+
+    /**
+     * 根據公開狀態查詢行程
+     */
+    public List<ItineraryVO> getItinerariesByPublicStatus(Integer isPublic) {
+        return itineraryRepository.findByIsPublic(isPublic.byteValue());
+    }
+
+    /**
+     * 獲取所有公開行程
+     */
+    public List<ItineraryVO> getAllPublicItineraries() {
+        return itineraryRepository.findByIsPublic((byte) 1);
+    }
+
+    /**
+     * 根據會員ID查詢收藏的行程
+     */
+    public List<ItineraryVO> findFavoriteItinerariesByMemId(Integer memId) {
+        List<Integer> favoriteIds = favItnService.findFavoriteIdsByMemId(memId);
+        if (favoriteIds.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        return itineraryRepository.findAllById(favoriteIds);
+    }
+
     // ========== 4. 統計功能 ==========
 
     /**
@@ -261,6 +335,15 @@ public class ItineraryService {
      */
     public long getItineraryCountByCrtId(Integer crtId) {
         return itineraryRepository.countByCrtId(crtId);
+    }
+
+    /**
+     * 清除行程的所有景點關聯
+     * @param itnId 行程ID
+     */
+    @Transactional
+    public void clearItinerarySpots(Integer itnId) {
+        itnSpotService.clearItinerarySpots(itnId);
     }
 
     // ========== 5. 驗證功能 ==========

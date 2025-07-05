@@ -54,6 +54,7 @@ public class GoogleApiService {
         StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/js");
         url.append("?key=").append(apiKey);
         url.append("&loading=async");
+        url.append("&v=beta"); // 使用 beta 版本以支援更多功能
         // 確保 marker library 一定被加進去
         if (libraries != null && !libraries.trim().isEmpty()) {
             if (!libraries.contains("marker")) {

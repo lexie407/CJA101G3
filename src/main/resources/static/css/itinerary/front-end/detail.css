@@ -402,68 +402,81 @@
 
 /* 9. 底部操作按鈕 */
 .itinerary-detail-bottom-actions {
-    margin-bottom: 2rem;
+    margin: 2rem 0 3rem 0;
 }
 
 .itinerary-bottom-actions {
     display: flex;
-    justify-content: center;
-    gap: 1rem;
     flex-wrap: wrap;
-    padding: 1.5rem;
-    background: var(--md-sys-color-surface-container-low);
-    border-radius: var(--itinerary-detail-radius);
-    border: 1px solid var(--md-sys-color-outline-variant);
+    gap: 1rem;
+    justify-content: center;
 }
 
 .itinerary-primary-btn,
 .itinerary-secondary-btn,
-.itinerary-outline-btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
+.itinerary-outline-btn,
+.itinerary-text-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
     transition: all var(--itinerary-detail-transition);
     text-decoration: none;
-    border: none;
 }
 
 .itinerary-primary-btn {
     background: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
-    box-shadow: var(--itinerary-detail-shadow);
+    border: none;
 }
 
 .itinerary-primary-btn:hover {
-    background: color-mix(in srgb, var(--md-sys-color-primary) 90%, black 10%);
-    transform: translateY(-1px);
-    box-shadow: var(--itinerary-detail-shadow-hover);
+    background: var(--md-sys-color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
 }
 
 .itinerary-secondary-btn {
-    background: var(--md-sys-color-tertiary-container);
-    color: var(--md-sys-color-on-tertiary-container);
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border: none;
 }
 
 .itinerary-secondary-btn:hover {
-    background: color-mix(in srgb, var(--md-sys-color-tertiary-container) 90%, black 10%);
-    transform: translateY(-1px);
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .itinerary-outline-btn {
     background: transparent;
     color: var(--md-sys-color-primary);
-    border: 2px solid var(--md-sys-color-outline);
+    border: 2px solid var(--md-sys-color-primary);
 }
 
 .itinerary-outline-btn:hover {
     background: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
-    border-color: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.itinerary-text-btn {
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    border: none;
+    padding: 0.75rem 1rem;
+}
+
+.itinerary-text-btn:hover {
+    background: var(--md-sys-color-surface-variant);
+    transform: translateY(-1px);
 }
 
 /* 10. 響應式設計 */
@@ -658,5 +671,174 @@
     .itinerary-detail-card {
         box-shadow: none;
         border: 1px solid #ccc;
+    }
+} 
+
+/* 模態對話框樣式 */
+.itinerary-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    padding: 16px;
+}
+
+.itinerary-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 修改模態對話框寬度和邊距 */
+.itinerary-modal-content {
+    max-width: 450px; /* 進一步減小最大寬度 */
+    width: 100%;
+    margin: 0 auto; /* 水平居中 */
+    padding: 24px;
+    background-color: var(--md-sys-color-surface);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.itinerary-modal.show .itinerary-modal-content {
+    transform: translateY(0);
+}
+
+.itinerary-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.itinerary-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--md-sys-color-on-surface);
+}
+
+.itinerary-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--md-sys-color-outline);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.itinerary-modal-close:hover {
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface);
+}
+
+.itinerary-modal-body {
+    margin-bottom: 24px;
+}
+
+.itinerary-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.itinerary-modal-btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.itinerary-modal-btn--primary {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.itinerary-modal-btn--primary:hover {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.itinerary-modal-btn--secondary {
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.itinerary-modal-btn--secondary:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+} 
+
+/* 自定義名稱輸入框樣式 */
+.itinerary-modal-input-group {
+    margin-top: 16px;
+    width: 100%;
+}
+
+.itinerary-modal-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+.itinerary-modal-input:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.itinerary-modal-input.error {
+    border-color: var(--md-sys-color-error);
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+} 
+
+/* 行動裝置響應式樣式 */
+@media (max-width: 480px) {
+    .itinerary-modal-content {
+        max-width: 100%;
+        padding: 20px;
+    }
+    
+    .itinerary-modal-header {
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .itinerary-modal-btn {
+        padding: 10px 14px;
+        font-size: 14px;
     }
 } 

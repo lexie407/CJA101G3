@@ -345,6 +345,49 @@ public class SpotRestController {
     // ========== 10. 工具和配置API (保留原有功能) ==========
 
     /**
+     * 取得景點列表（前台行程頁面用）
+     * 支持分頁和過濾條件
+     * @param limit 返回的最大記錄數
+     * @param offset 起始位置
+     * @param isPublic 是否公開 (1=公開, 0=私人)
+     * @param status 狀態 (1=上架)
+     * @return 景點列表
+     */
+    @GetMapping("/spots")
+    public ResponseEntity<List<SpotVO>> getSpots(
+            @RequestParam(required = false, defaultValue = "12") Integer limit,
+            @RequestParam(required = false, defaultValue = "0") Integer offset,
+            @RequestParam(required = false) Byte isPublic,
+            @RequestParam(required = false) Byte status) {
+        
+        try {
+            List<SpotVO> spots;
+            
+            // 根據參數決定查詢方式 - 只使用狀態過濾
+            if (status != null) {
+                // 只篩選狀態
+                spots = spotService.getSpotsByStatus(status);
+            } else {
+                // 獲取所有上架景點
+                spots = spotService.getActiveSpots();
+            }
+            
+            // 應用分頁
+            if (spots.size() > offset) {
+                int endIndex = Math.min(offset + limit, spots.size());
+                spots = spots.subList(offset, endIndex);
+            } else {
+                spots = List.of(); // 返回空列表
+            }
+            
+            return ResponseEntity.ok(spots);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(List.of());
+        }
+    }
+
+    /**
      * 取得當前使用者ID
      * @return 使用者ID
      */
@@ -372,7 +415,7 @@ public class SpotRestController {
             if (hasValidApiKey) {
                 // 提供API Key給前端使用
                 config.put("apiKey", apiKey);
-                config.put("mapsApiUrl", "https://maps.googleapis.com/maps/api/js?key=" + apiKey + "&libraries=places,geometry,marker&loading=async");
+                config.put("mapsApiUrl", "https://maps.googleapis.com/maps/api/js?key=" + apiKey + "&libraries=places,geometry,marker&v=beta&loading=async");
                 config.put("message", "Google Maps API 已配置");
             } else {
                 config.put("message", "Google Maps API Key 未設定或無效，請檢查 application.properties 中的 google.api.key 設定");

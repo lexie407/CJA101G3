@@ -39,6 +39,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.HashMap;
+import org.springframework.http.HttpStatus;
 
 /**
  * 景點管理後端總控制器
@@ -62,8 +64,7 @@ public class SpotAdminController {
     @Autowired
     private SpotService spotService;
 
-    @Autowired
-    private AdministrantService administrantService;
+    // 移除未使用的administrantService欄位
 
 
     // ===================================================================================
@@ -545,21 +546,22 @@ public class SpotAdminController {
                 redirectAttr.addFlashAttribute("errorMessage", "請選擇要退回的景點");
                 return "redirect:/admin/spot/spotlist";
             }
-            spotService.batchUpdateStatus(spotIds, (byte) 2); // 2: 退回
-            redirectAttr.addFlashAttribute("successMessage", "已批量退回 " + spotIds.size() + " 個景點");
+            
+            int rejectedCount = 0;
+            for (Integer spotId : spotIds) {
+                try {
+                    spotService.rejectSpot(spotId, "批次退回", "");
+                    rejectedCount++;
+                } catch (Exception e) {
+                    logger.warn("退回景點 {} 時發生錯誤: {}", spotId, e.getMessage());
+                }
+            }
+            
+            redirectAttr.addFlashAttribute("successMessage", "成功退回 " + rejectedCount + " 個景點");
         } catch (Exception e) {
             redirectAttr.addFlashAttribute("errorMessage", "批量退回失敗：" + e.getMessage());
         }
         return "redirect:/admin/spot/spotlist";
-    }
-
-    /**
-     * 後台登入頁面
-     * @return 登入頁面
-     */
-    @GetMapping("/login")
-    public String adminLoginPage() {
-        return "back-end/spot/login";
     }
 
     /**
@@ -583,23 +585,12 @@ public class SpotAdminController {
      */
     @GetMapping("/forbidden")
     public String forbiddenPage() {
-        return "back-end/spot/forbidden";
-    }
-
-    /**
-     * 後台登出
-     * @param session HTTP Session
-     * @return 重定向到登入頁面
-     */
-    @GetMapping("/logout")
-    public String logout(jakarta.servlet.http.HttpSession session) {
-        session.invalidate();
-        return "redirect:/admin/spot/login";
+        return "redirect:/admins/login";
     }
 
     @GetMapping({"", "/"})
     public String redirectToList() {
-        return "redirect:/admin/spot/spotlist";
+        return "redirect:/admins/dashboard";
     }
 
     // ===================================================================================
@@ -664,6 +655,14 @@ public class SpotAdminController {
             @RequestParam(defaultValue = "10") int limit,
             @RequestParam(defaultValue = "1") Integer crtId) {
         logger.info("開始匯入 {} 的景點資料，上限 {} 筆，操作人員 ID: {}", city, limit, crtId);
+        
+        // 修正常見的錯誤城市代碼
+        String correctedCity = correctCityCode(city);
+        if (!city.equals(correctedCity)) {
+            logger.info("城市代碼已修正: {} -> {}", city, correctedCity);
+            city = correctedCity;
+        }
+        
         try {
             GovernmentDataService.ImportResult result = governmentDataService.importGovernmentData(crtId, limit, city);
             return ResponseEntity.ok(ApiResponse.success(city + " 景點資料匯入完成", result));
@@ -673,6 +672,37 @@ public class SpotAdminController {
         }
     }
     
+    /**
+     * 修正常見的錯誤城市代碼
+     * @param city 原始城市代碼
+     * @return 修正後的城市代碼
+     */
+    private String correctCityCode(String city) {
+        if (city == null) return null;
+        
+        // 城市代碼修正對照表
+        Map<String, String> corrections = Map.ofEntries(
+            Map.entry("PenghuCounty", "Penghu"),
+            Map.entry("TaitungCounty", "Taitung"),
+            Map.entry("HualienCounty", "Hualien"),
+            Map.entry("YilanCounty", "Yilan"),
+            Map.entry("KinmenCounty", "Kinmen"),
+            Map.entry("LienchiangCounty", "Lienchiang"),
+            Map.entry("YunlinCounty", "Yunlin"),
+            Map.entry("NantouCounty", "Nantou"),
+            Map.entry("ChanghuaCounty", "Changhua"),
+            Map.entry("MiaoliCounty", "Miaoli"),
+            Map.entry("PingtungCounty", "Pingtung"),
+            Map.entry("TaoyuanCounty", "Taoyuan"),
+            Map.entry("NewTaipeiCity", "NewTaipei"),
+            Map.entry("TaichungCity", "Taichung"),
+            Map.entry("TainanCity", "Tainan"),
+            Map.entry("KaohsiungCity", "Kaohsiung")
+        );
+        
+        return corrections.getOrDefault(city, city);
+    }
+
     // ===================================================================================
     // 從 SpotDataImportController 移轉過來的方法
     // ===================================================================================
@@ -958,6 +988,25 @@ public class SpotAdminController {
         return ApiResponse.success("查詢成功", data);
     }
 
+    /**
+     * 修正已匯入景點的地區信息
+     * 特別針對花蓮縣和台東縣的混淆問題
+     */
+    @PostMapping("/api/correct-region")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> correctRegionInfo() {
+        logger.info("開始修正景點地區信息");
+        try {
+            int correctedCount = governmentDataService.correctRegionInfo();
+            Map<String, Object> result = new HashMap<>();
+            result.put("correctedCount", correctedCount);
+            return ResponseEntity.ok(ApiResponse.success("地區信息修正完成", result));
+        } catch (Exception e) {
+            logger.error("修正地區信息時發生錯誤", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("修正地區信息時發生錯誤: " + e.getMessage()));
+        }
+    }
+
     // ===================================================================================
     // 私有輔助方法 (Private Helper Methods)
     // ===================================================================================
@@ -1039,55 +1088,5 @@ public class SpotAdminController {
             logger.warn("解析驗證錯誤訊息失敗: {}", parseError.getMessage());
             return "新增失敗：資料驗證錯誤";
         }
-    }
-
-    /**
-     * 處理後台登入
-     * @param adminAcc 管理員帳號
-     * @param adminPwd 管理員密碼
-     * @param session HTTP Session
-     * @param model 模型
-     * @return 登入結果
-     */
-    @PostMapping("/login")
-    public String processLogin(@RequestParam String adminAcc, 
-                              @RequestParam String adminPwd, 
-                              jakarta.servlet.http.HttpSession session,
-                              Model model) {
-        
-        // 1. 判斷帳號是否存在
-        Optional<AdministrantVO> opt = administrantService.findByAdminAcc(adminAcc);
-        if (opt.isEmpty()) {
-            model.addAttribute("errorMsgs", List.of("管理員帳號錯誤"));
-            model.addAttribute("adminAcc", adminAcc);
-            return "back-end/spot/login";
-        }
-        AdministrantVO admin = opt.get();
-
-        // 2. 密碼比對
-        if (!admin.getAdminPwd().equals(adminPwd)) {
-            model.addAttribute("errorMsgs", List.of("管理員密碼錯誤"));
-            model.addAttribute("adminAcc", adminAcc);
-            return "back-end/spot/login";
-        }
-
-        // 3. 帳號狀態檢查：0 = 啟用；1 = 停權
-        if (admin.getAdminStatus() == 1) {
-            model.addAttribute("errorMsgs", List.of("帳號已被停權，如有問題請聯絡最高管理員"));
-            model.addAttribute("adminAcc", adminAcc);
-            return "back-end/spot/login";
-        }
-
-        // 4. 登入成功：放入 Session
-        session.setAttribute("admin", admin);
-        
-        // 把功能授權也存進 session 
-        List<Integer> funcIds = admin.getAuths().stream()
-            .map(auth -> auth.getManageFunction().getManageFuncId())
-            .toList();
-        session.setAttribute("adminFuncIds", funcIds);
-
-        // 5. 導向景點後台首頁
-        return "redirect:/admin/spot/spotlist";
     }
 } 

@@ -36,7 +36,12 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
      * @param itnName 行程名稱
      * @return 符合條件的行程列表
      */
-    List<ItineraryVO> findByItnNameContaining(String itnName);
+    List<ItineraryVO> findByItnNameContaining(String keyword);
+    
+    List<ItineraryVO> findByItnNameContainingAndIsPublic(String keyword, byte isPublic);
+    
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = :isPublic AND i.itnId NOT IN (SELECT a.itnId FROM ActItnVO a)")
+    List<ItineraryVO> findByIsPublic(@Param("isPublic") byte isPublic);
 
     /**
      * 根據建立者查詢行程
@@ -64,7 +69,7 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
      * 查詢所有非揪團模組的公開行程
      * @return 非揪團模組的公開行程列表，按建立時間倒序排列
      */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.itnId < 10 OR i.itnId > 20) ORDER BY i.itnCreateDat DESC")
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND i.itnStatus = 1 AND (i.itnId < 10 OR i.itnId > 20) ORDER BY i.itnCreateDat DESC")
     List<ItineraryVO> findPublicItinerariesNotFromActivity();
 
     /**
@@ -72,7 +77,7 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
      * @param pageable 分頁資訊
      * @return 非揪團模組的公開行程分頁結果
      */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.itnId < 10 OR i.itnId > 20)")
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND i.itnStatus = 1 AND (i.itnId < 10 OR i.itnId > 20)")
     Page<ItineraryVO> findPublicItinerariesNotFromActivity(Pageable pageable);
 
     /**

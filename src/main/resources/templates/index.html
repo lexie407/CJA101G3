@@ -13,6 +13,8 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 景點首頁樣式 -->
     <link rel="stylesheet" th:href="@{/css/spot/front-end/index.css}">
+    <!-- 收藏功能樣式 -->
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/favorites.css}">
 </head>
 <body class="light">
     <div class="app-container ">
@@ -63,7 +65,7 @@
                                 <span class="material-icons">public</span>
                                 地區選擇
                             </h2>
-                            <a href="#" class="spot-index-regions__link">查看更多 →</a>
+                            <!-- 移除查看更多鏈接 -->
                         </div>
                         
                         <div class="spot-index-regions__grid">
@@ -180,14 +182,34 @@
                             </div>
                         </div>
                         
+                        <!-- 調試信息 -->
+                        <!-- <div style="background-color: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc;">
+                            <h4>調試信息</h4>
+                            <p th:text="'spotList是否為空: ' + ${spotList == null ? '是 (null)' : (spotList.isEmpty() ? '是 (空列表)' : '否 (' + spotList.size() + '個景點)')}"></p>
+                            <div th:if="${spotList != null && !spotList.isEmpty()}">
+                                <p>第一個景點信息:</p>
+                                <ul>
+                                    <li th:text="'ID: ' + ${spotList[0].spotId}"></li>
+                                    <li th:text="'名稱: ' + ${spotList[0].spotName}"></li>
+                                    <li th:text="'狀態: ' + ${spotList[0].spotStatus}"></li>
+                                    <li th:text="'地址: ' + ${spotList[0].spotLoc}"></li>
+                                </ul>
+                            </div>
+                        </div> -->
+                        
                         <div th:if="${spotList != null and !spotList.isEmpty()}" class="spot-index-popular__grid">
                             <div th:each="spot, iterStat : ${spotList}" 
                                  th:if="${iterStat.index < 8}" 
-                                 class="spot-index-spot-card">
+                                 class="spot-index-spot-card"
+                                 th:data-spot-id="${spot.spotId}">
                                 <div class="spot-index-spot-card__image">
                                     <!-- 收藏按鈕 -->
-                                    <button class="spot-index-spot-card__favorite" title="加入收藏">
-                                        <span class="material-icons">favorite_border</span>
+                                    <button 
+                                        th:attr="data-spot-id=${spot.spotId}"
+                                        th:title="${favoriteStatusMap != null && favoriteStatusMap.containsKey(spot.spotId) && favoriteStatusMap.get(spot.spotId) ? '取消收藏' : '加入收藏'}"
+                                        th:classappend="${favoriteStatusMap != null && favoriteStatusMap.containsKey(spot.spotId) && favoriteStatusMap.get(spot.spotId) ? 'favorited' : ''}"
+                                        class="spot-index-spot-card__favorite">
+                                        <span class="material-icons" th:text="${favoriteStatusMap != null && favoriteStatusMap.containsKey(spot.spotId) && favoriteStatusMap.get(spot.spotId) ? 'favorite' : 'favorite_border'}">favorite_border</span>
                                     </button>
                                     <!-- 分類標籤 -->
                                     <span class="spot-index-spot-card__category-badge" 
@@ -230,14 +252,7 @@
                                             <span class="material-icons">visibility</span>
                                             查看詳情
                                         </a>
-                                        <div class="spot-index-spot-card__action-btns">
-                                            <button class="spot-index-spot-card__action-btn" title="分享">
-                                                <span class="material-icons">share</span>
-                                            </button>
-                                            <button class="spot-index-spot-card__action-btn" title="加入收藏">
-                                                <span class="material-icons">bookmark_border</span>
-                                            </button>
-                                        </div>
+                                        <!-- 移除分享和書籤按鈕 -->
                                     </div>
                                 </div>
                             </div>
@@ -278,6 +293,8 @@
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script src="/js/notification/websocket.js"></script>
+    <!-- 景點模組通用腳本 -->
+    <script th:src="@{/js/spot/front-end/spot-common.js}"></script>
     <!-- 景點首頁腳本 -->
     <script th:src="@{/js/spot/front-end/index.js}"></script>
 </body>

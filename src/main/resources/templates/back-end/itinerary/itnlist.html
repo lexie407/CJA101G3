@@ -11,13 +11,14 @@
     <!-- 行程模組專用樣式 -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-common.css}">
-    <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-form.css}">
     <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-list.css}">
-    <script th:src="@{/js/itinerary/back-end/list.js?v=1}" defer></script>
     
-    <!-- 🔧 過度階段：註解掉CSRF token -->
-    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
+    <!-- 引入 DataTables 相關資源 -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js" defer></script>
+    
+    <!-- 行程列表頁面專用腳本 -->
+    <script th:src="@{/js/itinerary/back-end/list.js?v=1}" defer></script>
 </head>
 <body class="light">
     <div class="app-container">
@@ -26,21 +27,9 @@
         
         <div class="main-content">
             <!-- 頂部導航 -->
-            <div th:replace="~{subnavItinerary :: subnav('list')}"></div>
+            <div th:replace="~{subnavContentBack :: subnav(activeItem='itnlist')}"></div>
 
             <main class="content-area-main itinerary-review-page">
-        <!-- 英雄區塊全寬 -->
-        <div class="page-header-section">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1>行程管理</h1>
-                    <p>管理系統中的所有行程資料</p>
-                </div>
-                <div class="header-image">
-                    <img src="/images/logo.png" alt="行程管理系統" class="header-logo">
-                </div>
-            </div>
-        </div>
         <div class="itinerary-list-page">
 
         <!-- 篩選控制區 -->
@@ -255,3 +244,16 @@
     </div>
 </body>
 </html> 
+
+<!-- 添加後台行程列表頁面的FAB按鈕 -->
+<link rel="stylesheet" th:href="@{/css/back-end-fab.css}">
+<div class="admin-fab-container">
+    <a th:href="@{/admin/itinerary/add}" class="admin-fab" title="新增行程">
+        <div class="admin-fab-icon">
+            <span class="material-icons">add_circle</span>
+        </div>
+        <div class="admin-fab-tooltip">
+            <span>新增行程</span>
+        </div>
+    </a>
+</div> 

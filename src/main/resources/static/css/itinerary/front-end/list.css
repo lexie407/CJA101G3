@@ -468,32 +468,66 @@
     color: #1976d2;
 }
 
+/* 優化卡片底部按鈕 */
 .itinerary-list-card__actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.8rem;
+    margin-top: 1.2rem;
 }
 
 .itinerary-list-card__link {
     background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
     color: white;
-    padding: 0.8rem 1.5rem;
+    padding: 0.7rem 1rem;
     border-radius: 25px;
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 600;
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     transition: all var(--itinerary-transition);
+    min-width: 120px;
     flex: 1;
-    justify-content: center;
+    text-align: center;
     box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+    border: none;
+    cursor: pointer;
 }
 
 .itinerary-list-card__link:hover {
     background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+/* 設為私人/公開按鈕樣式 */
+.toggle-visibility-btn {
+    background: white !important;
+    color: #1976d2 !important;
+    border: 2px solid #1976d2 !important;
+    box-shadow: 0 2px 6px rgba(25, 118, 210, 0.15) !important;
+}
+
+.toggle-visibility-btn:hover {
+    background: #f0f7ff !important;
+    color: #1565c0 !important;
+    border-color: #1565c0 !important;
+}
+
+/* 編輯行程按鈕樣式 */
+.edit-itinerary-btn {
+    background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%) !important;
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3) !important;
+}
+
+.edit-itinerary-btn:hover {
+    background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%) !important;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4) !important;
 }
 
 /* 7. 空狀態 - 小卡片風格優化 */
@@ -641,6 +675,16 @@
     
     .itinerary-list-card__content {
         padding: 0 0.75rem 0.75rem;
+    }
+
+    .itinerary-list-card__actions {
+        flex-direction: column;
+        gap: 0.7rem;
+    }
+    
+    .itinerary-list-card__link {
+        width: 100%;
+        padding: 0.7rem 0.5rem;
     }
 }
 

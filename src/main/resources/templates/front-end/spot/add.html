@@ -55,16 +55,16 @@
                                     <p class="spot-add-hero__subtitle">分享你發現的美麗景點，與更多旅人一起探索</p>
                                     <div class="spot-add-hero__features">
                                         <div class="spot-add-hero__feature">
-                                            <span class="material-icons">verified</span>
-                                            <span>審核制度</span>
+                                            <!-- <span class="material-icons">verified</span> -->
+                                            <!-- <span>審核制度</span> -->
                                         </div>
                                         <div class="spot-add-hero__feature">
-                                            <span class="material-icons">public</span>
-                                            <span>公開分享</span>
+                                            <!-- <span class="material-icons">public</span> -->
+                                            <!-- <span>公開分享</span> -->
                                         </div>
                                         <div class="spot-add-hero__feature">
-                                            <span class="material-icons">favorite</span>
-                                            <span>收藏推薦</span>
+                                            <!-- <span class="material-icons">favorite</span> -->
+                                            <!-- <span>收藏推薦</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -255,7 +255,7 @@
                                     <div class="spot-add-help-card__header">
                                         <h3 class="spot-add-help-card__title">
                                             <span class="material-icons">lightbulb</span>
-                                            新增景點小貼士
+                                            景點提交須知
                                         </h3>
                                     </div>
                                     <div class="spot-add-help-card__content">
@@ -327,7 +327,9 @@
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script src="/js/notification/websocket.js"></script>
-    <!-- 新增景點頁面腳本 -->
-    <script th:src="@{/js/spot/front-end/add.js}"></script>
+    <!-- 景點模組通用腳本 -->
+    <script th:src="@{/js/spot/front-end/spot-common.js}" defer></script>
+    <!-- 景點新增頁面腳本 -->
+    <script th:src="@{/js/spot/front-end/add.js}" defer></script>
 </body>
 </html> 

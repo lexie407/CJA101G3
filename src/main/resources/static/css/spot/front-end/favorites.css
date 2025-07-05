@@ -1,0 +1,242 @@
+/**
+ * 景點收藏頁面樣式
+ * 繼承行程收藏頁面的樣式，並添加景點收藏特定的樣式
+ */
+
+/* 引入行程列表的基本樣式 */
+@import url('/css/itinerary/front-end/list.css');
+
+/* 景點收藏頁面特定樣式 */
+.itinerary-list-card__image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+    gap: 0.5rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.itinerary-list-card__image-placeholder .material-icons {
+    font-size: 2.5rem;
+    opacity: 0.6;
+}
+
+.itinerary-list-card__image-placeholder span:last-child {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* 景點卡片圖片 */
+.itinerary-list-card__image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.itinerary-list-card:hover .itinerary-list-card__image {
+    transform: scale(1.05);
+}
+
+/* 登入對話框 */
+.login-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    cursor: pointer; /* 添加指針樣式，表示可點擊 */
+}
+
+.login-dialog--show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.login-dialog__content {
+    background-color: var(--md-sys-color-surface);
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+    cursor: default; /* 恢復默認指針樣式，表示內容區域不是用來點擊關閉的 */
+    position: relative; /* 確保內容區域在點擊事件中有正確的定位 */
+    z-index: 1; /* 確保內容區域在背景之上 */
+}
+
+.login-dialog--show .login-dialog__content {
+    transform: translateY(0);
+}
+
+.login-dialog__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.login-dialog__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.login-dialog__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.login-dialog__close:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.login-dialog__body {
+    margin-bottom: 24px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.login-dialog__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.login-dialog__button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.login-dialog__button--primary {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.login-dialog__button--secondary {
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.login-dialog__button:hover {
+    filter: brightness(1.1);
+}
+
+/* 載入動畫 */
+.loading-spinner {
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 錯誤提示 */
+.spot-favorites-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin: 0 1.5rem 1.5rem;
+    animation: spot-favorites-alert-slide-in 0.3s ease-out;
+    border: 1px solid transparent;
+}
+
+.spot-favorites-alert--error {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    border-color: var(--md-sys-color-error);
+}
+
+.spot-favorites-alert__icon .material-icons {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.spot-favorites-alert__content {
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.spot-favorites-alert__close {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0;
+}
+
+.spot-favorites-alert__close:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.spot-favorites-alert__close .material-icons {
+    font-size: 1.1rem;
+}
+
+@keyframes spot-favorites-alert-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 調整行程列表樣式以適應景點收藏 */
+.itinerary-list-card__header {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+/* 調整空狀態的樣式 */
+.itinerary-list-empty .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--md-sys-color-primary);
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+} 

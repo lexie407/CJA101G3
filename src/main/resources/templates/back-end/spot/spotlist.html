@@ -13,15 +13,15 @@
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-list.css}">
     
+    <!-- 引入 DataTables 相關資源 -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js" defer></script>
+    
     <!-- Toastify 通知庫 -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     
     <script th:src="@{/js/spot/back-end/list.js?v=9}" defer></script>
-    
-    <!-- 🔧 過度階段：註解掉CSRF token -->
-    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
 <body class="light">
     <div class="app-container">
@@ -33,19 +33,6 @@
             <div th:replace="~{subnavContentBack :: subnav(activeItem='spotlist')}"></div>
 
             <main class="content-area-main spot-list-page">
-        <!-- 頁面標題區域 -->
-        <div class="page-header-section">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1>景點管理</h1>
-                    <p>管理系統中的所有景點資料</p>
-                </div>
-                <div class="header-image">
-                    <img src="/images/logo.png" alt="景點管理" class="header-logo">
-                </div>
-            </div>
-        </div>
-
         <!-- 篩選控制區 -->
         <div class="filter-section">
             <div class="filter-controls">
@@ -117,7 +104,6 @@
                     <div class="pagination-control">
                         <span>每頁顯示</span>
                         <select id="pageSizeSelect">
-                            <option value="3">3 筆</option>
                             <option value="5">5 筆</option>
                             <option value="10" selected>10 筆</option>
                             <option value="20">20 筆</option>
@@ -407,3 +393,16 @@
     </div>
 </body>
 </html> 
+
+<!-- 添加後台景點列表頁面的FAB按鈕 -->
+<link rel="stylesheet" th:href="@{/css/back-end-fab.css}">
+<div class="admin-fab-container">
+    <a th:href="@{/admin/spot/add}" class="admin-fab" title="新增景點">
+        <div class="admin-fab-icon">
+            <span class="material-icons">add_location_alt</span>
+        </div>
+        <div class="admin-fab-tooltip">
+            <span>新增景點</span>
+        </div>
+    </a>
+</div> 

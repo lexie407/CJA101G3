@@ -1,239 +1,147 @@
-/* =================
-   我的收藏樣式
-   使用 itinerary-fav- 前綴
-   依賴 style.css 基礎層
-   ================= */
+/* 繼承行程列表的基本樣式 */
+@import url('../list.css');
 
-:root {
-    --itinerary-fav-radius: 16px;
-    --itinerary-fav-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    --section-spacing: 1.25rem;
+/* 收藏頁面特定樣式 */
+.favorites-header {
+    margin-bottom: 2rem;
 }
 
-/* 英雄區塊 - 統一樣式 */
-.itinerary-fav-hero {
-    background: linear-gradient(135deg, 
-        var(--md-sys-color-primary) 0%, 
-        var(--md-sys-color-tertiary) 100%);
-    height: 180px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    border-radius: 20px;
-    margin: 1rem 1.5rem;
-    box-shadow: var(--itinerary-fav-shadow);
-}
-
-.itinerary-fav-hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
-    opacity: 0.4;
-}
-
-.itinerary-fav-hero__content {
-    text-align: center;
-    color: var(--md-sys-color-on-primary);
-    position: relative;
-    z-index: 2;
-    max-width: 650px;
-    padding: 2rem 1.25rem;
-    width: 100%;
-}
-
-.itinerary-fav-title {
-    font-size: clamp(2rem, 4vw, 2.5rem);
-    font-weight: 700;
-    margin-bottom: 1rem;
-    line-height: 1.2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
-}
-
-.itinerary-fav-title .material-icons {
-    font-size: clamp(2.2rem, 4.5vw, 2.8rem);
-    color: var(--md-sys-color-tertiary);
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-}
-
-.itinerary-fav-subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
-    opacity: 0.92;
-    line-height: 1.4;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    margin: 0;
-}
-
-.itinerary-fav-list {
-    padding: var(--section-spacing) 0;
-}
-
-.itinerary-list-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.25rem;
-}
-
-.itinerary-fav-item {
-    /* 可根據需求自訂 */
-}
-
-.itinerary-card {
-    background: var(--md-sys-color-surface);
-    border-radius: 20px;
-    box-shadow: 0 2px 12px rgba(41, 171, 194, 0.08);
-    padding: 1.5rem;
-    border: 1px solid var(--md-sys-color-outline-variant);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    transition: box-shadow 0.2s;
-}
-
-.itinerary-card:hover {
-    box-shadow: 0 6px 24px rgba(41, 171, 194, 0.16);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
-}
-
-.card-status {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.status-public {
-    background: var(--md-sys-color-tertiary-container);
-    color: var(--md-sys-color-on-tertiary-container);
-}
-
-.status-private {
-    background: var(--md-sys-color-surface-container-high);
-    color: var(--md-sys-color-on-surface-variant);
-}
-
-.card-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.action-btn {
-    background: none;
-    border: none;
-    color: var(--md-sys-color-primary);
-    font-size: 1.1rem;
-    border-radius: 8px;
-    padding: 0.4rem 0.7rem;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 0.2rem;
-}
-
-.action-btn:hover {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-}
-
-.card-content {
-    flex: 1;
-}
-
-.card-title {
-    font-size: 1.2rem;
-    font-weight: 700;
+.favorites-title {
+    font-size: 2rem;
     color: var(--md-sys-color-on-surface);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.favorites-title .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: 2.2rem;
+}
+
+.favorites-subtitle {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 1.1rem;
     margin: 0;
 }
 
-.card-description {
+.favorites-empty {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border-radius: var(--itinerary-card-radius);
+    box-shadow: var(--itinerary-shadow);
+}
+
+.favorites-empty .material-icons {
+    font-size: 4rem;
+    color: var(--md-sys-color-primary);
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+}
+
+.favorites-empty h3 {
+    font-size: 1.5rem;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 1rem;
+}
+
+.favorites-empty p {
     color: var(--md-sys-color-on-surface-variant);
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin: 0.5rem 0 0 0;
+    margin-bottom: 2rem;
+    max-width: 500px;
 }
 
-.card-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.2rem 1.5rem;
-    margin-top: 0.5rem;
+.favorites-empty-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all var(--itinerary-transition);
 }
 
-.meta-item {
+.favorites-empty-action:hover {
+    background: var(--md-sys-color-primary-hover);
+    transform: translateY(-2px);
+}
+
+/* 確保收藏按鈕樣式與列表頁一致 */
+.itinerary-list-card__favorite {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    font-size: 0.95rem;
-    color: var(--md-sys-color-on-surface-variant);
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all var(--itinerary-transition);
+    z-index: 2;
 }
 
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 0 1.5rem 1.5rem;
+.itinerary-list-card__favorite .material-icons {
+    font-size: 1.4rem;
+    color: var(--md-sys-color-on-surface-variant);
+    transition: all var(--itinerary-transition);
+}
+
+.itinerary-list-card__favorite:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.itinerary-list-card__favorite.favorited {
+    background: var(--md-sys-color-primary);
+}
+
+.itinerary-list-card__favorite.favorited .material-icons {
+    color: white;
 }
 
 /* 響應式設計 */
 @media (max-width: 768px) {
-    .itinerary-fav-hero {
-        margin: 0.5rem 1rem;
-        padding: 1.5rem 0;
+    .favorites-title {
+        font-size: 1.75rem;
     }
-    .itinerary-fav-card {
-        padding: 1rem;
+    
+    .favorites-title .material-icons {
+        font-size: 2rem;
     }
-    .itinerary-list-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    .card-footer {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-    }
-    .itn-capsule-btn, .itn-capsule-outline-btn {
-        width: 100%;
-        justify-content: center;
+    
+    .favorites-subtitle {
+        font-size: 1rem;
     }
 }
+
 @media (max-width: 576px) {
-    .itinerary-fav-hero {
-        margin: 0.5rem;
-        border-radius: 16px;
+    .favorites-title {
+        font-size: 1.5rem;
     }
-    .itinerary-fav-card {
-        padding: 0.75rem;
-        border-radius: 12px;
+    
+    .favorites-empty {
+        padding: 3rem 1.5rem;
     }
-    .itinerary-fav-card-actions {
-        flex-direction: column;
-        gap: 0.5rem;
+    
+    .favorites-empty .material-icons {
+        font-size: 3rem;
+    }
+    
+    .favorites-empty h3 {
+        font-size: 1.25rem;
     }
 } 

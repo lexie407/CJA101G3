@@ -104,7 +104,7 @@ function loadGoogleMapsAPI() {
                 }
                 
                 const apiUrl = config.mapsApiUrl ||
-                    `https://maps.googleapis.com/maps/api/js?key=${config.apiKey}&libraries=places,geometry&loading=async`;
+                    `https://maps.googleapis.com/maps/api/js?key=${config.apiKey}&libraries=places,geometry,marker&v=beta&loading=async`;
                 
                 console.log('🔗 載入 Google Maps API');
                 
@@ -475,56 +475,217 @@ function openInGoogleMaps() {
  */
 function initFavoriteSystem() {
     updateFavoriteButton();
+    setupFavoriteStorageListener();
     console.log('💖 收藏系統初始化完成');
+}
+
+/**
+ * 設置收藏狀態變更監聽器
+ */
+function setupFavoriteStorageListener() {
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'spotFavoriteChange') {
+            const data = JSON.parse(e.newValue);
+            
+            // 確認是否為當前景點
+            if (data.spotId === spotData.spotId) {
+                // 更新收藏狀態
+                isFavorited = data.isFavorited;
+                updateFavoriteButton();
+                
+                // 如果有提供收藏數量，更新顯示
+                if (data.favoriteCount !== undefined) {
+                    updateFavoriteCount(data.favoriteCount);
+                }
+            }
+        }
+    });
 }
 
 /**
  * 切換收藏狀態
  */
-async function toggleFavorite() {
+async function toggleFavorite(retryCount = 0) {
+    // 最大重試次數
+    const MAX_RETRIES = 3;
+    
     if (!spotData) {
         showToast('景點資料載入中，請稍候', 'warning');
         return;
     }
     
     const favoriteBtn = document.getElementById('favoriteBtn');
-    if (favoriteBtn) {
-        favoriteBtn.disabled = true;
+    if (!favoriteBtn) {
+        showToast('找不到收藏按鈕', 'error');
+        return;
     }
     
+    // 檢查按鈕是否已被禁用，避免重複點擊
+    if (favoriteBtn.disabled || favoriteBtn.classList.contains('loading')) {
+        return;
+    }
+    
+    favoriteBtn.disabled = true;
+    
+    // 保存原始狀態，用於恢復
+    const isActive = favoriteBtn.classList.contains('active');
+    const icon = favoriteBtn.querySelector('.material-icons');
+    const originalText = icon ? icon.textContent : 'favorite_border';
+    
+    // 顯示載入狀態
+    if (icon) {
+        icon.textContent = 'sync';
+    }
+    favoriteBtn.classList.add('loading');
+    
+    // 設置超時處理，確保按鈕不會永久停在載入狀態
+    const timeout = setTimeout(() => {
+        restoreButtonState(favoriteBtn, originalText, isActive);
+    }, 5000); // 5秒後自動恢復
+    
     try {
-        const response = await fetch('/api/spot/favorite', {
-            method: 'POST',
+        // 首先檢查當前收藏狀態，確保與後端同步
+        const statusResponse = await fetch(`/api/spot/favorites/${spotData.spotId}/status`, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                spotId: spotData.spotId,
-                action: isFavorited ? 'remove' : 'add'
-            })
+                'Content-Type': 'application/json'
+            }
         });
         
-        const result = await response.json();
-        
-        if (result.success) {
-            isFavorited = !isFavorited;
-            updateFavoriteButton();
-            updateFavoriteCount(result.favoriteCount);
+        // 如果是未登入，直接進行切換（會返回401）
+        if (statusResponse.status !== 401 && statusResponse.ok) {
+            const statusResult = await statusResponse.json();
+            const serverStatus = statusResult.success && statusResult.data;
             
-            const message = isFavorited ? '已加入收藏' : '已移除收藏';
-            const type = isFavorited ? 'success' : 'info';
-            showToast(message, type);
+            // 如果前端狀態與後端不一致，先更新前端狀態
+            if (serverStatus !== isActive) {
+                console.log(`收藏狀態不同步，後端: ${serverStatus}, 前端: ${isActive}`);
+                // 更新內部狀態變數
+                isFavorited = serverStatus;
+                // 更新UI
+                updateFavoriteButton();
+            }
+        }
+        
+        // 使用新的 API 端點
+        const response = await fetch(`/api/spot/favorites/${spotData.spotId}/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        // 清除超時處理
+        clearTimeout(timeout);
+        
+        if (response.ok) {
+            const result = await response.json();
+            
+            if (result.success) {
+                // 從響應數據中獲取收藏狀態和數量
+                isFavorited = result.data.isFavorited;
+                const favoriteCount = result.data.favoriteCount || 0;
+                
+                // 更新UI
+                updateFavoriteButton();
+                updateFavoriteCount(favoriteCount);
+                
+                // 顯示提示訊息
+                showToast(result.message || (isFavorited ? '已加入收藏' : '已移除收藏'), 
+                          isFavorited ? 'success' : 'info');
+                
+                // 通知其他頁面更新收藏狀態
+                localStorage.setItem('spotFavoriteChange', JSON.stringify({
+                    spotId: spotData.spotId,
+                    isFavorited: isFavorited,
+                    favoriteCount: favoriteCount,
+                    timestamp: new Date().getTime()
+                }));
+            } else {
+                // API 返回錯誤
+                showToast(result.message || '操作失敗，請稍後再試', 'error');
+                restoreButtonState(favoriteBtn, originalText, isActive);
+            }
         } else {
-            showToast(result.message || '操作失敗，請稍後再試', 'error');
+            try {
+                const error = await response.json();
+                
+                // 處理401未授權錯誤（未登入）
+                if (response.status === 401) {
+                    // 顯示自定義登入提示對話框，並傳入按鈕和原始圖示文字
+                    showLoginDialog('收藏功能需要登入', '請先登入會員後再收藏景點', favoriteBtn, originalText, isActive);
+                    return;
+                }
+                
+                showToast(error.message || '操作失敗，請稍後再試', 'error');
+                restoreButtonState(favoriteBtn, originalText, isActive);
+            } catch (e) {
+                // 處理401未授權錯誤（未登入）
+                if (response.status === 401) {
+                    // 顯示自定義登入提示對話框，並傳入按鈕和原始圖示文字
+                    showLoginDialog('收藏功能需要登入', '請先登入會員後再收藏景點', favoriteBtn, originalText, isActive);
+                    return;
+                }
+                
+                showToast('操作失敗，請稍後再試', 'error');
+                restoreButtonState(favoriteBtn, originalText, isActive);
+            }
         }
     } catch (error) {
+        // 清除超時處理（如果尚未清除）
+        clearTimeout(timeout);
+        
         console.error('收藏操作失敗:', error);
+        
+        // 如果是死鎖或並發問題，嘗試重試
+        if (retryCount < MAX_RETRIES) {
+            console.log(`重試收藏操作 (${retryCount + 1}/${MAX_RETRIES})...`);
+            // 短暫延遲後重試
+            setTimeout(() => {
+                toggleFavorite(retryCount + 1);
+            }, 500 * (retryCount + 1)); // 逐漸增加延遲時間
+            return;
+        }
+        
         showToast('網路連線異常，請稍後再試', 'error');
+        restoreButtonState(favoriteBtn, originalText, isActive);
     } finally {
-        if (favoriteBtn) {
+        // 如果不是重試，才移除載入狀態
+        if (retryCount === 0) {
             favoriteBtn.disabled = false;
+            favoriteBtn.classList.remove('loading');
         }
     }
+}
+
+/**
+ * 恢復按鈕狀態
+ * @param {HTMLElement} button 按鈕元素
+ * @param {string} iconText 圖示文字
+ * @param {boolean} isActive 是否為活動狀態
+ */
+function restoreButtonState(button, iconText, isActive) {
+    if (!button) return;
+    
+    // 恢復圖示
+    const icon = button.querySelector('.material-icons');
+    if (icon) {
+        icon.textContent = isActive ? 'favorite' : (iconText || 'favorite_border');
+    }
+    
+    // 恢復類別
+    if (isActive) {
+        button.classList.add('active');
+    } else {
+        button.classList.remove('active');
+    }
+    
+    // 恢復標題
+    button.title = isActive ? '取消收藏' : '加入收藏';
+    
+    // 恢復可用狀態
+    button.classList.remove('loading');
+    button.disabled = false;
 }
 
 /**
@@ -774,5 +935,191 @@ window.openInGoogleMaps = openInGoogleMaps;
 window.addToItinerary = addToItinerary;
 window.joinGroupActivity = joinGroupActivity;
 window.reportSpot = reportSpot;
+
+/**
+ * 顯示登入提示對話框
+ * @param {string} title 對話框標題
+ * @param {string} message 對話框訊息
+ * @param {HTMLElement} buttonElement 觸發對話框的按鈕元素
+ * @param {string} originalIconText 按鈕原始圖示文字
+ * @param {boolean} isActive 按鈕是否為活動狀態
+ */
+function showLoginDialog(title, message, buttonElement, originalIconText, isActive) {
+    // 檢查是否已存在對話框，避免重複顯示
+    if (document.getElementById('login-dialog')) {
+        return;
+    }
+    
+    // 創建對話框元素
+    const dialog = document.createElement('div');
+    dialog.id = 'login-dialog';
+    dialog.className = 'spot-detail-dialog';
+    dialog.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    // 對話框內容
+    const content = document.createElement('div');
+    content.className = 'spot-detail-dialog__content';
+    content.style.cssText = `
+        background-color: var(--md-sys-color-surface);
+        border-radius: 16px;
+        padding: 24px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        animation: dialogFadeIn 0.3s ease;
+    `;
+    
+    // 對話框標題
+    const titleEl = document.createElement('h3');
+    titleEl.className = 'spot-detail-dialog__title';
+    titleEl.style.cssText = `
+        margin-top: 0;
+        margin-bottom: 16px;
+        color: var(--md-sys-color-on-surface);
+        font-size: 1.5rem;
+        font-weight: 500;
+    `;
+    titleEl.textContent = title;
+    
+    // 對話框訊息
+    const messageEl = document.createElement('p');
+    messageEl.className = 'spot-detail-dialog__message';
+    messageEl.style.cssText = `
+        margin-bottom: 24px;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 1rem;
+    `;
+    messageEl.textContent = message;
+    
+    // 按鈕容器
+    const buttons = document.createElement('div');
+    buttons.className = 'spot-detail-dialog__buttons';
+    buttons.style.cssText = `
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+    `;
+    
+    // 取消按鈕
+    const cancelButton = document.createElement('button');
+    cancelButton.className = 'spot-detail-dialog__button spot-detail-dialog__button--cancel';
+    cancelButton.style.cssText = `
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        background-color: var(--md-sys-color-surface-variant);
+        color: var(--md-sys-color-on-surface-variant);
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    `;
+    cancelButton.textContent = '稍後再說';
+    cancelButton.addEventListener('click', () => {
+        closeDialog(dialog);
+        
+        // 恢復按鈕狀態
+        restoreButtonState(buttonElement, originalIconText, isActive);
+    });
+    
+    // 登入按鈕
+    const loginButton = document.createElement('button');
+    loginButton.className = 'spot-detail-dialog__button spot-detail-dialog__button--login';
+    loginButton.style.cssText = `
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        background-color: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    `;
+    loginButton.textContent = '前往登入';
+    loginButton.addEventListener('click', () => {
+        // 保存當前URL，登入後可以返回
+        localStorage.setItem('redirectAfterLogin', window.location.href);
+        
+        // 跳轉到登入頁面
+        window.location.href = '/members/login';
+    });
+    
+    // 組裝對話框
+    buttons.appendChild(cancelButton);
+    buttons.appendChild(loginButton);
+    content.appendChild(titleEl);
+    content.appendChild(messageEl);
+    content.appendChild(buttons);
+    dialog.appendChild(content);
+    
+    // 添加到頁面
+    document.body.appendChild(dialog);
+    
+    // 添加動畫樣式
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes dialogFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .spot-detail-dialog__button:hover {
+            filter: brightness(1.1);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 點擊背景關閉對話框
+    dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) {
+            closeDialog(dialog);
+            
+            // 恢復按鈕狀態
+            restoreButtonState(buttonElement, originalIconText, isActive);
+        }
+    });
+    
+    // ESC 鍵關閉對話框
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+            closeDialog(dialog);
+            
+            // 恢復按鈕狀態
+            restoreButtonState(buttonElement, originalIconText, isActive);
+            
+            document.removeEventListener('keydown', escHandler);
+        }
+    });
+}
+
+/**
+ * 關閉對話框
+ * @param {HTMLElement} dialog 對話框元素
+ */
+function closeDialog(dialog) {
+    dialog.style.opacity = '0';
+    setTimeout(() => {
+        if (dialog.parentNode) {
+            dialog.parentNode.removeChild(dialog);
+        }
+    }, 300);
+}
 
 console.log('🌟 景點詳情頁 JavaScript 載入完成'); 

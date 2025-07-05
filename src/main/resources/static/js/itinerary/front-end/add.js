@@ -5,16 +5,7 @@
 
 // 全域變數
 let selectedSpots = [];
-let allSpots = [
-    { id: 1, name: '台北101', location: '台北市信義區', rating: 4.5, icon: 'landscape' },
-    { id: 2, name: '故宮博物院', location: '台北市士林區', rating: 4.7, icon: 'museum' },
-    { id: 3, name: '淡水老街', location: '新北市淡水區', rating: 4.3, icon: 'water' },
-    { id: 4, name: '龍山寺', location: '台北市萬華區', rating: 4.4, icon: 'temple_buddhist' },
-    { id: 5, name: '九份老街', location: '新北市瑞芳區', rating: 4.6, icon: 'landscape' },
-    { id: 6, name: '西門町', location: '台北市萬華區', rating: 4.2, icon: 'shopping_bag' },
-    { id: 7, name: '陽明山國家公園', location: '台北市北投區', rating: 4.5, icon: 'park' },
-    { id: 8, name: '中正紀念堂', location: '台北市中正區', rating: 4.3, icon: 'account_balance' }
-];
+let allSpots = [];
 
 // DOM 載入完成後初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,6 +16,12 @@ document.addEventListener('DOMContentLoaded', function() {
  * 初始化建立行程頁面
  */
 function initializeItineraryAdd() {
+    // 檢查會員登入狀態
+    checkLoginStatus();
+    
+    // 載入景點資料
+    loadSpots();
+    
     // 綁定搜尋功能
     bindSearchEvents();
     
@@ -36,8 +33,228 @@ function initializeItineraryAdd() {
     
     // 初始化工具提示
     initializeTooltips();
+
+    // 初始化字數統計
+    initializeCharacterCounter();
     
     console.log('建立行程頁面初始化完成');
+}
+
+/**
+ * 檢查會員登入狀態
+ */
+function checkLoginStatus() {
+    fetch("/api/session/currentMember")
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                showToast('請先登入會員', 'warning');
+                setTimeout(() => {
+                    window.location.href = "/members/login?redirect=/itinerary/add";
+                }, 1500);
+            }
+        })
+        .catch(error => {
+            console.error('檢查登入狀態失敗', error);
+        });
+}
+
+/**
+ * 載入景點資料
+ */
+function loadSpots() {
+    // 顯示載入中狀態
+    const grid = document.querySelector('.itinerary-spots-grid');
+    if (grid) {
+        grid.innerHTML = `
+            <div class="itinerary-loading">
+                <span class="material-icons">hourglass_empty</span>
+                <p>載入景點中...</p>
+            </div>
+        `;
+    }
+    
+    // 從後端 API 獲取景點資料
+    fetch('/api/spots?limit=12&status=1')
+        .then(response => {
+            if (!response.ok) {
+                console.log('API響應狀態碼:', response.status);
+                return response.text().then(text => {
+                    console.log('API錯誤響應:', text);
+                    throw new Error(`景點資料載入失敗 (${response.status})`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('成功載入景點數據:', data.length);
+            
+            // 如果沒有數據，顯示空狀態
+            if (!data || data.length === 0) {
+                if (grid) {
+                    grid.innerHTML = `
+                        <div class="itinerary-empty-state">
+                            <span class="material-icons">info</span>
+                            <p>目前沒有可用的景點</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            // 處理獲取的景點資料
+            allSpots = data.map(spot => ({
+                id: spot.spotId,
+                name: spot.spotName,
+                location: spot.spotLoc || '未知位置',
+                rating: spot.googleRating || 4.0,
+                icon: getSpotIcon(spot.zone || '其他')
+            }));
+            
+            // 更新景點網格
+            updateSpotsGrid(allSpots);
+        })
+        .catch(error => {
+            console.error('載入景點資料失敗:', error);
+            
+            // 嘗試測試API是否正常工作
+            fetch('/api/test/ping')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('API測試結果:', data);
+                    showToast('API服務正常，但景點數據載入失敗，請稍後重試', 'warning');
+                })
+                .catch(testError => {
+                    console.error('API測試失敗:', testError);
+                    showToast('API服務異常，請聯繫管理員', 'error');
+                });
+            
+            // 顯示錯誤狀態
+            if (grid) {
+                grid.innerHTML = `
+                    <div class="itinerary-error-state">
+                        <span class="material-icons">error</span>
+                        <p>載入景點失敗</p>
+                        <p class="error-message">${error.message}</p>
+                        <button onclick="loadSpots()" class="itinerary-btn itinerary-btn--secondary">
+                            <span class="material-icons">refresh</span>
+                            重試
+                        </button>
+                    </div>
+                `;
+            }
+        });
+}
+
+/**
+ * 根據景點類型獲取對應的圖標
+ */
+function getSpotIcon(spotType) {
+    const iconMap = {
+        '自然風景': 'landscape',
+        '自然景觀': 'landscape',
+        '風景區': 'landscape',
+        '國家公園': 'landscape',
+        '歷史古蹟': 'account_balance',
+        '古蹟': 'account_balance',
+        '文化': 'account_balance',
+        '博物館': 'museum',
+        '展覽館': 'museum',
+        '美術館': 'museum',
+        '公園': 'park',
+        '休閒': 'park',
+        '宗教場所': 'temple_buddhist',
+        '寺廟': 'temple_buddhist',
+        '教堂': 'temple_buddhist',
+        '購物': 'shopping_bag',
+        '商圈': 'shopping_bag',
+        '市場': 'shopping_bag',
+        '美食': 'restaurant',
+        '餐廳': 'restaurant',
+        '小吃': 'restaurant',
+        '夜市': 'nightlife',
+        '海灘': 'beach_access',
+        '海水浴場': 'beach_access',
+        '溫泉': 'hot_tub',
+        '遊樂園': 'attractions',
+        '觀光工廠': 'attractions',
+        '其他': 'place'
+    };
+    
+    return iconMap[spotType] || 'place';
+}
+
+/**
+ * 初始化字數統計
+ */
+function initializeCharacterCounter() {
+    // 行程名稱字數統計
+    const nameInput = document.getElementById('itnName');
+    if (nameInput) {
+        const nameCounter = createCharacterCounter(nameInput.parentNode, 2, 50);
+        nameInput.addEventListener('input', function() {
+            updateCharacterCount(this, nameCounter, 2, 50);
+        });
+        // 初始化字數
+        updateCharacterCount(nameInput, nameCounter, 2, 50);
+    }
+    
+    // 行程描述字數統計
+    const descInput = document.getElementById('itnDesc');
+    if (descInput) {
+        const descCounter = createCharacterCounter(descInput.parentNode, 10, 500);
+        descInput.addEventListener('input', function() {
+            updateCharacterCount(this, descCounter, 10, 500);
+        });
+        // 初始化字數
+        updateCharacterCount(descInput, descCounter, 10, 500);
+    }
+}
+
+/**
+ * 創建字數統計元素
+ */
+function createCharacterCounter(parentElement, minLength, maxLength) {
+    const counter = document.createElement('div');
+    counter.className = 'character-counter';
+    counter.style.fontSize = '0.8rem';
+    counter.style.color = '#666';
+    counter.style.textAlign = 'right';
+    counter.style.marginTop = '0.3rem';
+    counter.style.transition = 'color 0.3s';
+    counter.innerHTML = `<span class="current">0</span>/${maxLength}`;
+    
+    parentElement.appendChild(counter);
+    return counter;
+}
+
+/**
+ * 更新字數統計
+ */
+function updateCharacterCount(input, counterElement, minLength, maxLength) {
+    const currentLength = input.value.length;
+    const currentSpan = counterElement.querySelector('.current');
+    
+    currentSpan.textContent = currentLength;
+    
+    // 更新顏色
+    if (currentLength === 0) {
+        counterElement.style.color = '#f44336'; // 紅色：空值
+    } else if (currentLength < minLength) {
+        counterElement.style.color = '#ff9800'; // 橙色：低於最小值
+    } else if (currentLength > maxLength * 0.9) {
+        counterElement.style.color = '#ff9800'; // 橙色：接近最大值
+    } else {
+        counterElement.style.color = '#4caf50'; // 綠色：正常範圍
+    }
+    
+    // 超出最大值
+    if (currentLength > maxLength) {
+        counterElement.style.color = '#f44336'; // 紅色：超出最大值
+        input.style.borderColor = '#f44336';
+    } else {
+        input.style.borderColor = '';
+    }
 }
 
 /**
@@ -104,7 +321,37 @@ function updateSpotsGrid(spots) {
     const grid = document.querySelector('.itinerary-spots-grid');
     if (!grid) return;
     
-    grid.innerHTML = spots.map(spot => `
+    grid.innerHTML = spots.map(spot => {
+        // 解析評分
+        const rating = parseFloat(spot.rating) || 0;
+        const ratingValue = Math.min(5, Math.max(0, rating)); // 確保評分在0-5之間
+        let starsHtml = '';
+        
+        // 生成星級評分HTML
+        const fullStars = Math.floor(ratingValue);
+        const hasHalfStar = ratingValue % 1 >= 0.3 && ratingValue % 1 < 0.8;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        // 添加實心星星
+        for (let i = 0; i < fullStars; i++) {
+            starsHtml += '<span class="material-icons">star</span>';
+        }
+        
+        // 添加半星（如果需要）
+        if (hasHalfStar) {
+            starsHtml += '<span class="material-icons">star_half</span>';
+        }
+        
+        // 添加空心星星
+        for (let i = 0; i < emptyStars; i++) {
+            starsHtml += '<span class="material-icons">star_outline</span>';
+        }
+        
+        // 處理名稱和地址中的特殊字符，避免JavaScript錯誤
+        const safeName = spot.name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        const safeLocation = spot.location.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        
+        return `
         <div class="itinerary-spot-card" data-spot-id="${spot.id}">
             <div class="itinerary-spot-card__image">
                 <span class="material-icons">${spot.icon}</span>
@@ -116,15 +363,16 @@ function updateSpotsGrid(spots) {
                     ${spot.location}
                 </p>
                 <div class="itinerary-spot-card__rating">
-                    <span class="material-icons">star</span>
-                    <span>${spot.rating}</span>
+                    ${starsHtml}
+                    <span>${ratingValue.toFixed(1)}</span>
                 </div>
             </div>
-            <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(${spot.id}, '${spot.name}', '${spot.location}')">
+            <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(${spot.id}, '${safeName}', '${safeLocation}')">
                 <span class="material-icons">add</span>
             </button>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 /**
@@ -242,12 +490,41 @@ function bindFormValidation() {
         }
     });
     
-    // 即時驗證
+    // 即時驗證行程名稱
     const nameInput = document.getElementById('itnName');
     if (nameInput) {
         nameInput.addEventListener('blur', validateName);
-        nameInput.addEventListener('input', clearValidationError);
+        nameInput.addEventListener('input', function() {
+            clearValidationError(this);
+            // 即時檢查特殊字符
+            checkSpecialCharacters(this);
+        });
     }
+    
+    // 即時驗證行程描述
+    const descInput = document.getElementById('itnDesc');
+    if (descInput) {
+        descInput.addEventListener('blur', validateDesc);
+        descInput.addEventListener('input', function() {
+            clearValidationError(this);
+        });
+    }
+}
+
+/**
+ * 檢查特殊字符
+ */
+function checkSpecialCharacters(input) {
+    const value = input.value;
+    const specialChars = /[<>{}[\]|\\'"]/g;
+    
+    if (specialChars.test(value)) {
+        const invalidChars = value.match(specialChars).join(' ');
+        showValidationError(input, `行程名稱不能包含特殊字符: ${invalidChars}`);
+        return false;
+    }
+    
+    return true;
 }
 
 /**
@@ -258,6 +535,11 @@ function validateForm() {
     
     // 驗證行程名稱
     if (!validateName()) {
+        isValid = false;
+    }
+    
+    // 驗證行程描述
+    if (!validateDesc()) {
         isValid = false;
     }
     
@@ -280,7 +562,7 @@ function validateName() {
     const name = nameInput.value.trim();
     
     if (!name) {
-        showValidationError(nameInput, '請輸入行程名稱');
+        showValidationError(nameInput, '行程名稱不能為空');
         return false;
     }
     
@@ -294,7 +576,40 @@ function validateName() {
         return false;
     }
     
+    // 檢查特殊字符
+    if (!checkSpecialCharacters(nameInput)) {
+        return false;
+    }
+    
     clearValidationError(nameInput);
+    return true;
+}
+
+/**
+ * 驗證行程描述
+ */
+function validateDesc() {
+    const descInput = document.getElementById('itnDesc');
+    if (!descInput) return true;
+    
+    const desc = descInput.value.trim();
+    
+    if (!desc) {
+        showValidationError(descInput, '行程描述不能為空');
+        return false;
+    }
+    
+    if (desc.length < 10) {
+        showValidationError(descInput, '行程描述至少需要10個字元');
+        return false;
+    }
+    
+    if (desc.length > 500) {
+        showValidationError(descInput, '行程描述不能超過500個字元');
+        return false;
+    }
+    
+    clearValidationError(descInput);
     return true;
 }
 
@@ -466,6 +781,20 @@ function resetForm() {
     if (searchInput) {
         searchInput.value = '';
         updateSpotsGrid(allSpots);
+    }
+    
+    // 重置字數統計
+    const nameInput = document.getElementById('itnName');
+    const descInput = document.getElementById('itnDesc');
+    const nameCounter = nameInput?.parentNode.querySelector('.character-counter');
+    const descCounter = descInput?.parentNode.querySelector('.character-counter');
+    
+    if (nameInput && nameCounter) {
+        updateCharacterCount(nameInput, nameCounter, 2, 50);
+    }
+    
+    if (descInput && descCounter) {
+        updateCharacterCount(descInput, descCounter, 10, 500);
     }
     
     showToast('表單已重置', 'info');

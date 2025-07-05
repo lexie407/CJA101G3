@@ -53,7 +53,7 @@ function bindButtonEvents() {
     }
     
     // 底部收藏按鈕
-    const bottomFavoriteBtn = document.querySelector('.itinerary-primary-btn');
+    const bottomFavoriteBtn = document.querySelector('#favoriteBtn');
     if (bottomFavoriteBtn) {
         bottomFavoriteBtn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -62,38 +62,42 @@ function bindButtonEvents() {
     }
     
     // 複製按鈕
-    const copyBtns = document.querySelectorAll('.itinerary-secondary-btn');
-    copyBtns.forEach(btn => {
-        if (btn.textContent.includes('複製')) {
-            btn.addEventListener('click', function(e) {
+    const copyBtn = document.querySelector('#copyBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function(e) {
                 e.preventDefault();
             copyItinerary();
         });
     }
-    });
     
-    // 分享按鈕
-    const shareBtns = document.querySelectorAll('.itinerary-action-btn--share, .itinerary-secondary-btn');
-    shareBtns.forEach(btn => {
-        if (btn.textContent.includes('分享') || btn.querySelector('.material-icons')?.textContent === 'share') {
-            btn.addEventListener('click', function(e) {
+    // 編輯按鈕
+    const editBtn = document.querySelector('#editBtn');
+    if (editBtn) {
+        editBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            shareItinerary();
+            editItinerary();
         });
     }
-    });
+    
+    // 建立揪團按鈕
+    const createActivityBtn = document.querySelector('#createActivityBtn');
+    if (createActivityBtn) {
+        createActivityBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            createActivity();
+        });
+    }
     
     // 景點按鈕
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.itinerary-spot-btn')) {
+        const button = e.target.closest('.itinerary-spot-btn');
+        if (button) {
             e.preventDefault();
-            const button = e.target.closest('.itinerary-spot-btn');
-            const action = button.getAttribute('data-action');
             const spotId = button.getAttribute('data-spot-id');
             
-            if (action === 'view') {
+            if (button.title.includes('詳情')) {
                 viewSpotDetail(spotId);
-            } else if (action === 'map') {
+            } else if (button.title.includes('地圖')) {
                 viewSpotOnMap(spotId);
             }
         }
@@ -403,43 +407,177 @@ function updateFavoriteButton() {
  * 複製行程
  */
 function copyItinerary() {
-    if (!itineraryId) return;
-    
-    const copyBtn = document.querySelector('.itinerary-detail-hero__btn--copy');
-    if (!copyBtn) return;
-    
-    // 視覺回饋
-    copyBtn.disabled = true;
-    const originalText = copyBtn.innerHTML;
-    copyBtn.innerHTML = '<span class="material-icons">hourglass_empty</span>複製中...';
-    
-    // 模擬 API 呼叫
+    if (!itineraryId) {
+        showToast('無法獲取行程ID', 'error');
+        return;
+    }
+
+    // 確認是否已登入
+    fetch('/api/members/check-login')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.isLoggedIn) {
+                // 未登入，顯示提示並導向登入頁
+                showLoginRequiredModal('複製行程', '/members/login?redirect=' + encodeURIComponent(window.location.href));
+                return;
+            }
+            
+            // 獲取行程名稱
+            const itineraryName = document.querySelector('.itinerary-detail-title').textContent.trim();
+            
+            // 首先檢查是否已有此行程的複製版本
+            fetch(`/api/itinerary/${itineraryId}/check-duplicate`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(checkResult => {
+                if (checkResult.hasDuplicate) {
+                    // 構建提示信息
+                    let message = '';
+                    
+                    if (checkResult.hasExactSameName) {
+                        message = `您的行程中已有完全相同名稱「${itineraryName}」的行程，確定要再次複製嗎？`;
+                    } else if (checkResult.duplicateCount > 0) {
+                        message = `您的行程中已有「${itineraryName}」的複製版本，確定要再次複製嗎？`;
+                    }
+                    
+                    // 已有複製版本，顯示確認對話框
+                    showConfirmModal(
+                        '行程已存在',
+                        message,
+                        '確定複製',
+                        () => {
+                            // 用戶確認後，顯示自定義名稱對話框
+                            let suggestedName = '';
+                            if (checkResult.duplicateCount > 0) {
+                                suggestedName = `${itineraryName} (複製 ${checkResult.duplicateCount + 1})`;
+                            } else {
+                                suggestedName = `${itineraryName} (複製)`;
+                            }
+                            
+                            showCustomNameModal(
+                                '複製行程',
+                                '請為複製的行程命名：',
+                                suggestedName,
+                                (customName) => processCopyItinerary(customName)
+                            );
+                        }
+                    );
+                } else {
+                    // 沒有複製版本，直接顯示自定義名稱對話框
+                    showCustomNameModal(
+                        '複製行程',
+                        '請為複製的行程命名：',
+                        itineraryName,
+                        (customName) => processCopyItinerary(customName)
+                    );
+                }
+            })
+            .catch(error => {
+                console.error('檢查重複行程失敗:', error);
+                // 發生錯誤時，仍然允許複製，但不檢查重複
+                showCustomNameModal(
+                    '複製行程',
+                    '請為複製的行程命名：',
+                    itineraryName,
+                    (customName) => processCopyItinerary(customName)
+                );
+            });
+        })
+        .catch(error => {
+            console.error('檢查登入狀態失敗:', error);
+            showToast('網路錯誤，請稍後再試', 'error');
+        });
+}
+
+/**
+ * 處理行程複製請求
+ */
+function processCopyItinerary(customName) {
+    // 發送複製請求
     fetch(`/api/itinerary/${itineraryId}/copy`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            customName: customName
+        })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             showToast('行程複製成功！', 'success');
-            // 跳轉到新行程的編輯頁面
-            setTimeout(() => {
-                window.location.href = `/itinerary/edit/${data.data.itnId}`;
-            }, 1500);
+            // 可選：導向到新複製的行程
+            if (data.newItineraryId) {
+                setTimeout(() => {
+                    window.location.href = `/itinerary/detail/${data.newItineraryId}`;
+                }, 1500);
+            } else {
+                // 導向到我的行程列表
+                setTimeout(() => {
+                    window.location.href = '/itinerary/my';
+                }, 1500);
+            }
         } else {
-            showToast(data.message || '複製失敗', 'error');
+            showToast(data.message || '行程複製失敗', 'error');
         }
     })
     .catch(error => {
         console.error('複製行程失敗:', error);
         showToast('網路錯誤，請稍後再試', 'error');
-    })
-    .finally(() => {
-        copyBtn.disabled = false;
-        copyBtn.innerHTML = originalText;
+    });
+}
+
+/**
+ * 編輯行程
+ */
+function editItinerary() {
+    if (!itineraryId) {
+        showToast('無法獲取行程ID', 'error');
+        return;
+    }
+    
+    // 直接導向到編輯頁面
+    window.location.href = `/itinerary/edit/${itineraryId}`;
+}
+
+/**
+ * 建立揪團
+ */
+function createActivity() {
+    if (!itineraryId) {
+        showToast('無法獲取行程ID', 'error');
+        return;
+    }
+    
+    // 確認是否已登入
+    fetch('/api/members/check-login')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.isLoggedIn) {
+                // 未登入，顯示提示並導向登入頁
+                showLoginRequiredModal('建立揪團', '/members/login?redirect=' + encodeURIComponent(window.location.href));
+                return;
+            }
+            
+            // 已登入，顯示確認對話框
+            showConfirmModal(
+                '建立揪團',
+                '確定要以此行程建立揪團活動嗎？系統會自動複製此行程作為揪團活動的行程。',
+                '確定建立',
+                () => {
+                    // 導向到建立揪團頁面，並帶上行程ID
+                    window.location.href = `/groupactivity/create?itnId=${itineraryId}`;
+                }
+            );
+        })
+        .catch(error => {
+            console.error('檢查登入狀態失敗:', error);
+            showToast('網路錯誤，請稍後再試', 'error');
     });
 }
 
@@ -558,6 +696,205 @@ function getToastIcon(type) {
         case 'warning': return 'warning';
         default: return 'info';
     }
+}
+
+/**
+ * 顯示登入要求對話框
+ */
+function showLoginRequiredModal(action, loginUrl) {
+    // 創建模態對話框
+    const modal = document.createElement('div');
+    modal.className = 'itinerary-modal';
+    modal.innerHTML = `
+        <div class="itinerary-modal-content">
+            <div class="itinerary-modal-header">
+                <h3>需要登入</h3>
+                <button class="itinerary-modal-close">&times;</button>
+            </div>
+            <div class="itinerary-modal-body">
+                <p>您需要登入才能${action}。</p>
+                <p>是否前往登入頁面？</p>
+            </div>
+            <div class="itinerary-modal-footer">
+                <button class="itinerary-modal-btn itinerary-modal-btn--secondary">取消</button>
+                <button class="itinerary-modal-btn itinerary-modal-btn--primary">前往登入</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 綁定事件
+    modal.querySelector('.itinerary-modal-close').addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+    
+    modal.querySelector('.itinerary-modal-btn--secondary').addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+    
+    modal.querySelector('.itinerary-modal-btn--primary').addEventListener('click', () => {
+        window.location.href = loginUrl;
+    });
+    
+    // 顯示模態對話框
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+}
+
+/**
+ * 顯示確認對話框
+ */
+function showConfirmModal(title, message, confirmText, onConfirm) {
+    // 創建模態對話框
+    const modal = document.createElement('div');
+    modal.className = 'itinerary-modal';
+    modal.innerHTML = `
+        <div class="itinerary-modal-content">
+            <div class="itinerary-modal-header">
+                <h3>${title}</h3>
+                <button class="itinerary-modal-close">&times;</button>
+            </div>
+            <div class="itinerary-modal-body">
+                <p>${message}</p>
+            </div>
+            <div class="itinerary-modal-footer">
+                <button class="itinerary-modal-btn itinerary-modal-btn-secondary">取消</button>
+                <button class="itinerary-modal-btn itinerary-modal-btn-primary">${confirmText}</button>
+            </div>
+        </div>
+    `;
+    
+    // 添加到頁面
+    document.body.appendChild(modal);
+    
+    // 顯示模態對話框
+    setTimeout(() => {
+        modal.classList.add('show');
+        modal.querySelector('.itinerary-modal-content').style.opacity = '1';
+        modal.querySelector('.itinerary-modal-content').style.transform = 'translateY(0)';
+    }, 10);
+    
+    // 關閉按鈕事件
+    const closeBtn = modal.querySelector('.itinerary-modal-close');
+    closeBtn.addEventListener('click', () => closeModal(modal));
+    
+    // 取消按鈕事件
+    const cancelBtn = modal.querySelector('.itinerary-modal-btn-secondary');
+    cancelBtn.addEventListener('click', () => closeModal(modal));
+    
+    // 確認按鈕事件
+    const confirmBtn = modal.querySelector('.itinerary-modal-btn-primary');
+    confirmBtn.addEventListener('click', () => {
+        closeModal(modal);
+        if (typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    });
+    
+    // 點擊背景關閉
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal(modal);
+        }
+    });
+}
+
+/**
+ * 顯示自定義名稱對話框
+ */
+function showCustomNameModal(title, message, defaultName, onConfirm) {
+    // 創建模態對話框
+    const modal = document.createElement('div');
+    modal.className = 'itinerary-modal';
+    modal.innerHTML = `
+        <div class="itinerary-modal-content">
+            <div class="itinerary-modal-header">
+                <h3>${title}</h3>
+                <button class="itinerary-modal-close">&times;</button>
+            </div>
+            <div class="itinerary-modal-body">
+                <p>${message}</p>
+                <div class="itinerary-modal-input-group">
+                    <input type="text" class="itinerary-modal-input" id="customNameInput" value="${defaultName}" placeholder="請輸入行程名稱">
+                </div>
+            </div>
+            <div class="itinerary-modal-footer">
+                <button class="itinerary-modal-btn itinerary-modal-btn-secondary">取消</button>
+                <button class="itinerary-modal-btn itinerary-modal-btn-primary">確定</button>
+            </div>
+        </div>
+    `;
+    
+    // 添加到頁面
+    document.body.appendChild(modal);
+    
+    // 獲取輸入框元素
+    const input = modal.querySelector('#customNameInput');
+    input.focus();
+    input.select();
+    
+    // 顯示模態對話框
+    setTimeout(() => {
+        modal.classList.add('show');
+        modal.querySelector('.itinerary-modal-content').style.opacity = '1';
+        modal.querySelector('.itinerary-modal-content').style.transform = 'translateY(0)';
+    }, 10);
+    
+    // 關閉按鈕事件
+    const closeBtn = modal.querySelector('.itinerary-modal-close');
+    closeBtn.addEventListener('click', () => closeModal(modal));
+    
+    // 取消按鈕事件
+    const cancelBtn = modal.querySelector('.itinerary-modal-btn-secondary');
+    cancelBtn.addEventListener('click', () => closeModal(modal));
+    
+    // 確認按鈕事件
+    const confirmBtn = modal.querySelector('.itinerary-modal-btn-primary');
+    confirmBtn.addEventListener('click', () => {
+        const customName = input.value.trim();
+        if (!customName) {
+            input.classList.add('error');
+            setTimeout(() => input.classList.remove('error'), 1000);
+            return;
+        }
+        closeModal(modal);
+        if (typeof onConfirm === 'function') {
+            onConfirm(customName);
+        }
+    });
+    
+    // 輸入框回車事件
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            confirmBtn.click();
+        }
+    });
+    
+    // 點擊背景關閉
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal(modal);
+        }
+    });
+}
+
+/**
+ * 關閉模態對話框
+ */
+function closeModal(modal) {
+    // 淡出動畫
+    modal.querySelector('.itinerary-modal-content').style.opacity = '0';
+    modal.querySelector('.itinerary-modal-content').style.transform = 'translateY(20px)';
+    modal.classList.remove('show');
+    
+    // 移除模態對話框
+    setTimeout(() => {
+        if (document.body.contains(modal)) {
+            document.body.removeChild(modal);
+        }
+    }, 300);
 }
 
 // 全域函數，供 HTML 直接呼叫

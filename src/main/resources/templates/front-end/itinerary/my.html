@@ -124,7 +124,7 @@
                                     <span class="material-icons">map</span>
                                 </div>
                                 <div class="stat-content">
-                                    <div class="stat-number" id="totalCount">8</div>
+                                    <div class="stat-number" th:text="${totalCount}">0</div>
                                     <div class="stat-label">總行程數</div>
                                 </div>
                             </div>
@@ -133,7 +133,7 @@
                                     <span class="material-icons">public</span>
                                 </div>
                                 <div class="stat-content">
-                                    <div class="stat-number" id="publicCount">5</div>
+                                    <div class="stat-number" th:text="${publicCount}">0</div>
                                     <div class="stat-label">公開行程</div>
                                 </div>
                             </div>
@@ -142,7 +142,7 @@
                                     <span class="material-icons">lock</span>
                                 </div>
                                 <div class="stat-content">
-                                    <div class="stat-number" id="privateCount">3</div>
+                                    <div class="stat-number" th:text="${privateCount}">0</div>
                                     <div class="stat-label">私人行程</div>
                                 </div>
                             </div>
@@ -151,7 +151,7 @@
                                     <span class="material-icons">place</span>
                                 </div>
                                 <div class="stat-content">
-                                    <div class="stat-number" id="totalSpots">42</div>
+                                    <div class="stat-number" id="totalSpots">-</div>
                                     <div class="stat-label">總景點數</div>
                                 </div>
                             </div>
@@ -162,333 +162,90 @@
                 <!-- 行程列表 -->
                 <section class="itinerary-list-section">
                     <div class="list-container">
-                        <div id="itineraryGrid" class="itinerary-grid">
-                            <!-- 行程卡片 1 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-public">
-                                            <span class="material-icons">public</span>
-                                            公開
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn edit-btn" title="編輯行程" data-id="1">
-                                            <span class="material-icons">edit</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="1">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                        <button class="action-btn delete-btn" title="刪除行程" data-id="1">
-                                            <span class="material-icons">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">台北一日遊</h3>
-                                    <p class="card-description">探索台北市區的經典景點，包含台北101、故宮博物院、士林夜市等熱門景點，適合初次造訪台北的旅客。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-01-15</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>8個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">visibility</span>
-                                            <span>156次瀏覽</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a th:href="@{/itinerary/detail/1}" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn">
-                                        <span class="material-icons">lock</span>
-                                        設為私人
-                                    </button>
-                                </div>
-                            </article>
-
-                            <!-- 行程卡片 2 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-public">
-                                            <span class="material-icons">public</span>
-                                            公開
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn edit-btn" title="編輯行程" data-id="2">
-                                            <span class="material-icons">edit</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="2">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                        <button class="action-btn delete-btn" title="刪除行程" data-id="2">
-                                            <span class="material-icons">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">花蓮太魯閣三日遊</h3>
-                                    <p class="card-description">深度探索太魯閣國家公園的壯麗峽谷風光，包含砂卡礑步道、燕子口、九曲洞等必訪景點。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-01-12</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>12個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">visibility</span>
-                                            <span>89次瀏覽</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a th:href="@{/itinerary/detail/2}" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn">
-                                        <span class="material-icons">lock</span>
-                                        設為私人
-                                    </button>
-                                </div>
-                            </article>
-
-                            <!-- 行程卡片 3 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-private">
-                                            <span class="material-icons">lock</span>
-                                            私人
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn edit-btn" title="編輯行程" data-id="3">
-                                            <span class="material-icons">edit</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="3">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                        <button class="action-btn delete-btn" title="刪除行程" data-id="3">
-                                            <span class="material-icons">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">私人度假計畫</h3>
-                                    <p class="card-description">個人專屬的放鬆行程，遠離城市喧囂，享受寧靜的溫泉度假時光。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-01-10</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>5個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">visibility</span>
-                                            <span>0次瀏覽</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a th:href="@{/itinerary/detail/3}" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn">
-                                        <span class="material-icons">lock</span>
-                                        設為私人
-                                    </button>
-                                </div>
-                            </article>
-
-                            <!-- 行程卡片 4 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-public">
-                                            <span class="material-icons">public</span>
-                                            公開
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn edit-btn" title="編輯行程" data-id="4">
-                                            <span class="material-icons">edit</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="4">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                        <button class="action-btn delete-btn" title="刪除行程" data-id="4">
-                                            <span class="material-icons">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">南投清境農場</h3>
-                                    <p class="card-description">高山牧場風光與原住民文化體驗，包含清境農場、合歡山、廬山溫泉等景點。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-01-08</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>6個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">visibility</span>
-                                            <span>234次瀏覽</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a th:href="@{/itinerary/detail/4}" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn">
-                                        <span class="material-icons">lock</span>
-                                        設為私人
-                                    </button>
-                                </div>
-                            </article>
-
-                            <!-- 行程卡片 5 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-private">
-                                            <span class="material-icons">lock</span>
-                                            私人
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn edit-btn" title="編輯行程" data-id="5">
-                                            <span class="material-icons">edit</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="5">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                        <button class="action-btn delete-btn" title="刪除行程" data-id="5">
-                                            <span class="material-icons">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">墾丁海洋假期</h3>
-                                    <p class="card-description">南台灣熱帶風情體驗，包含墾丁國家公園、鵝鑾鼻燈塔、南灣海灘等經典景點。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-01-05</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>7個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">visibility</span>
-                                            <span>0次瀏覽</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a th:href="@{/itinerary/detail/5}" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn">
-                                        <span class="material-icons">lock</span>
-                                        設為私人
-                                    </button>
-                                </div>
-                            </article>
-
-                            <!-- 行程卡片 6 -->
-                            <article class="itinerary-card">
-                                <div class="card-header">
-                                    <div class="card-status">
-                                        <span class="status-badge status-public">
-                                            <span class="material-icons">public</span>
-                                            公開
-                                        </span>
-                                    </div>
-                                    <div class="card-actions">
-                                        <button class="action-btn edit-btn" title="編輯行程" data-id="6">
-                                            <span class="material-icons">edit</span>
-                                        </button>
-                                        <button class="action-btn copy-btn" title="複製行程" data-id="6">
-                                            <span class="material-icons">content_copy</span>
-                                        </button>
-                                        <button class="action-btn delete-btn" title="刪除行程" data-id="6">
-                                            <span class="material-icons">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title">阿里山日出之旅</h3>
-                                    <p class="card-description">體驗阿里山壯麗日出與神木群，包含阿里山森林遊樂區、奮起湖老街、茶園風光。</p>
-                                    <div class="card-meta">
-                                        <div class="meta-item">
-                                            <span class="material-icons">schedule</span>
-                                            <span>2024-01-03</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">place</span>
-                                            <span>9個景點</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="material-icons">visibility</span>
-                                            <span>312次瀏覽</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <a th:href="@{/itinerary/detail/6}" class="itn-capsule-btn">
-                                        <span class="material-icons">visibility</span>
-                                        查看行程
-                                    </a>
-                                    <button class="itn-capsule-outline-btn">
-                                        <span class="material-icons">lock</span>
-                                        設為私人
-                                    </button>
-                                </div>
-                            </article>
+                        <!-- 顯示錯誤訊息 -->
+                        <div th:if="${errorMessage}" class="error-message">
+                            <span class="material-icons">error</span>
+                            <span th:text="${errorMessage}">錯誤訊息</span>
                         </div>
-
-                        <!-- 空狀態 -->
-                        <div id="emptyState" class="empty-state" style="display: none;">
+                        
+                        <!-- 沒有行程時顯示 -->
+                        <div th:if="${itineraryList == null || itineraryList.isEmpty()}" class="empty-state">
                             <div class="empty-icon">
                                 <span class="material-icons">map</span>
                             </div>
-                            <h3 class="empty-title">還沒有建立任何行程</h3>
-                            <p class="empty-description">開始規劃您的第一個旅遊行程吧！</p>
-                            <a th:href="@{/itinerary/add}" class="btn btn-primary">
+                            <h3 class="empty-title">您還沒有建立任何行程</h3>
+                            <p class="empty-message">開始規劃您的第一個旅遊行程吧！</p>
+                            <a th:href="@{/itinerary/add}" class="empty-action-btn">
                                 <span class="material-icons">add</span>
-                                建立第一個行程
+                                建立行程
                             </a>
                         </div>
-
-                        <!-- 載入更多 -->
-                        <div class="load-more-section">
-                            <button id="loadMoreBtn" class="load-more-btn">
-                                <span class="material-icons">expand_more</span>
-                                載入更多行程
-                            </button>
+                        
+                        <!-- 行程列表 -->
+                        <div id="itineraryGrid" class="itinerary-grid" th:if="${itineraryList != null && !itineraryList.isEmpty()}">
+                            <!-- 動態生成行程卡片 -->
+                            <article class="itinerary-card" th:each="itinerary : ${itineraryList}">
+                                <div class="card-header">
+                                    <div class="card-status">
+                                        <span th:if="${itinerary.isPublicItinerary()}" class="status-badge status-public">
+                                            <span class="material-icons">public</span>
+                                            公開
+                                        </span>
+                                        <span th:unless="${itinerary.isPublicItinerary()}" class="status-badge status-private">
+                                            <span class="material-icons">lock</span>
+                                            私人
+                                        </span>
+                                    </div>
+                                    <div class="card-actions">
+                                        <a th:href="@{/itinerary/edit/{id}(id=${itinerary.itnId})}" class="action-btn edit-btn" title="編輯行程" th:data-id="${itinerary.itnId}">
+                                            <span class="material-icons">edit</span>
+                                        </a>
+                                        <button class="action-btn delete-btn" title="刪除行程" th:data-id="${itinerary.itnId}" onclick="deleteItinerary(this.getAttribute('data-id'))">
+                                            <span class="material-icons">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <h3 class="card-title">
+                                        <span th:text="${itinerary.itnName}">行程名稱</span>
+                                        <!-- 添加複製標籤 -->
+                                        <span th:if="${itinerary.itnName != null && itinerary.itnName.contains('(複製)')}" 
+                                              class="itinerary-copy-badge" 
+                                              title="這是複製的行程">
+                                            <span class="material-icons">content_copy</span>
+                                        </span>
+                                    </h3>
+                                    <p class="card-description" th:text="${itinerary.itnDesc != null ? (itinerary.itnDesc.length() > 100 ? itinerary.itnDesc.substring(0, 100) + '...' : itinerary.itnDesc) : '暫無描述'}">行程描述</p>
+                                    <div class="card-meta">
+                                        <div class="meta-item">
+                                            <span class="material-icons">schedule</span>
+                                            <span th:text="${itinerary.itnCreateDat != null ? itinerary.itnCreateDat.toString().substring(0, 10) : ''}">建立日期</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <a th:href="@{/itinerary/detail/{id}(id=${itinerary.itnId})}" class="itn-capsule-btn">
+                                        <span class="material-icons">visibility</span>
+                                        查看行程
+                                    </a>
+                                    <button th:if="${itinerary.isPublicItinerary()}" 
+                                            class="itn-capsule-outline-btn toggle-public-btn"
+                                            th:data-id="${itinerary.itnId}"
+                                            th:data-public="true"
+                                            onclick="togglePublicStatus(this.getAttribute('data-id'), true, this)">
+                                        <span class="material-icons">lock</span>
+                                        設為私人
+                                    </button>
+                                    <button th:unless="${itinerary.isPublicItinerary()}" 
+                                            class="itn-capsule-outline-btn toggle-public-btn"
+                                            th:data-id="${itinerary.itnId}"
+                                            th:data-public="false"
+                                            onclick="togglePublicStatus(this.getAttribute('data-id'), false, this)">
+                                        <span class="material-icons">public</span>
+                                        設為公開
+                                    </button>
+                                </div>
+                            </article>
                         </div>
                     </div>
                 </section>
@@ -507,9 +264,6 @@
             </div>
         </a>
     </div>
-
-    <!-- Toast 通知 -->
-    <div id="toast" class="toast"></div>
 
     <!-- 確認對話框 -->
     <div id="confirmModal" class="modal">

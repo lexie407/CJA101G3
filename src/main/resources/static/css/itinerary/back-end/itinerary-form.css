@@ -6,7 +6,7 @@
 /* 移除所有覆蓋樣式，使用 .content-area-main 標準 padding: 20px */
 
 .itinerary-review-page {
-    padding-top: 20px;
+    padding-top: 50px;
     padding-left: 50px;
     padding-right: 50px;
     padding-bottom: 40px;

@@ -23,13 +23,13 @@
             <main class="content-area-main">
                 <!-- 英雄區塊 -->
                 <section class="itinerary-add-hero">
-                    <span class="itinerary-add-hero__illustration material-icons" aria-hidden="true">add_location</span>
+                    <span class="itinerary-add-hero__illustration material-icons" aria-hidden="true" th:text="${isEdit != null && isEdit ? 'edit_location' : 'add_location'}">add_location</span>
                     <div class="itinerary-add-hero__content">
                         <h1 class="itinerary-add-hero__title">
-                            <span class="material-icons" aria-hidden="true">add_circle</span>
-                            建立新行程
+                            <span class="material-icons" aria-hidden="true" th:text="${isEdit != null && isEdit ? 'edit' : 'add_circle'}">add_circle</span>
+                            <span th:text="${isEdit != null && isEdit ? '編輯行程' : '建立新行程'}">建立新行程</span>
                         </h1>
-                        <p class="itinerary-add-hero__subtitle">規劃您的專屬旅遊行程，創造美好回憶</p>
+                        <p class="itinerary-add-hero__subtitle" th:text="${isEdit != null && isEdit ? '修改您的行程內容，讓旅程更完美' : '規劃您的專屬旅遊行程，創造美好回憶'}">規劃您的專屬旅遊行程，創造美好回憶</p>
                     </div>
                 </section>
 
@@ -42,7 +42,7 @@
                             <span th:text="${errorMessage}">錯誤訊息</span>
                         </div>
                         
-                        <form class="itinerary-add-form" method="post" action="/itinerary/add">
+                        <form class="itinerary-add-form" method="post" th:action="${isEdit != null && isEdit ? '/itinerary/edit/' + itineraryId : '/itinerary/add'}">
                             <!-- 基本資訊卡片 -->
                             <div class="itinerary-add-card">
                                 <div class="itinerary-add-card__header">
@@ -63,7 +63,7 @@
                                                id="itnName" 
                                                name="itnName" 
                                                class="itinerary-form-input" 
-                                               placeholder="請輸入您的行程名稱..."
+                                               placeholder="請輸入2-50字的行程名稱（不可包含特殊字符）"
                                                th:value="${itnName}"
                                                required>
                                     </div>
@@ -71,14 +71,15 @@
                                     <div class="itinerary-form-group">
                                         <label for="itnDesc" class="itinerary-form-label">
                                             <span class="material-icons">description</span>
-                                            行程描述
+                                            行程描述 <span class="required">*</span>
                                         </label>
                                         <textarea id="itnDesc" 
                                                   name="itnDesc" 
                                                   class="itinerary-form-textarea" 
-                                                  placeholder="請描述您的行程內容、特色或注意事項..."
+                                                  placeholder="請簡單描述這趟行程的亮點、目的地或特色（10-500字）"
                                                   th:text="${itnDesc}"
-                                                  rows="4"></textarea>
+                                                  rows="4"
+                                                  required></textarea>
                                     </div>
 
                                     <div class="itinerary-form-group">
@@ -163,6 +164,10 @@
                                                     </p>
                                                     <div class="itinerary-spot-card__rating">
                                                         <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star_half</span>
                                                         <span>4.5</span>
                                                     </div>
                                                 </div>
@@ -184,6 +189,10 @@
                                                     </p>
                                                     <div class="itinerary-spot-card__rating">
                                                         <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star_half</span>
                                                         <span>4.7</span>
                                                     </div>
                                                 </div>
@@ -205,6 +214,10 @@
                                                     </p>
                                                     <div class="itinerary-spot-card__rating">
                                                         <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star_outline</span>
                                                         <span>4.3</span>
                                                     </div>
                                                 </div>
@@ -226,6 +239,10 @@
                                                     </p>
                                                     <div class="itinerary-spot-card__rating">
                                                         <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star</span>
+                                                        <span class="material-icons">star_outline</span>
                                                         <span>4.4</span>
                                                     </div>
                                                 </div>
@@ -259,9 +276,13 @@
                                     <span class="material-icons">arrow_back</span>
                                     返回
                                 </button>
+                                <button type="button" class="itinerary-btn itinerary-btn--secondary" onclick="resetForm()">
+                                    <span class="material-icons">refresh</span>
+                                    重置
+                                </button>
                                 <button type="submit" class="itinerary-btn itinerary-btn--primary">
                                     <span class="material-icons">save</span>
-                                    建立行程
+                                    <span th:text="${isEdit != null && isEdit ? '儲存變更' : '建立行程'}">建立行程</span>
                                 </button>
                             </div>
                         </form>

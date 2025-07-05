@@ -29,11 +29,6 @@
                             行程列表
                         </h1>
                         <p class="itinerary-list-hero__subtitle">探索精彩的旅遊行程，規劃您的完美旅程</p>
-                        <div class="alert alert-info" style="margin-top: 10px; padding: 8px 12px; border-radius: 4px; background-color: #e8f4fd; color: #0366d6; font-size: 14px; display: flex; align-items: center;">
-                            <span class="material-icons" style="margin-right: 8px; font-size: 18px;">info</span>
-                            <span>此頁面僅顯示會員和管理員建立的行程，不包含揪團模組的行程。</span>
-                        </div>
-                    </div>
                 </section>
 
                 <!-- 搜尋篩選區域 -->
@@ -111,7 +106,15 @@
                                 <article class="itinerary-list-card">
                                     <div class="itinerary-list-card__header">
                                         <!-- 收藏按鈕 -->
-                                        <button class="itinerary-list-card__favorite" 
+                                        <button th:if="${itinerary.isFavorited != null and itinerary.isFavorited}"
+                                                class="itinerary-list-card__favorite favorited" 
+                                                th:data-itinerary-id="${itinerary.itnId}"
+                                                onclick="toggleFavorite(this)"
+                                                title="取消收藏">
+                                            <span class="material-icons">favorite</span>
+                                        </button>
+                                        <button th:unless="${itinerary.isFavorited != null and itinerary.isFavorited}"
+                                                class="itinerary-list-card__favorite" 
                                                 th:data-itinerary-id="${itinerary.itnId}"
                                                 onclick="toggleFavorite(this)"
                                                 title="加入收藏">
@@ -148,6 +151,28 @@
                                                 <span class="material-icons" aria-hidden="true">visibility</span>
                                                 查看行程
                                             </a>
+                                            <!-- 只對自己的行程顯示編輯按鈕 -->
+                                            <a th:if="${session.member != null && session.member.memId == itinerary.crtId}" 
+                                               th:href="@{/itinerary/edit/{id}(id=${itinerary.itnId})}" 
+                                               class="itinerary-list-card__link edit-itinerary-btn">
+                                                <span class="material-icons" aria-hidden="true">edit</span>
+                                                編輯行程
+                                            </a>
+                                            <!-- 只對自己的行程顯示狀態切換按鈕 -->
+                                            <button th:if="${session.member != null && session.member.memId == itinerary.crtId && itinerary.isPublicItinerary()}" 
+                                                    th:data-itinerary-id="${itinerary.itnId}"
+                                                    class="itinerary-list-card__link toggle-visibility-btn" 
+                                                    onclick="toggleVisibility(this, false)">
+                                                <span class="material-icons" aria-hidden="true">lock</span>
+                                                設為私人
+                                            </button>
+                                            <button th:if="${session.member != null && session.member.memId == itinerary.crtId && !itinerary.isPublicItinerary()}" 
+                                                    th:data-itinerary-id="${itinerary.itnId}"
+                                                    class="itinerary-list-card__link toggle-visibility-btn" 
+                                                    onclick="toggleVisibility(this, true)">
+                                                <span class="material-icons" aria-hidden="true">public</span>
+                                                設為公開
+                                            </button>
                                         </div>
                                     </div>
                                 </article>

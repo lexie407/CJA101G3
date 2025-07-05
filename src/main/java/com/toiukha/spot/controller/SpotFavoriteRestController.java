@@ -2,6 +2,7 @@ package com.toiukha.spot.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -99,23 +100,61 @@ public class SpotFavoriteRestController {
      * POST /api/spot/favorites/{spotId}/toggle
      */
     @PostMapping("/{spotId}/toggle")
-    public ResponseEntity<ApiResponse<String>> toggleFavorite(
+    public ResponseEntity<Map<String, Object>> toggleFavorite(
             @PathVariable Integer spotId,
             HttpSession session) {
         
+        Map<String, Object> response = new HashMap<>();
+        
         try {
+            // 檢查會員登入狀態
             Integer memId = getMemIdFromSession(session);
             if (memId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("請先登入"));
+                response.put("success", false);
+                response.put("message", "請先登入");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // 檢查景點是否存在
+            if (spotId == null) {
+                response.put("success", false);
+                response.put("message", "景點ID不能為空");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // 檢查景點是否存在於資料庫
+            boolean spotExists = spotFavoriteService.checkSpotExists(spotId);
+            if (!spotExists) {
+                response.put("success", false);
+                response.put("message", "景點不存在");
+                return ResponseEntity.badRequest().body(response);
             }
 
+            // 執行收藏切換
             String message = spotFavoriteService.toggleFavorite(memId, spotId);
-            return ResponseEntity.ok(ApiResponse.success(message, message));
+            
+            // 獲取最新的收藏數量
+            Long favoriteCount = spotFavoriteService.getFavoriteCount(spotId);
+            
+            // 獲取最新的收藏狀態
+            boolean isFavorited = spotFavoriteService.isFavorited(memId, spotId);
+            
+            // 構建響應數據
+            Map<String, Object> data = new HashMap<>();
+            data.put("message", message);
+            data.put("favoriteCount", favoriteCount);
+            data.put("isFavorited", isFavorited);
+            
+            response.put("success", true);
+            response.put("data", data);
+            
+            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("系統錯誤，請稍後再試"));
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "操作失敗：" + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -180,11 +219,17 @@ public class SpotFavoriteRestController {
             }
 
             List<SpotFavoriteVO> favoriteRecords = spotFavoriteService.getFavoriteRecords(memId);
+            
+            if (favoriteRecords.isEmpty()) {
+                return ResponseEntity.ok(ApiResponse.success("您尚未收藏任何景點", favoriteRecords));
+            }
+            
             return ResponseEntity.ok(ApiResponse.success("查詢成功", favoriteRecords));
             
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("系統錯誤，請稍後再試"));
+                .body(ApiResponse.error("系統錯誤，請稍後再試: " + e.getMessage()));
         }
     }
 
@@ -196,12 +241,13 @@ public class SpotFavoriteRestController {
     public ResponseEntity<ApiResponse<Long>> getFavoriteCount(@PathVariable Integer spotId) {
         
         try {
-            Long count = spotFavoriteService.getFavoriteCount(spotId);
+            Long count = spotFavoriteService.getSpotFavoriteCount(spotId);
             return ResponseEntity.ok(ApiResponse.success("查詢成功", count));
             
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("系統錯誤，請稍後再試"));
+                .body(ApiResponse.error("系統錯誤，請稍後再試: " + e.getMessage()));
         }
     }
 
@@ -240,29 +286,47 @@ public class SpotFavoriteRestController {
                     .body(ApiResponse.error("請先登入"));
             }
 
-            Long count = spotFavoriteService.getMemberFavoriteCount(memId);
+            Long count = spotFavoriteService.getFavoriteCount(memId);
             return ResponseEntity.ok(ApiResponse.success("查詢成功", count));
             
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("系統錯誤，請稍後再試"));
+                .body(ApiResponse.error("系統錯誤，請稍後再試: " + e.getMessage()));
         }
     }
 
     // ========== 輔助方法 ==========
 
     /**
-     * 從 Session 獲取會員ID
-     * 整合會員模組的登入系統
+     * 從 Session 獲取當前登入的會員ID
      * @param session HTTP Session
      * @return 會員ID，如果未登入則返回null
      */
     private Integer getMemIdFromSession(HttpSession session) {
+        if (session == null) {
+            return null;
+        }
+        
         Object memberObj = session.getAttribute("member");
         if (memberObj instanceof com.toiukha.members.model.MembersVO) {
             com.toiukha.members.model.MembersVO member = (com.toiukha.members.model.MembersVO) memberObj;
             return member.getMemId();
         }
-        return null; // 未登入時返回null
+        
+        // 嘗試獲取其他可能的會員屬性名稱
+        memberObj = session.getAttribute("membersVO");
+        if (memberObj instanceof com.toiukha.members.model.MembersVO) {
+            com.toiukha.members.model.MembersVO member = (com.toiukha.members.model.MembersVO) memberObj;
+            return member.getMemId();
+        }
+        
+        // 嘗試獲取會員ID屬性
+        Object memIdObj = session.getAttribute("memId");
+        if (memIdObj instanceof Integer) {
+            return (Integer) memIdObj;
+        }
+        
+        return null;
     }
 } 

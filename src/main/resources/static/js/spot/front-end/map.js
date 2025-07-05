@@ -263,10 +263,15 @@
      * Google Maps 標記
      */
     function createGoogleMarker(spot) {
-        const marker = new google.maps.marker.AdvancedMarkerElement({
+        const marker = new google.maps.Marker({
             map: map,
             position: { lat: spot.spotLat, lng: spot.spotLng },
-            title: spot.spotName
+            title: spot.spotName,
+            icon: {
+                url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                scaledSize: new google.maps.Size(32, 32)
+            },
+            animation: google.maps.Animation.DROP
         });
         marker.spotId = spot.spotId;
         marker.addListener('click', () => {
@@ -424,18 +429,26 @@
 
     function highlightMarker(spotId) {
         markers.forEach(marker => {
-            if (marker.spotId === spotId && isGoogleMapsLoaded && marker.element) {
-                marker.element.style.transform = 'scale(1.5)';
-                marker.element.style.zIndex = 10;
+            if (marker.spotId === spotId && isGoogleMapsLoaded) {
+                // 使用傳統 Marker 的高亮方式
+                marker.setIcon({
+                    url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                    scaledSize: new google.maps.Size(40, 40)
+                });
+                marker.setZIndex(10);
             }
         });
     }
 
     function unhighlightMarker(spotId) {
         markers.forEach(marker => {
-            if ((marker.spotId === spotId || spotId === null) && isGoogleMapsLoaded && marker.element) {
-                marker.element.style.transform = '';
-                marker.element.style.zIndex = '';
+            if ((marker.spotId === spotId || spotId === null) && isGoogleMapsLoaded) {
+                // 恢復原始圖標
+                marker.setIcon({
+                    url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                    scaledSize: new google.maps.Size(32, 32)
+                });
+                marker.setZIndex(1);
             }
         });
     }

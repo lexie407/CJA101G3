@@ -12,10 +12,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-api-import.css}">
-    
-    <!-- 🔧 過度階段：註解掉CSRF token -->
-    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
 </head>
 <body class="light">
     <div class="app-container">
@@ -28,21 +24,6 @@
             
             <!-- 主要內容 -->
             <main class="spot-api-import-page">
-        <!-- 頁面標題與圖片區域 -->
-        <div class="page-header-section">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1>API資料匯入</h1>
-                    <p>整合政府觀光資料開放平臺，匯入最新的全台景點資訊</p>
-                </div>
-                <div class="header-image">
-                    <div class="header-icon-container">
-                        <i class="material-icons header-icon">cloud_download</i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- 成功/錯誤訊息 -->
         <div th:if="${successMessage}" class="alert alert-success">
             <i class="material-icons">check_circle</i>
@@ -110,7 +91,7 @@
                 <label for="import-count" class="form-label">匯入筆數</label>
                 <div class="input-container">
                     <i class="material-icons input-icon">format_list_numbered</i>
-                    <input id="import-count" type="number" class="form-control" value="50" min="10" max="200">
+                    <input id="import-count" type="number" class="form-control" value="10" min="10" max="200">
                     <span class="input-suffix">筆 (10-200)</span>
                 </div>
                 <div class="helper-text">建議首次匯入設定為50-100筆，避免處理時間過長</div>
@@ -125,6 +106,7 @@
                         <li>系統會自動跳過重複的景點</li>
                         <li>建議在非尖峰時段執行大量匯入</li>
                         <li>🎲 全台匯入會隨機打亂景點順序，避免同地區景點集中匯入</li>
+                        <li>⚠️ 部分縣市（如澎湖縣、台東縣、花蓮縣）的景點資料較少，實際匯入數量可能低於設定值</li>
                     </ul>
                 </div>
             </div>
@@ -163,7 +145,7 @@
                 <label for="city-count" class="form-label">每個縣市匯入筆數</label>
                 <div class="input-container">
                     <i class="material-icons input-icon">format_list_numbered</i>
-                    <input id="city-count" type="number" class="form-control" value="30" min="10" max="100">
+                    <input id="city-count" type="number" class="form-control" value="10" min="10" max="100">
                     <span class="input-suffix">筆 (10-100)</span>
                 </div>
                 <div class="helper-text">每個縣市建議匯入20-50筆景點資料</div>
@@ -292,6 +274,10 @@
             </div>
             
             <div class="action-buttons">
+                <button id="correct-region-button" class="btn btn-warning btn-large" type="button">
+                    <i class="material-icons">location_searching</i>
+                    修正地區信息
+                </button>
                 <a th:href="@{/admin/spot/spotlist}" class="btn btn-secondary btn-large" type="button">
                     <i class="material-icons">list</i>
                     返回景點管理
@@ -304,6 +290,18 @@
                     <i class="material-icons">search</i>
                     前台景點搜尋
                 </a>
+            </div>
+            
+            <div id="correct-region-spinner" class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+            
+            <div id="correct-region-result" class="result-area" style="display:none;">
+                <div class="result-header">
+                    <i class="material-icons">assessment</i>
+                    <h4>修正結果</h4>
+                </div>
+                <div class="result-content"></div>
             </div>
         </div>
         <!-- API匯入專用腳本 -->
