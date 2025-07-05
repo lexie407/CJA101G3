@@ -64,7 +64,7 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
      * 查詢所有非揪團模組的公開行程
      * @return 非揪團模組的公開行程列表，按建立時間倒序排列
      */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.creatorType = 1 OR i.creatorType = 2) ORDER BY i.itnCreateDat DESC")
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.itnId < 10 OR i.itnId > 20) ORDER BY i.itnCreateDat DESC")
     List<ItineraryVO> findPublicItinerariesNotFromActivity();
 
     /**
@@ -72,7 +72,7 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
      * @param pageable 分頁資訊
      * @return 非揪團模組的公開行程分頁結果
      */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.creatorType = 1 OR i.creatorType = 2)")
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.itnId < 10 OR i.itnId > 20)")
     Page<ItineraryVO> findPublicItinerariesNotFromActivity(Pageable pageable);
 
     /**
@@ -97,7 +97,7 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
      * @param keyword 搜尋關鍵字
      * @return 符合條件的非揪團模組公開行程列表
      */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.creatorType = 1 OR i.creatorType = 2) AND " +
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.itnId < 10 OR i.itnId > 20) AND " +
            "i.itnName LIKE %:keyword% ORDER BY i.itnCreateDat DESC")
     List<ItineraryVO> searchPublicItinerariesNotFromActivity(@Param("keyword") String keyword);
 
@@ -107,7 +107,7 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
      * @param pageable 分頁資訊
      * @return 符合條件的非揪團模組公開行程分頁結果
      */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.creatorType = 1 OR i.creatorType = 2) AND " +
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.itnId < 10 OR i.itnId > 20) AND " +
            "i.itnName LIKE %:keyword%")
     Page<ItineraryVO> searchPublicItinerariesNotFromActivity(@Param("keyword") String keyword, Pageable pageable);
 
