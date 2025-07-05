@@ -66,10 +66,10 @@
 									th:value="${#dates.format(commentsReportVO.repTime, 'yyyy-MM-dd HH:mm')}" readonly>
 							</div>
 							<div class="form-group full-width">
-									<label for="commCon">被檢舉內容:</label>
+									<label for="commCon">被檢舉留言內容:</label>
 									<textarea id="commCon" name="commCon" rows="8"
 										th:text="${commentsVO.commCon}" readonly></textarea>
-									<div th:if="${commentsVO.commImg != null}">
+									<div th:if="${#arrays.length(commentsVO.commImg) != 0}"><div th:if="${commentsVO.commImg != null || #arrays.length(commentsVO.commImg)}">
 										<img th:alt="${commentsVO.commId}" th:src="@{/commentsReport/read.do(commId=${commentsVO.commId})}" style="max-width: 200px;">
 									</div>	
 								</div>
