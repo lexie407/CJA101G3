@@ -1,6 +1,12 @@
 package com.toiukha.groupactivity.service;
 
 import com.toiukha.groupactivity.model.*;
+import com.toiukha.itinerary.model.ItineraryVO;
+import com.toiukha.itinerary.service.ItineraryService;
+import com.toiukha.notification.model.NotificationService;
+import com.toiukha.notification.model.NotificationVO;
+import com.toiukha.participant.model.PartRepository;
+import com.toiukha.participant.model.PartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,53 +32,19 @@ public class ActServiceImpl implements ActService {
     private ActHandlerService actHandlerSvc;
     
     @Autowired
-    private ActTagService tagService;
+    private ActTagService tagSvc;
     
     @Autowired
-    private com.toiukha.participant.model.PartRepository partRepo;
+    private PartRepository partRepo;
     
     @Autowired
-    private com.toiukha.participant.model.PartService partSvc;
+    private PartService partSvc;
     
     @Autowired
-    private com.toiukha.notification.model.NotificationService notificationService;
+    private NotificationService notiSvc;
 
     @Autowired
-    private com.toiukha.itinerary.service.ItineraryService itineraryService;
-
-    // ========== 行程相關方法 ==========
-
-    /**
-     * 驗證行程是否存在
-     * @param itnId 行程ID
-     * @return true 如果行程存在
-     */
-    public boolean validateItinerary(Integer itnId) {
-        if (itnId == null) {
-            return false;
-        }
-        return itineraryService.isItineraryExists(itnId);
-    }
-
-    /**
-     * 取得行程詳情
-     * @param itnId 行程ID
-     * @return 行程VO，不存在則返回null
-     */
-    public com.toiukha.itinerary.model.ItineraryVO getItineraryById(Integer itnId) {
-        if (itnId == null) {
-            return null;
-        }
-        return itineraryService.getItineraryById(itnId);
-    }
-
-    /**
-     * 取得所有公開行程
-     * @return 公開行程列表
-     */
-    public List<com.toiukha.itinerary.model.ItineraryVO> getPublicItineraries() {
-        return itineraryService.getPublicItineraries();
-    }
+    private ItineraryService itnSvc;
 
     //=======前後台通用基本功能==========
 
@@ -93,7 +65,7 @@ public class ActServiceImpl implements ActService {
         
         // 儲存活動標籤到Redis
         if (actDto.getActType() != null && actDto.getActCity() != null) {
-            tagService.saveActTags(actVo.getActId(), actDto.getTypeTag(), actDto.getCityTag());
+            tagSvc.saveActTags(actVo.getActId(), actDto.getTypeTag(), actDto.getCityTag());
         }
     }
 
@@ -121,7 +93,7 @@ public class ActServiceImpl implements ActService {
         
         // 更新活動標籤到Redis
         if (actDto.getActType() != null && actDto.getActCity() != null) {
-            tagService.saveActTags(actVo.getActId(), actDto.getTypeTag(), actDto.getCityTag());
+            tagSvc.saveActTags(actVo.getActId(), actDto.getTypeTag(), actDto.getCityTag());
         }
     }
 
@@ -264,7 +236,7 @@ public class ActServiceImpl implements ActService {
             ActCardDTO dto = ActCardDTO.fromVO(actVO);
             // 如果有行程ID，查詢行程資訊
             if (actVO.getItnId() != null) {
-                com.toiukha.itinerary.model.ItineraryVO itinerary = getItineraryById(actVO.getItnId());
+                ItineraryVO itinerary = getItineraryById(actVO.getItnId());
                 if (itinerary != null) {
                     dto.setItnName(itinerary.getItnName());
                     dto.setItnDesc(itinerary.getItnDesc());
@@ -356,26 +328,26 @@ public class ActServiceImpl implements ActService {
             // 通知團員
             List<Integer> memberIds = partSvc.getParticipants(actId);
             for (Integer memId : memberIds) {
-                com.toiukha.notification.model.NotificationVO noti = 
-                    new com.toiukha.notification.model.NotificationVO(
+                NotificationVO noti =
+                    new NotificationVO(
                         "活動狀態通知",
                         "活動「" + act.getActName() + "」" + statusMessage,
                         memId,
                         new java.sql.Timestamp(System.currentTimeMillis())
                     );
-                notificationService.addOneNoti(noti);
+                notiSvc.addOneNoti(noti);
             }
             
             // 通知團主（如果團主不在團員列表中）
             if (!memberIds.contains(act.getHostId())) {
-                com.toiukha.notification.model.NotificationVO hostNoti = 
-                    new com.toiukha.notification.model.NotificationVO(
+                NotificationVO hostNoti =
+                    new NotificationVO(
                         "活動狀態通知",
                         "您的活動「" + act.getActName() + "」" + statusMessage,
                         act.getHostId(),
                         new java.sql.Timestamp(System.currentTimeMillis())
                     );
-                notificationService.addOneNoti(hostNoti);
+                notiSvc.addOneNoti(hostNoti);
             }
         }
     }
@@ -428,13 +400,13 @@ public class ActServiceImpl implements ActService {
     //儲存活動標籤
     @Override
     public void saveActTags(Integer actId, ActTag typeTag, ActTag cityTag) {
-        tagService.saveActTags(actId, typeTag, cityTag);
+        tagSvc.saveActTags(actId, typeTag, cityTag);
     }
 
     //獲取活動標籤
     @Override
     public java.util.Map<String, ActTag> getActTags(Integer actId) {
-        return tagService.getActTags(actId);
+        return tagSvc.getActTags(actId);
     }
 
     //根據標籤搜尋活動
@@ -444,22 +416,22 @@ public class ActServiceImpl implements ActService {
         // 只選地區
         if ((typeTags == null || typeTags.isEmpty()) && cityTags != null && !cityTags.isEmpty()) {
             for (ActTag cityTag : cityTags) {
-                actIds.addAll(tagService.getActsByTag(cityTag));
+                actIds.addAll(tagSvc.getActsByTag(cityTag));
             }
         }
         // 只選類型
         else if ((cityTags == null || cityTags.isEmpty()) && typeTags != null && !typeTags.isEmpty()) {
             for (ActTag typeTag : typeTags) {
-                actIds.addAll(tagService.getActsByTag(typeTag));
+                actIds.addAll(tagSvc.getActsByTag(typeTag));
             }
         }
         // 同時選類型與地區，取聯集
         else if (typeTags != null && !typeTags.isEmpty() && cityTags != null && !cityTags.isEmpty()) {
             for (ActTag typeTag : typeTags) {
-                actIds.addAll(tagService.getActsByTag(typeTag));
+                actIds.addAll(tagSvc.getActsByTag(typeTag));
             }
             for (ActTag cityTag : cityTags) {
-                actIds.addAll(tagService.getActsByTag(cityTag));
+                actIds.addAll(tagSvc.getActsByTag(cityTag));
             }
         }
         // 沒有標籤，回傳所有公開活動
@@ -480,6 +452,29 @@ public class ActServiceImpl implements ActService {
                 .collect(Collectors.toList());
 
         return new org.springframework.data.domain.PageImpl<>(results, pageable, actIds.size());
+    }
+
+    // ========== 行程相關方法 ==========
+
+    //驗證行程是否存在
+    public boolean validateItinerary(Integer itnId) {
+        if (itnId == null) {
+            return false;
+        }
+        return itnSvc.isItineraryExists(itnId);
+    }
+
+    //取得行程詳情
+    public ItineraryVO getItineraryById(Integer itnId) {
+        if (itnId == null) {
+            return null;
+        }
+        return itnSvc.getItineraryById(itnId);
+    }
+
+    //取得所有公開行程
+    public List<ItineraryVO> getPublicItineraries() {
+        return itnSvc.getPublicItineraries();
     }
 
 

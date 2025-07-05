@@ -3,7 +3,9 @@ package com.toiukha.groupactivity.controller;
 import com.toiukha.groupactivity.model.*;
 import com.toiukha.groupactivity.security.AuthService;
 import com.toiukha.groupactivity.service.ActService;
+import com.toiukha.groupactivity.service.ActStatusScheduler;
 import com.toiukha.groupactivity.service.DefaultImageService;
+import com.toiukha.itinerary.model.ItineraryVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -39,7 +41,7 @@ public class ActApiController {
     private AuthService authService;
     
     @Autowired
-    private com.toiukha.groupactivity.service.ActStatusScheduler actStatusScheduler;
+    private ActStatusScheduler actStatusScheduler;
 
     // 新增活動
     @PostMapping("/add")
@@ -864,7 +866,7 @@ public class ActApiController {
     @GetMapping("/itineraries")
     public ResponseEntity<?> getPublicItineraries() {
         try {
-            List<com.toiukha.itinerary.model.ItineraryVO> itineraries = actSvc.getPublicItineraries();
+            List<ItineraryVO> itineraries = actSvc.getPublicItineraries();
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", itineraries
@@ -906,16 +908,35 @@ public class ActApiController {
     @GetMapping("/itinerary/{itnId}")
     public ResponseEntity<?> getItineraryDetail(@PathVariable Integer itnId) {
         try {
-            com.toiukha.itinerary.model.ItineraryVO itinerary = actSvc.getItineraryById(itnId);
-            if (itinerary == null) {
+            ItineraryVO itnVo = actSvc.getItineraryById(itnId);
+            if (itnVo == null) {
                 return ResponseEntity.ok(Map.of(
                     "success", false,
                     "error", "行程不存在"
                 ));
             }
+            // 封裝成簡單DTO
+            ItinerarySimpleDTO dto = new ItinerarySimpleDTO();
+            dto.setItnId(itnVo.getItnId());
+            dto.setItnName(itnVo.getItnName());
+            dto.setItnDesc(itnVo.getItnDesc());
+            dto.setIsPublic(itnVo.getIsPublic() == null ? null : itnVo.getIsPublic().intValue());
+            // 景點轉換
+            List<SpotSimpleDTO> spotList = new ArrayList<>();
+            if (itnVo.getItnSpots() != null) {
+                for (var itnSpot : itnVo.getItnSpots()) {
+                    if (itnSpot.getSpot() != null) {
+                        SpotSimpleDTO spotDto = new SpotSimpleDTO();
+                        spotDto.setSpotName(itnSpot.getSpot().getSpotName());
+                        spotDto.setSpotAddress(itnSpot.getSpot().getSpotLoc());
+                        spotList.add(spotDto);
+                    }
+                }
+            }
+            dto.setItnSpots(spotList);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "data", itinerary
+                "data", dto
             ));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
