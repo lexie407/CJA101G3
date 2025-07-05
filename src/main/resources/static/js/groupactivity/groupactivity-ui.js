@@ -141,7 +141,7 @@ window.GroupActivityUI = (function () {
         );
         if (
           activity.isCurrentUserParticipant === true &&
-          activity.hostId != window.currentMemId
+          activity.hostId != window.currentMemberId
         ) {
           actions.push(
             `<button onclick="cancelParticipation(${activity.actId})" class="act-btn act-btn-danger">取消報名</button>`

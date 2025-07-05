@@ -265,9 +265,9 @@ window.memberDeleteAct = function (actId) {
  * @param {number} actId - 活動 ID
  */
 window.joinActivity = function (actId) {
-  // 從頁面取得 currentMemId，如果沒有則提示登入
-  const currentMemId = window.currentMemId;
-  if (!currentMemId) {
+  // 從頁面取得 currentMemberId，如果沒有則提示登入
+  const currentMemberId = window.currentMemberId;
+  if (!currentMemberId) {
     alert("請先登入");
     // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
     const currentUrl = encodeURIComponent(window.location.href);
@@ -275,7 +275,7 @@ window.joinActivity = function (actId) {
     return;
   }
 
-  GroupActivityAPI.joinActivity(actId, currentMemId)
+  GroupActivityAPI.joinActivity(actId, currentMemberId)
     .then((response) => {
       if (response.success) {
         alert("報名成功！");
@@ -299,9 +299,9 @@ window.cancelParticipation = function (actId) {
     return;
   }
 
-  // 從頁面取得 currentMemId，如果沒有則提示登入
-  const currentMemId = window.currentMemId;
-  if (!currentMemId) {
+  // 從頁面取得 currentMemberId，如果沒有則提示登入
+  const currentMemberId = window.currentMemberId;
+  if (!currentMemberId) {
     alert("請先登入");
     // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
     const currentUrl = encodeURIComponent(window.location.href);
@@ -309,7 +309,7 @@ window.cancelParticipation = function (actId) {
     return;
   }
 
-  GroupActivityAPI.leaveActivity(actId, currentMemId)
+  GroupActivityAPI.leaveActivity(actId, currentMemberId)
     .then((response) => {
       if (response.success) {
         alert("取消報名成功");

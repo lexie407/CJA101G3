@@ -44,8 +44,8 @@ public class ActDTO implements Serializable {
     //@Future(message="日期必須是在今日(不含)之後")
     private LocalDateTime signupEnd;
 
-    @NotNull(message = "必須設定活動需求人數")
-    @Min(1)
+    @NotNull(message = "活動人數最少三人!")
+    @Min(3)
     private Integer maxCap;
 
     //報名人數由程式計算
@@ -74,6 +74,8 @@ public class ActDTO implements Serializable {
     private String actType;  // 活動類型
     private String actCity;  // 活動縣市
 
+    // 行程名稱（顯示用）
+    private String itnName;
 
     // ===== Getter / Setter =====
 
@@ -221,6 +223,14 @@ public class ActDTO implements Serializable {
         this.actCity = actCity;
     }
 
+    public String getItnName() {
+        return itnName;
+    }
+
+    public void setItnName(String itnName) {
+        this.itnName = itnName;
+    }
+
     //活動狀態設定與檢查
 
     public ActStatus getRecruitStatusEnum() {
@@ -283,11 +293,20 @@ public class ActDTO implements Serializable {
         return true;
     }
 
-    // 招募時間邏輯
-    @AssertTrue(message = "活動結束時間必須晚於開始時間")
+    // 招募時間邏輯-截止期限
+    @AssertTrue(message = "截止時間必須晚於開始時間")
     public boolean isSignUpEndAfterStart() {
         if (signupStart != null && signupEnd != null) {
             return signupEnd.isAfter(signupStart);
+        }
+        return true;
+    }
+
+    // 招募時間邏輯-截止期限
+    @AssertTrue(message = "報名截止時間必須在活動開始之前")
+    public boolean isActStartAfterSignup() {
+        if (actStart != null && signupEnd != null) {
+            return actStart.isAfter(signupEnd);
         }
         return true;
     }

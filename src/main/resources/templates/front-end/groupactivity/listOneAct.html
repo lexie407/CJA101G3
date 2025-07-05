@@ -202,7 +202,7 @@
     <script th:inline="javascript">
       // 從伺服器取得資料
       const actId = /*[[${actVo.actId}]]*/ null;
-      const currentMemId = /*[[${currentMemId}]]*/ null;
+              const currentMemberId = /*[[${currentMemberId}]]*/ null;
       const itnId = /*[[${actVo.itnId}]]*/ null; // 行程ID
       // const itnId = 1; // 測試用：寫死行程ID為1
 
@@ -212,7 +212,7 @@
           return;
         }
 
-        if (!currentMemId) {
+        if (!currentMemberId) {
           alert("請先登入");
           // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
           const currentUrl = encodeURIComponent(window.location.href);
@@ -220,7 +220,7 @@
           return;
         }
 
-        fetch(`/api/participate/${actId}/signup/${currentMemId}`, {
+        fetch(`/api/participate/${actId}/signup/${currentMemberId}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -247,7 +247,7 @@
           return;
         }
 
-        if (!currentMemId) {
+        if (!currentMemberId) {
           alert("請先登入");
           // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
           const currentUrl = encodeURIComponent(window.location.href);
@@ -259,7 +259,7 @@
           return;
         }
 
-        fetch(`/api/participate/${actId}/signup/${currentMemId}`, {
+        fetch(`/api/participate/${actId}/signup/${currentMemberId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
