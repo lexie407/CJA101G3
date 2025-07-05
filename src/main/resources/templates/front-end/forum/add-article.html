@@ -31,7 +31,11 @@
 
 <!--                TODO: 現在是已確認會員資料有載入-->
                 <p id="current-user-info">會員資料載入中...</p>
-
+                <div th:if="${errors != null}">
+                    <ul>
+                        <li th:each="error : ${errors}" th:text="${error}"></li>
+                    </ul>
+                </div>
                 <div class="form-card">
                     <form id="articleForm" th:action="@{/forum/article/insert}" method="post">
                         <div class="form-group">
@@ -52,7 +56,7 @@
 
                         <div class="form-group">
                             <div class="input-field">
-                                <input type="text" id="title" name="artTitle" placeholder=" " maxlength="30" required>
+                                <input type="text" id="title" name="artTitle" placeholder=" " maxlength="30">
                                 <label for="title" class="floating-label">標題</label>
                             </div>
                             <div class="char-counter">
