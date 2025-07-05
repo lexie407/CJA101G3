@@ -45,6 +45,7 @@ public class CommentsReportsController {
 		List<CommentsReportVO> list = commentsReportService.getMemList(membersVO.getMemId());
 		model.addAttribute("list", list);
 		model.addAttribute("currentPage", "account");
+		model.addAttribute("activeItem", "reports");
 		return "front-end/commentsreports/memberCommentsReportList";
 	}
 	
@@ -56,6 +57,7 @@ public class CommentsReportsController {
 		CommentsReportVO commentsReportVO = commentsReportService.getOne(commRepId);
 		model.addAttribute("commentsReportVO", commentsReportVO);
 		model.addAttribute("currentPage", "account");
+		model.addAttribute("activeItem", "reports");
 		return "front-end/commentsreports/memberCommentsReportDetail";
 	}
 	

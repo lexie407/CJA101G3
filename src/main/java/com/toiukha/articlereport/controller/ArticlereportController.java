@@ -44,6 +44,7 @@ public class ArticlereportController {
 			List<ArticlereportVO> list = articlereportService.getMemList(membersVO.getMemId());
 			model.addAttribute("list", list);
 			model.addAttribute("currentPage", "account");
+			model.addAttribute("activeItem", "reports");
 			return "front-end/articlereport/memberArticleReportList";
 		}
 		
@@ -55,6 +56,7 @@ public class ArticlereportController {
 			ArticlereportVO articlereportVO = articlereportService.getOne(artRepId);
 			model.addAttribute("articlereportVO", articlereportVO);
 			model.addAttribute("currentPage", "account");
+			model.addAttribute("activeItem", "reports");
 			return "front-end/articlereport/memberArticleReportDetail";
 		}
 		
