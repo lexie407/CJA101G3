@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,6 +42,12 @@ public class CommentsAPIController {
 
 	
 	//========== 前台後台通用 ==========//
+	
+	//查文章編號
+	@GetMapping("/getArt/{artId}")
+	public Article getArt(@PathVariable Integer artId) {
+		return articleServiceImpl.getArticleById(artId);
+	}
 	
 	//查文章的留言
 	@PostMapping("/getComments")
