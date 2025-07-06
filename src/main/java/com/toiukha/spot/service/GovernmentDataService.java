@@ -510,8 +510,8 @@ public class GovernmentDataService {
         // 政府資料ID
         spot.setGovtId(govData.getId());
         
-        // 預設狀態為待審核
-        spot.setSpotStatus((byte) 0);
+        // API 匯入的景點直接設為上架狀態
+        spot.setSpotStatus((byte) 1);  // 1 = 上架
         
         // 建立者ID
         spot.setCrtId(crtId);

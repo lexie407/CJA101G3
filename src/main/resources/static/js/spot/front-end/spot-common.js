@@ -337,3 +337,16 @@
     // 頁面載入完成後初始化
     document.addEventListener('DOMContentLoaded', init);
 })();
+
+/**
+ * 初始化共用功能
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // 綁定登入按鈕事件
+    const loginBtn = document.querySelector('.logout-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function() {
+            window.location.href = '/members/login';
+        });
+    }
+});

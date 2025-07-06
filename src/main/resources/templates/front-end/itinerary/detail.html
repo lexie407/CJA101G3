@@ -271,5 +271,26 @@
 
     <!-- JavaScript -->
     <script th:src="@{/js/itinerary/front-end/detail.js}"></script>
+
+    <!-- 登入對話框模板 -->
+    <div class="modal-container" id="loginModalContainer" style="display: none;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">請先登入</h3>
+                <button type="button" class="modal-close" aria-label="關閉">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message">您需要先登入才能收藏行程。</p>
+                <p class="modal-message">是否前往登入頁面？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-secondary modal-close">稍後再說</button>
+                <button type="button" class="modal-btn modal-btn-primary modal-login-btn">前往登入</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

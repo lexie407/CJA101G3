@@ -20,7 +20,7 @@ import java.util.Map;
  * 處理行程相關的資料交換
  */
 @RestController
-@RequestMapping("/api/itinerary")
+@RequestMapping("/itinerary/api")
 public class ItineraryRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(ItineraryRestController.class);
@@ -204,9 +204,22 @@ public class ItineraryRestController {
     @GetMapping("/favorites")
     public ResponseEntity<?> getMyFavorites(HttpSession session) {
         try {
-            // 暫時使用測試會員ID
-            Integer memId = 10;
+            // 從 Session 獲取當前登入會員
+            MembersVO member = (MembersVO) session.getAttribute("member");
+            if (member == null) {
+                logger.warn("未登入用戶嘗試訪問收藏行程 API");
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "message", "請先登入會員"
+                ));
+            }
+            
+            Integer memId = member.getMemId();
+            logger.info("獲取會員 ID {} 的收藏行程列表", memId);
             List<ItineraryVO> favorites = itineraryService.findFavoriteItinerariesByMemId(memId);
+            
+            // 轉換為前端需要的格式
+            logger.info("查詢會員 ID {} 的收藏行程，找到 {} 筆", memId, favorites.size());
             
             // 轉換為前端需要的格式
             List<Map<String, Object>> result = favorites.stream()
@@ -223,7 +236,12 @@ public class ItineraryRestController {
                 })
                 .collect(java.util.stream.Collectors.toList());
             
-            return ResponseEntity.ok(result);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "收藏行程查詢成功");
+            response.put("itineraries", result);
+            
+            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             logger.error("獲取收藏行程列表時發生錯誤", e);
@@ -240,8 +258,16 @@ public class ItineraryRestController {
     @PostMapping("/{id}/favorite")
     public ResponseEntity<?> toggleFavorite(@PathVariable Integer id, HttpSession session) {
         try {
-            // 暫時使用測試會員ID
-            Integer memId = 10;
+            // 從 session 取得會員資訊
+            MembersVO member = (MembersVO) session.getAttribute("member");
+            if (member == null) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "message", "請先登入"
+                ));
+            }
+            
+            Integer memId = member.getMemId();
             
             // 建立收藏ID
             com.toiukha.favItn.model.FavItnId favItnId = new com.toiukha.favItn.model.FavItnId();
@@ -270,7 +296,7 @@ public class ItineraryRestController {
      * 檢查是否已有此行程的複製版本
      */
     @GetMapping("/{id}/check-duplicate")
-    public ResponseEntity<?> checkDuplicate(@PathVariable Long id, HttpSession session) {
+    public ResponseEntity<?> checkDuplicate(@PathVariable Integer id, HttpSession session) {
         try {
             // 從 Session 獲取當前登入會員
             MembersVO member = (MembersVO) session.getAttribute("member");
@@ -285,7 +311,7 @@ public class ItineraryRestController {
             Integer memId = member.getMemId();
             
             // 檢查行程是否存在
-            if (!itineraryService.isItineraryExists(id.intValue())) {
+            if (!itineraryService.isItineraryExists(id)) {
                 logger.warn("嘗試檢查不存在的行程 ID: {}", id);
                 return ResponseEntity.status(404).body(Map.of(
                     "success", false,
@@ -294,7 +320,7 @@ public class ItineraryRestController {
             }
             
             // 獲取原始行程
-            ItineraryVO originalItinerary = itineraryService.getItineraryById(id.intValue());
+            ItineraryVO originalItinerary = itineraryService.getItineraryById(id);
             String originalName = originalItinerary.getItnName();
             
             // 檢查用戶的行程中是否已有此行程的複製版本或相同名稱的行程

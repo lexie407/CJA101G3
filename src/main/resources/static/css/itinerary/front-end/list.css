@@ -843,3 +843,110 @@
         gap: 1rem;
     }
 } 
+
+/* 登入對話框樣式 */
+.login-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.login-dialog--show {
+    opacity: 1;
+}
+
+.login-dialog__content {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.login-dialog--show .login-dialog__content {
+    transform: translateY(0);
+}
+
+.login-dialog__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.login-dialog__title {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--md-sys-color-on-surface);
+}
+
+.login-dialog__close {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.login-dialog__close:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.login-dialog__body {
+    margin-bottom: 24px;
+}
+
+.login-dialog__body p {
+    margin: 8px 0;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.login-dialog__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.login-dialog__button {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.login-dialog__button--primary {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.login-dialog__button--primary:hover {
+    background-color: var(--md-sys-color-primary-hover);
+}
+
+.login-dialog__button--secondary {
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.login-dialog__button--secondary:hover {
+    background-color: var(--md-sys-color-surface-variant-hover);
+} 

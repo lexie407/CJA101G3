@@ -29,6 +29,9 @@ function initializeItineraryList() {
     // 初始化工具提示
     initializeTooltips();
     
+    // 綁定登入按鈕事件
+    bindLoginButton();
+    
     console.log('行程列表頁面初始化完成');
 }
 
@@ -99,20 +102,22 @@ function toggleFavorite(button) {
     
     button.disabled = true; // 禁用按鈕，防止重複點擊
     const icon = button.querySelector('.material-icons');
+    const originalHTML = button.innerHTML;
     
     // 呼叫收藏API
-    fetch(`/favItn`, {
+    fetch(`/itinerary/api/${itineraryId}/favorite`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            favItnId: itineraryId,
-            memId: 10  // 暫時使用測試會員ID
-        })
+        }
     })
     .then(response => {
+        if (response.status === 401) {
+            // 未登入，顯示登入對話框
+            showLoginDialog(button, originalHTML);
+            throw new Error('請先登入');
+        }
         if (!response.ok) {
             throw new Error('伺服器回應錯誤');
         }
@@ -125,25 +130,125 @@ function toggleFavorite(button) {
                 // 如果回傳是「已收藏」
                 button.classList.add('favorited');
                 icon.textContent = 'favorite';
+                button.title = '取消收藏';
                 showToast('已加入收藏', 'success');
             } else {
                 // 如果回傳是「未收藏」
                 button.classList.remove('favorited');
                 icon.textContent = 'favorite_border';
+                button.title = '加入收藏';
                 showToast('已取消收藏', 'info');
             }
+
+            // 通知其他頁面
+            localStorage.setItem('favoriteChange', JSON.stringify({
+                itineraryId: itineraryId,
+                isFavorited: data.isFavorited,
+                timestamp: new Date().getTime()
+            }));
         } else {
             // 處理後端回傳的操作失敗訊息
             showToast(data.message || '操作失敗', 'error');
+            // 還原按鈕狀態
+            button.innerHTML = originalHTML;
         }
     })
     .catch(error => {
         console.error('收藏操作失敗:', error);
-        showToast('網路錯誤，請稍後再試', 'error');
+        if (error.message !== '請先登入') {
+            showToast('網路錯誤，請稍後再試', 'error');
+            // 還原按鈕狀態
+            button.innerHTML = originalHTML;
+        }
     })
     .finally(() => {
         button.disabled = false; // 無論成功或失敗，最後都重新啟用按鈕
     });
+}
+
+/**
+ * 顯示登入對話框
+ */
+function showLoginDialog(button, originalHTML) {
+    // 檢查是否已經有登入對話框
+    const existingDialog = document.querySelector('.login-dialog');
+    if (existingDialog) {
+        existingDialog.remove();
+    }
+    
+    // 創建對話框
+    const dialog = document.createElement('div');
+    dialog.className = 'login-dialog';
+    dialog.innerHTML = `
+        <div class="login-dialog__content">
+            <div class="login-dialog__header">
+                <h3 class="login-dialog__title">請先登入</h3>
+                <button class="login-dialog__close" aria-label="關閉">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="login-dialog__body">
+                <p>您需要先登入才能收藏行程。</p>
+                <p>是否前往登入頁面？</p>
+            </div>
+            <div class="login-dialog__footer">
+                <button class="login-dialog__button login-dialog__button--secondary" data-action="cancel">稍後再說</button>
+                <button class="login-dialog__button login-dialog__button--primary" data-action="login">前往登入</button>
+            </div>
+        </div>
+    `;
+    
+    // 添加到頁面
+    document.body.appendChild(dialog);
+    
+    // 確保DOM更新後再添加動畫效果
+    requestAnimationFrame(() => {
+        dialog.classList.add('login-dialog--show');
+    });
+    
+    // 綁定事件
+    const closeButton = dialog.querySelector('.login-dialog__close');
+    const cancelButton = dialog.querySelector('[data-action="cancel"]');
+    const loginButton = dialog.querySelector('[data-action="login"]');
+    const dialogContent = dialog.querySelector('.login-dialog__content');
+    
+    // 點擊背景關閉對話框
+    dialog.addEventListener('click', function(e) {
+        if (e.target === dialog) {
+            closeDialog();
+        }
+    });
+    
+    // 防止點擊內容區域時關閉對話框
+    dialogContent.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+    
+    // 關閉按鈕事件
+    closeButton.addEventListener('click', closeDialog);
+    
+    // 取消按鈕事件
+    cancelButton.addEventListener('click', closeDialog);
+    
+    // 登入按鈕事件
+    loginButton.addEventListener('click', function() {
+        // 保存當前頁面URL到localStorage，以便登入後重定向回來
+        localStorage.setItem('loginRedirectUrl', window.location.href);
+        // 跳轉到登入頁面
+        window.location.href = '/members/login?redirect=' + encodeURIComponent(window.location.href);
+    });
+    
+    // 關閉對話框函數
+    function closeDialog() {
+        dialog.classList.remove('login-dialog--show');
+        // 等待動畫結束後移除對話框
+        setTimeout(() => {
+            dialog.remove();
+            // 還原按鈕狀態
+            button.innerHTML = originalHTML;
+            button.disabled = false;
+        }, 300);
+    }
 }
 
 /**
@@ -172,6 +277,22 @@ function initializeTooltips() {
             button.title = '取消收藏';
         }
     });
+}
+
+/**
+ * 綁定登入按鈕事件
+ */
+function bindLoginButton() {
+    const loginButton = document.querySelector('.logout-btn');
+    if (loginButton) {
+        loginButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            // 保存當前頁面URL到localStorage，以便登入後重定向回來
+            localStorage.setItem('loginRedirectUrl', window.location.href);
+            // 跳轉到登入頁面
+            window.location.href = '/members/login?redirect=' + encodeURIComponent(window.location.href);
+        });
+    }
 }
 
 /**
@@ -460,41 +581,4 @@ function updateFavoriteButton(itineraryId, isFavorited) {
         icon.textContent = isFavorited ? 'favorite' : 'favorite_border';
         button.title = isFavorited ? '取消收藏' : '加入收藏';
     }
-}
-
-function toggleFavorite(button) {
-    const itineraryId = button.dataset.itineraryId;
-    if (!itineraryId) return;
-
-    fetch(`/api/itinerary/${itineraryId}/favorite`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            // 更新按鈕狀態
-            button.classList.toggle('favorited');
-            const icon = button.querySelector('.material-icons');
-            if (data.isFavorited) {
-                icon.textContent = 'favorite';
-                button.title = '取消收藏';
-            } else {
-                icon.textContent = 'favorite_border';
-                button.title = '加入收藏';
-            }
-
-            // 通知其他頁面
-            localStorage.setItem('favoriteChange', JSON.stringify({
-                itineraryId: itineraryId,
-                isFavorited: data.isFavorited,
-                timestamp: new Date().getTime()
-            }));
-
-            showToast(data.isFavorited ? '已加入收藏' : '已取消收藏', 'info');
-        } else {
-            showToast('操作失敗，請稍後再試', 'error');
-        }
-    })
-    .catch(() => showToast('網路錯誤', 'error'));
 } 

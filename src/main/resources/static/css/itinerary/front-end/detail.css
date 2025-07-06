@@ -842,3 +842,266 @@
         font-size: 14px;
     }
 } 
+
+/* 登入提示對話框 */
+.login-required-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+.login-required-modal.modal--show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.login-required-modal .modal-content {
+    background: var(--md-sys-color-surface);
+    border-radius: 24px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    transform: translateY(20px);
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.login-required-modal.modal--show .modal-content {
+    transform: translateY(0);
+}
+
+.login-required-modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.login-required-modal .modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0;
+}
+
+.login-required-modal .modal-close {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.login-required-modal .modal-close:hover {
+    background: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+}
+
+.login-required-modal .login-required-icon {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.login-required-modal .login-required-icon .material-icons {
+    font-size: 4rem;
+    color: var(--md-sys-color-primary);
+}
+
+.login-required-modal .modal-body {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-required-modal .modal-body p {
+    margin: 0.5rem 0;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.login-required-modal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.login-required-modal .modal-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.login-required-modal .modal-btn-primary {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+}
+
+.login-required-modal .modal-btn-primary:hover {
+    background: var(--md-sys-color-primary-hover);
+    transform: translateY(-1px);
+}
+
+.login-required-modal .modal-btn-secondary {
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    border: 1px solid var(--md-sys-color-outline);
+}
+
+.login-required-modal .modal-btn-secondary:hover {
+    background: var(--md-sys-color-surface-container-highest);
+    border-color: var(--md-sys-color-primary);
+}
+
+.login-required-modal .material-icons {
+    font-size: 1.2rem;
+}
+
+@media (max-width: 480px) {
+    .login-required-modal .modal-content {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .login-required-modal .modal-footer {
+        flex-direction: column-reverse;
+    }
+    
+    .login-required-modal .modal-btn {
+        width: 100%;
+        justify-content: center;
+    }
+} 
+
+/* 登入對話框樣式 */
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: none;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+}
+
+.modal-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border-radius: 8px;
+    width: 400px;
+    z-index: 1002;
+}
+
+.modal-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 24px 20px;
+    text-align: center;
+}
+
+.modal-message {
+    margin: 4px 0;
+    color: #666;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
+.modal-footer {
+    padding: 12px 20px 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #eee;
+}
+
+.modal-btn {
+    min-width: 80px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-btn-secondary {
+    background-color: #f5f5f5;
+    color: #666;
+}
+
+.modal-btn-secondary:hover {
+    background-color: #e8e8e8;
+}
+
+.modal-btn-primary {
+    background-color: #2196F3;
+    color: white;
+}
+
+.modal-btn-primary:hover {
+    background-color: #1976D2;
+} 

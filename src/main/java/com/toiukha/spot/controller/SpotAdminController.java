@@ -278,11 +278,11 @@ public class SpotAdminController {
     }
 
     /**
-     * 處理新增景點（後台）- 新增後進入待審核狀態
+     * 處理新增景點（後台）- 管理員新增的景點直接上架
      * @param spotVO 景點資料
      * @param result 驗證結果
      * @param redirectAttr 重導向屬性
-     * @return 重導向到審核管理頁面
+     * @return 重導向到景點列表頁面
      */
     @PostMapping("/add")
     public String processAdd(@Valid @ModelAttribute SpotVO spotVO,
@@ -298,14 +298,14 @@ public class SpotAdminController {
             
             // 設定預設值
             spotVO.setCrtId(1); // 假設管理員ID為1，實際應從session取得
-            // 後台新增的景點強制設為待審核狀態，不受前端狀態開關影響
-            spotVO.setSpotStatus((byte) 0);
+            // 管理員新增的景點直接設為上架狀態
+            spotVO.setSpotStatus((byte) 1);  // 1 = 上架
             
             spotService.addSpot(spotVO);
             
-            // 新增成功後跳轉到審核管理頁面
-            redirectAttr.addFlashAttribute("successMessage", "景點新增成功！已加入待審核列表。");
-            return "redirect:/admin/spot/spotreview";
+            // 新增成功後跳轉到景點列表頁面
+            redirectAttr.addFlashAttribute("successMessage", "景點新增成功！已直接上架。");
+            return "redirect:/admin/spot/spotlist";
         } catch (Exception e) {
             String errorMessage = formatExceptionMessage(e);
             redirectAttr.addFlashAttribute("errorMessage", errorMessage);
