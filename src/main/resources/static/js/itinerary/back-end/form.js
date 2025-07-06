@@ -143,7 +143,7 @@ function validateItineraryName(input, showEmpty = false) {
 function validateItineraryDescription(input, showEmpty = false) {
     const value = input.value.trim();
     const maxLength = 500;
-    const minRecommendedLength = 10; // 降低到10個字元
+    const minRecommendedLength = 5; // 降低到5個字元
     
     // 清除先前的錯誤
     clearFieldError(input);

@@ -26,11 +26,12 @@ public class GooglePlacesService {
     
     private static final Logger logger = LoggerFactory.getLogger(GooglePlacesService.class);
     
-    private static final String PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/textsearch/json";
-    private static final String PLACE_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json";
-    private static final String PLACE_PHOTO_URL = "https://maps.googleapis.com/maps/api/place/photo";
+    // 新版 Places API 端點
+    private static final String PLACES_SEARCH_URL = "https://places.googleapis.com/v1/places:searchText";
+    private static final String PLACE_DETAILS_URL = "https://places.googleapis.com/v1/places/";
+    private static final String PLACE_PHOTO_URL = "https://places.googleapis.com/v1/places/";
     
-    @Value("${google.places.api.key:}")
+    @Value("${google.api.key:}")
     private String apiKey;
     
     private final WebClient webClient;
@@ -57,35 +58,144 @@ public class GooglePlacesService {
         }
         
         try {
-            // 建構搜尋查詢字串
+            // 嘗試多種搜索策略
+            GooglePlaceInfo result = null;
+            
+            // 策略1：使用景點名稱+地址
+            logger.info("嘗試策略1：使用景點名稱+地址搜索");
             String query = buildSearchQuery(spotName, address);
+            result = performSearch(query, lat, lng);
             
-            String url = UriComponentsBuilder.fromUriString(PLACES_SEARCH_URL)
-                .queryParam("query", query)
-                .queryParam("key", apiKey)
-                .queryParam("language", "zh-TW")
-                .queryParam("region", "tw")
-                .build()
-                .toUriString();
-            
-            // 如果有經緯度，加入位置偏好
-            if (lat != null && lng != null) {
-                url += "&location=" + lat + "," + lng + "&radius=1000";
+            // 策略2：如果策略1失敗，只使用景點名稱
+            if (result == null && spotName != null && !spotName.trim().isEmpty()) {
+                logger.info("嘗試策略2：僅使用景點名稱搜索");
+                result = performSearch(spotName.trim(), lat, lng);
             }
             
-            String response = webClient.get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(10))
-                .block();
+            // 策略3：如果策略2失敗，使用景點名稱+縣市
+            if (result == null && address != null && !address.trim().isEmpty()) {
+                logger.info("嘗試策略3：使用景點名稱+縣市搜索");
+                String cityQuery = extractCityQuery(spotName, address);
+                if (!cityQuery.equals(query) && !cityQuery.equals(spotName.trim())) {
+                    result = performSearch(cityQuery, lat, lng);
+                }
+            }
             
-            return parseSearchResponse(response);
+            return result;
             
         } catch (Exception e) {
             logger.error("搜尋 Google Places 發生錯誤：{}, 景點：{}", e.getMessage(), spotName);
             return null;
         }
+    }
+    
+    /**
+     * 執行 Google Places API 搜索
+     * @param query 搜索查詢字串
+     * @param lat 緯度（可選）
+     * @param lng 經度（可選）
+     * @return 搜索結果
+     */
+    private GooglePlaceInfo performSearch(String query, Double lat, Double lng) {
+        try {
+            logger.debug("執行搜索，查詢字串: '{}'", query);
+            
+            // 新版 Places API 使用 JSON 請求體
+            String requestBody = String.format(
+                "{\"textQuery\": \"%s\", \"languageCode\": \"zh-TW\", \"regionCode\": \"TW\"}",
+                query.replace("\"", "\\\"")
+            );
+            
+            // 如果有經緯度，添加到請求體
+            if (lat != null && lng != null) {
+                requestBody = requestBody.replace("}", 
+                    String.format(", \"locationBias\": {\"circle\": {\"center\": {\"latitude\": %f, \"longitude\": %f}, \"radius\": 10000.0}}", lat, lng)
+                + "}");
+            }
+            
+            logger.debug("Places API 請求體: {}", requestBody);
+            
+            // 構建請求 URL 和頭部
+            String url = PLACES_SEARCH_URL;
+            
+            String response = webClient.post()
+                .uri(url)
+                .header("Content-Type", "application/json")
+                .header("X-Goog-Api-Key", apiKey)
+                .header("X-Goog-FieldMask", "places.displayName,places.formattedAddress,places.id,places.rating,places.userRatingCount")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(10))
+                .block();
+            
+            GooglePlaceInfo result = parseSearchResponseNew(response);
+            
+            if (result != null) {
+                logger.info("搜索成功，查詢字串: '{}', 找到: {}", query, result.getName());
+            } else {
+                logger.warn("搜索無結果，查詢字串: '{}'", query);
+            }
+            
+            return result;
+        } catch (Exception e) {
+            logger.error("執行搜索時發生錯誤，查詢字串: '{}', 錯誤: {}", query, e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * 解析新版 Places API 的搜索響應
+     */
+    private GooglePlaceInfo parseSearchResponseNew(String response) {
+        try {
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode places = root.path("places");
+            
+            if (places.isArray() && places.size() > 0) {
+                JsonNode firstPlace = places.get(0);
+                
+                GooglePlaceInfo placeInfo = new GooglePlaceInfo();
+                placeInfo.setPlaceId(firstPlace.path("id").asText());
+                
+                // 獲取顯示名稱
+                JsonNode displayName = firstPlace.path("displayName");
+                if (!displayName.isMissingNode()) {
+                    placeInfo.setName(displayName.path("text").asText());
+                }
+                
+                // 特別處理評分，確保即使為0也能正確處理
+                JsonNode ratingNode = firstPlace.path("rating");
+                if (!ratingNode.isMissingNode() && !ratingNode.isNull()) {
+                    placeInfo.setRating(ratingNode.asDouble());
+                    logger.debug("解析到評分：{}", placeInfo.getRating());
+                } else {
+                    placeInfo.setRating(null);
+                    logger.debug("未解析到評分");
+                }
+                
+                // 處理評分總數
+                JsonNode ratingsNode = firstPlace.path("userRatingCount");
+                if (!ratingsNode.isMissingNode() && !ratingsNode.isNull()) {
+                    placeInfo.setUserRatingsTotal(ratingsNode.asInt());
+                } else {
+                    placeInfo.setUserRatingsTotal(0);
+                }
+                
+                // 獲取格式化地址
+                placeInfo.setFormattedAddress(firstPlace.path("formattedAddress").asText());
+                
+                logger.info("成功解析Google Places搜索結果：{}", placeInfo.getName());
+                return placeInfo;
+            } else {
+                logger.warn("Google Places API 返回空結果數組");
+            }
+            
+        } catch (Exception e) {
+            logger.error("解析 Google Places 搜尋回應發生錯誤", e);
+        }
+        
+        return null;
     }
 
     /**
@@ -100,22 +210,23 @@ public class GooglePlacesService {
         }
         
         try {
-            String url = UriComponentsBuilder.fromUriString(PLACE_DETAILS_URL)
-                .queryParam("place_id", placeId)
-                .queryParam("key", apiKey)
-                .queryParam("language", "zh-TW")
-                .queryParam("fields", "photos,rating,user_ratings_total,reviews,opening_hours,website,formatted_phone_number")
-                .build()
-                .toUriString();
+            // 新版 Places API 使用不同的端點和請求方式
+            String url = PLACE_DETAILS_URL + placeId;
+            
+            logger.info("請求Google Place詳情，Place ID: {}, URL: {}", placeId, url);
             
             String response = webClient.get()
                 .uri(url)
+                .header("X-Goog-Api-Key", apiKey)
+                .header("X-Goog-FieldMask", "photos,rating,userRatingCount,websiteUri,nationalPhoneNumber,internationalPhoneNumber,regularOpeningHours")
                 .retrieve()
                 .bodyToMono(String.class)
                 .timeout(Duration.ofSeconds(10))
                 .block();
             
-            return parseDetailsResponse(response);
+            logger.debug("Google Place詳情響應: {}", response);
+            
+            return parseDetailsResponseNew(response, placeId);
             
         } catch (Exception e) {
             logger.error("取得 Place 詳情發生錯誤：{}, PlaceID：{}", e.getMessage(), placeId);
@@ -134,144 +245,231 @@ public class GooglePlacesService {
             return null;
         }
         
-        return UriComponentsBuilder.fromUriString(PLACE_PHOTO_URL)
-            .queryParam("photoreference", photoReference)
-            .queryParam("maxwidth", maxWidth)
-            .queryParam("key", apiKey)
-            .build()
-            .toUriString();
+        // 新版 Places API 的照片 URL 格式
+        return photoReference + "/media?key=" + apiKey + "&maxWidth=" + maxWidth;
     }
 
     /**
      * 建構搜尋查詢字串
      */
     private String buildSearchQuery(String spotName, String address) {
-        StringBuilder query = new StringBuilder();
-        
-        if (spotName != null && !spotName.trim().isEmpty()) {
-            query.append(spotName.trim());
+        if (spotName == null || spotName.trim().isEmpty()) {
+            return address != null ? address.trim() : "";
         }
         
-        if (address != null && !address.trim().isEmpty()) {
-            if (query.length() > 0) {
-                query.append(" ");
-            }
-            // 只加入縣市和鄉鎮區的部分
-            String[] addressParts = address.split("[縣市]");
-            if (addressParts.length > 0) {
-                String cityPart = addressParts[0];
-                if (cityPart.length() > 2) {
-                    query.append(cityPart).append("市");
-                }
-            }
+        if (address == null || address.trim().isEmpty()) {
+            return spotName.trim();
         }
         
-        return query.toString();
+        // 組合景點名稱和地址，但避免重複
+        String name = spotName.trim();
+        String addr = address.trim();
+        
+        // 如果地址已經包含景點名稱，則直接使用地址
+        if (addr.contains(name)) {
+            return addr;
+        }
+        
+        // 否則組合名稱和地址
+        return name + " " + addr;
     }
-
+    
     /**
-     * 解析搜尋回應
+     * 從地址中提取縣市，並與景點名稱組合
      */
-    private GooglePlaceInfo parseSearchResponse(String response) {
+    private String extractCityQuery(String spotName, String address) {
+        if (spotName == null || address == null) {
+            return spotName != null ? spotName.trim() : "";
+        }
+        
+        String name = spotName.trim();
+        String addr = address.trim();
+        
+        // 嘗試提取縣市
+        String city = "";
+        String[] cityPatterns = {"台北市", "臺北市", "新北市", "桃園市", "台中市", "臺中市", 
+                                "台南市", "臺南市", "高雄市", "基隆市", "新竹市", "嘉義市", 
+                                "新竹縣", "苗栗縣", "彰化縣", "南投縣", "雲林縣", "嘉義縣", 
+                                "屏東縣", "宜蘭縣", "花蓮縣", "台東縣", "臺東縣", "澎湖縣", 
+                                "金門縣", "連江縣"};
+        
+        for (String pattern : cityPatterns) {
+            if (addr.contains(pattern)) {
+                city = pattern;
+                break;
+            }
+        }
+        
+        if (city.isEmpty()) {
+            return name;
+        }
+        
+        // 如果名稱中已包含縣市，則直接使用名稱
+        if (name.contains(city)) {
+            return name;
+        }
+        
+        // 組合名稱和縣市
+        return name + " " + city;
+    }
+    
+    /**
+     * 解析新版 Places API 的詳細資訊響應
+     */
+    private GooglePlaceDetails parseDetailsResponseNew(String response, String placeId) {
         try {
             JsonNode root = objectMapper.readTree(response);
-            String status = root.path("status").asText();
             
-            if (!"OK".equals(status)) {
-                logger.debug("Google Places API 搜尋狀態：{}", status);
-                return null;
+            logger.debug("解析Google Place詳情，Place ID: {}", placeId);
+            logger.debug("響應根節點: {}", root.toString());
+            
+            GooglePlaceDetails details = new GooglePlaceDetails();
+            
+            // 照片
+            JsonNode photos = root.path("photos");
+            if (photos.isArray()) {
+                List<String> photoReferences = new ArrayList<>();
+                for (JsonNode photo : photos) {
+                    String photoName = photo.path("name").asText();
+                    if (!photoName.isEmpty()) {
+                        // 新版 API 中，照片引用是一個完整的路徑
+                        photoReferences.add(photoName);
+                    }
+                }
+                details.setPhotoReferences(photoReferences);
+                logger.debug("解析到 {} 張照片", photoReferences.size());
+            } else {
+                logger.debug("未找到照片節點或非數組");
             }
             
-            JsonNode results = root.path("results");
-            if (results.isArray() && results.size() > 0) {
-                JsonNode firstResult = results.get(0);
-                
-                GooglePlaceInfo placeInfo = new GooglePlaceInfo();
-                placeInfo.setPlaceId(firstResult.path("place_id").asText());
-                placeInfo.setName(firstResult.path("name").asText());
-                placeInfo.setRating(firstResult.path("rating").asDouble(0.0));
-                placeInfo.setUserRatingsTotal(firstResult.path("user_ratings_total").asInt(0));
-                placeInfo.setFormattedAddress(firstResult.path("formatted_address").asText());
-                
-                return placeInfo;
+            // 營業時間
+            JsonNode openingHours = root.path("regularOpeningHours");
+            if (!openingHours.isMissingNode()) {
+                JsonNode periods = openingHours.path("periods");
+                if (periods.isArray()) {
+                    List<String> hours = new ArrayList<>();
+                    for (int i = 0; i < periods.size(); i++) {
+                        JsonNode period = periods.get(i);
+                        JsonNode open = period.path("open");
+                        JsonNode close = period.path("close");
+                        
+                        if (!open.isMissingNode() && !close.isMissingNode()) {
+                            String day = getDayOfWeek(open.path("day").asInt());
+                            String openTime = open.path("hour").asText() + ":" + open.path("minute").asText();
+                            String closeTime = close.path("hour").asText() + ":" + close.path("minute").asText();
+                            hours.add(day + " " + openTime + " - " + closeTime);
+                        }
+                    }
+                    details.setOpeningHours(hours);
+                    logger.debug("解析到 {} 條營業時間信息", hours.size());
+                } else {
+                    logger.debug("未找到營業時間periods節點或非數組");
+                }
+            } else {
+                logger.debug("未找到營業時間節點");
             }
+            
+            // 網站 - 嘗試多個可能的字段名
+            String website = "";
+            if (!root.path("websiteUri").isMissingNode()) {
+                website = root.path("websiteUri").asText("");
+                logger.debug("從websiteUri字段獲取網站: {}", website);
+            } else if (!root.path("website").isMissingNode()) {
+                website = root.path("website").asText("");
+                logger.debug("從website字段獲取網站: {}", website);
+            } else {
+                logger.debug("未找到網站相關字段");
+            }
+            details.setWebsite(website);
+            
+            // 電話 - 嘗試多個可能的字段名
+            String phoneNumber = "";
+            if (!root.path("nationalPhoneNumber").isMissingNode()) {
+                phoneNumber = root.path("nationalPhoneNumber").asText("");
+                logger.debug("從nationalPhoneNumber字段獲取電話: {}", phoneNumber);
+            } else if (!root.path("internationalPhoneNumber").isMissingNode()) {
+                phoneNumber = root.path("internationalPhoneNumber").asText("");
+                logger.debug("從internationalPhoneNumber字段獲取電話: {}", phoneNumber);
+            } else if (!root.path("formattedPhoneNumber").isMissingNode()) {
+                phoneNumber = root.path("formattedPhoneNumber").asText("");
+                logger.debug("從formattedPhoneNumber字段獲取電話: {}", phoneNumber);
+            } else if (!root.path("phoneNumber").isMissingNode()) {
+                phoneNumber = root.path("phoneNumber").asText("");
+                logger.debug("從phoneNumber字段獲取電話: {}", phoneNumber);
+            } else {
+                logger.debug("未找到電話相關字段");
+            }
+            details.setPhoneNumber(phoneNumber);
+            
+            logger.info("成功解析Google Place詳情，Place ID: {}, 網站: {}, 電話: {}", 
+                       placeId, 
+                       website.isEmpty() ? "無" : website, 
+                       phoneNumber.isEmpty() ? "無" : phoneNumber);
+            
+            return details;
             
         } catch (Exception e) {
-            logger.error("解析 Google Places 搜尋回應發生錯誤", e);
+            logger.error("解析 Google Places 詳情回應發生錯誤: {}", e.getMessage(), e);
         }
         
         return null;
     }
+    
+    /**
+     * 將數字日期轉換為文字
+     */
+    private String getDayOfWeek(int day) {
+        switch (day) {
+            case 0: return "星期日";
+            case 1: return "星期一";
+            case 2: return "星期二";
+            case 3: return "星期三";
+            case 4: return "星期四";
+            case 5: return "星期五";
+            case 6: return "星期六";
+            default: return "未知";
+        }
+    }
 
     /**
-     * 解析詳細資訊回應
+     * 檢查 API Key 是否有效
+     * @return 如果 API Key 有效則返回 true，否則返回 false
      */
-    private GooglePlaceDetails parseDetailsResponse(String response) {
-        try {
-            JsonNode root = objectMapper.readTree(response);
-            String status = root.path("status").asText();
-            
-            if (!"OK".equals(status)) {
-                logger.debug("Google Places API 詳情狀態：{}", status);
-                return null;
-            }
-            
-            JsonNode result = root.path("result");
-            if (!result.isMissingNode()) {
-                GooglePlaceDetails details = new GooglePlaceDetails();
-                
-                // 照片
-                JsonNode photos = result.path("photos");
-                if (photos.isArray()) {
-                    List<String> photoReferences = new ArrayList<>();
-                    for (JsonNode photo : photos) {
-                        String photoRef = photo.path("photo_reference").asText();
-                        if (!photoRef.isEmpty()) {
-                            photoReferences.add(photoRef);
-                        }
-                    }
-                    details.setPhotoReferences(photoReferences);
-                }
-                
-                // 營業時間
-                JsonNode openingHours = result.path("opening_hours");
-                if (!openingHours.isMissingNode()) {
-                    JsonNode weekdayText = openingHours.path("weekday_text");
-                    if (weekdayText.isArray()) {
-                        List<String> hours = new ArrayList<>();
-                        for (JsonNode hour : weekdayText) {
-                            hours.add(hour.asText());
-                        }
-                        details.setOpeningHours(hours);
-                    }
-                }
-                
-                // 評論
-                JsonNode reviews = result.path("reviews");
-                if (reviews.isArray()) {
-                    List<GoogleReview> reviewList = new ArrayList<>();
-                    for (JsonNode review : reviews) {
-                        GoogleReview googleReview = new GoogleReview();
-                        googleReview.setAuthorName(review.path("author_name").asText());
-                        googleReview.setRating(review.path("rating").asInt());
-                        googleReview.setText(review.path("text").asText());
-                        googleReview.setTime(review.path("time").asLong());
-                        reviewList.add(googleReview);
-                    }
-                    details.setReviews(reviewList);
-                }
-                
-                details.setWebsite(result.path("website").asText());
-                details.setPhoneNumber(result.path("formatted_phone_number").asText());
-                
-                return details;
-            }
-            
-        } catch (Exception e) {
-            logger.error("解析 Google Places 詳情回應發生錯誤", e);
+    public boolean isApiKeyValid() {
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            logger.warn("Google Places API Key 未設定");
+            return false;
         }
         
-        return null;
+        try {
+            // 執行一個簡單的測試查詢來驗證 API Key
+            String requestBody = "{\"textQuery\": \"台北101\", \"languageCode\": \"zh-TW\", \"regionCode\": \"TW\"}";
+            
+            String response = webClient.post()
+                .uri(PLACES_SEARCH_URL)
+                .header("Content-Type", "application/json")
+                .header("X-Goog-Api-Key", apiKey)
+                .header("X-Goog-FieldMask", "places.displayName")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(5))
+                .block();
+            
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode places = root.path("places");
+            
+            if (places.isMissingNode() || !places.isArray()) {
+                String errorMessage = root.path("error").path("message").asText("未知錯誤");
+                logger.error("API Key 無效: {}", errorMessage);
+                return false;
+            }
+            
+            return true;
+        } catch (Exception e) {
+            logger.error("驗證 API Key 時發生錯誤: {}", e.getMessage());
+            return false;
+        }
     }
 
     /**

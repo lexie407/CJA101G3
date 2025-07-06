@@ -3,630 +3,467 @@
  * 整合政府觀光資料開放平臺景點資料匯入功能
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('API匯入頁面初始化開始');
+// 當文檔加載完成時執行
+$(document).ready(function() {
+    // 初始化匯入按鈕
+    initImportButton();
     
-    // 初始化頁面
-    initializePage();
-    
-    // 綁定事件監聽器
-    bindEventListeners();
-    
-    console.log('API匯入頁面初始化完成');
+    // 初始化資料表格
+    initDataTable();
 });
 
-/**
- * 初始化頁面
- */
-function initializePage() {
-    // 檢查必要元素是否存在
-    const requiredElements = [
-        'test-button',
-        'import-button',
-        'import-count',
-        'city-count'
-    ];
+// 初始化匯入按鈕
+function initImportButton() {
+    const importBtn = document.getElementById('importBtn');
+    if (!importBtn) return;
     
-    requiredElements.forEach(id => {
-        const element = document.getElementById(id);
-        if (!element) {
-            console.warn(`找不到必要元素: ${id}`);
+    importBtn.addEventListener('click', function() {
+        // 取得選擇的 API 類型
+        const apiType = document.querySelector('input[name="apiType"]:checked')?.value;
+        if (!apiType) {
+            showToast('警告', '請選擇 API 類型', 'warning');
+            return;
+        }
+        
+        // 取得關鍵字
+        const keyword = document.getElementById('keyword')?.value.trim();
+        if (!keyword) {
+            showToast('警告', '請輸入搜尋關鍵字', 'warning');
+            return;
+        }
+        
+        // 取得地區
+        const district = document.getElementById('district')?.value;
+        
+        // 顯示載入中
+        showLoading(true);
+        
+        // 根據 API 類型呼叫不同的函數
+        if (apiType === 'government') {
+            fetchGovernmentData(keyword, district);
+        } else if (apiType === 'google') {
+            fetchGooglePlacesData(keyword, district);
         }
     });
-    
-    // 頁面載入動畫
-    setTimeout(() => {
-        document.querySelectorAll('.api-section').forEach((section, index) => {
-            section.style.animationDelay = `${index * 0.1}s`;
-        });
-    }, 100);
 }
 
-/**
- * 綁定事件監聽器
- */
-function bindEventListeners() {
-    // API連線測試按鈕
-    const testButton = document.getElementById('test-button');
-    if (testButton) {
-        testButton.addEventListener('click', handleApiTest);
-    }
+// 取得政府開放資料
+function fetchGovernmentData(keyword, district) {
+    // 構建請求參數
+    const params = new URLSearchParams();
+    params.append('keyword', keyword);
+    if (district) params.append('district', district);
     
-    // 全台景點匯入按鈕
-    const importButton = document.getElementById('import-button');
-    if (importButton) {
-        importButton.addEventListener('click', handleImportAllSpots);
-    }
-    
-    // 縣市匯入按鈕
-    document.querySelectorAll('.city-btn').forEach(button => {
-        button.addEventListener('click', handleCityImport);
-    });
-    
-    // 修正地區信息按鈕
-    const correctRegionButton = document.getElementById('correct-region-button');
-    if (correctRegionButton) {
-        correctRegionButton.addEventListener('click', handleCorrectRegionInfo);
-    }
-    
-    // 輸入框驗證
-    const importCountInput = document.getElementById('import-count');
-    if (importCountInput) {
-        importCountInput.addEventListener('input', validateImportCount);
-    }
-    
-    const cityCountInput = document.getElementById('city-count');
-    if (cityCountInput) {
-        cityCountInput.addEventListener('input', validateCityCount);
-    }
-}
-
-/**
- * 處理API連線測試
- */
-async function handleApiTest() {
-    console.log('開始API連線測試');
-    
-    try {
-        setLoadingState('test', true);
-        hideResult('test');
-        
-        const response = await fetch('/admin/spot/api/test-api', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
+    // 發送請求
+    fetch(`/admin/spot/api/government-data?${params.toString()}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP 錯誤 ${response.status}`);
             }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP錯誤: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log('API測試成功:', data);
-        
-        showResult('test', data, 'success');
-        showToast('API連線測試成功！', 'success');
-        
-    } catch (error) {
-        console.error('API測試失敗:', error);
-        
-        const errorData = {
-            error: '連線測試失敗',
-            message: error.message,
-            timestamp: new Date().toLocaleString()
-        };
-        
-        showResult('test', errorData, 'error');
-        showToast('API連線測試失敗，請檢查網路連線', 'error');
-        
-    } finally {
-        setLoadingState('test', false);
-    }
-}
-
-/**
- * 處理全台景點匯入
- */
-async function handleImportAllSpots() {
-    console.log('開始全台景點匯入');
-    
-    const countInput = document.getElementById('import-count');
-    const count = countInput ? parseInt(countInput.value) : 10;
-    
-    if (!validateImportCount()) {
-        return;
-    }
-    
-    // 移除確認對話框，改為直接顯示Toast通知
-    showToast(`正在匯入全台景點資料 (${count} 筆)...`, 'info');
-    
-    try {
-        const importButton = document.getElementById('import-button');
-        if (importButton) {
-            importButton.disabled = true;
-            importButton.style.opacity = '0.6';
-        }
-        
-        const spinner = document.getElementById('import-spinner');
-        if (spinner) {
-            spinner.style.display = 'block';
-        }
-        
-        hideResult('import');
-        
-        const response = await fetch(`/admin/spot/api/import-spots?limit=${count}`, {
-            method: 'POST',
-            headers: getCsrfHeaders()
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP錯誤: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log('景點匯入成功:', data);
-        
-        showResult('import', data, 'success');
-        // 正確顯示匯入筆數
-        const importedCount = data.data?.successCount || data.data?.imported || 0;
-        showToast(`成功匯入 ${importedCount} 筆景點資料！`, 'success');
-        
-    } catch (error) {
-        console.error('景點匯入失敗:', error);
-        
-        const errorData = {
-            error: '景點匯入失敗',
-            message: error.message,
-            timestamp: new Date().toLocaleString()
-        };
-        
-        showResult('import', errorData, 'error');
-        showToast('景點匯入失敗，請稍後再試', 'error');
-        
-    } finally {
-        const importButton = document.getElementById('import-button');
-        if (importButton) {
-            importButton.disabled = false;
-            importButton.style.opacity = '';
-        }
-        
-        const spinner = document.getElementById('import-spinner');
-        if (spinner) {
-            spinner.style.display = 'none';
-        }
-    }
-}
-
-/**
- * 處理縣市景點匯入
- */
-async function handleCityImport(event) {
-    const button = event.currentTarget;
-    const city = button.getAttribute('data-city');
-    const cityName = button.querySelector('span').textContent;
-    
-    console.log(`開始匯入 ${cityName} 景點`);
-    
-    const countInput = document.getElementById('city-count');
-    const count = countInput ? parseInt(countInput.value) : 10;
-    
-    if (!validateCityCount()) {
-        return;
-    }
-    
-    // 移除確認對話框，改為直接顯示Toast通知
-    showToast(`正在匯入 ${cityName} 景點資料 (${count} 筆)...`, 'info');
-    
-    try {
-        // 添加按鈕視覺反饋
-        button.classList.add('importing');
-        button.disabled = true;
-        
-        // 確保城市代碼正確
-        const correctedCity = correctCityCode(city);
-        if (correctedCity !== city) {
-            console.log(`城市代碼已修正: ${city} -> ${correctedCity}`);
-        }
-        
-        const response = await fetch(`/admin/spot/api/import-spots-by-city?city=${correctedCity}&limit=${count}`, {
-            method: 'POST',
-            headers: getCsrfHeaders()
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP錯誤: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log(`${cityName} 景點匯入成功:`, data);
-        
-        showResult('city', data, 'success');
-        // 正確顯示匯入筆數
-        const importedCount = data.data?.successCount || data.data?.imported || 0;
-        
-        // 根據匯入結果提供不同的提示
-        if (importedCount === 0) {
-            showToast(`${cityName} 景點匯入完成，但沒有新增任何景點。可能是該地區景點已全部匯入或資料來源問題。`, 'warning');
-        } else if (importedCount < count * 0.5) { // 如果匯入數量少於預期的一半
-            showToast(`成功匯入 ${importedCount} 筆 ${cityName} 景點資料，但數量少於預期。該地區可能景點資料較少。`, 'info');
-        } else {
-        showToast(`成功匯入 ${importedCount} 筆 ${cityName} 景點資料！`, 'success');
-        }
-        
-        // 添加成功匯入的視覺反饋
-        button.classList.add('imported');
-        setTimeout(() => {
-            button.classList.remove('imported');
-        }, 3000);
-        
-    } catch (error) {
-        console.error(`${cityName} 景點匯入失敗:`, error);
-        
-        const errorData = {
-            error: `${cityName} 景點匯入失敗`,
-            message: error.message,
-            timestamp: new Date().toLocaleString()
-        };
-        
-        showResult('city', errorData, 'error');
-        showToast(`${cityName} 景點匯入失敗，請稍後再試。如果問題持續存在，請聯繫系統管理員。`, 'error');
-        
-    } finally {
-        // 移除按鈕視覺反饋
-        button.classList.remove('importing');
-        button.disabled = false;
-    }
-}
-
-/**
- * 處理修正地區信息
- */
-async function handleCorrectRegionInfo() {
-    console.log('開始修正景點地區信息');
-    
-    // 確認對話框
-    if (!confirm('確定要修正所有景點的地區信息嗎？\n此操作將特別針對花蓮縣和台東縣的混淆問題進行修正。')) {
-        return;
-    }
-    
-    try {
-        // 顯示載入中狀態
-        const button = document.getElementById('correct-region-button');
-        if (button) {
-            button.disabled = true;
-            button.style.opacity = '0.6';
-        }
-        
-        const spinner = document.getElementById('correct-region-spinner');
-        if (spinner) {
-            spinner.style.display = 'block';
-        }
-        
-        hideResult('correct-region');
-        showToast('正在修正景點地區信息，請稍候...', 'info');
-        
-        const response = await fetch('/admin/spot/api/correct-region-info', {
-            method: 'POST',
-            headers: getCsrfHeaders()
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP錯誤: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log('地區信息修正成功:', data);
-        
-        showResult('correct-region', data, 'success');
-        
-        // 顯示修正結果
-        const correctedCount = data.data?.correctedCount || 0;
-        if (correctedCount > 0) {
-            showToast(`成功修正 ${correctedCount} 筆景點的地區信息！`, 'success');
-        } else {
-            showToast('沒有需要修正的景點地區信息', 'info');
-        }
-        
-    } catch (error) {
-        console.error('地區信息修正失敗:', error);
-        
-        const errorData = {
-            error: '地區信息修正失敗',
-            message: error.message,
-            timestamp: new Date().toLocaleString()
-        };
-        
-        showResult('correct-region', errorData, 'error');
-        showToast('地區信息修正失敗，請稍後再試', 'error');
-        
-    } finally {
-        // 恢復按鈕狀態
-        const button = document.getElementById('correct-region-button');
-        if (button) {
-            button.disabled = false;
-            button.style.opacity = '';
-        }
-        
-        const spinner = document.getElementById('correct-region-spinner');
-        if (spinner) {
-            spinner.style.display = 'none';
-        }
-    }
-}
-
-/**
- * 修正常見的錯誤城市代碼
- * @param {string} city 原始城市代碼
- * @returns {string} 修正後的城市代碼
- */
-function correctCityCode(city) {
-    if (!city) return city;
-    
-    // 城市代碼修正對照表
-    const corrections = {
-        'PenghuCounty': 'Penghu',
-        'TaitungCounty': 'Taitung',
-        'HualienCounty': 'Hualien',
-        'YilanCounty': 'Yilan',
-        'KinmenCounty': 'Kinmen',
-        'LienchiangCounty': 'Lienchiang',
-        'YunlinCounty': 'Yunlin',
-        'NantouCounty': 'Nantou',
-        'ChanghuaCounty': 'Changhua',
-        'MiaoliCounty': 'Miaoli',
-        'PingtungCounty': 'Pingtung',
-        'TaoyuanCounty': 'Taoyuan',
-        'NewTaipeiCity': 'NewTaipei',
-        'TaichungCity': 'Taichung',
-        'TainanCity': 'Tainan',
-        'KaohsiungCity': 'Kaohsiung'
-    };
-    
-    return corrections[city] || city;
-}
-
-/**
- * 驗證匯入筆數
- */
-function validateImportCount() {
-    const input = document.getElementById('import-count');
-    if (!input) return false;
-    
-    const value = parseInt(input.value);
-    const min = parseInt(input.getAttribute('min')) || 10;
-    const max = parseInt(input.getAttribute('max')) || 200;
-    
-    if (isNaN(value) || value < min || value > max) {
-        input.style.borderColor = 'var(--md-sys-color-error)';
-        showToast(`請輸入有效的匯入筆數 (${min}-${max})`, 'error');
-        return false;
-    }
-    
-    input.style.borderColor = '';
-    return true;
-}
-
-/**
- * 驗證縣市匯入筆數
- */
-function validateCityCount() {
-    const input = document.getElementById('city-count');
-    if (!input) return false;
-    
-    const value = parseInt(input.value);
-    const min = parseInt(input.getAttribute('min')) || 10;
-    const max = parseInt(input.getAttribute('max')) || 100;
-    
-    if (isNaN(value) || value < min || value > max) {
-        input.style.borderColor = 'var(--md-sys-color-error)';
-        showToast(`請輸入有效的匯入筆數 (${min}-${max})`, 'error');
-        return false;
-    }
-    
-    input.style.borderColor = '';
-    return true;
-}
-
-/**
- * 設定載入狀態
- */
-function setLoadingState(type, isLoading) {
-    const spinner = document.getElementById(`${type}-spinner`);
-    
-    // 設定按鈕狀態
-    let buttons = [];
-    if (type === 'city') {
-        buttons = document.querySelectorAll('.city-btn');
-    } else {
-        const button = document.getElementById(`${type}-button`);
-        if (button) buttons = [button];
-    }
-    
-    // 更新按鈕狀態
-    buttons.forEach(button => {
-        button.disabled = isLoading;
-        if (isLoading) {
-            button.style.opacity = '0.6';
-            button.style.cursor = 'not-allowed';
-        } else {
-            button.style.opacity = '';
-            button.style.cursor = '';
-        }
-    });
-    
-    // 顯示/隱藏載入動畫
-    if (spinner) {
-        spinner.style.display = isLoading ? 'block' : 'none';
-    }
-}
-
-/**
- * 顯示結果
- */
-function showResult(type, data, resultType = 'info') {
-    const resultArea = document.getElementById(`${type}-result`);
-    if (!resultArea) return;
-    
-    const resultContent = resultArea.querySelector('.result-content');
-    if (!resultContent) return;
-    
-    // 格式化數據
-    let formattedData;
-    if (typeof data === 'object') {
-        // 如果是匯入結果，特別處理
-        if (data.data && typeof data.data === 'object' && 
-            (data.data.hasOwnProperty('successCount') || data.data.hasOwnProperty('imported'))) {
-            const result = data.data;
+            return response.json();
+        })
+        .then(data => {
+            console.log('政府開放資料 API 回應:', data);
             
-            // 處理全台匯入結果
-            if (result.hasOwnProperty('successCount')) {
-                formattedData = `
-📊 匯入結果統計：
-✅ 成功匯入：${result.successCount || 0} 筆
-⏭️ 跳過重複：${result.skippedCount || 0} 筆
-❌ 匯入失敗：${result.errorCount || 0} 筆
-📝 總處理筆數：${(result.successCount || 0) + (result.skippedCount || 0) + (result.errorCount || 0)} 筆
-
-${data.message || '匯入完成'}
-`;
+            if (data.success) {
+                // 成功取得資料
+                updateDataTable(data.data, 'government');
+                showToast('成功', `已取得 ${data.data.length} 筆政府開放資料`, 'success');
+            } else {
+                // API 呼叫成功但未取得資料
+                showToast('錯誤', data.error || '無法取得政府開放資料', 'error');
             }
-            // 處理其他格式的匯入結果
-            else if (result.hasOwnProperty('imported')) {
-                formattedData = `
-📊 匯入結果：
-✅ 成功匯入：${result.imported || 0} 筆
-${data.message || '匯入完成'}
-`;
-            }
-            else {
-                formattedData = JSON.stringify(data, null, 2);
-            }
-        }
-        // 處理測試連線等其他結果
-        else {
-        formattedData = JSON.stringify(data, null, 2);
-        }
-    } else {
-        formattedData = String(data);
-    }
-    
-    // 設定內容
-    resultContent.innerHTML = `<pre style="white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${formattedData}</pre>`;
-    
-    // 設定樣式
-    resultArea.style.display = 'block';
-    
-    // 根據結果類型設定顏色
-    if (resultType === 'success') {
-        resultArea.style.borderLeftColor = 'var(--md-sys-color-primary)';
-    } else if (resultType === 'error') {
-        resultArea.style.borderLeftColor = 'var(--md-sys-color-error)';
-    }
-    
-    // 只有在非縣市匯入時，才滾動到結果區域
-    if (type !== 'city') {
-    resultArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+        })
+        .catch(error => {
+            console.error('取得政府開放資料時發生錯誤:', error);
+            showToast('錯誤', '發生錯誤: ' + error.message, 'error');
+        })
+        .finally(() => {
+            // 隱藏載入中
+            showLoading(false);
+        });
 }
 
-/**
- * 隱藏結果
- */
-function hideResult(type) {
-    const resultArea = document.getElementById(`${type}-result`);
-    if (resultArea) {
-        resultArea.style.display = 'none';
-    }
+// 取得 Google Places 資料
+function fetchGooglePlacesData(keyword, district) {
+    // 構建請求參數
+    const params = new URLSearchParams();
+    params.append('keyword', keyword);
+    if (district) params.append('district', district);
+    
+    // 發送請求 - 使用新版 API 端點
+    fetch(`/admin/spot/api/google-places-search?${params.toString()}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP 錯誤 ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Google Places API 回應:', data);
+            
+            if (data.success) {
+                // 成功取得資料
+                // 處理新版 API 的響應格式
+                const processedData = data.data.map(item => {
+                    return {
+                        name: item.displayName?.text || item.name,
+                        address: item.formattedAddress,
+                        rating: item.rating,
+                        phone: item.phoneNumber,
+                        website: item.websiteUri || item.website,
+                        placeId: item.id || item.placeId,
+                        latitude: item.location?.latitude,
+                        longitude: item.location?.longitude,
+                        photoReferences: item.photoReferences,
+                        openingHours: item.openingHours
+                    };
+                });
+                
+                updateDataTable(processedData, 'google');
+                showToast('成功', `已取得 ${processedData.length} 筆 Google Places 資料`, 'success');
+            } else {
+                // API 呼叫成功但未取得資料
+                showToast('錯誤', data.error || '無法取得 Google Places 資料', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('取得 Google Places 資料時發生錯誤:', error);
+            showToast('錯誤', '發生錯誤: ' + error.message, 'error');
+        })
+        .finally(() => {
+            // 隱藏載入中
+            showLoading(false);
+        });
 }
 
-/**
- * 顯示Toast通知
- */
-function showToast(message, type = 'info') {
-    // 移除現有的toast
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-        existingToast.remove();
+// 初始化資料表格
+function initDataTable() {
+    // 檢查表格是否存在
+    const tableElement = document.getElementById('apiDataTable');
+    if (!tableElement) return;
+    
+    // 初始化 DataTable
+    window.dataTable = $('#apiDataTable').DataTable({
+        columns: [
+            { data: 'name', title: '景點名稱' },
+            { data: 'address', title: '地址' },
+            { data: 'rating', title: '評分', 
+              render: function(data) {
+                  return data ? data : '-';
+              }
+            },
+            { data: 'phone', title: '電話', 
+              render: function(data) {
+                  return data ? data : '-';
+              }
+            },
+            { data: 'website', title: '網站', 
+              render: function(data) {
+                  if (data) {
+                      return `<a href="${data}" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;">${data}</a>`;
+                  }
+                  return '-';
+              }
+            },
+            { data: null, title: '操作', 
+              render: function(data) {
+                  return `
+                      <button class="btn btn-sm btn-primary view-btn" data-id="${data.id || ''}">
+                          <i class="fas fa-eye"></i> 查看
+                      </button>
+                      <button class="btn btn-sm btn-success import-item-btn" data-id="${data.id || ''}">
+                          <i class="fas fa-file-import"></i> 匯入
+                      </button>
+                  `;
+              }
+            }
+        ],
+        language: {
+            "lengthMenu": "顯示 _MENU_ 筆資料",
+            "zeroRecords": "沒有符合的資料",
+            "info": "顯示第 _START_ 至 _END_ 筆資料，共 _TOTAL_ 筆",
+            "infoEmpty": "顯示第 0 至 0 筆資料，共 0 筆",
+            "infoFiltered": "(從 _MAX_ 筆資料中過濾)",
+            "search": "搜尋:",
+            "paginate": {
+                "first": "第一頁",
+                "last": "最後一頁",
+                "next": "下一頁",
+                "previous": "上一頁"
+            }
+        },
+        responsive: true,
+        pageLength: 10,
+        dom: 'Bfrtip',
+        buttons: [
+            'copy', 'excel', 'pdf'
+        ]
+    });
+    
+    // 綁定查看按鈕事件
+    $('#apiDataTable').on('click', '.view-btn', function() {
+        const rowData = window.dataTable.row($(this).closest('tr')).data();
+        showSpotDetails(rowData);
+    });
+    
+    // 綁定匯入按鈕事件
+    $('#apiDataTable').on('click', '.import-item-btn', function() {
+        const rowData = window.dataTable.row($(this).closest('tr')).data();
+        importSpot(rowData);
+    });
+}
+
+// 更新資料表格
+function updateDataTable(data, source) {
+    // 檢查資料表格是否已初始化
+    if (!window.dataTable) {
+        console.error('資料表格尚未初始化');
+        return;
     }
     
-    // 創建toast元素
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
+    // 清空表格
+    window.dataTable.clear();
     
-    // 設定圖標
-    let icon = 'info';
-    if (type === 'success') icon = 'check_circle';
-    else if (type === 'error') icon = 'error';
-    else if (type === 'warning') icon = 'warning';
+    // 添加資料來源標記
+    data.forEach(item => {
+        item.dataSource = source;
+    });
     
-    toast.innerHTML = `
-        <i class="material-icons">${icon}</i>
-        <span>${message}</span>
+    // 添加新資料
+    window.dataTable.rows.add(data).draw();
+    
+    // 顯示表格容器
+    document.getElementById('tableContainer').style.display = 'block';
+}
+
+// 顯示景點詳細資訊
+function showSpotDetails(spotData) {
+    console.log('顯示景點詳細資訊:', spotData);
+    
+    // 創建模態框內容
+    let modalContent = `
+        <div class="modal-header">
+            <h5 class="modal-title">${spotData.name || '未命名景點'}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>基本資訊</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>景點名稱</th>
+                            <td>${spotData.name || '-'}</td>
+                        </tr>
+                        <tr>
+                            <th>地址</th>
+                            <td>${spotData.address || '-'}</td>
+                        </tr>
+                        <tr>
+                            <th>評分</th>
+                            <td>${spotData.rating || '-'}</td>
+                        </tr>
+                        <tr>
+                            <th>電話</th>
+                            <td>${spotData.phone || '-'}</td>
+                        </tr>
+                        <tr>
+                            <th>網站</th>
+                            <td>${spotData.website ? `<a href="${spotData.website}" target="_blank">${spotData.website}</a>` : '-'}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
     `;
     
-    // 添加樣式
-    Object.assign(toast.style, {
-        position: 'fixed',
-        top: '20px',
-        right: '20px',
-        padding: '12px 16px',
-        borderRadius: '8px',
-        color: 'white',
-        fontSize: '14px',
-        fontWeight: '500',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        zIndex: '10000',
-        minWidth: '300px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        animation: 'slideInRight 0.3s ease-out'
-    });
-    
-    // 設定顏色
-    if (type === 'success') {
-        toast.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-    } else if (type === 'error') {
-        toast.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
-    } else if (type === 'warning') {
-        toast.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
-    } else {
-        toast.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+    // 添加照片（如果有的話）
+    if (spotData.photoUrl) {
+        modalContent += `
+            <h6>照片預覽</h6>
+            <img src="${spotData.photoUrl}" class="img-fluid rounded" alt="${spotData.name}">
+        `;
+    } else if (spotData.photoReferences && spotData.photoReferences.length > 0 && spotData.dataSource === 'google') {
+        // 新版 API 的照片處理
+        const photoRef = spotData.photoReferences[0];
+        modalContent += `
+            <h6>照片預覽</h6>
+            <img src="/admin/spot/api/google-photo?reference=${encodeURIComponent(photoRef)}&maxWidth=400" class="img-fluid rounded" alt="${spotData.name}">
+        `;
+    } else if (spotData.dataSource === 'google') {
+        modalContent += `
+            <h6>照片預覽</h6>
+            <p class="text-muted">無法顯示照片預覽，請匯入後查看</p>
+        `;
     }
     
-    // 添加到頁面
-    document.body.appendChild(toast);
+    // 添加營業時間（如果有的話）
+    if (spotData.openingHours && spotData.openingHours.length > 0) {
+        modalContent += `
+            <h6 class="mt-3">營業時間</h6>
+            <ul class="list-group">
+        `;
+        
+        spotData.openingHours.forEach(hour => {
+            modalContent += `<li class="list-group-item">${hour}</li>`;
+        });
+        
+        modalContent += `</ul>`;
+    }
     
-    // 自動移除
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.style.animation = 'slideOutRight 0.3s ease-in';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 300);
-        }
-    }, 4000);
+    modalContent += `
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            <button type="button" class="btn btn-success" onclick="importSpot(${JSON.stringify(spotData).replace(/"/g, '&quot;')})">
+                <i class="fas fa-file-import"></i> 匯入此景點
+            </button>
+        </div>
+    `;
+    
+    // 創建或更新模態框
+    let modalElement = document.getElementById('spotDetailModal');
+    if (!modalElement) {
+        modalElement = document.createElement('div');
+        modalElement.className = 'modal fade';
+        modalElement.id = 'spotDetailModal';
+        modalElement.setAttribute('tabindex', '-1');
+        modalElement.setAttribute('aria-hidden', 'true');
+        modalElement.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    ${modalContent}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalElement);
+    } else {
+        modalElement.querySelector('.modal-content').innerHTML = modalContent;
+    }
+    
+    // 顯示模態框
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
 }
 
-/**
- * 獲取CSRF標頭
- */
-function getCsrfHeaders() {
-    const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+// 匯入景點
+function importSpot(spotData) {
+    console.log('匯入景點:', spotData);
     
-    const headers = {
-        'Content-Type': 'application/json'
-    };
-    
-    if (csrfToken && csrfHeader) {
-        headers[csrfHeader] = csrfToken;
+    // 確認是否要匯入
+    if (!confirm(`確定要匯入景點「${spotData.name || '未命名景點'}」嗎？`)) {
+        return;
     }
     
-    return headers;
+    // 顯示載入中
+    showLoading(true);
+    
+    // 發送請求
+    fetch('/admin/spot/api/import', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: spotData.name,
+            address: spotData.address,
+            phone: spotData.phone,
+            website: spotData.website,
+            rating: spotData.rating,
+            placeId: spotData.placeId,
+            latitude: spotData.latitude,
+            longitude: spotData.longitude,
+            dataSource: spotData.dataSource,
+            photoReferences: spotData.photoReferences
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP 錯誤 ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('匯入景點回應:', data);
+        
+        if (data.success) {
+            // 成功匯入
+            showToast('成功', '已成功匯入景點', 'success');
+            
+            // 如果有返回的景點 ID，提供連結
+            if (data.spotId) {
+                setTimeout(() => {
+                    if (confirm('景點已成功匯入，是否前往編輯頁面？')) {
+                        window.location.href = `/admin/spot/edit/${data.spotId}`;
+                    }
+                }, 1000);
+            }
+        } else {
+            // API 呼叫成功但匯入失敗
+            showToast('錯誤', data.error || '匯入景點失敗', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('匯入景點時發生錯誤:', error);
+        showToast('錯誤', '發生錯誤: ' + error.message, 'error');
+    })
+    .finally(() => {
+        // 隱藏載入中
+        showLoading(false);
+    });
+}
+
+// 顯示載入中
+function showLoading(show) {
+    const loadingElement = document.getElementById('loading');
+    if (!loadingElement) return;
+    
+    loadingElement.style.display = show ? 'flex' : 'none';
+}
+
+// 顯示 Toast 通知
+function showToast(title, message, type = 'info') {
+    // 檢查是否有 Toast 容器，如果沒有則創建
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // 創建 Toast 元素
+    const toastId = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type === 'error' ? 'bg-danger text-white' : ''}`;
+    toast.id = toastId;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    // Toast 內容
+    toast.innerHTML = `
+        <div class="toast-header">
+            <strong class="me-auto">${title}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            ${message}
+        </div>
+    `;
+    
+    // 添加到容器
+    toastContainer.appendChild(toast);
+    
+    // 初始化並顯示 Toast
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    // 自動移除
+    toast.addEventListener('hidden.bs.toast', function() {
+                    toast.remove();
+    });
 }
 
 // 添加CSS動畫

@@ -289,114 +289,16 @@
 }
 
 .select-arrow {
+    color: var(--md-sys-color-outline);
     position: absolute;
     right: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--md-sys-color-outline);
     pointer-events: none;
-    transition: transform 0.3s;
 }
 
 .filter-select:focus + .select-arrow {
-    transform: translateY(-50%) rotate(180deg);
     color: var(--md-sys-color-primary);
-}
-
-/* 統計區域 */
-.stats-section {
-    padding: 1.5rem;
-}
-
-.stats-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.stat-card {
-    background: white;
-    border-radius: 20px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--md-sys-color-primary), var(--md-sys-color-tertiary));
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-}
-
-.stat-card:hover::before {
-    opacity: 1;
-}
-
-.stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--md-sys-color-primary), var(--md-sys-color-primary-container));
-    color: white;
-    font-size: 1.5rem;
-    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
-}
-
-.stat-icon.public {
-    background: linear-gradient(135deg, #4caf50, #81c784);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-.stat-icon.private {
-    background: linear-gradient(135deg, #ff9800, #ffb74d);
-    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-}
-
-.stat-icon.spots {
-    background: linear-gradient(135deg, #9c27b0, #ba68c8);
-    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
-}
-
-.stat-content {
-    flex: 1;
-}
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--md-sys-color-on-surface);
-    margin-bottom: 0.25rem;
-}
-
-.stat-label {
-    font-size: 0.9rem;
-    color: var(--md-sys-color-outline);
-    font-weight: 500;
 }
 
 /* 行程列表區域 */
@@ -1093,10 +995,6 @@
     .search-btn, .reset-btn {
         flex: 1;
         justify-content: center;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
     }
     
     .itinerary-grid {

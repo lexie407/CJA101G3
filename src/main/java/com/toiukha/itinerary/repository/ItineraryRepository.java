@@ -1,6 +1,7 @@
 package com.toiukha.itinerary.repository;
 
 import com.toiukha.itinerary.model.ItineraryVO;
+import com.toiukha.favItn.model.FavItnVO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -144,13 +145,21 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
      * 查詢公開行程數量
      * @return 公開行程數量
      */
-    Long countByIsPublicTrue();
+    Long countByIsPublic(byte isPublic);
 
     /**
      * 查詢私人行程數量
      * @return 私人行程數量
      */
-    Long countByIsPublicFalse();
+    @Query("SELECT COUNT(i) FROM ItineraryVO i WHERE i.isPublic = 1")
+    Long countPublicItineraries();
+
+    /**
+     * 查詢私人行程數量
+     * @return 私人行程數量
+     */
+    @Query("SELECT COUNT(i) FROM ItineraryVO i WHERE i.isPublic = 0")
+    Long countPrivateItineraries();
 
     /**
      * 根據建立者查詢公開行程
@@ -184,5 +193,15 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
                                      @Param("status") Integer status, 
                                      @Param("isPublic") Integer isPublic, 
                                      Pageable pageable);
+
+    /**
+     * 查詢會員收藏的行程列表
+     * @param memId 會員ID
+     * @return 收藏的行程列表
+     */
+    @Query("SELECT i FROM ItineraryVO i WHERE i.itnId IN " +
+           "(SELECT f.id.favItnId FROM FavItnVO f WHERE f.id.memId = :memId) " +
+           "ORDER BY i.itnCreateDat DESC")
+    List<ItineraryVO> findFavoriteItinerariesByMemId(@Param("memId") Integer memId);
 } 
 

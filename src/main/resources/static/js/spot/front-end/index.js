@@ -63,14 +63,10 @@
         // 移除可能存在的重複事件監聽器
         document.removeEventListener('loginDialogCancelled', handleLoginDialogCancelled);
         
+        // 不再需要綁定點擊事件，因為 SpotFavorites 模組會處理
+        // 只需確保按鈕不處於載入狀態
         const favoriteButtons = document.querySelectorAll('.spot-index-spot-card__favorite');
         favoriteButtons.forEach(button => {
-            // 移除可能存在的重複事件監聽器
-            button.removeEventListener('click', handleFavoriteButtonClick);
-            // 添加新的事件監聽器
-            button.addEventListener('click', handleFavoriteButtonClick);
-            
-            // 確保按鈕不處於載入狀態
             if (window.SpotCommon && window.SpotCommon.ensureButtonNormalState) {
                 window.SpotCommon.ensureButtonNormalState(button);
             }
@@ -81,42 +77,6 @@
         
         // 監聽登入對話框取消事件
         document.addEventListener('loginDialogCancelled', handleLoginDialogCancelled);
-        
-        // 添加全局錯誤處理，確保按鈕狀態正常
-        window.addEventListener('error', function(event) {
-            console.error('捕獲到全局錯誤，檢查並修復按鈕狀態', event);
-            
-            // 檢查所有收藏按鈕
-            document.querySelectorAll('.spot-index-spot-card__favorite').forEach(button => {
-                if (window.SpotCommon && window.SpotCommon.ensureButtonNormalState) {
-                    window.SpotCommon.ensureButtonNormalState(button);
-                }
-            });
-        });
-        
-        // 5秒後檢查一次所有按鈕狀態，修復可能的問題
-        setTimeout(function() {
-            document.querySelectorAll('.spot-index-spot-card__favorite').forEach(button => {
-                if (window.SpotCommon && window.SpotCommon.ensureButtonNormalState) {
-                    window.SpotCommon.ensureButtonNormalState(button);
-                }
-            });
-        }, 5000);
-    }
-    
-    /**
-     * 處理收藏按鈕點擊事件
-     */
-    function handleFavoriteButtonClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const spotId = this.getAttribute('data-spot-id');
-        if (spotId) {
-            toggleFavorite(spotId, this);
-        }
-        
-        return false;
     }
     
     /**
@@ -182,211 +142,13 @@
                     const isFavorited = statusMap[spotId];
                     if (isFavorited !== undefined) {
                         const button = document.querySelector(`.spot-index-spot-card__favorite[data-spot-id="${spotId}"]`);
-                        if (button) {
-                            updateFavoriteButtonState(button, isFavorited);
+                        if (button && window.SpotFavorites) {
+                            window.SpotFavorites.updateFavoriteButtonState(button, isFavorited);
                         }
                     }
                 });
             })
             .catch(error => console.error('檢查收藏狀態失敗:', error));
-    }
-    
-    /**
-     * 切換收藏狀態
-     */
-    function toggleFavorite(spotId, button) {
-        // 保存原始HTML，以便在取消登入時恢復
-        const originalHTML = button.innerHTML;
-        
-        if (window.SpotCommon) {
-            // 將originalHTML傳遞給SpotCommon
-            window.SpotCommon.toggleFavorite(spotId, button, originalHTML);
-        } else {
-            // 備用實現，如果SpotCommon不可用
-            fallbackToggleFavorite(spotId, button);
-        }
-    }
-    
-    /**
-     * 備用的切換收藏功能
-     */
-    function fallbackToggleFavorite(spotId, button) {
-        if (!spotId || !button) return;
-        
-        // 顯示載入狀態
-        const originalHTML = button.innerHTML;
-        button.innerHTML = '<span class="material-icons loading-spinner">sync</span>';
-        button.disabled = true;
-        
-        fetch(`/api/spot/favorites/${spotId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 401) {
-                    // 未登入處理
-                    showLoginDialog(button, originalHTML);
-                    throw new Error('請先登入');
-                }
-                throw new Error('操作失敗');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // 更新按鈕狀態
-                updateFavoriteButtonState(button, data.isFavorited);
-                
-                // 顯示提示訊息
-                showToast(data.isFavorited ? '已加入收藏' : '已取消收藏', data.isFavorited ? 'success' : 'info');
-                
-                // 通知其他頁面
-                localStorage.setItem('spotFavoriteChange', JSON.stringify({
-                    spotId: spotId,
-                    isFavorited: data.isFavorited,
-                    timestamp: new Date().getTime()
-                }));
-            } else {
-                showToast(data.message || '操作失敗', 'error');
-                // 恢復按鈕狀態
-                button.innerHTML = originalHTML;
-                button.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error('收藏操作失敗:', error);
-            
-            if (error.message !== '請先登入') {
-                showToast('操作失敗，請稍後再試', 'error');
-                // 恢復按鈕狀態
-                button.innerHTML = originalHTML;
-                button.disabled = false;
-            }
-        });
-    }
-    
-    /**
-     * 更新收藏按鈕狀態
-     */
-    function updateFavoriteButtonState(button, isFavorited) {
-        if (!button) return;
-        
-        if (isFavorited) {
-            button.innerHTML = '<span class="material-icons">favorite</span>';
-            button.classList.add('favorited');
-            button.title = '取消收藏';
-        } else {
-            button.innerHTML = '<span class="material-icons">favorite_border</span>';
-            button.classList.remove('favorited');
-            button.title = '加入收藏';
-        }
-        
-        button.disabled = false;
-    }
-    
-    /**
-     * 顯示登入對話框
-     */
-    function showLoginDialog(button, originalHTML) {
-        // 檢查是否已經有登入對話框
-        const existingDialog = document.querySelector('.login-dialog');
-        if (existingDialog) {
-            existingDialog.remove();
-        }
-        
-        if (window.SpotCommon && typeof window.SpotCommon.showLoginDialog === 'function') {
-            window.SpotCommon.showLoginDialog(button, originalHTML);
-        } else {
-            // 備用實現
-            const dialog = document.createElement('div');
-            dialog.className = 'login-dialog';
-            dialog.id = 'spotLoginDialog';
-            dialog.innerHTML = `
-                <div class="login-dialog__content">
-                    <div class="login-dialog__header">
-                        <h3 class="login-dialog__title">請先登入</h3>
-                        <button class="login-dialog__close" aria-label="關閉">
-                            <span class="material-icons">close</span>
-                        </button>
-                    </div>
-                    <div class="login-dialog__body">
-                        <p>您需要先登入才能收藏景點。</p>
-                        <p>是否前往登入頁面？</p>
-                    </div>
-                    <div class="login-dialog__footer">
-                        <button class="login-dialog__button login-dialog__button--secondary" data-action="cancel">稍後再說</button>
-                        <button class="login-dialog__button login-dialog__button--primary" data-action="login">前往登入</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(dialog);
-            
-            // 確保DOM更新後再添加動畫效果
-            requestAnimationFrame(() => {
-                dialog.classList.add('login-dialog--show');
-            });
-            
-            const closeButton = dialog.querySelector('.login-dialog__close');
-            const cancelButton = dialog.querySelector('[data-action="cancel"]');
-            const loginButton = dialog.querySelector('[data-action="login"]');
-            const dialogContent = dialog.querySelector('.login-dialog__content');
-            
-            // 點擊背景關閉對話框
-            dialog.addEventListener('click', function(e) {
-                if (e.target === dialog) {
-                    closeDialog();
-                }
-            });
-            
-            // 防止點擊內容區域時關閉對話框
-            dialogContent.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-            
-            function closeDialog() {
-                // 防止重複關閉
-                if (!dialog.classList.contains('login-dialog--show')) return;
-                
-                dialog.classList.remove('login-dialog--show');
-                setTimeout(() => {
-                    // 確保對話框仍然存在於DOM中
-                    if (document.body.contains(dialog)) {
-                        dialog.remove();
-                    }
-                }, 300);
-                
-                // 恢復按鈕狀態
-                if (button) {
-                    button.innerHTML = originalHTML;
-                    button.disabled = false;
-                    
-                    // 觸發自定義事件，通知其他組件登入對話框已取消
-                    const event = new CustomEvent('loginDialogCancelled', {
-                        detail: {
-                            button: button,
-                            originalHTML: originalHTML
-                        }
-                    });
-                    document.dispatchEvent(event);
-                    console.log('觸發loginDialogCancelled事件', button);
-                }
-            }
-            
-            // 使用一次性事件監聽器，防止重複綁定
-            closeButton.addEventListener('click', closeDialog, { once: true });
-            cancelButton.addEventListener('click', closeDialog, { once: true });
-            
-            loginButton.addEventListener('click', () => {
-                // 保存當前頁面URL到localStorage，以便登入後重定向回來
-                localStorage.setItem('loginRedirectUrl', window.location.href);
-                // 跳轉到登入頁面，並帶上redirect參數
-                window.location.href = '/members/login?redirect=' + encodeURIComponent(window.location.href);
-            }, { once: true });
-        }
     }
     
     /**
@@ -792,12 +554,12 @@
                 }
             });
             hideEmptyState();
-    } else {
+        } else {
             showEmptyState();
+        }
     }
-}
 
-/**
+    /**
      * 更新統計資訊顯示
      */
     function updateStatsDisplay() {
@@ -809,13 +571,13 @@
             
             if (filteredSpots.length === 0) {
                 statsElement.textContent = '沒有符合條件的景點';
-    } else {
+            } else {
                 statsElement.textContent = `已顯示 ${displayCount} 個景點，還有 ${remainingCount} 個等你探索`;
             }
+        }
     }
-}
 
-/**
+    /**
      * 顯示空狀態
      */
     function showEmptyState() {
@@ -832,7 +594,7 @@
                 filterEmptyState.innerHTML = `
                     <div class="spot-index-empty__icon">
                         <span class="material-icons">search_off</span>
-            </div>
+                    </div>
                     <h3 class="spot-index-empty__title">沒有符合條件的景點</h3>
                     <p class="spot-index-empty__desc">請嘗試調整篩選條件，或者重置所有篩選</p>
                     <button class="spot-index-btn spot-index-btn--primary" onclick="resetAllFilters()">

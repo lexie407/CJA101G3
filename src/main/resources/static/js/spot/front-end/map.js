@@ -118,8 +118,8 @@
             mapTypeControl: true,
             streetViewControl: true,
             fullscreenControl: true,
-            gestureHandling: 'greedy',
-            mapId: '5e65372d24c1506c2b77ebf5'
+            gestureHandling: 'greedy'
+            // 移除自訂樣式，使用預設地圖外觀
         });
         
         infoWindow = new google.maps.InfoWindow({ maxWidth: 350 });
@@ -263,54 +263,88 @@
      * Google Maps 標記
      */
     function createGoogleMarker(spot) {
+        // 檢查座標是否有效
+        if (!spot.spotLat || !spot.spotLng || 
+            isNaN(spot.spotLat) || isNaN(spot.spotLng) ||
+            spot.spotLat < -90 || spot.spotLat > 90 ||
+            spot.spotLng < -180 || spot.spotLng > 180) {
+            console.warn(`⚠️ 景點 ${spot.spotName} 座標無效:`, spot.spotLat, spot.spotLng);
+            return null;
+        }
+
+        const position = { lat: spot.spotLat, lng: spot.spotLng };
+        
+        // 使用傳統 Marker API，避免需要 Map ID
         const marker = new google.maps.Marker({
             map: map,
-            position: { lat: spot.spotLat, lng: spot.spotLng },
+            position: position,
             title: spot.spotName,
             icon: {
-                url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                scaledSize: new google.maps.Size(32, 32)
-            },
-            animation: google.maps.Animation.DROP
+                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+                        <path fill="#1976d2" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                `),
+                scaledSize: new google.maps.Size(32, 32),
+                anchor: new google.maps.Point(16, 32)
+            }
         });
+
         marker.spotId = spot.spotId;
+        
         marker.addListener('click', () => {
             infoWindow.setContent(createInfoWindowContent(spot));
             infoWindow.open(map, marker);
             highlightListItem(spot.spotId);
             scrollToListItem(spot.spotId);
         });
+        
         markers.push(marker);
+        return marker;
     }
 
     /**
-     * Leaflet 標記
+     * 創建標記內容
      */
-    function createLeafletMarker(spot) {
-        const marker = L.marker([spot.spotLat, spot.spotLng]).addTo(map);
-        marker.spotId = spot.spotId;
-        marker.bindPopup(createInfoWindowContent(spot), { maxWidth: 350 });
-        marker.on('click', () => {
-            highlightListItem(spot.spotId);
-            scrollToListItem(spot.spotId);
-        });
-        markers.push(marker);
+    function createMarkerContent(spot) {
+        const container = document.createElement('div');
+        container.className = 'custom-marker';
+        
+        // 根據評分決定樣式
+        const hasHighRating = spot.googleRating && spot.googleRating >= 4.0;
+        container.innerHTML = `
+            <div class="marker-pin ${hasHighRating ? 'marker-pin--high-rating' : ''}">
+                <span class="material-icons">place</span>
+            </div>
+        `;
+        return container;
     }
 
     /**
-     * 創建資訊窗口內容
+     * 創建資訊視窗內容
      */
     function createInfoWindowContent(spot) {
-        const ratingHtml = spot.googleRating ? `<div class="spot-map-rating-stars">${generateStarRating(spot.googleRating)} <small>(${spot.googleTotalRatings || 0})</small></div>` : '';
+        const ratingHtml = spot.googleRating ? 
+            `<div class="spot-rating">
+                <span class="material-icons">star</span>
+                ${spot.googleRating.toFixed(1)} (${spot.googleTotalRatings || 0} 則評價)
+             </div>` : '';
+
         return `
-            <div class="spot-map-info-window">
-                <h6>${spot.spotName}</h6>
+            <div class="spot-info-window">
+                <h3 class="spot-info-window__title">${spot.spotName}</h3>
                 ${ratingHtml}
-                <p><i class="material-icons">place</i> ${spot.spotLoc}</p>
-                <p><i class="material-icons">phone</i> ${spot.tel || '無'}</p>
-                <p>${truncateText(spot.spotDesc || '', 100)}</p>
-                <a href="/spot/detail/${spot.spotId}" class="spot-map-info-btn" target="_blank">查看詳情</a>
-            </div>`;
+                <div class="spot-info-window__content">
+                    <p><span class="material-icons">place</span> ${spot.spotLoc || '無地址資訊'}</p>
+                    ${spot.tel ? `<p><span class="material-icons">phone</span> ${spot.tel}</p>` : ''}
+                    ${spot.spotDesc ? `<p class="spot-info-window__desc">${spot.spotDesc}</p>` : ''}
+                    <a href="/spot/detail/${spot.spotId}" class="spot-info-window__link" target="_blank">
+                        <span class="material-icons">visibility</span>
+                        查看詳情
+                    </a>
+                </div>
+            </div>
+        `;
     }
 
     /**

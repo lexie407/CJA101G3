@@ -54,13 +54,79 @@ public class ItineraryRestController {
      * 取得行程詳情
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getItineraryDetail(@PathVariable Long id) {
-        // TODO: 實作行程詳情查詢邏輯
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "行程詳情查詢成功");
-        response.put("id", id);
-        
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> getItineraryDetail(@PathVariable Integer id, HttpSession session) {
+        try {
+            logger.info("查詢行程詳情，行程 ID: {}", id);
+            
+            // 檢查行程是否存在
+            if (!itineraryService.isItineraryExists(id)) {
+                logger.warn("嘗試查詢不存在的行程 ID: {}", id);
+                return ResponseEntity.status(404).body(Map.of(
+                    "success", false,
+                    "message", "找不到指定的行程"
+                ));
+            }
+            
+            // 獲取行程詳情（包含景點）
+            ItineraryVO itinerary = itineraryService.getItineraryWithSpots(id);
+            
+            // 檢查收藏狀態（如果用戶已登入）
+            boolean isFavorited = false;
+            MembersVO member = (MembersVO) session.getAttribute("member");
+            if (member != null) {
+                com.toiukha.favItn.model.FavItnId favItnId = new com.toiukha.favItn.model.FavItnId();
+                favItnId.setFavItnId(id);
+                favItnId.setMemId(member.getMemId());
+                isFavorited = favItnService.isFavorited(favItnId);
+            }
+            
+            // 創建回應數據
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "行程詳情查詢成功");
+            response.put("itnId", itinerary.getItnId());
+            response.put("itnName", itinerary.getItnName());
+            response.put("itnDesc", itinerary.getItnDesc());
+            response.put("isPublic", itinerary.getIsPublic() == 1);
+            response.put("crtId", itinerary.getCrtId());
+            response.put("itnCreateDat", itinerary.getItnCreateDat());
+            response.put("itnUpdateDat", itinerary.getItnUpdateDat());
+            response.put("isFavorited", isFavorited);
+            
+            // 添加景點信息
+            if (itinerary.getItnSpots() != null && !itinerary.getItnSpots().isEmpty()) {
+                List<Map<String, Object>> spots = itinerary.getItnSpots().stream()
+                    .map(itnSpot -> {
+                        Map<String, Object> spotDto = new HashMap<>();
+                        if (itnSpot.getSpot() != null) {
+                            spotDto.put("spotId", itnSpot.getSpot().getSpotId());
+                            spotDto.put("spotName", itnSpot.getSpot().getSpotName());
+                            spotDto.put("spotLoc", itnSpot.getSpot().getSpotLoc());
+                            spotDto.put("spotDesc", itnSpot.getSpot().getSpotDesc());
+                        }
+                        spotDto.put("seq", itnSpot.getSeq());
+                        return spotDto;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+                response.put("spots", spots);
+                response.put("spotCount", spots.size());
+            } else {
+                response.put("spots", new ArrayList<>());
+                response.put("spotCount", 0);
+            }
+            
+            logger.info("成功查詢行程詳情，行程 ID: {}, 景點數量: {}", id, 
+                       itinerary.getItnSpots() != null ? itinerary.getItnSpots().size() : 0);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            logger.error("查詢行程詳情時發生錯誤，行程 ID: {}", id, e);
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "message", "系統錯誤：" + e.getMessage()
+            ));
+        }
     }
 
     /**

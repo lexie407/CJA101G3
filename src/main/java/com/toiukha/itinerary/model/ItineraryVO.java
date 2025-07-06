@@ -58,6 +58,9 @@ public class ItineraryVO implements Serializable {
     @Transient  // 標記為非持久化屬性
     private Boolean isFavorited;  // 是否已收藏（非資料庫欄位）
 
+    @Transient
+    private String creatorDisplayName;
+
     // 關聯到行程景點
     @OneToMany(mappedBy = "itinerary", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
@@ -172,6 +175,20 @@ public class ItineraryVO implements Serializable {
         this.itnSpots = itnSpots;
     }
 
+    public String getCreatorDisplayName() {
+        if (this.creatorDisplayName != null) {
+            return this.creatorDisplayName;
+        }
+        if (creatorType != null && creatorType == 2) {
+            return "官方推薦";
+        }
+        return "會員"; // Default
+    }
+
+    public void setCreatorDisplayName(String creatorDisplayName) {
+        this.creatorDisplayName = creatorDisplayName;
+    }
+
     // ========== 業務方法 ==========
 
     /**
@@ -218,6 +235,25 @@ public class ItineraryVO implements Serializable {
      */
     public boolean hasSpots() {
         return itnSpots != null && !itnSpots.isEmpty();
+    }
+
+    /**
+     * 檢查行程是否由管理員建立
+     * @return true 如果行程由管理員建立
+     */
+    public boolean isCreatedByAdmin() {
+        return creatorType != null && creatorType == 2;
+    }
+
+    /**
+     * 取得建立者類型文字描述
+     * @return 建立者類型文字
+     */
+    public String getCreatorTypeText() {
+        if (creatorType == null) {
+            return "未知";
+        }
+        return creatorType == 2 ? "管理員" : "會員";
     }
 
     // ========== toString ==========

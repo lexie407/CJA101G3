@@ -24,7 +24,7 @@ function loadFavoriteItineraries() {
     grid.innerHTML = '';
     emptyMessage.style.display = 'none';
 
-    fetch('/api/itinerary/favorites')
+    fetch('/itinerary/api/favorites')
         .then(response => {
             if (!response.ok) {
                 throw new Error('網路錯誤或伺服器問題');
@@ -34,11 +34,11 @@ function loadFavoriteItineraries() {
         .then(data => {
             loadingSpinner.style.display = 'none';
 
-            if (data && data.length > 0) {
+            if (data && data.success && data.itineraries && data.itineraries.length > 0) {
                 // 更新收藏數量
-                favoritesCount.textContent = data.length;
+                favoritesCount.textContent = data.itineraries.length;
                 
-                data.forEach(itinerary => {
+                data.itineraries.forEach(itinerary => {
                     const card = createItineraryCard(itinerary);
                     grid.appendChild(card);
                 });
@@ -140,7 +140,7 @@ function toggleFavorite(button, isInFavoritesPage = false) {
     const itineraryId = button.dataset.itineraryId;
     if (!itineraryId) return;
 
-    fetch(`/api/itinerary/${itineraryId}/favorite`, {
+    fetch(`/itinerary/api/${itineraryId}/favorite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     })
@@ -339,7 +339,7 @@ function unfavoriteItinerary(itineraryId, itineraryName, button) {
     button.innerHTML = '<span class="material-icons">hourglass_empty</span>取消中...';
     
     // 模擬 API 呼叫
-    fetch(`/api/itinerary/${itineraryId}/favorite`, {
+    fetch(`/itinerary/api/${itineraryId}/favorite`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -389,7 +389,7 @@ function copyItinerary(itineraryId) {
     copyBtn.innerHTML = '<span class="material-icons">hourglass_empty</span>複製中...';
     
     // 模擬 API 呼叫
-    fetch(`/api/itinerary/${itineraryId}/copy`, {
+    fetch(`/itinerary/api/${itineraryId}/copy`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -460,7 +460,7 @@ function loadMoreFavorites() {
     }
     
     // 模擬 API 呼叫
-    fetch(`/api/itinerary/favorites?page=${currentPage}&size=${currentSize}`)
+    fetch(`/itinerary/api/favorites?page=${currentPage}&size=${currentSize}`)
         .then(response => response.json())
         .then(data => {
             if (data.success && data.data.length > 0) {

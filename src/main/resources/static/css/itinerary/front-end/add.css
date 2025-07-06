@@ -1045,4 +1045,180 @@
 
 .character-counter.success {
     color: #4caf50;
+}
+
+/* 已選景點容器樣式 */
+.itinerary-selected-container {
+    margin-top: 2rem;
+    padding: 1rem 0;
+    border-top: 1px dashed #e0e0e0;
+}
+
+/* 已選景點計數器 */
+.itinerary-selected-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e0e0e0;
+    color: #666;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.5rem;
+    border-radius: 1rem;
+    margin-left: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.itinerary-selected-count.has-spots {
+    background-color: var(--md-sys-color-primary);
+    color: white;
+}
+
+/* 已選景點列表 */
+.itinerary-selected-spots-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+/* 已選景點項目 */
+.itinerary-selected-spot-item {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.itinerary-selected-spot-item:hover {
+    background-color: #e8f4fe;
+    border-color: #bbdefb;
+    transform: translateX(4px);
+}
+
+/* 已選景點序號 */
+.itinerary-selected-spot-item__order {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--md-sys-color-primary);
+    color: white;
+    font-weight: 600;
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* 已選景點圖標 */
+.itinerary-selected-spot-item__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e3f2fd;
+    color: var(--md-sys-color-primary);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 8px;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.itinerary-selected-spot-item__icon .material-icons {
+    font-size: 1.5rem;
+}
+
+/* 已選景點內容 */
+.itinerary-selected-spot-item__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.itinerary-selected-spot-item__name {
+    font-weight: 600;
+    margin: 0 0 0.25rem;
+    color: #333;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.itinerary-selected-spot-item__location {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0;
+    color: #666;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.itinerary-selected-spot-item__location .material-icons {
+    font-size: 0.9rem;
+    color: #999;
+}
+
+/* 移除按鈕 */
+.itinerary-selected-spot-item__remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: #999;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.itinerary-selected-spot-item__remove:hover {
+    background-color: #ffebee;
+    color: #f44336;
+}
+
+.itinerary-selected-spot-item__remove .material-icons {
+    font-size: 1.2rem;
+}
+
+/* 空選擇狀態 */
+.itinerary-empty-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px dashed #ccc;
+}
+
+.itinerary-empty-selection .material-icons {
+    font-size: 2.5rem;
+    color: #999;
+    margin-bottom: 1rem;
+}
+
+.itinerary-empty-selection p {
+    margin: 0;
+    color: #666;
+    font-weight: 500;
+}
+
+.itinerary-empty-selection .hint {
+    margin-top: 0.5rem;
+    color: #999;
+    font-size: 0.9rem;
 } 

@@ -9,8 +9,12 @@
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Material Design 3 變數 -->
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/map-variables.css}">
     <!-- 景點詳情頁樣式 -->
     <link rel="stylesheet" th:href="@{/css/spot/front-end/detail.css}">
+    <!-- 地圖樣式 -->
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/map.css}">
 </head>
 <body class="light">
     <div class="app-container">
@@ -100,11 +104,6 @@
                                                 title="收藏景點">
                                             <span class="material-icons" th:text="${isFavorited ? 'favorite' : 'favorite_border'}">favorite_border</span>
                                         </button>
-                                        <button class="spot-detail-action-btn spot-detail-action-btn--bookmark"
-                                                onclick="toggleBookmark()"
-                                                title="加入書籤">
-                                            <span class="material-icons">bookmark_border</span>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -149,6 +148,7 @@
                                             <h2 class="spot-detail-card__title">
                                                 <span class="material-icons">map</span>
                                                 位置地圖
+                                                <span class="spot-detail-card__subtitle">(點擊標記直接前往 Google 地圖)</span>
                                             </h2>
                                             <button class="spot-detail-map-btn" onclick="openInGoogleMaps()">
                                                 <span class="material-icons">open_in_new</span>
@@ -156,7 +156,7 @@
                                             </button>
                                         </div>
                                         <div class="spot-detail-card__content">
-                                            <div id="map" class="spot-detail-map"></div>
+                                            <div id="map" class="spot-detail-map" style="height:400px; width:100%; position:relative;"></div>
                                             <div class="spot-detail-map-info">
                                                 <div th:if="${spot.spotLat != null and spot.spotLng != null}" 
                                                      class="spot-detail-map-status spot-detail-map-status--success">
@@ -294,10 +294,6 @@
                                                 <button class="spot-detail-quick-btn" onclick="scrollToMap()">
                                                     <span class="material-icons">map</span>
                                                     <span>查看地圖</span>
-                                                </button>
-                                                <button class="spot-detail-quick-btn spot-detail-quick-btn--danger" onclick="reportSpot()">
-                                                    <span class="material-icons">flag</span>
-                                                    <span>檢舉景點</span>
                                                 </button>
                                             </div>
                                         </div>
