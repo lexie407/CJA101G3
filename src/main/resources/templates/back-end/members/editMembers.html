@@ -9,9 +9,6 @@
 
 <style>
 /* Material Design 卡片樣式 */
-body {
-    font-size: 1.1rem;
-  }
 .md-card {
 	max-width: 800px;
 	margin: 40px auto;
@@ -297,7 +294,7 @@ body {
 						</div>
 
 						<!-- memGroupAuth -->
-						<div class="form-group">
+						<div class="form-group" style="display: none;">
 							<label>揪團頁面權限</label> <select th:field="*{memGroupAuth}"
 								class="md-text-field">
 								<option value="0">可使用</option>
@@ -306,13 +303,13 @@ body {
 						</div>
 
 						<!-- memGroupPoint -->
-						<div class="form-group">
+						<div class="form-group" style="display: none;">
 							<label>違規記點(揪團)</label> <input type="number"
 								th:field="*{memGroupPoint}" class="md-text-field" required />
 						</div>
 
 						<!-- memStoreAuth -->
-						<div class="form-group">
+						<div class="form-group" style="display: none;">
 							<label>商城頁面權限</label> <select th:field="*{memStoreAuth}"
 								class="md-text-field">
 								<option value="0">可使用</option>
@@ -321,7 +318,7 @@ body {
 						</div>
 
 						<!-- memStorePoint -->
-						<div class="form-group">
+						<div class="form-group" style="display: none;">
 							<label>違規記點(商城)</label> <input type="number"
 								th:field="*{memStorePoint}" class="md-text-field" required />
 						</div>

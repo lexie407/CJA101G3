@@ -3,18 +3,28 @@ package com.toiukha.store.model;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.toiukha.email.EmailService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class StoreService {
 
 	@Autowired
 	private StoreRepository storeRepo;
+	
+	@Autowired
+    private StringRedisTemplate redisTemplate;
 
 	@Autowired
 	private EmailService emailService;
@@ -66,12 +76,30 @@ public class StoreService {
 //  處理忘記密碼流程：找商家、寄出重設連結（不告知是否存在）
 	public void processForgotPassword(String email) {
 		Optional<StoreVO> opt = storeRepo.findByStoreEmail(email);
-		if (opt.isPresent()) {
-			StoreVO store = opt.get();
-			new Thread(() -> {
-				emailService.sendStoreResetPasswordEmail(store.getStoreEmail(), store.getStoreId());
-			}).start();
-		}
+		if (opt.isEmpty()) {
+	        return;
+	    }
+	    StoreVO store = opt.get();
+
+	    // ① 產生 token 並存 Redis（15 分鐘）
+	    String token = UUID.randomUUID().toString();
+	    redisTemplate.opsForValue()
+	        .set("store:reset:" + token, store.getStoreId().toString(), 15, TimeUnit.MINUTES);
+
+	    // 動態組 resetLink
+	    ServletRequestAttributes attrs =
+	        (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+	    HttpServletRequest req = attrs.getRequest();
+	    String baseUrl = req.getScheme()
+	                   + "://" + req.getServerName()
+	                   + ":"   + req.getServerPort()
+	                   + req.getContextPath();
+	    String resetLink = baseUrl + "/store/resetPassword?token=" + token;
+
+	    // 非同步寄信
+	    new Thread(() -> {
+	        emailService.sendStoreResetPasswordEmail(store.getStoreEmail(), resetLink);
+	    }).start();
 	}
 
 	// 更新並儲存商家資料（含重設密碼時使用）

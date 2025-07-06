@@ -4,7 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.toiukha.email.EmailService;
 
@@ -13,13 +16,20 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import jakarta.persistence.criteria.Predicate;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class MembersService {
 
 	@Autowired
 	private MembersRepository membersRepository;
+	
+	@Autowired
+    private StringRedisTemplate redisTemplate;
 
 	@Autowired
 	private EmailService emailService;
@@ -46,11 +56,33 @@ public class MembersService {
 
 		// 儲存會員資料
 		MembersVO savedMember = membersRepository.save(membersVO);
+		
+		 // 產生唯一驗證碼
+		String token = UUID.randomUUID().toString();
+		// 存進 Redis，30 分鐘有效
+	    redisTemplate.opsForValue()
+	        .set("verify:" + token, 
+	             savedMember.getMemId().toString(), 
+	             30, 
+	             TimeUnit.MINUTES);
+	    
+	 //  在原請求過程中取得 HttpServletRequest，動態組 baseUrl
+	    ServletRequestAttributes attrs =
+	        (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+	    HttpServletRequest req = attrs.getRequest();
+	    String baseUrl = req.getScheme()      // http or https
+	                   + "://" + req.getServerName()
+	                   + ":"   + req.getServerPort()
+	                   + req.getContextPath();
+	    String verificationLink = baseUrl + "/members/verifyEmail?token=" + token;
 
 		// 發送驗證信
-		new Thread(() -> {
-		    emailService.sendVerificationEmail(savedMember.getMemEmail(), savedMember.getMemId());
-		}).start();
+	    new Thread(() -> {
+	        emailService.sendVerificationEmail(
+	            savedMember.getMemEmail(), 
+	            verificationLink
+	        );
+	    }).start();
 
 		return savedMember;
 	}
@@ -66,6 +98,10 @@ public class MembersService {
 		Optional<MembersVO> opt = membersRepository.findById(memId);
 		if (opt.isPresent()) {
 			MembersVO member = opt.get();
+			// 只在尚未啟用時才更新，避免重複啟用
+			       if (member.getMemStatus() != 0) {
+			           return false;
+			       }
 			member.setMemStatus((byte) 1); // 設為啟用
 			membersRepository.save(member);
 			return true;
@@ -81,8 +117,27 @@ public class MembersService {
 		 Optional<MembersVO> opt = membersRepository.findByMemEmail(email);
 		    if (opt.isPresent()) {
 		        MembersVO member = opt.get();
+		        
+		     // 1. 產生 token 並存 Redis（15 分鐘）
+		        String token = UUID.randomUUID().toString();
+		        redisTemplate.opsForValue()
+		            .set("reset:" + token,
+		                 member.getMemId().toString(),
+		                 15, TimeUnit.MINUTES);
+
+		        // 2. 在原請求線程中動態抓 baseUrl
+		        ServletRequestAttributes attrs =
+		            (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+		        HttpServletRequest req = attrs.getRequest();
+		        String baseUrl = req.getScheme()
+		                       + "://" + req.getServerName()
+		                       + ":"   + req.getServerPort()
+		                       + req.getContextPath();
+		        String resetLink = baseUrl + "/members/resetPassword?token=" + token;
+
+		        // 3. 非同步執行寄信，只傳 email + resetLink
 		        new Thread(() -> {
-		            emailService.sendResetPasswordEmail(email, member.getMemId());
+		            emailService.sendResetPasswordEmail(email, resetLink);
 		        }).start();
 		    }
 	    }
