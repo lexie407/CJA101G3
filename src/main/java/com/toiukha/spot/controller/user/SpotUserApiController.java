@@ -6,6 +6,8 @@ import com.toiukha.spot.service.SpotService;
 import com.toiukha.spot.dto.SpotSearchRequest;
 import com.toiukha.spot.dto.SpotDTO;
 import com.toiukha.spot.dto.SpotMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +36,8 @@ public class SpotUserApiController {
 
     @Autowired
     private SpotMapper spotMapper;
+
+    private static final Logger log = LoggerFactory.getLogger(SpotUserApiController.class);
 
     // ========== 1. 前台景點查詢API ==========
 
@@ -87,18 +91,20 @@ public class SpotUserApiController {
      * @return API回應包含搜尋結果
      */
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<SpotVO>>> searchSpots(@RequestParam String keyword) {
+    public ResponseEntity<?> searchSpots(@RequestParam String keyword) {
         try {
-            if (keyword == null || keyword.trim().isEmpty()) {
-                return ResponseEntity.ok(ApiResponse.error("搜尋關鍵字不能為空"));
-            }
-            
-            // 使用現有的搜尋方法，但只返回上架景點
-            List<SpotVO> searchResults = spotService.searchSpots(keyword.trim());
-            
-            return ResponseEntity.ok(ApiResponse.success("搜尋完成，找到 " + searchResults.size() + " 個結果", searchResults));
+            List<SpotVO> spots = spotService.searchPublicSpots(keyword);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "data", spots
+            ));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error("搜尋失敗: " + e.getMessage()));
+            log.error("前台搜尋景點時發生錯誤", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                        "success", false,
+                        "message", "搜尋景點失敗"
+                    ));
         }
     }
 
@@ -117,7 +123,7 @@ public class SpotUserApiController {
             }
             
             // 使用現有的搜尋方法，但只返回上架景點
-            List<SpotVO> searchResults = spotService.searchSpots(searchRequest.getKeyword().trim());
+            List<SpotVO> searchResults = spotService.searchPublicSpots(searchRequest.getKeyword().trim());
             
             return ResponseEntity.ok(ApiResponse.success("搜尋完成", searchResults));
         } catch (Exception e) {

@@ -810,24 +810,15 @@ function updateStatistics(stats = {}) {
     const publicItineraries = stats.public || currentItineraries.filter(item => item.isPublic === 1).length;
     const privateItineraries = stats.private || (total - publicItineraries);
     
-    // 總景點數可能需要計算
-    let spots = 0;
-    if (stats.spots) {
-        spots = stats.spots;
-    } else {
-        // 如果 API 沒有提供，則從行程數據計算
-        spots = currentItineraries.reduce((sum, item) => {
-            // 檢查是否有 itnSpots 屬性，如果有則使用其長度，否則使用 spotCount 或默認為 0
-            const spotCount = item.itnSpots ? item.itnSpots.length : (item.spotCount || 0);
-            return sum + spotCount;
-        }, 0);
-    }
-    
     // 更新 DOM
     if (totalCount) totalCount.textContent = total;
     if (publicCount) publicCount.textContent = publicItineraries;
     if (privateCount) privateCount.textContent = privateItineraries;
-    if (totalSpots) totalSpots.textContent = spots;
+    
+    // 總景點數只在有明確數據時更新，否則保持後端傳遞的值
+    if (totalSpots && stats.spots !== undefined) {
+        totalSpots.textContent = stats.spots;
+    }
 }
 
 /**
@@ -849,11 +840,11 @@ function updateStatisticsFromDOM() {
     const publicItineraries = currentItineraries.filter(item => item.isPublic).length;
     const privateItineraries = total - publicItineraries;
     
-    // 更新 DOM
+    // 更新 DOM（但不更新總景點數，保持後端傳遞的值）
     if (totalCount) totalCount.textContent = total;
     if (publicCount) publicCount.textContent = publicItineraries;
     if (privateCount) privateCount.textContent = privateItineraries;
-    if (totalSpots) totalSpots.textContent = '計算中...'; // 無法從DOM中獲取景點數量
+    // 總景點數保持後端傳遞的值，不在前端計算
 }
 
 /**

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>編輯行程 - 後台管理系統</title>
     <meta charset="UTF-8">
+    <title>編輯行程 - 後台管理系統</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- 引入後台模板的頭部資源 -->
@@ -12,154 +12,221 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-common.css}">
     <link rel="stylesheet" th:href="@{/css/itinerary/back-end/itinerary-form.css}">
+    <link rel="stylesheet" th:href="@{/css/itinerary/back-end/add-official.css}">
+    <link rel="stylesheet" th:href="@{/css/itinerary/back-end/spot-selector.css}">
 </head>
 <body class="light">
     <div class="app-container">
         <!-- 引入後台左側導航 -->
         <th:block th:replace="~{navBackTemplate :: navbar}"></th:block>
-        
+
         <div class="main-content">
             <!-- 頂部導航 -->
-            <div th:replace="~{subnavContentBack :: subnav(activeItem='itnlist')}"></div>
+            <div th:replace="~{subnavContentBack :: subnav(activeItem='itineraryedit')}"></div>
             
             <!-- 主要內容 -->
             <main class="itinerary-review-page">
-        <div class="itinerary-form-page">
-
-            <!-- 成功/錯誤訊息 -->
-            <div th:if="${successMessage}" class="alert alert-success">
-                <i class="material-icons">check_circle</i>
-                <span th:text="${successMessage}"></span>
-            </div>
-            <div th:if="${errorMessage}" class="alert alert-error">
-                <i class="material-icons">error</i>
-                <span th:utext="${errorMessage}"></span>
-            </div>
-            <!-- 表單內容區域 -->
-            <div class="content-container">
-                <form th:action="@{/admin/itinerary/edit/{id}(id=${itinerary.itnId})}" method="post" id="itineraryForm" class="itinerary-form">
-
-                    <!-- 基本資訊區塊 -->
-                    <div class="form-section">
-                        <div class="section-header">
-                            <h2 class="section-title">
-                                <i class="material-icons">info</i>
-                                基本資訊
-                            </h2>
-                            <p class="section-desc">請修改行程的基本資訊</p>
+                <div class="itinerary-form-page">
+                    <div class="page-header">
+                        <div class="header-left">
+                            <h1><i class="material-icons">edit_note</i> 編輯行程</h1>
+                            <p>修改推薦行程的詳細內容並管理相關景點。</p>
                         </div>
-                        
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="itnName" class="form-label">
-                                    行程名稱 <span class="required">*</span>
-                                </label>
-                                <div class="input-container">
-                                    <i class="material-icons input-icon">map</i>
-                                    <input id="itnName" type="text" class="form-control" 
-                                           name="itnName" required maxlength="50"
-                                           placeholder="請輸入行程名稱"
-                                           th:value="${itinerary.itnName}">
+                        <div class="header-right">
+                            <!-- 建立者資訊卡片 -->
+                            <div class="creator-info-card">
+                                <div class="creator-avatar">
+                                    <i class="material-icons">person_pin</i>
                                 </div>
-                                <div class="helper-text">請輸入行程的正式名稱，最多50個字元 <span class="char-count">(0/50)</span></div>
-                            </div>
-
-                            <div class="form-group form-group-full">
-                                <label for="itnDesc" class="form-label">行程描述</label>
-                                <textarea id="itnDesc" class="form-control form-textarea" 
-                                          name="itnDesc" maxlength="500" rows="4"
-                                          placeholder="詳細描述行程特色、路線安排或遊覽重點..."
-                                          th:text="${itinerary.itnDesc}"></textarea>
-                                <div class="helper-text">詳細描述行程特色、路線安排或遊覽重點，最多500個字元 <span class="char-count">(0/500)</span></div>
+                                <div class="creator-details">
+                                    <div class="creator-name">
+                                        <span class="name-text">管理員</span>
+                                        <span class="official-badge">
+                                            <i class="material-icons">verified</i>
+                                            推薦行程
+                                        </span>
+                                    </div>
+                                    <div class="creator-meta">
+                                        <div class="creator-role">建立時間：<span th:text="${#dates.format(itinerary.itnCreateDat, 'yyyy/MM/dd HH:mm')}">2025/07/06 21:55</span></div>
+                                        <div class="creator-type">最後編輯：<span id="current-time">--</span></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 狀態設定區塊 -->
-                    <div class="form-section">
-                        <div class="section-header">
-                            <h2 class="section-title">
-                                <i class="material-icons">toggle_on</i>
-                                狀態設定
-                            </h2>
-                            <p class="section-desc">設定行程的顯示狀態</p>
+        <!-- Display success or error messages -->
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+
+        <form th:action="@{/admin/itinerary/edit/{itnId}(itnId=${itinerary.itnId})}" th:object="${itinerary}" method="post" id="itineraryForm" class="itinerary-form">
+            <!-- 基本資訊區塊 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="material-icons">info</i>
+                        基本資訊
+                    </h2>
+                    <p class="section-desc">請填寫行程的基本資訊</p>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="itnName" class="form-label">
+                            行程名稱 <span class="required">*</span>
+                        </label>
+                        <div class="input-container">
+                            <i class="material-icons input-icon">map</i>
+                            <input id="itnName" type="text" class="form-control" 
+                                   name="itnName" required minlength="2" maxlength="50"
+                                   th:field="*{itnName}" placeholder="請輸入行程名稱">
+                        </div>
+                        <div class="helper-text">請輸入行程的正式名稱，2-50個字元 <span class="char-count">(0/50)</span></div>
+                    </div>
+                    
+                    <div class="form-group form-group-full">
+                        <label for="itnDesc" class="form-label">
+                            行程描述 <span class="required">*</span>
+                        </label>
+                        <textarea id="itnDesc" class="form-control form-textarea" 
+                                  name="itnDesc" minlength="5" maxlength="500" rows="4" required
+                                  th:field="*{itnDesc}" placeholder="請描述此官方推薦行程的特色和亮點..."></textarea>
+                        <div class="helper-text">簡單介紹行程特色或亮點，5-500個字元 <span class="char-count">(0/500)</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 景點選擇區塊 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="material-icons">place</i>
+                        景點選擇
+                    </h2>
+                    <p class="section-desc">選擇行程中的景點</p>
+                </div>
+                
+                <div class="spot-selector-section">
+                    <!-- 景點搜尋 -->
+                                            <div class="spot-search-container">
+                            <div class="spot-search-input">
+                                <i class="material-icons spot-search-icon">search</i>
+                                <input type="text" id="spotSearchInput" placeholder="搜尋景點名稱或地點...">
+                            </div>
+                            <button type="button" class="spot-search-btn" id="spotSearchBtn">
+                                <i class="material-icons">search</i>
+                                搜尋
+                            </button>
+
+                        </div>
+
+                    <!-- 景點列表容器 -->
+                    <div class="spot-list-container">
+                        <!-- 左側：可選景點池 -->
+                        <div class="spot-pool">
+                            <div class="spot-pool-header">
+                                <div class="spot-pool-title">
+                                    <i class="material-icons">place</i>
+                                    可選景點
+                                </div>
+                                <span class="spot-count" id="spotPoolCount">0</span>
+                            </div>
+                            
+                            <div id="spotPoolList">
+                                <!-- 動態生成的景點卡片將在這裡顯示 -->
+                                <div class="spot-empty">
+                                    <div class="material-icons spot-empty-icon">search</div>
+                                    <div class="spot-empty-text">請搜尋景點以顯示結果</div>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">公開狀態</label>
-                                <div class="status-card">
-                                    <div class="status-switch-container">
-                                        <label class="status-switch">
-                                            <input type="checkbox" id="statusCheckbox" name="isPublicEnabled" 
-                                                   th:checked="${itinerary.isPublic == 1}">
-                                            <span class="switch-slider"></span>
-                                        </label>
-                                        <div class="status-info">
-                                            <span class="status-text" th:text="${itinerary.isPublic == 1 ? '公開' : '私人'}">公開</span>
-                                            <div class="status-badge" th:classappend="${itinerary.isPublic == 1 ? 'badge-success' : 'badge-secondary'}">
-                                                <i class="material-icons" th:text="${itinerary.isPublic == 1 ? 'visibility' : 'visibility_off'}">visibility</i>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <!-- 右側：已選景點 -->
+                        <div class="spot-selected">
+                            <div class="spot-selected-header">
+                                <div class="spot-selected-title">
+                                    <i class="material-icons">format_list_numbered</i>
+                                    已選景點
                                 </div>
-                                <div class="helper-text">公開的行程會顯示於前台，私人的行程則會隱藏</div>
+                                <span class="spot-count" id="spotSelectedCount">0</span>
+                            </div>
+                            
+                            <div id="spotSelectedList">
+                                <!-- 動態生成的已選景點卡片將在這裡顯示 -->
+                                <div class="spot-empty">
+                                    <div class="material-icons spot-empty-icon">playlist_add</div>
+                                    <div class="spot-empty-text">尚未選擇任何景點</div>
+                                    <div class="spot-empty-hint">點擊左側景點的加號按鈕添加</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- 隱藏欄位 -->
-                    <input type="hidden" name="isPublic" id="isPublic" th:value="${itinerary.isPublic}">
-
-                    <!-- 操作按鈕區域 -->
-                    <div class="form-actions">
-                        <a th:href="@{/admin/itinerary/itnlist}" class="btn btn-secondary">
-                            <i class="material-icons">arrow_back</i>
-                            返回列表
-                        </a>
-                        <button type="submit" class="btn btn-primary" id="submitBtn">
-                            <i class="material-icons">save</i>
-                            <span>更新行程</span>
-                        </button>
-                    </div>
-                </form>
+                    <!-- 隱藏的景點ID輸入欄位，用於表單提交 -->
+                    <div id="selectedSpotsContainer"></div>
+                </div>
             </div>
-        </div>
-        
-        <!-- 表單頁面專用腳本 -->
-        <script th:src="@{/js/itinerary/back-end/form.js}" defer></script>
-        
-        <!-- 簡化的按鈕顯示確保腳本 -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // 簡單確保按鈕顯示
-                const formActions = document.querySelector('.form-actions');
-                const buttons = document.querySelectorAll('.btn');
+
+            <!-- 狀態設定區塊 -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="material-icons">settings</i>
+                        狀態設定
+                    </h2>
+                    <p class="section-desc">設定行程的公開狀態</p>
+                </div>
                 
-                if (formActions) formActions.style.display = 'flex';
-                buttons.forEach(btn => btn.style.display = 'inline-flex');
-                
-                console.log('編輯行程頁面載入完成，按鈕數量:', buttons.length);
-                
-                // 初始化字元計數
-                const nameInput = document.getElementById('itnName');
-                const descTextarea = document.getElementById('itnDesc');
-                
-                if (nameInput) {
-                    const nameCount = nameInput.value.length;
-                    const nameCountSpan = document.querySelector('#itnName').closest('.form-group').querySelector('.char-count');
-                    if (nameCountSpan) nameCountSpan.textContent = `(${nameCount}/50)`;
-                }
-                
-                if (descTextarea) {
-                    const descCount = descTextarea.value.length;
-                    const descCountSpan = document.querySelector('#itnDesc').closest('.form-group').querySelector('.char-count');
-                    if (descCountSpan) descCountSpan.textContent = `(${descCount}/500)`;
-                }
-            });
-        </script>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">公開狀態</label>
+                        <div class="status-toggle">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="statusCheckbox" name="isPublic" 
+                                       th:checked="*{isPublic == 1}" value="1">
+                                <label for="statusCheckbox" class="toggle-label">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="status-info">
+                                <div class="status-display">
+                                    <span class="status-text">公開</span>
+                                    <span class="status-badge badge-success">
+                                        <i class="material-icons">visibility</i>
+                                    </span>
+                                </div>
+                                <div class="status-desc">
+                                    <span>公開狀態的行程會顯示在前台供用戶瀏覽</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 表單按鈕 -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="material-icons">save</i>
+                    更新行程
+                </button>
+                <a th:href="@{/admin/itinerary/detail/{itnId}(itnId=${itinerary.itnId})}" class="btn btn-secondary">
+                    <i class="material-icons">cancel</i>
+                    取消
+                </a>
+            </div>
+        </form>
+
+
             </main>
         </div>
     </div>
+
+    <!-- Hidden container for initial selected spot IDs on edit page -->
+    <div id="initial-selected-spots" th:if="${selectedSpotIds}" th:data-spot-ids="${#strings.listJoin(selectedSpotIds, ',')}"></div>
+
+    <!-- 引入拆分出去的 JS 文件 -->
+    <script th:src="@{/js/itinerary/back-end/add-official.js}" defer></script>
+    <script th:src="@{/js/itinerary/back-end/spot-selector.js}" defer></script>
 </body>
 </html> 

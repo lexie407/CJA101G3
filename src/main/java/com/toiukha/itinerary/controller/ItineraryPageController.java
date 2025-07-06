@@ -3,6 +3,9 @@ package com.toiukha.itinerary.controller;
 import com.toiukha.itinerary.service.ItineraryService;
 import com.toiukha.itinerary.model.ItineraryVO;
 import com.toiukha.itinerary.model.ItnSpotVO;
+import com.toiukha.favItn.model.FavItnService;
+import com.toiukha.members.model.MembersService;
+import com.toiukha.members.model.MembersVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +20,7 @@ import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 /**
  * 行程模組頁面控制器
@@ -30,7 +34,10 @@ public class ItineraryPageController {
     private ItineraryService itineraryService;
 
     @Autowired
-    private com.toiukha.favItn.model.FavItnService favItnService;
+    private FavItnService favItnService;
+
+    @Autowired
+    private MembersService membersService;
 
     /**
      * 行程首頁
@@ -73,10 +80,19 @@ public class ItineraryPageController {
                 itineraryList = itineraryService.getAllPublicItineraries();
             }
             
-            // 檢查每個行程的收藏狀態
+            // 檢查每個行程的收藏狀態並組合建立者名稱
             List<Integer> favoriteIds = favItnService.findFavoriteIdsByMemId(memId);
             for (ItineraryVO itinerary : itineraryList) {
                 itinerary.setIsFavorited(favoriteIds.contains(itinerary.getItnId()));
+                
+                // 組合建立者顯示名稱
+                if (itinerary.getCreatorType() != null && itinerary.getCreatorType() == 1) {
+                    // 直接設定顯示名稱，不查詢會員資料
+                    itinerary.setCreatorDisplayName("會員 " + itinerary.getCrtId());
+                    
+                    // 如果有需要，可以在這裡添加會員查詢邏輯
+                    // 但目前先避免使用未定義的方法
+                }
             }
             
             model.addAttribute("itineraryList", itineraryList);
@@ -295,8 +311,8 @@ public class ItineraryPageController {
                 return "redirect:/members/login?redirect=/itinerary/edit/" + id;
             }
             
-            // 根據ID載入行程資料
-            ItineraryVO itinerary = itineraryService.getItineraryById(id);
+            // 根據ID載入行程資料，包含景點資料
+            ItineraryVO itinerary = itineraryService.getItineraryWithSpots(id);
             
             if (itinerary == null) {
                 model.addAttribute("errorMessage", "找不到指定的行程");
@@ -309,12 +325,18 @@ public class ItineraryPageController {
                 return "redirect:/itinerary/detail/" + id;
             }
             
+            // 獲取當前行程已選景點的ID列表
+            List<Integer> selectedSpotIds = itinerary.getItnSpots().stream()
+                                                     .map(itnSpot -> itnSpot.getSpot().getSpotId())
+                                                     .collect(Collectors.toList());
+            
             // 傳遞行程資料到表單
             model.addAttribute("itinerary", itinerary);
             model.addAttribute("itineraryId", id);
             model.addAttribute("itnName", itinerary.getItnName());
             model.addAttribute("itnDesc", itinerary.getItnDesc());
             model.addAttribute("isPublic", itinerary.getIsPublic());
+            model.addAttribute("selectedSpotIds", selectedSpotIds);
             model.addAttribute("isEdit", true);
             
         } catch (Exception e) {
@@ -450,25 +472,12 @@ public class ItineraryPageController {
         }
         
         try {
-            // 獲取用戶的所有行程
-            List<ItineraryVO> myItineraries = itineraryService.getItinerariesByCrtId(memId);
-            model.addAttribute("itineraryList", myItineraries);
-            
-            // 計算統計數據
-            long totalCount = myItineraries.size();
-            long publicCount = myItineraries.stream().filter(i -> i.getIsPublic() == 1).count();
-            long privateCount = totalCount - publicCount;
-            
-            // 添加統計數據到模型
-            model.addAttribute("totalCount", totalCount);
-            model.addAttribute("publicCount", publicCount);
-            model.addAttribute("privateCount", privateCount);
-            
-            // 添加當前用戶ID到模型，用於前端判斷是否顯示編輯按鈕
-            model.addAttribute("currentUserId", memId);
+            // 載入會員的所有行程
+            List<ItineraryVO> itineraryList = itineraryService.getItinerariesByCrtId(memId);
+            model.addAttribute("itineraryList", itineraryList);
             
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "載入行程資料時發生錯誤：" + e.getMessage());
+            model.addAttribute("errorMessage", "載入行程列表失敗：" + e.getMessage());
         }
         
         return "front-end/itinerary/my";

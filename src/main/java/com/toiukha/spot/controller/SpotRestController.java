@@ -104,7 +104,12 @@ public class SpotRestController {
     @Deprecated
     public ResponseEntity<ApiResponse<List<SpotVO>>> searchSpots(@RequestParam String keyword) {
         // 重導向到新的前台控制器
-        return spotUserApiController.searchSpots(keyword);
+        try {
+            List<SpotVO> spots = spotService.searchPublicSpots(keyword);
+            return ResponseEntity.ok(ApiResponse.success("搜尋成功", spots));
+        } catch (Exception e) {
+            return ResponseEntity.ok(ApiResponse.error("搜尋失敗: " + e.getMessage()));
+        }
     }
 
     /**
@@ -279,23 +284,18 @@ public class SpotRestController {
     @PostMapping("/batch/save-only")
     @Deprecated
     public ResponseEntity<ApiResponse<List<SpotVO>>> addSpotsBatchSaveOnly(@Valid @RequestBody List<SpotDTO> spotDTOList) {
-        if (spotDTOList == null || spotDTOList.isEmpty()) {
-            return ResponseEntity.ok(ApiResponse.error("景點資料列表不能為空"));
+        try {
+            // 轉換DTO為VO
+            List<SpotVO> spotVOList = spotDTOList.stream()
+                    .map(spotMapper::toVO)
+                    .peek(spotVO -> spotVO.setCrtId(getCurrentUserId()))
+                    .toList();
+            // 使用批次儲存方法
+            List<SpotVO> savedSpots = spotService.addSpotsInBatch(spotVOList);
+            return ResponseEntity.ok(ApiResponse.success("批次新增完成，成功儲存 " + savedSpots.size() + " 個景點", savedSpots));
+        } catch (Exception e) {
+            return ResponseEntity.ok(ApiResponse.error("批次新增失敗: " + e.getMessage()));
         }
-        // 檢查名稱是否重複
-        for (SpotDTO spotDTO : spotDTOList) {
-            if (spotService.existsBySpotName(spotDTO.getSpotName())) {
-                return ResponseEntity.ok(ApiResponse.error("景點名稱已存在: " + spotDTO.getSpotName()));
-            }
-        }
-        // 轉換DTO為VO
-        List<SpotVO> spotVOList = spotDTOList.stream()
-                .map(spotMapper::toVO)
-                .peek(spotVO -> spotVO.setCrtId(getCurrentUserId()))
-                .toList();
-        // 使用批次儲存方法
-        List<SpotVO> savedSpots = spotService.addSpotsInBatch(spotVOList);
-        return ResponseEntity.ok(ApiResponse.success("批次新增完成，成功儲存 " + savedSpots.size() + " 個景點", savedSpots));
     }
 
     // ========== 9. 政府資料匯入API (保留原有功能) ==========
@@ -415,7 +415,7 @@ public class SpotRestController {
             if (hasValidApiKey) {
                 // 提供API Key給前端使用
                 config.put("apiKey", apiKey);
-                config.put("mapsApiUrl", "https://maps.googleapis.com/maps/api/js?key=" + apiKey + "&libraries=places,geometry,marker&v=beta&loading=async");
+                config.put("mapsApiUrl", "https://maps.googleapis.com/maps/api/js?key=" + apiKey + "&libraries=places,geometry&loading=async");
                 config.put("message", "Google Maps API 已配置");
             } else {
                 config.put("message", "Google Maps API Key 未設定或無效，請檢查 application.properties 中的 google.api.key 設定");

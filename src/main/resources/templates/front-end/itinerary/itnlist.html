@@ -139,11 +139,11 @@
                                         <div class="itinerary-list-card__meta">
                                             <div class="itinerary-list-card__author">
                                                 <span class="material-icons">person</span>
-                                                <span th:text="${itinerary.crtId != null ? '會員 ' + itinerary.crtId : '匿名'}">建立者</span>
+                                                <span th:text="${itinerary.getCreatorDisplayName()}">建立者</span>
                                             </div>
                                             <div class="itinerary-list-card__date">
                                                 <span class="material-icons">schedule</span>
-                                                <span th:text="${itinerary.itnCreateDat != null ? itinerary.itnCreateDat.toString().substring(0, 10) : ''}">2024-01-01</span>
+                                                <span th:text="${itinerary.itnCreateDat != null ? #dates.format(itinerary.itnCreateDat, 'yyyy/MM/dd') : ''}">2024-01-01</span>
                                             </div>
                                         </div>
                                         <div class="itinerary-list-card__actions">

@@ -1,0 +1,66 @@
+/**
+ * Material Design 3 變數定義
+ * 用於修正地圖頁面的顏色顯示問題
+ */
+:root {
+    /* Material Design 3 顏色系統 */
+    --md-sys-color-primary: #6750a4;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #eaddff;
+    --md-sys-color-on-primary-container: #21005d;
+    
+    --md-sys-color-secondary: #625b71;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #e8def8;
+    --md-sys-color-on-secondary-container: #1d192b;
+    
+    --md-sys-color-surface: #fffbfe;
+    --md-sys-color-on-surface: #1c1b1f;
+    --md-sys-color-surface-variant: #e7e0ec;
+    --md-sys-color-on-surface-variant: #49454f;
+    --md-sys-color-surface-container: #f3edf7;
+    --md-sys-color-surface-container-low: #f7f2fa;
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-high: #ece6f0;
+    
+    --md-sys-color-outline: #79747e;
+    --md-sys-color-outline-variant: #cac4d0;
+    
+    --md-sys-color-error: #ba1a1a;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffdad6;
+    --md-sys-color-on-error-container: #410002;
+    
+    /* 圓角和陰影 */
+    --md-sys-radius-small: 4px;
+    --md-sys-radius-medium: 8px;
+    --md-sys-radius-large: 12px;
+    --md-sys-radius-extra-large: 16px;
+    --md-sys-radius-full: 50px;
+    
+    --md-sys-elevation-level1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    --md-sys-elevation-level2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    --md-sys-elevation-level3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+    
+    /* 字體系統 */
+    --md-sys-typescale-title-medium-size: 16px;
+    --md-sys-typescale-title-medium-weight: 500;
+    --md-sys-typescale-body-medium-size: 14px;
+    --md-sys-typescale-body-medium-weight: 400;
+    --md-sys-typescale-body-small-size: 12px;
+    --md-sys-typescale-label-medium-size: 12px;
+    --md-sys-typescale-label-medium-weight: 500;
+    --md-sys-typescale-headline-medium-size: 28px;
+    --md-sys-typescale-headline-medium-weight: 400;
+    
+    /* 動畫 */
+    --md-motion-duration-short2: 200ms;
+    --md-motion-easing-standard: cubic-bezier(0.2, 0.0, 0, 1.0);
+    
+    /* 間距系統 */
+    --md-sys-spacing-extra-small: 4px;
+    --md-sys-spacing-small: 8px;
+    --md-sys-spacing-medium: 16px;
+    --md-sys-spacing-large: 24px;
+    --md-sys-spacing-extra-large: 32px;
+} 

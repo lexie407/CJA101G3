@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.HashMap;
 import org.springframework.http.HttpStatus;
+import java.util.ArrayList;
 
 /**
  * 景點管理後端總控制器
@@ -1004,6 +1005,152 @@ public class SpotAdminController {
             logger.error("修正地區信息時發生錯誤", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("修正地區信息時發生錯誤: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 從 Google Places API 取得景點資訊 (POST方法)
+     * 用於表單頁面的評分獲取功能
+     */
+    @PostMapping("/api/google-place-info")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> postGooglePlaceInfo(@RequestBody Map<String, String> request) {
+        String name = request.get("name");
+        String address = request.get("address");
+        
+        logger.info("接收到POST請求獲取Google Places資訊，景點名稱：{}，地址：{}", name, address);
+        
+        // 檢查參數
+        if ((name == null || name.trim().isEmpty()) && 
+            (address == null || address.trim().isEmpty())) {
+            
+            logger.warn("請求缺少必要參數：景點名稱或地址");
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "請提供景點名稱或地址");
+            
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        try {
+            // 使用擴充服務取得 Google Places 資訊
+            Map<String, Object> result = spotEnrichmentService.getGooglePlaceInfo(name, address);
+            result.put("success", true);
+            
+            logger.info("Google Places API 請求結果：成功");
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            logger.error("處理 Google Places API 請求時發生錯誤：{}", e.getMessage());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "處理請求時發生錯誤：" + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 從 Google Places API 取得景點資訊
+     * @param spotName 景點名稱
+     * @param address 地址
+     * @param latitude 緯度（可選）
+     * @param longitude 經度（可選）
+     * @return 景點資訊
+     */
+    @GetMapping("/api/google-places")
+    public ResponseEntity<Map<String, Object>> getGooglePlacesInfo(
+            @RequestParam(required = false) String spotName,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude) {
+        
+        logger.info("接收到 Google Places API 請求，景點名稱：{}，地址：{}", spotName, address);
+        
+        // 檢查參數
+        if ((spotName == null || spotName.trim().isEmpty()) && 
+            (address == null || address.trim().isEmpty())) {
+            
+            logger.warn("請求缺少必要參數：景點名稱或地址");
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "請提供景點名稱或地址");
+            
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        try {
+            // 創建臨時景點對象
+            SpotVO tempSpot = new SpotVO();
+            tempSpot.setSpotName(spotName);
+            tempSpot.setSpotLoc(address);
+            
+            if (latitude != null && longitude != null) {
+                tempSpot.setSpotLat(latitude);
+                tempSpot.setSpotLng(longitude);
+            }
+            
+            // 使用擴充服務取得 Google Places 資訊
+            Map<String, Object> result = spotEnrichmentService.enrichSpotWithGoogleData(tempSpot);
+            
+            logger.info("Google Places API 請求結果：{}", result.get("success"));
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            logger.error("處理 Google Places API 請求時發生錯誤：{}", e.getMessage());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "處理請求時發生錯誤：" + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 搜尋 Google Places 景點
+     * 用於API匯入頁面的搜尋功能
+     */
+    @GetMapping("/api/google-places-search")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> searchGooglePlaces(
+            @RequestParam String keyword,
+            @RequestParam(required = false) String district) {
+        
+        logger.info("接收到Google Places搜尋請求，關鍵字：{}，地區：{}", keyword, district);
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // 使用擴充服務取得 Google Places 資訊
+            Map<String, Object> result = spotEnrichmentService.getGooglePlaceInfo(keyword, district);
+            
+            // 包裝成列表形式返回，因為前端期望的是列表
+            List<Map<String, Object>> dataList = new ArrayList<>();
+            
+            // 如果找到了結果，將其添加到列表中
+            if (result.get("placeId") != null) {
+                dataList.add(result);
+            }
+            
+            response.put("success", true);
+            response.put("data", dataList);
+            
+            logger.info("Google Places搜尋成功，找到 {} 筆結果", dataList.size());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Google Places搜尋失敗：{}", e.getMessage());
+            
+            response.put("success", false);
+            response.put("error", "搜尋失敗：" + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 

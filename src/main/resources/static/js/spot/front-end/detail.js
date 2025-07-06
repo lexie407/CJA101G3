@@ -17,15 +17,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化景點資料
     initSpotData();
     
-    // 初始化地圖
-    if (spotData) {
-        initializeMap();
-    }
-    
     // 初始化其他功能
     initToastSystem();
     initFavoriteSystem();
     initBookmarkSystem();
+    
+    // 初始化地圖
+    if (spotData) {
+        initializeGoogleMaps();
+    }
     
     console.log('✅ 景點詳情頁初始化完成');
 });
@@ -59,280 +59,136 @@ function initSpotData() {
 // ========== 2. 地圖功能 ==========
 
 /**
- * 初始化地圖系統
+ * 初始化 Google Maps
  */
-async function initializeMap() {
-    console.log('🗺️ 開始初始化 Google Maps...');
-    try {
-        const config = await loadGoogleMapsAPI();
-        await waitForGoogleMaps();
-        initGoogleMap();
-        console.log('✅ Google Maps 載入成功');
-    } catch (error) {
-        console.error('❌ Google Maps API 載入失敗:', error.message);
-        showToast('Google Maps 載入失敗，請檢查網路連線', 'error');
-        showMapError();
-    }
+function initializeGoogleMaps() {
+    console.log('🗺️ 開始載入 Google Maps 配置...');
+    
+    // 從伺服器獲取 API Key
+    fetch('/api/spot/v2/maps/config')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('無法取得 Google Maps API 配置');
+            }
+            return response.json();
+        })
+        .then(config => {
+            if (!config.apiKey) {
+                throw new Error('Google Maps API Key 未設定');
+            }
+            
+            // 儲存配置以供後續使用
+            window.googleMapsConfig = config;
+            
+            // 直接初始化嵌入式地圖
+            initializeEmbedMap();
+        })
+        .catch(error => {
+            console.error('❌ 獲取 Google Maps API 配置失敗:', error);
+            showMapError('無法載入 Google Maps 配置，請檢查網路連接或重新整理頁面');
+        });
 }
 
 /**
- * 載入 Google Maps API
+ * 初始化嵌入式地圖
  */
-function loadGoogleMapsAPI() {
-    return new Promise((resolve, reject) => {
-        if (window.google && window.google.maps) {
-            resolve({ available: true });
-            return;
+function initializeEmbedMap() {
+    console.log('🗺️ 開始初始化嵌入式地圖...');
+    
+    try {
+        // 檢查地圖容器是否存在
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+            throw new Error('找不到地圖容器元素');
+        }
+
+        // 確保地圖容器有正確的尺寸
+        mapContainer.style.height = '400px';
+        mapContainer.style.width = '100%';
+
+        // 檢查並處理座標
+        let lat = parseFloat(spotData.spotLat);
+        let lng = parseFloat(spotData.spotLng);
+        
+        // 檢查座標是否有效
+        const hasValidCoords = lat && lng && 
+                             !isNaN(lat) && !isNaN(lng) && 
+                             lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+        
+        // 準備地圖 URL 參數
+        const spotName = encodeURIComponent(spotData.spotName);
+        let mapUrl;
+        
+        if (hasValidCoords) {
+            // 如果有有效座標，使用精確位置
+            mapUrl = `https://www.google.com/maps/embed/v1/place?key=${window.googleMapsConfig.apiKey}&q=${spotName}&center=${lat},${lng}&zoom=16`;
+            
+            // 更新地圖資訊顯示
+            updateMapInfo(lat, lng);
+        } else {
+            // 如果沒有有效座標，只使用景點名稱搜尋
+            mapUrl = `https://www.google.com/maps/embed/v1/search?key=${window.googleMapsConfig.apiKey}&q=${spotName}`;
+            
+            // 更新地圖資訊顯示為警告
+            showMapWarning();
         }
         
-        fetch('/api/spot/google-maps-config')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(config => {
-                console.log('📡 Google API 配置:', config);
-                
-                if (!config.available || !config.hasApiKey) {
-                    throw new Error(config.message || 'Google Maps API 未正確設定');
-                }
-                
-                if (!config.apiKey || config.apiKey === 'your-google-maps-api-key') {
-                    throw new Error('Google Maps API Key 未設定，請聯繫管理員');
-                }
-                
-                const apiUrl = config.mapsApiUrl ||
-                    `https://maps.googleapis.com/maps/api/js?key=${config.apiKey}&libraries=places,geometry,marker&v=beta&loading=async`;
-                
-                console.log('🔗 載入 Google Maps API');
-                
-                const script = document.createElement('script');
-                script.src = apiUrl;
-                script.async = true;
-                script.defer = true;
-                script.onload = () => {
-                    console.log('✅ Google Maps API script 載入完成');
-                    resolve(config);
-                };
-                script.onerror = () => reject(new Error('Google Maps API script 載入失敗，請檢查網路連線'));
-                document.head.appendChild(script);
-            })
-            .catch(error => {
-                console.error('❌ 載入 Google Maps 配置失敗:', error);
-                reject(error);
-            });
-    });
-}
-
-/**
- * 等待 Google Maps API 就緒
- */
-function waitForGoogleMaps() {
-    return new Promise((resolve, reject) => {
-        let attempts = 0;
-        const maxAttempts = 50;
+        // 使用嵌入式 iframe 顯示 Google Maps
+        mapContainer.innerHTML = `
+            <iframe 
+                width="100%" 
+                height="400" 
+                frameborder="0" 
+                style="border:0; border-radius: 8px;" 
+                src="${mapUrl}" 
+                allowfullscreen>
+            </iframe>
+        `;
         
-        const checkGoogle = () => {
-            attempts++;
-            if (window.google && window.google.maps && window.google.maps.Map) {
-                console.log('🎯 Google Maps API 已就緒');
-                resolve();
-            } else if (attempts >= maxAttempts) {
-                reject(new Error('Google Maps API 載入超時'));
-            } else {
-                setTimeout(checkGoogle, 100);
-            }
-        };
-        
-        checkGoogle();
-    });
+        console.log('✅ 嵌入式地圖初始化完成');
+    } catch (error) {
+        console.error('❌ 地圖初始化失敗:', error);
+        showMapError(error.message);
+    }
 }
 
 /**
- * 初始化 Google Map
+ * 更新地圖資訊顯示
  */
-function initGoogleMap() {
-    let lat = parseFloat(spotData.spotLat);
-    let lng = parseFloat(spotData.spotLng);
-    let hasValidCoords = false;
-    
-    console.log('原始座標值:', { 
-        spotLat: spotData.spotLat, 
-        spotLng: spotData.spotLng, 
-        lat, 
-        lng 
-    });
-    
-    // 驗證座標有效性
-    if (spotData.spotLat !== null && spotData.spotLng !== null && 
-        spotData.spotLat !== undefined && spotData.spotLng !== undefined &&
-        spotData.spotLat !== '' && spotData.spotLng !== '' &&
-        !isNaN(lat) && !isNaN(lng) &&
-        lat >= -90 && lat <= 90 &&
-        lng >= -180 && lng <= 180) {
-        console.log('✅ 使用有效景點座標:', lat, lng);
-        hasValidCoords = true;
-    } else {
-        // 使用台灣中心點
-        lat = 23.8;
-        lng = 121.0;
-        console.log('⚠️ 座標無效，使用台灣中心點:', lat, lng);
-        hasValidCoords = false;
-    }
-    
-    const zoomLevel = hasValidCoords ? 16 : 8;
-    const center = { lat: lat, lng: lng };
-    
-    // 建立地圖
-    map = new google.maps.Map(document.getElementById("map"), {
-        zoom: zoomLevel,
-        center: center,
-        mapTypeControl: true,
-        streetViewControl: true,
-        fullscreenControl: true,
-        gestureHandling: 'greedy',
-        mapTypeId: 'roadmap',
-        styles: [
-            {
-                featureType: 'poi',
-                elementType: 'labels',
-                stylers: [{ visibility: 'on' }]
-            }
-        ]
-    });
-    
-    // 建立資訊視窗
-    infoWindow = new google.maps.InfoWindow({ 
-        maxWidth: 350,
-        pixelOffset: new google.maps.Size(0, -10)
-    });
-    
-    // 建立標記
-    const marker = new google.maps.Marker({
-        position: center,
-        map: map,
-        title: hasValidCoords ? 
-            `${spotData.spotName}\n${spotData.spotAddr || ''}\n點擊在Google Maps中查看實際景點` : 
-            `${spotData.spotName}\n${spotData.spotAddr || ''}\n點擊搜尋位置`,
-        icon: {
-            url: hasValidCoords ?
-                'https://maps.google.com/mapfiles/ms/icons/red-dot.png' :
-                'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
-            scaledSize: new google.maps.Size(40, 40)
-        },
-        animation: google.maps.Animation.DROP
-    });
-    
-    // 標記點擊事件 - 總是直接開啟Google Maps
-    marker.addListener('click', () => {
-        openInGoogleMaps();
-    });
-    
-    // 標記雙擊事件 - 顯示資訊視窗
-    marker.addListener('dblclick', () => {
-        const content = createInfoWindowContent(hasValidCoords);
-        infoWindow.setContent(content);
-        infoWindow.open(map, marker);
-    });
-    
-    // 顯示歡迎訊息（僅有效座標）
-    if (hasValidCoords) {
-        setTimeout(() => {
-            const welcomeContent = `
-                <div class="info-window-content" style="text-align: center; padding: 10px;">
-                    <h6 style="margin-bottom: 8px; color: #1976d2;">
-                        <span class="material-icons" style="vertical-align: middle; margin-right: 4px; color: #d32f2f;">place</span>
-                        ${spotData.spotName}
-                    </h6>
-                    <p style="margin-bottom: 8px; font-size: 0.9rem; color: #4caf50;">
-                        <span class="material-icons" style="vertical-align: middle; margin-right: 4px; font-size: 1rem;">check_circle</span>
-                        已定位到精確位置
-                    </p>
-                    <div style="background: #e3f2fd; border: 1px solid #2196f3; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
-                        <small style="color: #1976d2;">
-                            <span class="material-icons" style="vertical-align: middle; margin-right: 4px; font-size: 1rem;">info</span>
-                            點擊標記直接跳轉到Google Maps景點
-                        </small>
-                    </div>
-                    <small style="color: #666;">雙擊標記顯示詳細資訊</small>
-                </div>
-            `;
-            infoWindow.setContent(welcomeContent);
-            infoWindow.open(map, marker);
-            
-            // 3秒後自動關閉
-            setTimeout(() => {
-                infoWindow.close();
-            }, 3000);
-        }, 1000);
-    }
-    
-    // 地圖點擊關閉資訊視窗
-    map.addListener('click', () => {
-        infoWindow.close();
-    });
-}
-
-/**
- * 建立資訊視窗內容
- */
-function createInfoWindowContent(hasValidCoords) {
-    if (hasValidCoords) {
-        return `
-            <div class="info-window-content" style="text-align: center; padding: 15px;">
-                <h6 style="margin-bottom: 10px; color: #1976d2;">
-                    <span class="material-icons" style="vertical-align: middle; margin-right: 4px; color: #d32f2f;">place</span>
-                    ${spotData.spotName}
-                </h6>
-                <p style="margin-bottom: 12px; font-size: 0.9rem; color: #666;">${spotData.spotAddr}</p>
-                <button onclick="openInGoogleMaps()" style="
-                    background: #1976d2; 
-                    color: white; 
-                    border: none; 
-                    padding: 8px 16px; 
-                    border-radius: 6px; 
-                    cursor: pointer;
-                    font-size: 0.9rem;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 6px;
-                ">
-                    <span class="material-icons" style="font-size: 1rem;">open_in_new</span>
-                    在 Google Maps 中開啟
-                </button>
+function updateMapInfo(lat, lng) {
+    const mapInfo = document.querySelector('.spot-detail-map-info');
+    if (mapInfo) {
+        mapInfo.innerHTML = `
+            <div class="spot-detail-map-status spot-detail-map-status--success">
+                <span class="material-icons">location_on</span>
+                <span>座標：${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
+                <a href="https://www.google.com/maps/search/${encodeURIComponent(spotData.spotName)}/@${lat},${lng},17z" 
+                   target="_blank" 
+                   class="btn btn-sm btn-outline-primary mt-2">
+                    <span class="material-icons">open_in_new</span>
+                    在 Google 地圖中開啟
+                </a>
             </div>
         `;
-    } else {
-        return `
-            <div class="info-window-content" style="text-align: center; padding: 15px;">
-                <h6 style="margin-bottom: 10px; color: #1976d2;">
-                    <span class="material-icons" style="vertical-align: middle; margin-right: 4px; color: #ff9800;">location_off</span>
-                    ${spotData.spotName}
-                </h6>
-                <p style="margin-bottom: 10px; font-size: 0.9rem; color: #666;">${spotData.spotAddr}</p>
-                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 8px; border-radius: 4px; margin-bottom: 12px;">
-                    <small style="color: #856404;">
-                        <span class="material-icons" style="vertical-align: middle; margin-right: 4px; font-size: 1rem;">warning</span>
-                        座標位置未設定
-                    </small>
-                </div>
-                <button onclick="openInGoogleMaps()" style="
-                    background: #ff9800; 
-                    color: white; 
-                    border: none; 
-                    padding: 8px 16px; 
-                    border-radius: 6px; 
-                    cursor: pointer;
-                    font-size: 0.9rem;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 6px;
-                ">
-                    <span class="material-icons" style="font-size: 1rem;">search</span>
-                    Google Maps 搜尋
-                </button>
+    }
+}
+
+/**
+ * 顯示地圖警告
+ */
+function showMapWarning() {
+    const mapInfo = document.querySelector('.spot-detail-map-info');
+    if (mapInfo) {
+        mapInfo.innerHTML = `
+            <div class="spot-detail-map-status spot-detail-map-status--warning">
+                <span class="material-icons">info</span>
+                <span>此景點尚未設定精確座標，顯示的位置可能不準確</span>
+                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spotData.spotName)}" 
+                   target="_blank" 
+                   class="btn btn-sm btn-outline-primary mt-2">
+                    <span class="material-icons">map</span>
+                    在 Google 地圖中搜尋
+                </a>
             </div>
         `;
     }
@@ -341,131 +197,48 @@ function createInfoWindowContent(hasValidCoords) {
 /**
  * 顯示地圖錯誤
  */
-function showMapError() {
-    const mapElement = document.getElementById('map');
-    if (mapElement) {
-        mapElement.innerHTML = `
-            <div style="
-                display: flex; 
-                flex-direction: column; 
-                align-items: center; 
-                justify-content: center; 
-                height: 100%; 
-                background: var(--md-sys-color-surface-container-low); 
-                border-radius: 12px;
-                color: var(--md-sys-color-on-surface-variant);
-                text-align: center;
-                padding: 2rem;
-                border: 1px solid var(--md-sys-color-outline-variant);
-            ">
-                <span class="material-icons" style="font-size: 4rem; color: var(--md-sys-color-outline); margin-bottom: 1rem;">map</span>
-                <h3 style="margin-bottom: 0.5rem; color: var(--md-sys-color-on-surface);">地圖載入失敗</h3>
-                <p style="margin-bottom: 1rem; font-size: 0.9rem;">Google Maps API 未正確設定或網路連線異常</p>
-                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center;">
-                    <button onclick="location.reload()" style="
-                        background: var(--md-sys-color-primary); 
-                        color: var(--md-sys-color-on-primary); 
-                        border: none; 
-                        padding: 0.75rem 1.25rem; 
-                        border-radius: 12px; 
-                        cursor: pointer;
-                        font-size: 0.9rem;
-                        font-weight: 500;
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 0.5rem;
-                        transition: all 0.2s ease;
-                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <span class="material-icons" style="font-size: 1rem;">refresh</span>
-                        重新載入
-                    </button>
-                    <button onclick="openInGoogleMaps()" style="
-                        background: var(--md-sys-color-secondary-container); 
-                        color: var(--md-sys-color-on-secondary-container); 
-                        border: none; 
-                        padding: 0.75rem 1.25rem; 
-                        border-radius: 12px; 
-                        cursor: pointer;
-                        font-size: 0.9rem;
-                        font-weight: 500;
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 0.5rem;
-                        transition: all 0.2s ease;
-                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <span class="material-icons" style="font-size: 1rem;">open_in_new</span>
-                        Google Maps 查看
+function showMapError(message) {
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+        mapContainer.innerHTML = `
+            <div class="spot-detail-map-placeholder">
+                <div class="spot-detail-map-placeholder__content">
+                    <span class="material-icons spot-detail-map-placeholder__icon">error</span>
+                    <p class="spot-detail-map-placeholder__text">${message || '載入地圖時發生錯誤'}</p>
+                    <button class="btn btn-primary mt-3" onclick="initializeGoogleMaps()">
+                        <span class="material-icons">refresh</span>
+                        重新載入地圖
                     </button>
                 </div>
             </div>
         `;
     }
-}
-
-// ========== 3. 地圖操作功能 ==========
-
-/**
- * 滾動到地圖位置
- */
-function scrollToMap() {
-    const mapElement = document.getElementById('map');
-    if (mapElement) {
-        mapElement.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-        });
-        showToast('已滾動到地圖位置', 'info');
+    
+    const mapInfo = document.querySelector('.spot-detail-map-info');
+    if (mapInfo) {
+        mapInfo.innerHTML = `
+            <div class="spot-detail-map-status spot-detail-map-status--error">
+                <span class="material-icons">error</span>
+                <span>${message || '載入地圖時發生錯誤'}</span>
+            </div>
+        `;
     }
 }
 
 /**
- * 在 Google Maps 中開啟
+ * 在 Google 地圖中開啟
  */
 function openInGoogleMaps() {
-    if (!spotData) {
-        showToast('景點資料載入中，請稍候', 'warning');
-        return;
-    }
-    
-    let url;
-    const lat = parseFloat(spotData.spotLat);
-    const lng = parseFloat(spotData.spotLng);
-    const hasValidCoords = !isNaN(lat) && !isNaN(lng) && 
-                          lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
-    
-    if (hasValidCoords) {
-        // 優先嘗試使用景點名稱+座標的組合搜尋，這樣更容易找到正確的景點
-        const spotName = spotData.spotName;
-        const spotAddr = spotData.spotAddr;
-        
-        // 建立搜尋查詢字串，包含景點名稱和地址
-        let searchQuery = spotName;
-        if (spotAddr && spotAddr !== spotName) {
-            searchQuery += ` ${spotAddr}`;
-        }
-        
-        // 使用Google Maps的place搜尋，並提供座標作為參考位置
-        const encodedQuery = encodeURIComponent(searchQuery);
-        url = `https://www.google.com/maps/search/${encodedQuery}/@${lat},${lng},17z?hl=zh-TW`;
-        
-        showToast('正在 Google Maps 中開啟景點位置', 'success');
-        console.log(`🗺️ 開啟Google Maps: ${searchQuery} (${lat}, ${lng})`);
+    if (spotData && spotData.spotLat && spotData.spotLng) {
+        const lat = parseFloat(spotData.spotLat);
+        const lng = parseFloat(spotData.spotLng);
+        const spotName = encodeURIComponent(spotData.spotName);
+        // 使用景點名稱和座標組合的搜尋，確保直接定位到景點
+        window.open(`https://www.google.com/maps/search/${spotName}/@${lat},${lng},17z`, '_blank');
     } else {
-        // 沒有座標時，使用景點名稱和地址搜尋
-        let searchQuery = spotData.spotName;
-        if (spotData.spotAddr && spotData.spotAddr !== spotData.spotName) {
-            searchQuery += ` ${spotData.spotAddr}`;
-        }
-        
-        const encodedQuery = encodeURIComponent(searchQuery);
-        url = `https://www.google.com/maps/search/${encodedQuery}?hl=zh-TW`;
-        
-        showToast('正在 Google Maps 中搜尋景點', 'info');
-        console.log(`🔍 Google Maps搜尋: ${searchQuery}`);
+        // 如果沒有座標，則使用景點名稱搜尋
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spotData.spotName)}`, '_blank');
     }
-    
-    // 在新視窗開啟
-    window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 // ========== 4. 收藏功能 ==========
@@ -807,22 +580,6 @@ function joinGroupActivity() {
     window.location.href = `/groupactivity/list?spotId=${spotData.spotId}`;
 }
 
-/**
- * 檢舉景點
- */
-function reportSpot() {
-    if (!spotData) {
-        showToast('景點資料載入中，請稍候', 'warning');
-        return;
-    }
-    
-    const confirmed = confirm(`確定要檢舉「${spotData.spotName}」嗎？\n\n檢舉後將由管理員審核處理。`);
-    
-    if (confirmed) {
-        // 跳轉到檢舉頁面
-        window.location.href = `/report/add?type=spot&targetId=${spotData.spotId}`;
-    }
-}
 
 // ========== 8. Toast 通知系統 ==========
 
@@ -934,7 +691,6 @@ window.scrollToMap = scrollToMap;
 window.openInGoogleMaps = openInGoogleMaps;
 window.addToItinerary = addToItinerary;
 window.joinGroupActivity = joinGroupActivity;
-window.reportSpot = reportSpot;
 
 /**
  * 顯示登入提示對話框

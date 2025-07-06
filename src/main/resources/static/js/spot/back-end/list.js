@@ -1601,14 +1601,22 @@ function initializeApiImport() {
     const cityButtons = document.querySelectorAll('.city-btn');
     const resultArea = document.getElementById('importResult');
 
+    // 標記是否已完成匯入
+    let importCompleted = false;
+
     // 打開模態視窗
     openBtn.addEventListener('click', () => {
         modal.style.display = 'block';
+        importCompleted = false; // 重置匯入狀態
     });
 
     // 關閉模態視窗
     closeBtn.addEventListener('click', () => {
         modal.style.display = 'none';
+        // 如果匯入已完成，關閉時重新整理頁面
+        if (importCompleted) {
+            window.location.reload();
+        }
     });
 
     // 修改點擊模態視窗外部關閉的邏輯
@@ -1628,6 +1636,10 @@ function initializeApiImport() {
         // 只有當滑鼠按下和釋放都在模態視窗外時才關閉
         if (e.target === modal && !mouseDownInModal) {
             modal.style.display = 'none';
+            // 如果匯入已完成，關閉時重新整理頁面
+            if (importCompleted) {
+                window.location.reload();
+            }
         }
         mouseDownInModal = false;
     });
@@ -1651,10 +1663,10 @@ function initializeApiImport() {
             const result = await response.json();
             showResult(result);
             
-            // 重新載入頁面以顯示新匯入的資料
-            setTimeout(() => {
-                window.location.reload();
-            }, 3000);
+            // 標記匯入已完成
+            if (result.success) {
+                importCompleted = true;
+            }
         } catch (error) {
             console.error('匯入失敗:', error);
             showResult({
@@ -1690,10 +1702,10 @@ function initializeApiImport() {
                 const result = await response.json();
                 showResult(result);
                 
-                // 重新載入頁面以顯示新匯入的資料
-                setTimeout(() => {
-                    window.location.reload();
-                }, 3000);
+                // 標記匯入已完成
+                if (result.success) {
+                    importCompleted = true;
+                }
             } catch (error) {
                 console.error('匯入失敗:', error);
                 showResult({
@@ -1730,7 +1742,7 @@ function showResult(result) {
                     <li>⏭️ 重複跳過: ${data.skippedCount || 0} 筆</li>
                     <li>❌ 匯入失敗: ${data.errorCount || 0} 筆</li>
                 </ul>
-                <p class="success-note">頁面將在 3 秒後自動重新載入</p>
+                <p class="success-note">匯入完成，關閉視窗後將自動更新資料</p>
             </div>
         `;
         

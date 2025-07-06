@@ -508,62 +508,13 @@ function toggleVisibility(button, makePublic) {
     });
 }
 
-// 顯示提示訊息
-function showToast(message, type = 'success') {
-    // 檢查是否已存在toast元素，如果有則移除
-    const existingToast = document.querySelector('.itinerary-toast');
-    if (existingToast) {
-        existingToast.remove();
-    }
-    
-    // 創建toast元素
-    const toast = document.createElement('div');
-    toast.className = `itinerary-toast itinerary-toast--${type}`;
-    toast.innerHTML = `
-        <span class="material-icons">${type === 'success' ? 'check_circle' : 'error'}</span>
-        <span>${message}</span>
-    `;
-    
-    // 添加到頁面
-    document.body.appendChild(toast);
-    
-    // 添加CSS樣式
-    toast.style.position = 'fixed';
-    toast.style.bottom = '20px';
-    toast.style.right = '20px';
-    toast.style.backgroundColor = type === 'success' ? '#4CAF50' : '#F44336';
-    toast.style.color = 'white';
-    toast.style.padding = '12px 20px';
-    toast.style.borderRadius = '4px';
-    toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-    toast.style.display = 'flex';
-    toast.style.alignItems = 'center';
-    toast.style.zIndex = '9999';
-    toast.style.opacity = '0';
-    toast.style.transition = 'opacity 0.3s ease-in-out';
-    
-    // 設置圖標樣式
-    const icon = toast.querySelector('.material-icons');
-    icon.style.marginRight = '8px';
-    
-    // 顯示toast
-    setTimeout(() => {
-        toast.style.opacity = '1';
-    }, 10);
-    
-    // 3秒後隱藏toast
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-            toast.remove();
-        }, 300);
-    }, 3000);
-}
+
 
 // 全域函數，供 HTML 直接呼叫
 window.loadMoreItineraries = loadMoreItineraries;
 window.resetSearchForm = resetSearchForm;
-window.toggleVisibility = toggleVisibility; 
+window.toggleVisibility = toggleVisibility;
+window.toggleFavorite = toggleFavorite; 
 
 // 監聽收藏狀態變更事件
 window.addEventListener('storage', function(e) {

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>新增官方行程 - 後台管理系統</title>
+    <title>新增行程 - 後台管理系統</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -39,6 +39,8 @@
             <!-- 表單內容區域 -->
             <div class="content-container">
                 <form th:action="@{/admin/itinerary/add}" method="post" id="itineraryForm" class="itinerary-form">
+
+
 
                     <!-- 基本資訊區塊 -->
                     <div class="form-section">
@@ -83,7 +85,7 @@
                                 <i class="material-icons">place</i>
                                 景點選擇
                             </h2>
-                            <p class="section-desc">選擇並排序行程中的景點</p>
+                            <p class="section-desc">選擇行程中的景點</p>
                         </div>
                         
                         <div class="spot-selector-section">
@@ -97,6 +99,7 @@
                                     <i class="material-icons">search</i>
                                     搜尋
                                 </button>
+
                             </div>
 
                             <!-- 景點列表容器 -->
@@ -135,6 +138,7 @@
                                         <div class="spot-empty">
                                             <div class="material-icons spot-empty-icon">playlist_add</div>
                                             <div class="spot-empty-text">尚未選擇任何景點</div>
+                                            <div class="spot-empty-hint">點擊左側景點的加號按鈕添加</div>
                                         </div>
                                     </div>
                                 </div>

@@ -217,7 +217,7 @@ public class SpotPageController {
         
         if (keyword != null && !keyword.trim().isEmpty()) {
             // 有搜尋關鍵字，執行搜尋
-            List<SpotVO> searchResults = spotService.searchSpots(keyword.trim());
+            List<SpotVO> searchResults = spotService.searchPublicSpots(keyword.trim());
             model.addAttribute("spotList", searchResults);
             model.addAttribute("searchKeyword", keyword.trim());
             model.addAttribute("hasSearched", true);
@@ -248,7 +248,7 @@ public class SpotPageController {
         model.addAttribute("currentPage", "home");
         
         if (keyword != null && !keyword.trim().isEmpty()) {
-            List<SpotVO> searchResults = spotService.searchSpots(keyword.trim());
+            List<SpotVO> searchResults = spotService.searchPublicSpots(keyword.trim());
             model.addAttribute("spotList", searchResults);
             model.addAttribute("searchKeyword", keyword.trim());
             model.addAttribute("hasSearched", true);
