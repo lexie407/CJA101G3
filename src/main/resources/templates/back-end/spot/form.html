@@ -1,44 +1,30 @@
 <!DOCTYPE html>
-<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{/back-end/spot/navBackTemplate :: layout(~{::title}, ~{::head}, ~{::main}, ~{::#subnav})}">
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title th:text="${isEdit != null and isEdit ? '編輯景點' : '新增景點'} + ' - 後台管理系統'"></title>
-    <th:block th:fragment="head">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <!-- 景點模組通用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
-        <!-- 景點表單專用樣式 -->
-        <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-form.css}">
-        <!-- CSRF Token -->
-        <meta name="_csrf" th:content="${_csrf.token}"/>
-        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    </th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 引入後台模板的頭部資源 -->
+    <th:block th:replace="~{navBackTemplate :: headResources}"></th:block>
+    
+    <!-- 景點模組專用樣式 -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-form.css}">
 </head>
-<body>
-    <!-- 頂部導航 -->
-    <div id="subnav" th:replace="~{subnavSpotBack :: subnav(activeItem=${isEdit != null and isEdit ? 'edit' : 'add'})}"></div>
+<body class="light">
+    <div class="app-container">
+        <!-- 引入後台左側導航 -->
+        <th:block th:replace="~{navBackTemplate :: navbar}"></th:block>
         
-    <!-- 主要內容 -->
-    <main th:fragment="main">
+        <div class="main-content">
+            <!-- 頂部導航 -->
+            <div th:replace="~{subnavContentBack :: subnav(activeItem=${isEdit != null and isEdit ? 'edit' : 'add'})}"></div>
+            
+            <!-- 主要內容 -->
+            <main class="spot-review-page">
         <div class="spot-form-page">
-            <!-- 頁面標題與圖片區域 -->
-            <div class="page-header-section">
-                <div class="header-content">
-                    <div class="header-text">
-                        <h1 th:text="${isEdit != null and isEdit ? '編輯景點' : '新增景點'}">新增景點</h1>
-                        <p th:text="${isEdit != null and isEdit ? '修改景點資訊並儲存變更' : '填寫景點資訊以建立新項目'}">填寫景點資訊以建立新項目</p>
-
-                    </div>
-                    <div class="header-image">
-                        <div class="header-icon-container">
-                            <i class="material-icons header-icon" th:text="${isEdit != null and isEdit ? 'edit_location' : 'add_location'}">add_location</i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- 成功/錯誤訊息 -->
             <div th:if="${successMessage}" class="alert alert-success">
                 <i class="material-icons">check_circle</i>
@@ -97,8 +83,8 @@
                                 <label for="spotDesc" class="form-label">景點描述</label>
                                 <textarea id="spotDesc" class="form-control form-textarea" 
                                           th:field="*{spotDesc}" maxlength="500" rows="4"
-                                          placeholder="詳細描述景點特色、歷史背景或遊覽重點..."></textarea>
-                                <div class="helper-text">詳細描述景點特色、歷史背景或遊覽重點，最多500個字元 <span class="char-count">(0/500)</span></div>
+                                          placeholder="簡單描述景點特色、歷史背景或遊覽重點..."></textarea>
+                                <div class="helper-text">簡單描述景點特色、歷史背景或遊覽重點，最多500個字元 <span class="char-count">(0/500)</span></div>
                             </div>
                         </div>
                     </div>
@@ -147,7 +133,7 @@
 
                     <!-- 操作按鈕區域 -->
                     <div class="form-actions">
-                        <a th:href="@{/admin/spot/list}" class="btn btn-secondary">
+                        <a th:href="@{/admin/spot/spotlist}" class="btn btn-secondary">
                             <i class="material-icons">arrow_back</i>
                             返回列表
                         </a>
@@ -162,6 +148,8 @@
         
         <!-- 表單頁面專用腳本 -->
         <script th:src="@{/js/spot/back-end/form.js}" defer></script>
-    </main>
+            </main>
+        </div>
+    </div>
 </body>
 </html> 

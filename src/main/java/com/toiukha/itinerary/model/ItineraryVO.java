@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -39,11 +40,14 @@ public class ItineraryVO implements Serializable {
     @Size(max = 500, message = "行程描述長度不可超過500字元")
     private String itnDesc;
 
-    @Column(name = "ISPUBLIC", nullable = false, insertable = false)
+    @Column(name = "ISPUBLIC", nullable = false)
     private Byte isPublic; // 是否公開 (0=私人, 1=公開)
 
-    @Column(name = "ITNSTATUS", nullable = false, insertable = false)
+    @Column(name = "ITNSTATUS", nullable = false)
     private Byte itnStatus; // 行程狀態 (0=下架, 1=上架)
+
+    @Column(name = "CREATOR_TYPE", nullable = false)
+    private Byte creatorType; // 建立者類型 (1=會員, 2=管理員)
 
     @Column(name = "ITNCREATEDAT", insertable = false, updatable = false)
     private Timestamp itnCreateDat;
@@ -51,8 +55,12 @@ public class ItineraryVO implements Serializable {
     @Column(name = "ITNUPDATEDAT", insertable = false)
     private Timestamp itnUpdateDat;
 
+    @Transient  // 標記為非持久化屬性
+    private Boolean isFavorited;  // 是否已收藏（非資料庫欄位）
+
     // 關聯到行程景點
     @OneToMany(mappedBy = "itinerary", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<ItnSpotVO> itnSpots;
 
     // 建構方法
@@ -124,6 +132,14 @@ public class ItineraryVO implements Serializable {
         this.itnStatus = itnStatus;
     }
 
+    public Byte getCreatorType() {
+        return creatorType;
+    }
+
+    public void setCreatorType(Byte creatorType) {
+        this.creatorType = creatorType;
+    }
+
     public Timestamp getItnCreateDat() {
         return itnCreateDat;
     }
@@ -138,6 +154,14 @@ public class ItineraryVO implements Serializable {
 
     public void setItnUpdateDat(Timestamp itnUpdateDat) {
         this.itnUpdateDat = itnUpdateDat;
+    }
+
+    public Boolean getIsFavorited() {
+        return isFavorited;
+    }
+
+    public void setIsFavorited(Boolean isFavorited) {
+        this.isFavorited = isFavorited;
     }
 
     public List<ItnSpotVO> getItnSpots() {

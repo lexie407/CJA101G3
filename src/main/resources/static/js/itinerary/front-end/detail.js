@@ -43,6 +43,14 @@ function getItineraryIdFromUrl() {
  * 綁定按鈕事件
  */
 function bindButtonEvents() {
+    // 登入按鈕
+    const loginBtn = document.querySelector('.logout-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function() {
+            window.location.href = '/members/login';
+        });
+    }
+
     // 收藏按鈕 (頂部操作按鈕)
     const favoriteBtn = document.querySelector('.itinerary-action-btn--favorite');
     if (favoriteBtn) {
@@ -53,7 +61,7 @@ function bindButtonEvents() {
     }
     
     // 底部收藏按鈕
-    const bottomFavoriteBtn = document.querySelector('.itinerary-primary-btn');
+    const bottomFavoriteBtn = document.querySelector('#favoriteBtn');
     if (bottomFavoriteBtn) {
         bottomFavoriteBtn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -62,42 +70,69 @@ function bindButtonEvents() {
     }
     
     // 複製按鈕
-    const copyBtns = document.querySelectorAll('.itinerary-secondary-btn');
-    copyBtns.forEach(btn => {
-        if (btn.textContent.includes('複製')) {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
+    const copyBtn = document.querySelector('#copyBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function(e) {
+            e.preventDefault();
             copyItinerary();
         });
     }
-    });
     
-    // 分享按鈕
-    const shareBtns = document.querySelectorAll('.itinerary-action-btn--share, .itinerary-secondary-btn');
-    shareBtns.forEach(btn => {
-        if (btn.textContent.includes('分享') || btn.querySelector('.material-icons')?.textContent === 'share') {
-            btn.addEventListener('click', function(e) {
+    // 編輯按鈕
+    const editBtn = document.querySelector('#editBtn');
+    if (editBtn) {
+        editBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            shareItinerary();
+            editItinerary();
         });
     }
-    });
+    
+    // 建立揪團按鈕
+    const createActivityBtn = document.querySelector('#createActivityBtn');
+    if (createActivityBtn) {
+        createActivityBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            createActivity();
+        });
+    }
     
     // 景點按鈕
     document.addEventListener('click', function(e) {
-        if (e.target.closest('.itinerary-spot-btn')) {
+        const button = e.target.closest('.itinerary-spot-btn');
+        if (button) {
             e.preventDefault();
-            const button = e.target.closest('.itinerary-spot-btn');
-            const action = button.getAttribute('data-action');
             const spotId = button.getAttribute('data-spot-id');
             
-            if (action === 'view') {
+            if (button.title.includes('詳情')) {
                 viewSpotDetail(spotId);
-            } else if (action === 'map') {
+            } else if (button.title.includes('地圖')) {
                 viewSpotOnMap(spotId);
             }
         }
     });
+
+    // 登入對話框關閉按鈕
+    const loginModalContainer = document.getElementById('loginModalContainer');
+    if (loginModalContainer) {
+        // 關閉按鈕
+        const closeButtons = loginModalContainer.querySelectorAll('.modal-close');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => closeLoginModal(loginModalContainer));
+        });
+
+        // 背景點擊關閉
+        const backdrop = loginModalContainer.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.addEventListener('click', () => closeLoginModal(loginModalContainer));
+        }
+
+        // ESC 鍵關閉
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && loginModalContainer.style.display === 'block') {
+                closeLoginModal(loginModalContainer);
+            }
+        });
+    }
 }
 
 /**
@@ -106,19 +141,27 @@ function bindButtonEvents() {
 function loadItineraryData() {
     if (!itineraryId) return;
     
-    // 模擬 API 呼叫
-    fetch(`/api/itinerary/${itineraryId}`)
-        .then(response => response.json())
+    // 修正 API 路徑
+    fetch(`/itinerary/api/${itineraryId}`)
+        .then(response => {
+            if (response.status === 404) {
+                throw new Error('找不到此行程');
+            }
+            if (!response.ok) {
+                throw new Error('載入失敗');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                updatePageData(data.data);
+                updatePageData(data);
             } else {
                 showToast(data.message || '載入失敗', 'error');
             }
         })
         .catch(error => {
             console.error('載入行程資料失敗:', error);
-            showToast('網路錯誤，請稍後再試', 'error');
+            showToast(error.message || '網路錯誤，請稍後再試', 'error');
         });
 }
 
@@ -349,21 +392,30 @@ function createRelatedItineraryElement(itinerary) {
 function toggleFavorite() {
     if (!itineraryId) return;
     
-    const favoriteBtn = document.querySelector('.itinerary-detail-hero__btn--favorite');
-    if (!favoriteBtn) return;
+    const favoriteBtn = document.querySelector('.itinerary-action-btn--favorite');
+    const bottomFavoriteBtn = document.querySelector('#favoriteBtn');
+    if (favoriteBtn) favoriteBtn.disabled = true;
+    if (bottomFavoriteBtn) bottomFavoriteBtn.disabled = true;
     
-    // 視覺回饋
-    favoriteBtn.disabled = true;
-    
-    // 模擬 API 呼叫
-    fetch(`/api/itinerary/${itineraryId}/favorite`, {
+    // 呼叫收藏API
+    fetch(`/itinerary/api/${itineraryId}/favorite`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (response.status === 401) {
+            // 未登入，顯示登入提示
+            showLoginRequiredModal('favorite');
+            throw new Error('請先登入');
+        }
+        if (!response.ok) {
+            throw new Error('伺服器回應錯誤');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             isFavorited = !isFavorited;
@@ -375,10 +427,13 @@ function toggleFavorite() {
     })
     .catch(error => {
         console.error('收藏操作失敗:', error);
-        showToast('網路錯誤，請稍後再試', 'error');
+        if (error.message !== '請先登入') {
+            showToast('網路錯誤，請稍後再試', 'error');
+        }
     })
     .finally(() => {
-        favoriteBtn.disabled = false;
+        if (favoriteBtn) favoriteBtn.disabled = false;
+        if (bottomFavoriteBtn) bottomFavoriteBtn.disabled = false;
     });
 }
 
@@ -386,16 +441,30 @@ function toggleFavorite() {
  * 更新收藏按鈕狀態
  */
 function updateFavoriteButton() {
-    const favoriteBtn = document.querySelector('.itinerary-detail-hero__btn--favorite');
-    if (!favoriteBtn) return;
+    // 更新頂部收藏按鈕
+    const favoriteBtn = document.querySelector('.itinerary-action-btn--favorite');
+    if (favoriteBtn) {
+        favoriteBtn.classList.toggle('active', isFavorited);
+        favoriteBtn.title = isFavorited ? '取消收藏' : '加入收藏';
+        const icon = favoriteBtn.querySelector('.material-icons');
+        if (icon) {
+            icon.textContent = isFavorited ? 'favorite' : 'favorite_border';
+        }
+    }
     
-    const icon = favoriteBtn.querySelector('.material-icons');
-    if (isFavorited) {
-        icon.textContent = 'favorite';
-        favoriteBtn.title = '取消收藏';
-    } else {
-        icon.textContent = 'favorite_border';
-        favoriteBtn.title = '加入收藏';
+    // 更新底部收藏按鈕
+    const bottomFavoriteBtn = document.querySelector('#favoriteBtn');
+    if (bottomFavoriteBtn) {
+        bottomFavoriteBtn.classList.toggle('active', isFavorited);
+        bottomFavoriteBtn.title = isFavorited ? '取消收藏' : '加入收藏';
+        const text = bottomFavoriteBtn.querySelector('span:not(.material-icons)');
+        if (text) {
+            text.textContent = isFavorited ? '取消收藏' : '加入收藏';
+        }
+        const icon = bottomFavoriteBtn.querySelector('.material-icons');
+        if (icon) {
+            icon.textContent = isFavorited ? 'favorite' : 'favorite_border';
+        }
     }
 }
 
@@ -405,41 +474,131 @@ function updateFavoriteButton() {
 function copyItinerary() {
     if (!itineraryId) return;
     
-    const copyBtn = document.querySelector('.itinerary-detail-hero__btn--copy');
-    if (!copyBtn) return;
-    
-    // 視覺回饋
-    copyBtn.disabled = true;
-    const originalText = copyBtn.innerHTML;
-    copyBtn.innerHTML = '<span class="material-icons">hourglass_empty</span>複製中...';
-    
-    // 模擬 API 呼叫
-    fetch(`/api/itinerary/${itineraryId}/copy`, {
-        method: 'POST',
+    // 先檢查登入狀態
+    fetch(`/itinerary/api/${itineraryId}/check-duplicate`, {
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
+    .then(response => {
+        if (response.status === 401) {
+            // 未登入，顯示登入提示
+            showLoginRequiredModal('copy');
+            throw new Error('請先登入');
+        }
+        if (!response.ok) {
+            throw new Error('伺服器回應錯誤');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // 已登入，顯示複製行程對話框
+            showCustomNameModal(
+                '複製行程',
+                '請為複製的行程輸入新名稱：',
+                document.querySelector('.itinerary-detail-title').textContent + ' - 複製',
+                processCopyItinerary
+            );
+        } else {
+            showToast(data.message || '無法複製行程', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('檢查登入狀態失敗:', error);
+        if (error.message !== '請先登入') {
+            showToast('網路錯誤，請稍後再試', 'error');
+        }
+    });
+}
+
+/**
+ * 處理行程複製請求
+ */
+function processCopyItinerary(customName) {
+    // 發送複製請求
+    fetch(`/api/itinerary/${itineraryId}/copy`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            customName: customName
+        })
+    })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             showToast('行程複製成功！', 'success');
-            // 跳轉到新行程的編輯頁面
-            setTimeout(() => {
-                window.location.href = `/itinerary/edit/${data.data.itnId}`;
-            }, 1500);
+            // 可選：導向到新複製的行程
+            if (data.newItineraryId) {
+                setTimeout(() => {
+                    window.location.href = `/itinerary/detail/${data.newItineraryId}`;
+                }, 1500);
+            } else {
+                // 導向到我的行程列表
+                setTimeout(() => {
+                    window.location.href = '/itinerary/my';
+                }, 1500);
+            }
         } else {
-            showToast(data.message || '複製失敗', 'error');
+            showToast(data.message || '行程複製失敗', 'error');
         }
     })
     .catch(error => {
         console.error('複製行程失敗:', error);
         showToast('網路錯誤，請稍後再試', 'error');
-    })
-    .finally(() => {
-        copyBtn.disabled = false;
-        copyBtn.innerHTML = originalText;
+    });
+}
+
+/**
+ * 編輯行程
+ */
+function editItinerary() {
+    if (!itineraryId) {
+        showToast('無法獲取行程ID', 'error');
+        return;
+    }
+    
+    // 直接導向到編輯頁面
+    window.location.href = `/itinerary/edit/${itineraryId}`;
+}
+
+/**
+ * 建立揪團
+ */
+function createActivity() {
+    if (!itineraryId) {
+        showToast('無法獲取行程ID', 'error');
+        return;
+    }
+    
+    // 確認是否已登入
+    fetch('/api/members/check-login')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.isLoggedIn) {
+                // 未登入，顯示提示並導向登入頁
+                showLoginRequiredModal('activity');
+                return;
+            }
+            
+            // 已登入，顯示確認對話框
+            showConfirmModal(
+                '建立揪團',
+                '確定要以此行程建立揪團活動嗎？系統會自動複製此行程作為揪團活動的行程。',
+                '確定建立',
+                () => {
+                    // 導向到建立揪團頁面，並帶上行程ID
+                    window.location.href = `/groupactivity/create?itnId=${itineraryId}`;
+                }
+            );
+        })
+        .catch(error => {
+            console.error('檢查登入狀態失敗:', error);
+            showToast('網路錯誤，請稍後再試', 'error');
     });
 }
 
@@ -558,6 +717,235 @@ function getToastIcon(type) {
         case 'warning': return 'warning';
         default: return 'info';
     }
+}
+
+/**
+ * 顯示登入提示對話框
+ */
+function showLoginRequiredModal(action) {
+    const modalContainer = document.getElementById('loginModalContainer');
+    if (!modalContainer) return;
+
+    // 保存當前頁面 URL 到 localStorage
+    localStorage.setItem('redirectUrl', window.location.href);
+
+    // 更新提示訊息
+    const messageElements = modalContainer.querySelectorAll('.modal-message');
+    if (messageElements && messageElements.length >= 2) {
+        let actionText = '';
+        switch (action) {
+            case 'favorite':
+                actionText = '收藏行程';
+                break;
+            case 'copy':
+                actionText = '複製行程';
+                break;
+            case 'edit':
+                actionText = '編輯行程';
+                break;
+            case 'activity':
+                actionText = '建立揪團';
+                break;
+            default:
+                actionText = '繼續操作';
+        }
+        messageElements[0].textContent = `您需要先登入才能${actionText}。`;
+    }
+
+    // 顯示對話框
+    modalContainer.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+
+    // 綁定關閉事件
+    const closeButtons = modalContainer.querySelectorAll('.modal-close');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => closeLoginModal(modalContainer));
+    });
+
+    // 綁定登入按鈕事件
+    const loginBtn = modalContainer.querySelector('.modal-login-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            window.location.href = '/members/login';
+        });
+    }
+
+    // 點擊背景關閉
+    const backdrop = modalContainer.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.addEventListener('click', () => closeLoginModal(modalContainer));
+    }
+
+    // 按 ESC 關閉
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalContainer.style.display === 'block') {
+            closeLoginModal(modalContainer);
+        }
+    });
+}
+
+/**
+ * 關閉登入提示對話框
+ */
+function closeLoginModal(modal) {
+    if (!modal) return;
+    
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+/**
+ * 顯示確認對話框
+ */
+function showConfirmModal(title, message, confirmText, onConfirm) {
+    // 創建模態對話框
+    const modal = document.createElement('div');
+    modal.className = 'itinerary-modal';
+    modal.innerHTML = `
+        <div class="itinerary-modal-content">
+            <div class="itinerary-modal-header">
+                <h3>${title}</h3>
+                <button class="itinerary-modal-close">&times;</button>
+            </div>
+            <div class="itinerary-modal-body">
+                <p>${message}</p>
+            </div>
+            <div class="itinerary-modal-footer">
+                <button class="itinerary-modal-btn itinerary-modal-btn-secondary">取消</button>
+                <button class="itinerary-modal-btn itinerary-modal-btn-primary">${confirmText}</button>
+            </div>
+        </div>
+    `;
+    
+    // 添加到頁面
+    document.body.appendChild(modal);
+    
+    // 顯示模態對話框
+    setTimeout(() => {
+        modal.classList.add('show');
+        modal.querySelector('.itinerary-modal-content').style.opacity = '1';
+        modal.querySelector('.itinerary-modal-content').style.transform = 'translateY(0)';
+    }, 10);
+    
+    // 關閉按鈕事件
+    const closeBtn = modal.querySelector('.itinerary-modal-close');
+    closeBtn.addEventListener('click', () => closeModal(modal));
+    
+    // 取消按鈕事件
+    const cancelBtn = modal.querySelector('.itinerary-modal-btn-secondary');
+    cancelBtn.addEventListener('click', () => closeModal(modal));
+    
+    // 確認按鈕事件
+    const confirmBtn = modal.querySelector('.itinerary-modal-btn-primary');
+    confirmBtn.addEventListener('click', () => {
+        closeModal(modal);
+        if (typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    });
+    
+    // 點擊背景關閉
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal(modal);
+        }
+    });
+}
+
+/**
+ * 顯示自定義名稱對話框
+ */
+function showCustomNameModal(title, message, defaultName, onConfirm) {
+    // 創建模態對話框
+    const modal = document.createElement('div');
+    modal.className = 'itinerary-modal';
+    modal.innerHTML = `
+        <div class="itinerary-modal-content">
+            <div class="itinerary-modal-header">
+                <h3>${title}</h3>
+                <button class="itinerary-modal-close">&times;</button>
+            </div>
+            <div class="itinerary-modal-body">
+                <p>${message}</p>
+                <div class="itinerary-modal-input-group">
+                    <input type="text" class="itinerary-modal-input" id="customNameInput" value="${defaultName}" placeholder="請輸入行程名稱">
+                </div>
+            </div>
+            <div class="itinerary-modal-footer">
+                <button class="itinerary-modal-btn itinerary-modal-btn-secondary">取消</button>
+                <button class="itinerary-modal-btn itinerary-modal-btn-primary">確定</button>
+            </div>
+        </div>
+    `;
+    
+    // 添加到頁面
+    document.body.appendChild(modal);
+    
+    // 獲取輸入框元素
+    const input = modal.querySelector('#customNameInput');
+    input.focus();
+    input.select();
+    
+    // 顯示模態對話框
+    setTimeout(() => {
+        modal.classList.add('show');
+        modal.querySelector('.itinerary-modal-content').style.opacity = '1';
+        modal.querySelector('.itinerary-modal-content').style.transform = 'translateY(0)';
+    }, 10);
+    
+    // 關閉按鈕事件
+    const closeBtn = modal.querySelector('.itinerary-modal-close');
+    closeBtn.addEventListener('click', () => closeModal(modal));
+    
+    // 取消按鈕事件
+    const cancelBtn = modal.querySelector('.itinerary-modal-btn-secondary');
+    cancelBtn.addEventListener('click', () => closeModal(modal));
+    
+    // 確認按鈕事件
+    const confirmBtn = modal.querySelector('.itinerary-modal-btn-primary');
+    confirmBtn.addEventListener('click', () => {
+        const customName = input.value.trim();
+        if (!customName) {
+            input.classList.add('error');
+            setTimeout(() => input.classList.remove('error'), 1000);
+            return;
+        }
+        closeModal(modal);
+        if (typeof onConfirm === 'function') {
+            onConfirm(customName);
+        }
+    });
+    
+    // 輸入框回車事件
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            confirmBtn.click();
+        }
+    });
+    
+    // 點擊背景關閉
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal(modal);
+        }
+    });
+}
+
+/**
+ * 關閉模態對話框
+ */
+function closeModal(modal) {
+    // 淡出動畫
+    modal.querySelector('.itinerary-modal-content').style.opacity = '0';
+    modal.querySelector('.itinerary-modal-content').style.transform = 'translateY(20px)';
+    modal.classList.remove('show');
+    
+    // 移除模態對話框
+    setTimeout(() => {
+        if (document.body.contains(modal)) {
+            document.body.removeChild(modal);
+        }
+    }, 300);
 }
 
 // 全域函數，供 HTML 直接呼叫

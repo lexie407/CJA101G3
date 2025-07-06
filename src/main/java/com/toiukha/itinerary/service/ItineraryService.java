@@ -2,6 +2,7 @@ package com.toiukha.itinerary.service;
 
 import com.toiukha.itinerary.model.ItineraryVO;
 import com.toiukha.itinerary.repository.ItineraryRepository;
+import com.toiukha.favItn.model.FavItnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,9 @@ public class ItineraryService {
     @Qualifier("itnSpotService")
     private ItnSpotService itnSpotService;
 
+    @Autowired
+    private FavItnService favItnService;
+
     // ========== 1. 行程基本 CRUD 操作 ==========
 
     /**
@@ -39,9 +43,15 @@ public class ItineraryService {
      */
     @Transactional
     public ItineraryVO addItinerary(ItineraryVO itineraryVO) {
-        // 預設為公開狀態
+        // 設定預設值
         if (itineraryVO.getIsPublic() == null) {
-            itineraryVO.setIsPublic((byte) 1);
+            itineraryVO.setIsPublic((byte) 1); // 預設為公開
+        }
+        if (itineraryVO.getItnStatus() == null) {
+            itineraryVO.setItnStatus((byte) 1); // 預設為上架
+        }
+        if (itineraryVO.getCreatorType() == null) {
+            itineraryVO.setCreatorType((byte) 1); // 預設為會員建立
         }
         return itineraryRepository.save(itineraryVO);
     }
@@ -117,6 +127,52 @@ public class ItineraryService {
     }
 
     /**
+     * 查詢所有非揪團模組的公開行程
+     * @return 非揪團模組的公開行程列表
+     */
+    public List<ItineraryVO> getPublicItinerariesNotFromActivity() {
+        return itineraryRepository.findPublicItinerariesNotFromActivity();
+    }
+
+    /**
+     * 查詢非揪團模組的公開行程（分頁）
+     * @param pageable 分頁參數
+     * @return 非揪團模組的公開行程分頁結果
+     */
+    public Page<ItineraryVO> getPublicItinerariesNotFromActivity(Pageable pageable) {
+        return itineraryRepository.findPublicItinerariesNotFromActivity(pageable);
+    }
+    
+    /**
+     * 批量添加景點到行程中
+     * @param itnId 行程ID
+     * @param spotIds 景點ID列表
+     * @return 添加的景點數量
+     */
+    @Transactional
+    public int addSpotsToItinerary(Integer itnId, List<Integer> spotIds) {
+        if (itnId == null || spotIds == null || spotIds.isEmpty()) {
+            return 0;
+        }
+        
+        // 先清空現有的關聯（如果有）
+        itnSpotService.clearItinerarySpots(itnId);
+        
+        // 按順序添加景點
+        int count = 0;
+        for (Integer spotId : spotIds) {
+            try {
+                itnSpotService.addSpotToItinerary(itnId, spotId);
+                count++;
+            } catch (Exception e) {
+                // 忽略添加失敗的景點
+            }
+        }
+        
+        return count;
+    }
+
+    /**
      * 查詢公開行程（分頁）
      * @param pageable 分頁參數
      * @return 公開行程分頁結果
@@ -162,6 +218,25 @@ public class ItineraryService {
         return itineraryRepository.findPrivateItinerariesByCrtId(crtId);
     }
 
+    /**
+     * 搜尋非揪團模組的公開行程
+     * @param keyword 搜尋關鍵字
+     * @return 符合條件的非揪團模組公開行程列表
+     */
+    public List<ItineraryVO> searchPublicItinerariesNotFromActivity(String keyword) {
+        return itineraryRepository.searchPublicItinerariesNotFromActivity(keyword);
+    }
+
+    /**
+     * 搜尋非揪團模組的公開行程（分頁）
+     * @param keyword 搜尋關鍵字
+     * @param pageable 分頁參數
+     * @return 符合條件的非揪團模組公開行程分頁結果
+     */
+    public Page<ItineraryVO> searchPublicItinerariesNotFromActivity(String keyword, Pageable pageable) {
+        return itineraryRepository.searchPublicItinerariesNotFromActivity(keyword, pageable);
+    }
+
     // ========== 3. 搜尋功能 ==========
 
     /**
@@ -190,6 +265,41 @@ public class ItineraryService {
      */
     public Page<ItineraryVO> searchPublicItineraries(String keyword, Pageable pageable) {
         return itineraryRepository.searchPublicItineraries(keyword, pageable);
+    }
+
+    /**
+     * 搜尋行程
+     */
+    public List<ItineraryVO> searchItineraries(String keyword, Integer isPublic) {
+        if (isPublic != null) {
+            return itineraryRepository.findByItnNameContainingAndIsPublic(keyword, isPublic.byteValue());
+        }
+        return itineraryRepository.findByItnNameContaining(keyword);
+    }
+
+    /**
+     * 根據公開狀態查詢行程
+     */
+    public List<ItineraryVO> getItinerariesByPublicStatus(Integer isPublic) {
+        return itineraryRepository.findByIsPublic(isPublic.byteValue());
+    }
+
+    /**
+     * 獲取所有公開行程
+     */
+    public List<ItineraryVO> getAllPublicItineraries() {
+        return itineraryRepository.findByIsPublic((byte) 1);
+    }
+
+    /**
+     * 根據會員ID查詢收藏的行程
+     */
+    public List<ItineraryVO> findFavoriteItinerariesByMemId(Integer memId) {
+        List<Integer> favoriteIds = favItnService.findFavoriteIdsByMemId(memId);
+        if (favoriteIds.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        return itineraryRepository.findAllById(favoriteIds);
     }
 
     // ========== 4. 統計功能 ==========
@@ -225,6 +335,15 @@ public class ItineraryService {
      */
     public long getItineraryCountByCrtId(Integer crtId) {
         return itineraryRepository.countByCrtId(crtId);
+    }
+
+    /**
+     * 清除行程的所有景點關聯
+     * @param itnId 行程ID
+     */
+    @Transactional
+    public void clearItinerarySpots(Integer itnId) {
+        itnSpotService.clearItinerarySpots(itnId);
     }
 
     // ========== 5. 驗證功能 ==========
@@ -287,4 +406,20 @@ public class ItineraryService {
     public Long getSpotCountByItineraryId(Integer itnId) {
         return itnSpotService.getSpotCountByItnId(itnId);
     }
+
+    // ========== 7. 後台管理專用方法 ==========
+
+    /**
+     * 根據條件查詢行程（後台管理用）
+     * @param keyword 搜尋關鍵字
+     * @param status 狀態篩選
+     * @param isPublic 公開狀態篩選
+     * @param pageable 分頁參數
+     * @return 符合條件的行程分頁結果
+     */
+    public Page<ItineraryVO> findItinerariesWithFilters(String keyword, Integer status, Integer isPublic, Pageable pageable) {
+        return itineraryRepository.findWithFilters(keyword, status, isPublic, pageable);
+    }
+
+
 } 

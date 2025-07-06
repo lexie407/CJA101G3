@@ -6,7 +6,7 @@
     <title th:text="${spot != null ? spot.spotName + ' - 島遊Kha' : '景點詳情 - 島遊Kha'}">景點詳情 - 島遊Kha</title>
     
     <!-- 必要資源引用 - 統一使用絕對路徑 -->
-    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 景點詳情頁樣式 -->
@@ -15,7 +15,7 @@
 <body class="light">
     <div class="app-container">
         <!-- 左側主導覽列 -->
-        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside>
+        <aside th:replace="~{/navTemplate :: navbar}"></aside>
         
         <div class="main-content">
             <!-- 頂部次導覽列 - 詳情頁高亮列表項目 -->
@@ -31,7 +31,7 @@
                         <h2 class="spot-detail-error__title">找不到景點</h2>
                         <p class="spot-detail-error__message" th:text="${errorMessage}">景點不存在或已被移除</p>
                         <div class="spot-detail-error__actions">
-                            <a th:href="@{/spot/list}" class="spot-detail-btn spot-detail-btn--primary">
+                                                            <a th:href="@{/spot/spotlist}" class="spot-detail-btn spot-detail-btn--primary">
                                 <span class="material-icons">arrow_back</span>
                                 回到景點列表
                             </a>
@@ -59,7 +59,7 @@
                                             </a>
                                         </li>
                                         <li class="spot-detail-breadcrumb__item">
-                                            <a th:href="@{/spot/list}" class="spot-detail-breadcrumb__link">
+                                            <a th:href="@{/spot/spotlist}" class="spot-detail-breadcrumb__link">
                                                 <span class="material-icons">list</span>
                                                 景點列表
                                             </a>
@@ -99,11 +99,6 @@
                                                 onclick="toggleFavorite()"
                                                 title="收藏景點">
                                             <span class="material-icons" th:text="${isFavorited ? 'favorite' : 'favorite_border'}">favorite_border</span>
-                                        </button>
-                                        <button class="spot-detail-action-btn spot-detail-action-btn--share"
-                                                onclick="shareSpot()"
-                                                title="分享景點">
-                                            <span class="material-icons">share</span>
                                         </button>
                                         <button class="spot-detail-action-btn spot-detail-action-btn--bookmark"
                                                 onclick="toggleBookmark()"
@@ -309,30 +304,7 @@
                                     </div>
 
                                     <!-- 分享卡片 -->
-                                    <div class="spot-detail-info-card">
-                                        <div class="spot-detail-info-card__header">
-                                            <h3 class="spot-detail-info-card__title">
-                                                <span class="material-icons">share</span>
-                                                分享景點
-                                            </h3>
-                                        </div>
-                                        <div class="spot-detail-info-card__content">
-                                            <div class="spot-detail-share-buttons">
-                                                <button class="spot-detail-share-btn" onclick="shareToFacebook()">
-                                                    <span class="material-icons">facebook</span>
-                                                    <span>Facebook</span>
-                                                </button>
-                                                <button class="spot-detail-share-btn" onclick="shareToLine()">
-                                                    <span class="material-icons">chat</span>
-                                                    <span>LINE</span>
-                                                </button>
-                                                <button class="spot-detail-share-btn" onclick="copyLink()">
-                                                    <span class="material-icons">link</span>
-                                                    <span>複製連結</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <!-- 已移除：分享景點功能卡片 -->
                                 </aside>
                             </div>
                         </div>
@@ -352,10 +324,8 @@
                   data-is-favorited=${isFavorited}">
     </div>
 
-    <!-- 必要腳本 -->
-    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
-    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-    <script src="/js/notification/websocket.js"></script>
+    <!-- 景點模組通用腳本 -->
+    <script th:src="@{/js/spot/front-end/spot-common.js}" defer></script>
     <!-- 景點詳情頁專用腳本 -->
     <script th:src="@{/js/spot/front-end/detail.js}" defer></script>
 </body>

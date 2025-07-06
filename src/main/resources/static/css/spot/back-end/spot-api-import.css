@@ -4,7 +4,9 @@
 
 /* 頁面容器 - 遵循CSS架構規範，不覆蓋全域樣式 */
 .spot-api-import-page {
-    /* 在 .content-area-main 標準 padding: 20px 內部定義專用樣式 */
+    padding-top: 20px;
+    padding-left: 50px;
+    padding-right: 50px;
 }
 
 /* 頁面標題區域圖標容器 */
@@ -285,7 +287,7 @@
     box-shadow: 0 2px 8px rgba(41, 171, 194, 0.3);
 }
 
-.btn-primary:hover {
+.btn-primary:hover, .btn-primary:active {
     background: linear-gradient(135deg, rgba(41, 171, 194, 0.9), var(--md-sys-color-primary));
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(41, 171, 194, 0.4);
@@ -297,7 +299,7 @@
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
-.btn-success:hover {
+.btn-success:hover, .btn-success:active {
     background: linear-gradient(135deg, #059669, #047857);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
@@ -310,7 +312,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover, .btn-secondary:active {
     background: var(--md-sys-color-surface-container-high);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -322,7 +324,7 @@
     box-shadow: 0 2px 8px rgba(8, 145, 178, 0.3);
 }
 
-.btn-tertiary:hover {
+.btn-tertiary:hover, .btn-tertiary:active {
     background: linear-gradient(135deg, #0e7490, #155e75);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(8, 145, 178, 0.4);
@@ -468,6 +470,37 @@
     box-shadow: none !important;
 }
 
+/* 添加匯入中按鈕的樣式 */
+.city-btn.importing {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: pulse 1.5s infinite;
+}
+
+/* 添加已成功匯入的按鈕樣式 */
+.city-btn.imported {
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 /* 管理操作區域 */
 .action-section {
     background: var(--md-sys-color-surface);
@@ -479,12 +512,28 @@
 
 .action-buttons {
     display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
 }
 
 /* 響應式設計 */
+@media (max-width: 992px) {
+    .spot-api-import-page {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
 @media (max-width: 768px) {
+    .spot-api-import-page {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
     .header-icon-container {
         width: 60px;
         height: 60px;
@@ -508,10 +557,6 @@
     .city-btn {
         padding: 12px 8px;
         min-height: 70px;
-    }
-    
-    .action-buttons {
-        flex-direction: column;
     }
     
     .btn-large {

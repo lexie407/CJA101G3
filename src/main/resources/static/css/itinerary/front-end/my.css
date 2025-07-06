@@ -1,0 +1,20 @@
+/* 複製行程標籤樣式 */
+.itinerary-copy-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin-left: 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    vertical-align: middle;
+    border: 1px solid #bbdefb;
+}
+
+.itinerary-copy-badge .material-icons {
+    font-size: 14px;
+    margin-right: 2px;
+} 

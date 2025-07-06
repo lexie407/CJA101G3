@@ -495,20 +495,63 @@ public class SpotService {
     /**
      * 根據狀態查詢景點 (後台用)
      * @param status 景點狀態
-     * @return 符合條件的景點列表
+     * @return 符合狀態的景點列表
      */
     public List<SpotVO> getSpotsByStatus(Byte status) {
         return spotRepository.findBySpotStatus(status);
     }
 
     /**
-     * 根據狀態查詢景點 (分頁)
+     * 根據分頁參數查詢景點
      * @param status 景點狀態
-     * @param pageable 分頁資訊
-     * @return 景點分頁結果
+     * @param pageable 分頁參數
+     * @return 景點的分頁結果
      */
     public Page<SpotVO> findSpotsByStatus(Integer status, Pageable pageable) {
-        return spotRepository.findBySpotStatus(status, pageable);
+        return spotRepository.findBySpotStatus(status.byteValue(), pageable);
+    }
+
+    /**
+     * 根據狀態獲取景點列表，並限制返回數量
+     * @param status 景點狀態
+     * @param limit 限制返回的數量
+     * @return 指定狀態的景點列表，最多返回limit個
+     */
+    public List<SpotVO> getSpotsByStatus(int status, int limit) {
+        List<SpotVO> spots = spotRepository.findBySpotStatus((byte) status);
+        if (spots.size() > limit) {
+            return spots.subList(0, limit);
+        }
+        return spots;
+    }
+    
+    /**
+     * 根據關鍵字搜索景點
+     * @param keyword 搜索關鍵字
+     * @return 符合搜索條件的景點列表（優先返回上架狀態的景點）
+     */
+    public List<SpotVO> searchSpotsByKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getActiveSpots();
+        }
+        
+        String searchTerm = "%" + keyword.trim().toLowerCase() + "%";
+        
+        // 首先搜索上架狀態(1)的景點
+        List<SpotVO> activeSpots = spotRepository.findBySpotNameLikeAndSpotStatus(searchTerm, (byte) 1);
+        
+        // 如果上架狀態的景點數量少於10個，則繼續搜索其他狀態的景點
+        if (activeSpots.size() < 10) {
+            List<SpotVO> otherSpots = spotRepository.findBySpotNameLikeAndSpotStatusNot(searchTerm, (byte) 1);
+            activeSpots.addAll(otherSpots);
+            
+            // 限制返回總數為20個
+            if (activeSpots.size() > 20) {
+                return activeSpots.subList(0, 20);
+            }
+        }
+        
+        return activeSpots;
     }
 
     /**

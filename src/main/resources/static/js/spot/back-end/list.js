@@ -105,18 +105,20 @@ window.handleImageLoad = handleImageLoad;
 // 輔助函數
 function getStatusText(status) {
     switch (status) {
+        case 0: return '待審核';
         case 1: return '上架';
-        case 0: return '下架';
         case 2: return '退回';
+        case 3: return '下架';
         default: return '未知';
     }
 }
 
 function getStatusClass(status) {
     switch (status) {
+        case 0: return 'status-badge status-pending';
         case 1: return 'status-badge status-active';
-        case 0: return 'status-badge status-inactive';
         case 2: return 'status-badge status-rejected';
+        case 3: return 'status-badge status-inactive';
         default: return 'status-badge';
     }
 }
@@ -277,6 +279,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // 執行前端排序
             applySorting();
             currentPage = 0; // 重置到第一頁
+            
+            // 清除所有勾選狀態
+            clearAllSelections();
+            
             renderTable();
         });
     }
@@ -291,6 +297,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('搜尋關鍵字:', currentFilters.keyword);
                 applyFiltersAndSort();
                 currentPage = 0;
+                
+                // 清除所有勾選狀態
+                clearAllSelections();
+                
+                // 如果目前是顯示所有模式，重新調整 pageSize
+                const pageSizeSelect = document.getElementById('pageSizeSelect');
+                if (pageSizeSelect && pageSizeSelect.value === '-1') {
+                    pageSize = filteredData.length;
+                }
+                
                 renderTable();
             }, 300); // 300ms 防抖動
         });
@@ -333,6 +349,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 立即套用篩選和排序
                 applyFiltersAndSort();
                 currentPage = 0; // 重置到第一頁
+                
+                // 清除所有勾選狀態
+                clearAllSelections();
+                
+                // 如果目前是顯示所有模式，重新調整 pageSize
+                const pageSizeSelect = document.getElementById('pageSizeSelect');
+                if (pageSizeSelect && pageSizeSelect.value === '-1') {
+                    pageSize = filteredData.length;
+                }
+                
                 renderTable();
                 
                 setTimeout(() => {
@@ -358,9 +384,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const pageSizeSelect = document.getElementById('pageSizeSelect');
     if (pageSizeSelect) {
         pageSizeSelect.addEventListener('change', () => {
-            pageSize = parseInt(pageSizeSelect.value);
+            const selectedValue = parseInt(pageSizeSelect.value);
+            if (selectedValue === -1) {
+                // 顯示所有：設定 pageSize 為資料總數
+                pageSize = filteredData.length > 0 ? filteredData.length : allSpotData.length;
+                console.log('切換為顯示所有，pageSize設為:', pageSize);
+            } else {
+                pageSize = selectedValue;
+                console.log('分頁大小改變為:', pageSize);
+            }
             currentPage = 0; // 重置到第一頁
-            console.log('分頁大小改變為:', pageSize);
+            
+            // 清除所有勾選狀態
+            clearAllSelections();
+            
             renderTable();
         });
     }
@@ -704,7 +741,15 @@ function renderTable() {
     
     // 計算分頁
     const startIndex = currentPage * pageSize;
-    const endIndex = startIndex + pageSize;
+    let endIndex = startIndex + pageSize;
+    
+    // 如果是顯示所有模式，確保 pageSize 足夠大
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    if (pageSizeSelect && pageSizeSelect.value === '-1') {
+        pageSize = filteredData.length;
+        endIndex = filteredData.length;
+    }
+    
     const pageData = filteredData.slice(startIndex, endIndex);
     
     // 清空表格
@@ -824,18 +869,35 @@ function bindTableEvents() {
 
 // 更新分頁資訊
 function updatePaginationInfo() {
-    const totalPages = Math.ceil(filteredData.length / pageSize);
-    const startRecord = filteredData.length > 0 ? currentPage * pageSize + 1 : 0;
-    const endRecord = Math.min((currentPage + 1) * pageSize, filteredData.length);
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    const isShowAll = pageSizeSelect && pageSizeSelect.value === '-1';
+    
+    let totalPages, startRecord, endRecord;
+    
+    if (isShowAll) {
+        // 顯示所有模式
+        totalPages = 1;
+        startRecord = filteredData.length > 0 ? 1 : 0;
+        endRecord = filteredData.length;
+    } else {
+        // 正常分頁模式
+        totalPages = Math.ceil(filteredData.length / pageSize);
+        startRecord = filteredData.length > 0 ? currentPage * pageSize + 1 : 0;
+        endRecord = Math.min((currentPage + 1) * pageSize, filteredData.length);
+    }
     
     // 更新分頁文字資訊
     const paginationInfo = document.getElementById('paginationInfo');
     if (paginationInfo) {
         if (filteredData.length > 0) {
-            paginationInfo.innerHTML = `
-                共 ${totalPages} 頁，目前在第 ${currentPage + 1} 頁
-                (顯示第 ${startRecord}-${endRecord} 筆，共 ${filteredData.length} 筆)
-            `;
+            if (isShowAll) {
+                paginationInfo.innerHTML = `顯示所有資料 (共 ${filteredData.length} 筆)`;
+            } else {
+                paginationInfo.innerHTML = `
+                    共 ${totalPages} 頁，目前在第 ${currentPage + 1} 頁
+                    (顯示第 ${startRecord}-${endRecord} 筆，共 ${filteredData.length} 筆)
+                `;
+            }
         } else {
             paginationInfo.innerHTML = '沒有資料';
         }
@@ -933,6 +995,32 @@ function updateSelectedInfo() {
 }
 
 // 清除所有篩選 - 改為純前端操作
+// 清除所有勾選狀態
+function clearAllSelections() {
+    console.log('清除所有勾選狀態');
+    
+    // 清除全選 checkbox
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+        selectAll.checked = false;
+    }
+    
+    // 清除所有行的勾選狀態
+    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+        const row = checkbox.closest('tr');
+        if (row) {
+            row.classList.remove('selected');
+        }
+    });
+    
+    // 更新選中資訊
+    updateSelectedInfo();
+    
+    console.log('所有勾選狀態已清除');
+}
+
 function clearAllFilters() {
     console.log('清除所有篩選');
     
@@ -983,6 +1071,16 @@ function clearAllFilters() {
     
     // 重新套用篩選和排序
     applyFiltersAndSort();
+    
+    // 清除所有勾選狀態
+    clearAllSelections();
+    
+    // 如果目前是顯示所有模式，重新調整 pageSize
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    if (pageSizeSelect && pageSizeSelect.value === '-1') {
+        pageSize = filteredData.length;
+    }
+    
     renderTable();
     
     console.log('篩選已清除');
@@ -1090,6 +1188,10 @@ function goToPage(page) {
     const totalPages = Math.ceil(filteredData.length / pageSize);
     if (page >= 0 && page < totalPages) {
         currentPage = page;
+        
+        // 清除所有勾選狀態
+        clearAllSelections();
+        
         renderTable();
         console.log(`跳轉到第 ${page + 1} 頁`);
     }
@@ -1115,7 +1217,9 @@ function goToLastPage() {
 
 // 更新分頁按鈕狀態和頁碼
 function updatePaginationButtons() {
-    const totalPages = Math.ceil(filteredData.length / pageSize);
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    const isShowAll = pageSizeSelect && pageSizeSelect.value === '-1';
+    const totalPages = isShowAll ? 1 : Math.ceil(filteredData.length / pageSize);
     const paginationContainer = document.getElementById('paginationContainer');
     
     if (!paginationContainer) return;
@@ -1126,12 +1230,12 @@ function updatePaginationButtons() {
     // 獲取分頁按鈕容器
     const paginationNav = paginationContainer.querySelector('nav');
     
-    // 只要有資料就顯示分頁按鈕，即使只有一頁
-    if (filteredData.length > 0) {
-        if (paginationNav) paginationNav.classList.remove('hidden');
-    } else {
-        // 沒有資料的情況才隱藏分頁按鈕
+    // 在「顯示所有」模式下隱藏分頁控制按鈕
+    if (isShowAll || filteredData.length === 0) {
         if (paginationNav) paginationNav.classList.add('hidden');
+    } else {
+        // 正常分頁模式且有資料時顯示分頁按鈕
+        if (paginationNav) paginationNav.classList.remove('hidden');
     }
     
     // 更新按鈕狀態
@@ -1249,6 +1353,16 @@ function updateRegionOptions(regions) {
             // 立即套用篩選和排序
             applyFiltersAndSort();
             currentPage = 0; // 重置到第一頁
+            
+            // 清除所有勾選狀態
+            clearAllSelections();
+            
+            // 如果目前是顯示所有模式，重新調整 pageSize
+            const pageSizeSelect = document.getElementById('pageSizeSelect');
+            if (pageSizeSelect && pageSizeSelect.value === '-1') {
+                pageSize = filteredData.length;
+            }
+            
             renderTable();
             
             // 隱藏下拉選單
@@ -1376,25 +1490,41 @@ function bindBatchActions() {
                     const btnElement = document.getElementById('batchBtn');
                     const rect = btnElement.getBoundingClientRect();
                     
-                    // 設置選單位置和顯示 - 往左移動30px
+                    // 計算選單位置，確保不會超出視窗邊界
+                    const menuWidth = 180;
+                    let leftPos = rect.left + rect.width - menuWidth; // 右對齊按鈕
+                    
+                    // 如果右對齊會超出視窗左邊界，則左對齊按鈕
+                    if (leftPos < 10) {
+                        leftPos = rect.left;
+                    }
+                    
+                    // 如果左對齊會超出視窗右邊界，則向左調整
+                    if (leftPos + menuWidth > window.innerWidth - 10) {
+                        leftPos = window.innerWidth - menuWidth - 10;
+                    }
+                    
+                    // 設置選單位置和顯示
                     batchMenu.style.cssText = `
-                        display: block;
-                        position: fixed;
-                        left: ${rect.left - 85}px;
-                        top: ${rect.bottom + 5}px;
-                        z-index: 99999;
-                        min-width: 180px;
-                        padding: 8px 0;
-                        background: #ffffff;
-                        border: 1px solid #ddd;
-                        border-radius: 8px;
-                        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                        display: block !important;
+                        position: fixed !important;
+                        left: ${leftPos}px !important;
+                        top: ${rect.bottom + 8}px !important;
+                        z-index: 99999 !important;
+                        min-width: ${menuWidth}px !important;
+                        padding: 8px 0 !important;
+                        background: #ffffff !important;
+                        border: 1px solid #e0e0e0 !important;
+                        border-radius: 8px !important;
+                        box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     `;
                     
                     console.log('➡️ 顯示選單，位置:', {
-                        left: rect.left,
-                        top: rect.bottom + 5,
-                        display: batchMenu.style.display
+                        buttonRect: rect,
+                        menuLeft: leftPos,
+                        menuTop: rect.bottom + 8,
+                        menuWidth: menuWidth
                     });
                 }
                 return;
@@ -1461,3 +1591,186 @@ function bindFormSubmissions() {
     
     console.log('表單提交事件已綁定');
 }
+
+// API匯入相關函數
+function initializeApiImport() {
+    const modal = document.getElementById('apiImportModal');
+    const openBtn = document.getElementById('apiImportBtn');
+    const closeBtn = document.getElementById('closeModal');
+    const importAllBtn = document.getElementById('importAllBtn');
+    const cityButtons = document.querySelectorAll('.city-btn');
+    const resultArea = document.getElementById('importResult');
+
+    // 打開模態視窗
+    openBtn.addEventListener('click', () => {
+        modal.style.display = 'block';
+    });
+
+    // 關閉模態視窗
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // 修改點擊模態視窗外部關閉的邏輯
+    let mouseDownInModal = false;
+    
+    // 記錄滑鼠按下的位置是否在模態視窗內
+    modal.addEventListener('mousedown', (e) => {
+        // 檢查點擊位置是否在模態內容區域內
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent.contains(e.target)) {
+            mouseDownInModal = true;
+        }
+    });
+
+    // 監聽滑鼠釋放事件
+    window.addEventListener('mouseup', (e) => {
+        // 只有當滑鼠按下和釋放都在模態視窗外時才關閉
+        if (e.target === modal && !mouseDownInModal) {
+            modal.style.display = 'none';
+        }
+        mouseDownInModal = false;
+    });
+
+    // 全台匯入
+    importAllBtn.addEventListener('click', async () => {
+        const count = document.getElementById('import-count').value;
+        if (count < 10 || count > 200) {
+            alert('請輸入10-200之間的數字');
+            return;
+        }
+
+        try {
+            importAllBtn.disabled = true;
+            importAllBtn.innerHTML = '<i class="material-icons">hourglass_empty</i> 匯入中...';
+            
+            const response = await fetch(`/admin/spot/api/import-spots?limit=${count}`, {
+                method: 'POST'
+            });
+            
+            const result = await response.json();
+            showResult(result);
+            
+            // 重新載入頁面以顯示新匯入的資料
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } catch (error) {
+            console.error('匯入失敗:', error);
+            showResult({
+                success: false,
+                message: '匯入失敗，請稍後再試'
+            });
+        } finally {
+            importAllBtn.disabled = false;
+            importAllBtn.innerHTML = '<i class="material-icons">download</i> 開始匯入全台景點';
+        }
+    });
+
+    // 依縣市匯入
+    cityButtons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const city = btn.dataset.city;
+            const count = document.getElementById('city-count').value;
+            
+            if (count < 10 || count > 100) {
+                alert('請輸入10-100之間的數字');
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="material-icons">hourglass_empty</i>';
+                
+                const response = await fetch(`/admin/spot/api/import-spots-by-city?city=${city}&limit=${count}`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                showResult(result);
+                
+                // 重新載入頁面以顯示新匯入的資料
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            } catch (error) {
+                console.error('匯入失敗:', error);
+                showResult({
+                    success: false,
+                    message: '匯入失敗，請稍後再試'
+                });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+    });
+}
+
+// 顯示匯入結果
+function showResult(result) {
+    const resultArea = document.getElementById('importResult');
+    const resultContent = resultArea.querySelector('.result-content');
+    
+    resultArea.style.display = 'block';
+    
+    console.log('API 返回結果:', result);
+    
+    if (result.success) {
+        // 確保 data 存在且包含 ImportResult 數據
+        const data = result.data || {};
+        
+        resultContent.innerHTML = `
+            <div class="success-message">
+                <i class="material-icons">check_circle</i>
+                <p>匯入成功！</p>
+                <ul>
+                    <li>✅ 成功匯入: ${data.successCount || 0} 筆</li>
+                    <li>⏭️ 重複跳過: ${data.skippedCount || 0} 筆</li>
+                    <li>❌ 匯入失敗: ${data.errorCount || 0} 筆</li>
+                </ul>
+                <p class="success-note">頁面將在 3 秒後自動重新載入</p>
+            </div>
+        `;
+        
+        // 顯示 Toastify 通知
+        Toastify({
+            text: `✅ 匯入成功！共匯入 ${data.successCount || 0} 筆資料`,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "center",
+            style: {
+                background: "#2ecc71"
+            }
+        }).showToast();
+    } else {
+        resultContent.innerHTML = `
+            <div class="error-message">
+                <i class="material-icons">error</i>
+                <p>${result.message || '匯入失敗，請稍後再試'}</p>
+            </div>
+        `;
+        
+        // 顯示 Toastify 通知
+        Toastify({
+            text: `❌ ${result.message || '匯入失敗，請稍後再試'}`,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "center",
+            style: {
+                background: "#e74c3c"
+            }
+        }).showToast();
+    }
+}
+
+// 在 document ready 時初始化
+document.addEventListener('DOMContentLoaded', () => {
+    // ... 其他初始化代碼 ...
+    
+    // 初始化API匯入功能
+    initializeApiImport();
+});

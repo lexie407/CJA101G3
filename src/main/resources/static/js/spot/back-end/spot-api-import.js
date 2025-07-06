@@ -63,6 +63,12 @@ function bindEventListeners() {
         button.addEventListener('click', handleCityImport);
     });
     
+    // 修正地區信息按鈕
+    const correctRegionButton = document.getElementById('correct-region-button');
+    if (correctRegionButton) {
+        correctRegionButton.addEventListener('click', handleCorrectRegionInfo);
+    }
+    
     // 輸入框驗證
     const importCountInput = document.getElementById('import-count');
     if (importCountInput) {
@@ -126,19 +132,27 @@ async function handleImportAllSpots() {
     console.log('開始全台景點匯入');
     
     const countInput = document.getElementById('import-count');
-    const count = countInput ? parseInt(countInput.value) : 50;
+    const count = countInput ? parseInt(countInput.value) : 10;
     
     if (!validateImportCount()) {
         return;
     }
     
-    // 確認對話框
-    if (!confirm(`確定要匯入 ${count} 筆全台景點資料嗎？\n此操作可能需要數分鐘時間。`)) {
-        return;
-    }
+    // 移除確認對話框，改為直接顯示Toast通知
+    showToast(`正在匯入全台景點資料 (${count} 筆)...`, 'info');
     
     try {
-        setLoadingState('import', true);
+        const importButton = document.getElementById('import-button');
+        if (importButton) {
+            importButton.disabled = true;
+            importButton.style.opacity = '0.6';
+        }
+        
+        const spinner = document.getElementById('import-spinner');
+        if (spinner) {
+            spinner.style.display = 'block';
+        }
+        
         hideResult('import');
         
         const response = await fetch(`/admin/spot/api/import-spots?limit=${count}`, {
@@ -154,7 +168,9 @@ async function handleImportAllSpots() {
         console.log('景點匯入成功:', data);
         
         showResult('import', data, 'success');
-        showToast(`成功匯入 ${data.imported || 0} 筆景點資料！`, 'success');
+        // 正確顯示匯入筆數
+        const importedCount = data.data?.successCount || data.data?.imported || 0;
+        showToast(`成功匯入 ${importedCount} 筆景點資料！`, 'success');
         
     } catch (error) {
         console.error('景點匯入失敗:', error);
@@ -169,7 +185,16 @@ async function handleImportAllSpots() {
         showToast('景點匯入失敗，請稍後再試', 'error');
         
     } finally {
-        setLoadingState('import', false);
+        const importButton = document.getElementById('import-button');
+        if (importButton) {
+            importButton.disabled = false;
+            importButton.style.opacity = '';
+        }
+        
+        const spinner = document.getElementById('import-spinner');
+        if (spinner) {
+            spinner.style.display = 'none';
+        }
     }
 }
 
@@ -184,22 +209,27 @@ async function handleCityImport(event) {
     console.log(`開始匯入 ${cityName} 景點`);
     
     const countInput = document.getElementById('city-count');
-    const count = countInput ? parseInt(countInput.value) : 30;
+    const count = countInput ? parseInt(countInput.value) : 10;
     
     if (!validateCityCount()) {
         return;
     }
     
-    // 確認對話框
-    if (!confirm(`確定要匯入 ${count} 筆 ${cityName} 景點資料嗎？`)) {
-        return;
-    }
+    // 移除確認對話框，改為直接顯示Toast通知
+    showToast(`正在匯入 ${cityName} 景點資料 (${count} 筆)...`, 'info');
     
     try {
-        setLoadingState('city', true);
-        hideResult('city');
+        // 添加按鈕視覺反饋
+        button.classList.add('importing');
+        button.disabled = true;
         
-        const response = await fetch(`/admin/spot/api/import-spots-by-city?city=${city}&limit=${count}`, {
+        // 確保城市代碼正確
+        const correctedCity = correctCityCode(city);
+        if (correctedCity !== city) {
+            console.log(`城市代碼已修正: ${city} -> ${correctedCity}`);
+        }
+        
+        const response = await fetch(`/admin/spot/api/import-spots-by-city?city=${correctedCity}&limit=${count}`, {
             method: 'POST',
             headers: getCsrfHeaders()
         });
@@ -212,7 +242,23 @@ async function handleCityImport(event) {
         console.log(`${cityName} 景點匯入成功:`, data);
         
         showResult('city', data, 'success');
-        showToast(`成功匯入 ${data.imported || 0} 筆 ${cityName} 景點資料！`, 'success');
+        // 正確顯示匯入筆數
+        const importedCount = data.data?.successCount || data.data?.imported || 0;
+        
+        // 根據匯入結果提供不同的提示
+        if (importedCount === 0) {
+            showToast(`${cityName} 景點匯入完成，但沒有新增任何景點。可能是該地區景點已全部匯入或資料來源問題。`, 'warning');
+        } else if (importedCount < count * 0.5) { // 如果匯入數量少於預期的一半
+            showToast(`成功匯入 ${importedCount} 筆 ${cityName} 景點資料，但數量少於預期。該地區可能景點資料較少。`, 'info');
+        } else {
+        showToast(`成功匯入 ${importedCount} 筆 ${cityName} 景點資料！`, 'success');
+        }
+        
+        // 添加成功匯入的視覺反饋
+        button.classList.add('imported');
+        setTimeout(() => {
+            button.classList.remove('imported');
+        }, 3000);
         
     } catch (error) {
         console.error(`${cityName} 景點匯入失敗:`, error);
@@ -224,11 +270,120 @@ async function handleCityImport(event) {
         };
         
         showResult('city', errorData, 'error');
-        showToast(`${cityName} 景點匯入失敗，請稍後再試`, 'error');
+        showToast(`${cityName} 景點匯入失敗，請稍後再試。如果問題持續存在，請聯繫系統管理員。`, 'error');
         
     } finally {
-        setLoadingState('city', false);
+        // 移除按鈕視覺反饋
+        button.classList.remove('importing');
+        button.disabled = false;
     }
+}
+
+/**
+ * 處理修正地區信息
+ */
+async function handleCorrectRegionInfo() {
+    console.log('開始修正景點地區信息');
+    
+    // 確認對話框
+    if (!confirm('確定要修正所有景點的地區信息嗎？\n此操作將特別針對花蓮縣和台東縣的混淆問題進行修正。')) {
+        return;
+    }
+    
+    try {
+        // 顯示載入中狀態
+        const button = document.getElementById('correct-region-button');
+        if (button) {
+            button.disabled = true;
+            button.style.opacity = '0.6';
+        }
+        
+        const spinner = document.getElementById('correct-region-spinner');
+        if (spinner) {
+            spinner.style.display = 'block';
+        }
+        
+        hideResult('correct-region');
+        showToast('正在修正景點地區信息，請稍候...', 'info');
+        
+        const response = await fetch('/admin/spot/api/correct-region-info', {
+            method: 'POST',
+            headers: getCsrfHeaders()
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP錯誤: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('地區信息修正成功:', data);
+        
+        showResult('correct-region', data, 'success');
+        
+        // 顯示修正結果
+        const correctedCount = data.data?.correctedCount || 0;
+        if (correctedCount > 0) {
+            showToast(`成功修正 ${correctedCount} 筆景點的地區信息！`, 'success');
+        } else {
+            showToast('沒有需要修正的景點地區信息', 'info');
+        }
+        
+    } catch (error) {
+        console.error('地區信息修正失敗:', error);
+        
+        const errorData = {
+            error: '地區信息修正失敗',
+            message: error.message,
+            timestamp: new Date().toLocaleString()
+        };
+        
+        showResult('correct-region', errorData, 'error');
+        showToast('地區信息修正失敗，請稍後再試', 'error');
+        
+    } finally {
+        // 恢復按鈕狀態
+        const button = document.getElementById('correct-region-button');
+        if (button) {
+            button.disabled = false;
+            button.style.opacity = '';
+        }
+        
+        const spinner = document.getElementById('correct-region-spinner');
+        if (spinner) {
+            spinner.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * 修正常見的錯誤城市代碼
+ * @param {string} city 原始城市代碼
+ * @returns {string} 修正後的城市代碼
+ */
+function correctCityCode(city) {
+    if (!city) return city;
+    
+    // 城市代碼修正對照表
+    const corrections = {
+        'PenghuCounty': 'Penghu',
+        'TaitungCounty': 'Taitung',
+        'HualienCounty': 'Hualien',
+        'YilanCounty': 'Yilan',
+        'KinmenCounty': 'Kinmen',
+        'LienchiangCounty': 'Lienchiang',
+        'YunlinCounty': 'Yunlin',
+        'NantouCounty': 'Nantou',
+        'ChanghuaCounty': 'Changhua',
+        'MiaoliCounty': 'Miaoli',
+        'PingtungCounty': 'Pingtung',
+        'TaoyuanCounty': 'Taoyuan',
+        'NewTaipeiCity': 'NewTaipei',
+        'TaichungCity': 'Taichung',
+        'TainanCity': 'Tainan',
+        'KaohsiungCity': 'Kaohsiung'
+    };
+    
+    return corrections[city] || city;
 }
 
 /**
@@ -319,13 +474,45 @@ function showResult(type, data, resultType = 'info') {
     // 格式化數據
     let formattedData;
     if (typeof data === 'object') {
+        // 如果是匯入結果，特別處理
+        if (data.data && typeof data.data === 'object' && 
+            (data.data.hasOwnProperty('successCount') || data.data.hasOwnProperty('imported'))) {
+            const result = data.data;
+            
+            // 處理全台匯入結果
+            if (result.hasOwnProperty('successCount')) {
+                formattedData = `
+📊 匯入結果統計：
+✅ 成功匯入：${result.successCount || 0} 筆
+⏭️ 跳過重複：${result.skippedCount || 0} 筆
+❌ 匯入失敗：${result.errorCount || 0} 筆
+📝 總處理筆數：${(result.successCount || 0) + (result.skippedCount || 0) + (result.errorCount || 0)} 筆
+
+${data.message || '匯入完成'}
+`;
+            }
+            // 處理其他格式的匯入結果
+            else if (result.hasOwnProperty('imported')) {
+                formattedData = `
+📊 匯入結果：
+✅ 成功匯入：${result.imported || 0} 筆
+${data.message || '匯入完成'}
+`;
+            }
+            else {
+                formattedData = JSON.stringify(data, null, 2);
+            }
+        }
+        // 處理測試連線等其他結果
+        else {
         formattedData = JSON.stringify(data, null, 2);
+        }
     } else {
         formattedData = String(data);
     }
     
     // 設定內容
-    resultContent.textContent = formattedData;
+    resultContent.innerHTML = `<pre style="white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${formattedData}</pre>`;
     
     // 設定樣式
     resultArea.style.display = 'block';
@@ -337,8 +524,10 @@ function showResult(type, data, resultType = 'info') {
         resultArea.style.borderLeftColor = 'var(--md-sys-color-error)';
     }
     
-    // 滾動到結果區域
+    // 只有在非縣市匯入時，才滾動到結果區域
+    if (type !== 'city') {
     resultArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
 /**

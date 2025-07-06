@@ -1,6 +1,7 @@
 package com.toiukha.itinerary.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.io.Serializable;
 
 /**
@@ -31,6 +32,7 @@ public class ItnSpotVO implements Serializable {
     // 關聯到行程實體
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ITNID", insertable = false, updatable = false)
+    @JsonBackReference
     private ItineraryVO itinerary;
 
     // 關聯到景點實體

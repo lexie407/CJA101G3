@@ -1,34 +1,15 @@
 package com.toiukha.spot.model;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * 景點實體類
- * 對應資料庫 spot 表格
+ * 對應資料庫中的spot表
  * 
  * @author CJA101G3 景點模組開發
  * @version 1.0
@@ -36,114 +17,105 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Table(name = "spot")
 public class SpotVO implements Serializable {
+
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "SPOTID", updatable = false)
+    @Column(name = "SPOTID")
     private Integer spotId;
-    
-    @Column(name = "SPOTNAME", nullable = false, length = 100)
-    @NotEmpty(message = "景點名稱不能為空")
-    @Size(min = 2, max = 100, message = "景點名稱長度必須在2到100字元之間")
-    @Pattern(regexp = "^[\\u4e00-\\u9fa5a-zA-Z0-9\\s\\-()（）.]+$", 
-             message = "景點名稱只能包含中英文、數字、空白及常用符號")
-    private String spotName;
-    
-    @Column(name = "CRTID", nullable = false, updatable = false)
-    @NotNull(message = "建立者ID不可為空")
-    @Positive(message = "建立者ID必須為正數")
-    private Integer crtId;
-    
-    @Column(name = "SPOTLOC", nullable = false, length = 200)
-    @NotEmpty(message = "景點地址不能為空")
-    @Size(min = 5, max = 200, message = "景點地址長度必須在5到200字元之間")
-    private String spotLoc;
-    
-    @Column(name = "SPOTLAT")
-    @DecimalMin(value = "-90.0", message = "緯度值必須在-90到90之間")
-    @DecimalMax(value = "90.0", message = "緯度值必須在-90到90之間")
-    private Double spotLat;
-    
-    @Column(name = "SPOTLNG")
-    @DecimalMin(value = "-180.0", message = "經度值必須在-180到180之間")
-    @DecimalMax(value = "180.0", message = "經度值必須在-180到180之間")
-    private Double spotLng;
-    
-    @Column(name = "SPOTSTATUS", nullable = false)
-    @NotNull(message = "景點狀態不可為空")
-    @Min(value = 0, message = "景點狀態只能是0, 1, 2, 3")
-    @Max(value = 3, message = "景點狀態只能是0(待審核), 1(上架), 2(退回), 3(下架)")
-    private Byte spotStatus;
-    
-    @Column(name = "SPOTDESC", length = 500)
-    @NotEmpty(message = "景點描述不能為空")
-    @Size(min = 3,max = 500, message = "景點描述長度必須在3到500字元之間")
-    private String spotDesc;
-    
-    @UpdateTimestamp
-    @Column(name = "spotupdatedat")
-    private LocalDateTime spotUpdatedAt;
-    
-    @CreationTimestamp
-    @Column(name = "spotcreatedat", updatable = false)
-    private LocalDateTime spotCreateAt;
-    
-    // 新增欄位用於政府資料整合
-    @Column(name = "SPOTGOVID", length = 50)
-    private String govtId; // 政府資料ID (如 C1_313020000G_000026)
-    
-    @Column(name = "SPOTZONE", length = 100)
-    private String zone; // 區域分類
-    
-    @Column(name = "SPOTREGION", length = 50) 
-    private String region; // 縣市
-    
-    @Column(name = "SPOTTOWN", length = 50)
-    private String town; // 鄉鎮區
-    
-    @Column(name = "SPOTZIP", length = 10)
-    private String zipcode; // 郵遞區號
-    
-    @Column(name = "SPOTTEL", length = 50)
-    private String tel; // 電話
-    
-    @Column(name = "SPOTEMAIL", length = 100)
-    private String email; // 電子郵件
-    
-    @Column(name = "SPOTWEB", length = 255)
-    private String website; // 官方網站
-    
-    @Column(name = "SPOTTRAVELINFO", columnDefinition = "TEXT")
-    private String travelingInfo; // 交通資訊
-    
-    @Column(name = "SPOTOPENTIME", columnDefinition = "TEXT") 
-    private String openingTime; // 開放時間
-    
-    @Column(name = "SPOTTICKETINFO", columnDefinition = "TEXT")
-    private String ticketInfo; // 票價資訊
-    
-    @Column(name = "SPOTPARKINFO", columnDefinition = "TEXT")
-    private String parkingInfo; // 停車資訊
-    
-    @Column(name = "SPOTGPLACEID", length = 255)
-    private String googlePlaceId; // Google Places ID
-    
-    @Column(name = "SPOTGRATING")
-    private Double googleRating; // Google 評分
-    
-    @Column(name = "SPOTGTOTALRT")
-    private Integer googleTotalRatings; // Google 評分總數
-    
-    @Column(name = "SPOTPICURLS", columnDefinition = "TEXT")
-    private String pictureUrls; // 圖片URL (JSON格式儲存)
 
-    @Column(name = "spotauditremark")
+    @NotEmpty(message = "景點名稱不能為空")
+    @Size(min = 2, max = 100, message = "景點名稱長度必須在2-100之間")
+    @Column(name = "SPOTNAME")
+    private String spotName;
+
+    @Column(name = "SPOTDESC", columnDefinition = "TEXT")
+    private String spotDesc;
+
+    @Column(name = "SPOTLOC")
+    private String spotLoc;
+
+    @Column(name = "SPOTLAT")
+    private Double spotLat;
+
+    @Column(name = "SPOTLNG")
+    private Double spotLng;
+
+    @Transient
+    private byte[] spotPic;
+
+    @Column(name = "SPOTSTATUS")
+    private Byte spotStatus;
+
+    @Column(name = "SPOTCREATEDAT")
+    private LocalDateTime spotCreateAt;
+
+    @Column(name = "SPOTUPDATEDAT")
+    private LocalDateTime spotUpdatedAt;
+
+    @Column(name = "CRTID")
+    private Integer crtId;
+
+    @Column(name = "SPOTGOVID")
+    private String govtId;
+
+    @Column(name = "SPOTREGION")
+    private String region;
+
+    @Transient
+    private String firstPictureUrl;
+
+    // 審核備註
+    @Column(name = "SPOTAUDITREMARK")
     private String spotAuditRemark;
 
-    // 建構方法
+    // 對應資料庫欄位的屬性
+    @Column(name = "SPOTZONE")
+    private String zone;
+    
+    @Column(name = "SPOTTOWN")
+    private String town;
+    
+    @Column(name = "SPOTZIP")
+    private String zipcode;
+    
+    @Column(name = "SPOTTEL")
+    private String tel;
+    
+    @Column(name = "SPOTEMAIL")
+    private String email;
+    
+    @Column(name = "SPOTWEB")
+    private String website;
+    
+    @Column(name = "SPOTTRAVELINFO")
+    private String travelingInfo;
+    
+    @Column(name = "SPOTOPENTIME")
+    private String openingTime;
+    
+    @Column(name = "SPOTTICKETINFO")
+    private String ticketInfo;
+    
+    @Column(name = "SPOTPARKINFO")
+    private String parkingInfo;
+
+    // Google Places相關欄位
+    @Column(name = "SPOTGPLACEID")
+    private String googlePlaceId;
+    
+    @Column(name = "SPOTGRATING")
+    private Double googleRating;
+    
+    @Column(name = "SPOTGTOTALRT")
+    private Integer googleTotalRatings;
+    
+    @Column(name = "SPOTPICURLS")
+    private String pictureUrls;
+
+    // 預設建構子
     public SpotVO() {
-        super();
     }
 
     // Getter 和 Setter 方法
@@ -163,12 +135,12 @@ public class SpotVO implements Serializable {
         this.spotName = spotName;
     }
 
-    public Integer getCrtId() {
-        return crtId;
+    public String getSpotDesc() {
+        return spotDesc;
     }
 
-    public void setCrtId(Integer crtId) {
-        this.crtId = crtId;
+    public void setSpotDesc(String spotDesc) {
+        this.spotDesc = spotDesc;
     }
 
     public String getSpotLoc() {
@@ -195,20 +167,20 @@ public class SpotVO implements Serializable {
         this.spotLng = spotLng;
     }
 
+    public byte[] getSpotPic() {
+        return spotPic;
+    }
+
+    public void setSpotPic(byte[] spotPic) {
+        this.spotPic = spotPic;
+    }
+
     public Byte getSpotStatus() {
         return spotStatus;
     }
 
     public void setSpotStatus(Byte spotStatus) {
         this.spotStatus = spotStatus;
-    }
-
-    public String getSpotDesc() {
-        return spotDesc;
-    }
-
-    public void setSpotDesc(String spotDesc) {
-        this.spotDesc = spotDesc;
     }
 
     public LocalDateTime getSpotCreateAt() {
@@ -227,43 +199,14 @@ public class SpotVO implements Serializable {
         this.spotUpdatedAt = spotUpdatedAt;
     }
 
-    // 業務方法
-    /**
-     * 檢查景點是否為上架狀態
-     * @return true 如果景點為上架狀態
-     */
-    public boolean isActive() {
-        return spotStatus != null && spotStatus == 1;
+    public Integer getCrtId() {
+        return crtId;
     }
 
-    /**
-     * 取得狀態文字描述
-     * @return 狀態文字
-     */
-    public String getStatusText() {
-        if (spotStatus == null) {
-            return "未知";
-        }
-        switch (spotStatus) {
-            case 0: return "待審核";
-            case 1: return "上架";
-            case 2: return "退回";
-            case 3: return "下架";
-            default: return "未知";
-        }
+    public void setCrtId(Integer crtId) {
+        this.crtId = crtId;
     }
 
-    /**
-     * 檢查是否有有效的座標資訊
-     * @return true 如果有完整的經緯度資訊
-     */
-    public boolean hasValidCoordinates() {
-        return spotLat != null && spotLng != null 
-            && spotLat >= -90 && spotLat <= 90
-            && spotLng >= -180 && spotLng <= 180;
-    }
-
-    // 新增欄位的 Getter 和 Setter 方法
     public String getGovtId() {
         return govtId;
     }
@@ -272,20 +215,36 @@ public class SpotVO implements Serializable {
         this.govtId = govtId;
     }
 
-    public String getZone() {
-        return zone;
-    }
-
-    public void setZone(String zone) {
-        this.zone = zone;
-    }
-
     public String getRegion() {
         return region;
     }
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public String getFirstPictureUrl() {
+        return firstPictureUrl;
+    }
+
+    public void setFirstPictureUrl(String firstPictureUrl) {
+        this.firstPictureUrl = firstPictureUrl;
+    }
+
+    public String getSpotAuditRemark() {
+        return spotAuditRemark;
+    }
+
+    public void setSpotAuditRemark(String spotAuditRemark) {
+        this.spotAuditRemark = spotAuditRemark;
+    }
+
+    public String getZone() {
+        return zone;
+    }
+
+    public void setZone(String zone) {
+        this.zone = zone;
     }
 
     public String getTown() {
@@ -391,55 +350,62 @@ public class SpotVO implements Serializable {
     public void setPictureUrls(String pictureUrls) {
         this.pictureUrls = pictureUrls;
     }
-
+    
     /**
-     * 從 pictureUrls (JSON字串) 中獲取第一張圖片的URL
-     * @return 第一張圖片的URL，如果沒有或解析失敗則返回 null
+     * 檢查是否有有效的座標資訊
+     * @return true 如果有完整的經緯度資訊
      */
-    public String getFirstPictureUrl() {
-        if (pictureUrls == null || pictureUrls.trim().isEmpty()) {
-            return null;
-        }
-
-        if (!pictureUrls.trim().startsWith("[")) {
-            // 如果不是JSON陣列，則假設它不是有效的多圖片格式
-            return null;
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            List<String> urls = objectMapper.readValue(pictureUrls, new TypeReference<List<String>>() {});
-            if (urls != null && !urls.isEmpty()) {
-                return urls.get(0);
-            }
-        } catch (JsonProcessingException e) {
-            // 實際應用中建議紀錄錯誤
-            return null; 
-        }
-        return null;
+    public boolean hasValidCoordinates() {
+        return spotLat != null && spotLng != null 
+            && spotLat >= -90 && spotLat <= 90
+            && spotLng >= -180 && spotLng <= 180;
     }
 
     /**
-     * 檢查是否有 Google 評分資訊
+     * 取得狀態文字描述
+     * @return 狀態文字描述
+     */
+    public String getStatusText() {
+        switch (this.spotStatus) {
+            case 0: return "待審核";
+            case 1: return "上架";
+            case 2: return "退回";
+            case 3: return "下架";
+            default: return "未知狀態";
+        }
+    }
+
+    /**
+     * 判斷是否來自政府資料
+     * @return true 如果來自政府資料
+     */
+    public boolean isFromGovernmentData() {
+        return this.govtId != null && !this.govtId.isEmpty();
+    }
+
+    /**
+     * 判斷是否有 Google 評分
      * @return true 如果有 Google 評分
      */
     public boolean hasGoogleRating() {
-        return googleRating != null && googleRating > 0;
+        return this.googleRating != null && this.googleRating > 0;
     }
-    
+
     /**
-     * 檢查是否來自政府資料
-     * @return true 如果有政府資料 ID
+     * 判斷是否為上架狀態
+     * @return true 如果為上架狀態
      */
-    public boolean isFromGovernmentData() {
-        return govtId != null && !govtId.trim().isEmpty();
+    public boolean isActive() {
+        return this.spotStatus == 1;
     }
 
-    public String getSpotAuditRemark() {
-        return spotAuditRemark;
-    }
-
-    public void setSpotAuditRemark(String spotAuditRemark) {
-        this.spotAuditRemark = spotAuditRemark;
+    @Override
+    public String toString() {
+        return "SpotVO{" +
+                "spotId=" + spotId +
+                ", spotName='" + spotName + '\'' +
+                ", spotStatus=" + spotStatus +
+                ", region='" + region + '\'' +
+                '}';
     }
 } 

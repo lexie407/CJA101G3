@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>景點管理 - 後台管理系統</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 引入後台模板的頭部資源 -->
+    <th:block th:replace="~{navBackTemplate :: headResources}"></th:block>
+    
+    <!-- 景點模組專用樣式 -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
+    <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-list.css}">
+    <script th:src="@{/js/spot/back-end/list.js?v=8}" defer></script>
+    
+    <!-- 🔧 過度階段：註解掉CSRF token -->
+    <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
+</head>
+<body class="light">
+    <div class="app-container">
+        <!-- 引入後台左側導航 -->
+        <th:block th:replace="~{navBackTemplate :: navbar}"></th:block>
+        
+        <div class="main-content">
+            <!-- 頂部導航 -->
+            <div th:replace="~{subnavContentBack :: subnav(activeItem='spotlist')}"></div>
+
+            <main class="content-area-main spot-list-page">
+        <!-- 頁面標題區域 -->
+        <div class="page-header-section">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>景點管理</h1>
+                    <p>管理系統中的所有景點資料</p>
+                </div>
+                <div class="header-image">
+                    <img src="/images/logo.png" alt="景點管理" class="header-logo">
+                </div>
+            </div>
+        </div>
+
+        <!-- 篩選控制區 -->
+        <div class="filter-section">
+            <div class="filter-controls">
+                <div class="search-box">
+                    <input type="text" placeholder="搜尋景點名稱、地點..." id="searchInput" th:value="${param.keyword}">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <!-- 篩選按鈕群組 -->
+                <div class="filter-dropdown-group">
+                    <!-- 狀態篩選 -->
+                    <div class="filter-dropdown" data-filter="status">
+                        <button class="filter-btn" id="statusBtn">
+                            <span>狀態篩選</span>
+                            <span class="filter-arrow">▼</span>
+                        </button>
+                        <div class="dropdown-menu" id="statusDropdown">
+                            <div class="dropdown-content">
+                                <div class="option-item">
+                                    <input type="radio" name="status" value="all" id="status-all" checked>
+                                    <label for="status-all">全部狀態</label>
+                                </div>
+                                <div class="option-item">
+                                    <input type="radio" name="status" value="1" id="status-active">
+                                    <label for="status-active">上架</label>
+                                </div>
+                                <div class="option-item">
+                                    <input type="radio" name="status" value="2" id="status-rejected">
+                                    <label for="status-rejected">退回</label>
+                                </div>
+                                <div class="option-item">
+                                    <input type="radio" name="status" value="3" id="status-inactive">
+                                    <label for="status-inactive">下架</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 地區篩選 -->
+                    <div class="filter-dropdown" data-filter="region">
+                        <button class="filter-btn" id="regionBtn">
+                            <span>地區篩選</span>
+                            <span class="filter-arrow">▼</span>
+                        </button>
+                        <div class="dropdown-menu" id="regionDropdown">
+                            <div class="dropdown-content">
+                                <div class="option-item">
+                                    <input type="radio" name="region" value="all" id="region-all" checked>
+                                    <label for="region-all">全部地區</label>
+                                </div>
+                                <!-- 動態生成地區選項 -->
+                                <th:block th:each="region, iterStat : ${allRegions}">
+                                    <div class="option-item">
+                                        <input type="radio" name="region" th:value="${region}" th:id="'region-' + ${iterStat.index}">
+                                        <label th:for="'region-' + ${iterStat.index}" th:text="${region}">地區名稱</label>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 清除按鈕 -->
+                    <button type="button" class="clear-btn">清除</button>
+                </div>
+                
+                <!-- 右側控制項 -->
+                <div class="right-controls">
+                    <!-- 分頁控制 -->
+                    <div class="pagination-control">
+                        <span>每頁顯示</span>
+                        <select id="pageSizeSelect">
+                            <option value="3">3 筆</option>
+                            <option value="5">5 筆</option>
+                            <option value="10" selected>10 筆</option>
+                            <option value="20">20 筆</option>
+                            <option value="30">30 筆</option>
+                            <option value="-1">顯示所有</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 成功/錯誤訊息 -->
+        <div th:if="${successMessage}" class="alert alert-success">
+            <i class="material-icons">check_circle</i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <i class="material-icons">error</i>
+            <span th:utext="${errorMessage}"></span> <!-- 使用utext以支持HTML換行 -->
+        </div>
+        
+        <!-- 表格區域 -->
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-title-group">
+                    <button class="sort-btn active" id="sortBtn" title="排序">
+                        <span class="sort-icon">↕</span>
+                        <span class="sort-text">排序</span>
+                    </button>
+                    <h2 class="table-title">
+                        景點列表 <span class="count-badge" id="countBadge" 
+                            th:text="|共 ${spotPage.totalElements} 筆|">共 0 筆</span>
+                    </h2>
+                </div>
+                <div class="table-actions">
+                    <span class="selected-info hidden" id="selectedInfo">已選擇 <span id="selectedCount">0</span> 個項目</span>
+                    <div class="batch-actions">
+                        <button class="batch-btn hidden" id="batchBtn">
+                            批量操作 <span class="batch-btn-small">▼</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form id="batchForm" method="post">
+            <table class="sample-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>ID</th>
+                        <th>景點資訊</th>
+                        <th>地點</th>
+                        <th>狀態</th>
+                        <th>建立時間</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${spotPage.empty}">
+                        <td colspan="7">
+                            <div class="empty-state-container">
+                                <div class="icon">📭</div>
+                                <div class="title">目前沒有符合條件的景點資料</div>
+                                <div class="subtitle">請調整篩選條件或清除篩選</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:each="spot : ${spotPage.content}" th:data-region="${spot.region}">
+                        <td><input type="checkbox" name="spotIds" th:value="${spot.spotId}" class="spot-checkbox"></td>
+                        <td><span class="spot-id" th:text="'#' + ${spot.spotId}">#58</span></td>
+                        <td>
+                            <div class="spot-info">
+                                <!-- 景點圖片或佔位符 -->
+                                <th:block th:if="${spot.firstPictureUrl != null and !#strings.isEmpty(spot.firstPictureUrl)}">
+                                    <img th:src="${spot.firstPictureUrl}" 
+                                         th:alt="${spot.spotName}" 
+                                         class="spot-image">
+                                </th:block>
+                                <th:block th:unless="${spot.firstPictureUrl != null and !#strings.isEmpty(spot.firstPictureUrl)}">
+                                    <div class="spot-image-placeholder">🏞️</div>
+                                </th:block>
+                                
+                                <!-- 景點文字資訊 -->
+                                <div class="spot-text-info">
+                                    <div class="spot-name" th:text="${spot.spotName}">景點名稱</div>
+                                    <div class="spot-desc" th:text="${#strings.abbreviate(spot.spotDesc, 50)}">景點描述...</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="spot-location" th:text="${spot.spotLoc}">地點</span></td>
+                        <td>
+                            <span th:switch="${spot.spotStatus}">
+                                <span th:case="0" class="status-badge status-pending">待審核</span>
+                                <span th:case="1" class="status-badge status-active">上架</span>
+                                <span th:case="2" class="status-badge status-rejected">退回</span>
+                                <span th:case="3" class="status-badge status-inactive">下架</span>
+                                <span th:case="*" class="status-badge">未知</span>
+                            </span>
+                        </td>
+                        <td><span class="spot-date" th:text="${#temporals.format(spot.spotCreateAt, 'yyyy-MM-dd')}">2025-06-26</span></td>
+                        <td data-label="操作">
+                            <div class="action-buttons">
+                                <a th:href="@{/admin/spot/detail/{id}(id=${spot.spotId})}" class="action-btn btn-view" title="查看">👁️</a>
+                                <a th:href="@{/admin/spot/edit/{id}(id=${spot.spotId})}" class="action-btn btn-edit" title="編輯">✏️</a>
+                                <form th:action="@{/admin/spot/delete/{id}(id=${spot.spotId})}" method="post" class="action-form" th:data-spot-name="${spot.spotName}">
+                                    <button type="submit" class="action-btn btn-delete" title="刪除">🗑️</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+        
+        <!-- 前端分頁控制 -->
+        <div class="pagination-container" id="paginationContainer">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" id="firstPageBtn">
+                        <button class="page-link">
+                            <span class="material-icons">first_page</span>
+                        </button>
+                    </li>
+                    <li class="page-item" id="prevPageBtn">
+                        <button class="page-link">
+                            <span class="material-icons">chevron_left</span>
+                        </button>
+                    </li>
+                    <!-- 頁碼容器 -->
+                    <div id="pageNumbers"></div>
+                    <li class="page-item" id="nextPageBtn">
+                        <button class="page-link">
+                            <span class="material-icons">chevron_right</span>
+                        </button>
+                    </li>
+                    <li class="page-item" id="lastPageBtn">
+                        <button class="page-link">
+                            <span class="material-icons">last_page</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+            <div class="pagination-info" id="paginationInfo">
+                <!-- 分頁資訊將由 JavaScript 動態更新 -->
+            </div>
+        </div>
+    </main>
+
+            </main>
+        </div>
+    </div>
+    
+    <!-- 將批量操作選單移到此處，成為 body 的直屬子元素，以解決層級與 overflow 裁切問題 -->
+    <div id="batchMenu">
+        <button type="button" class="dropdown-item" data-action="activate">
+            <span class="material-icons icon-success">check_circle</span> 批量上架
+        </button>
+        <button type="button" class="dropdown-item" data-action="deactivate">
+            <span class="material-icons icon-warning">cancel</span> 批量下架
+        </button>
+        <button type="button" class="dropdown-item danger" data-action="delete">
+            <span class="material-icons icon-danger">delete</span> 批量刪除
+        </button>
+    </div>
+</body>
+</html> 

@@ -14,6 +14,31 @@
 /* 頁面標題區域 - 使用 spot-common.css 中的 .page-header-section 樣式 */
 /* 如果需要，可以在這裡添加列表頁專用的標題樣式覆蓋 */
 
+.spot-list-page {
+    padding-top: 40px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+.sample-table {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sample-table th:last-child,
+.sample-table td:last-child {
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
+}
+
 /* 篩選控制區 */
 .filter-section {
     background: white;
@@ -413,55 +438,58 @@
     border-color: var(--md-sys-color-primary);
 }
 
-/* 批量操作下拉選單 - 簡化版 */
+/* 批量操作選單樣式 */
 #batchMenu {
-    display: none;
-    position: fixed; /* 位置由 JavaScript 動態計算，會自動往左偏移30px */
+    position: fixed;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 99999;
     min-width: 180px;
     padding: 8px 0;
-    background: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    display: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 #batchMenu .dropdown-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    color: var(--md-sys-color-on-surface);
+    padding: 12px 16px;
+    margin: 0;
+    border: none;
+    background: transparent;
+    color: #333333;
     text-decoration: none;
-    transition: all 0.2s;
-    font-size: var(--font-size-base);
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    text-align: left;
+    gap: 8px;
 }
 
 #batchMenu .dropdown-item:hover {
-    background: #f5f5f5;
+    background-color: #f5f5f5;
 }
 
 #batchMenu .dropdown-item.danger {
-    color: #dc2626;
+    color: #d32f2f;
 }
 
 #batchMenu .dropdown-item.danger:hover {
-    background: rgba(220, 38, 38, 0.08);
+    background-color: #ffebee;
 }
 
 #batchMenu .material-icons {
-    font-size: 20px;
-}
-
-.sample-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 2px;
+    font-size: 18px;
+    margin-right: 0;
 }
 
 .sample-table th {
     background: var(--md-sys-color-surface-container);
-    padding: 16px 20px;
+    padding: 16px 5px;
     text-align: left;
     font-weight: 600;
     color: var(--md-sys-color-on-surface);
@@ -674,14 +702,6 @@
     line-height: 1.4;
 }
 
-
-
-.action-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-}
-
 .action-btn {
     width: 32px;
     height: 32px;
@@ -723,10 +743,23 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-
-
 /* 響應式設計 */
+@media (max-width: 1200px) {
+    .spot-list-page {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+    
+    .sample-table th:nth-child(3) { width: 35%; }
+    .sample-table th:nth-child(4) { width: 20%; }
+}
+
 @media (max-width: 992px) {
+    .spot-list-page {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
     .filter-controls {
         flex-wrap: wrap;
         gap: 8px;
@@ -748,9 +781,21 @@
         flex: 1 1 100%;
         gap: 8px;
     }
+    
+    /* 調整表格列寬 */
+    .sample-table th:nth-child(3) { width: 40%; }
+    .sample-table th:nth-child(4) { width: 15%; }
+    .sample-table th:nth-child(6) { width: 100px; }
+    .sample-table th:nth-child(7) { width: 120px; }
 }
 
 @media (max-width: 768px) {
+    .spot-list-page {
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 15px;
+    }
+    
     .filter-controls {
         flex-direction: column;
         align-items: stretch;
@@ -786,6 +831,127 @@
 
     .pagination-control select {
         min-width: 50px;
+        font-size: var(--font-size-xs);
+    }
+    
+    /* 隱藏部分列以節省空間 */
+    .sample-table th:nth-child(2),
+    .sample-table td:nth-child(2) {
+        display: none; /* 隱藏 ID 列 */
+    }
+    
+    .sample-table th:nth-child(6),
+    .sample-table td:nth-child(6) {
+        display: none; /* 隱藏建立時間列 */
+    }
+    
+    /* 調整剩餘列的寬度 */
+    .sample-table th:nth-child(1) { width: 40px; }
+    .sample-table th:nth-child(3) { width: 45%; }
+    .sample-table th:nth-child(4) { width: 25%; }
+    .sample-table th:nth-child(5) { width: 80px; }
+    .sample-table th:nth-child(7) { width: 100px; }
+    
+    /* 調整景點信息佈局 */
+    .spot-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .spot-image,
+    .spot-image-placeholder {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 8px;
+    }
+    
+    .spot-text-info {
+        width: 100%;
+    }
+    
+    .spot-name {
+        font-size: var(--font-size-sm);
+        line-height: 1.3;
+    }
+    
+    .spot-desc {
+        font-size: var(--font-size-xs);
+        line-height: 1.2;
+    }
+    
+    /* 調整操作按鈕 */
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .action-btn {
+        padding: 6px 8px;
+        font-size: var(--font-size-xs);
+    }
+}
+
+@media (max-width: 480px) {
+    .spot-list-page {
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-top: 10px;
+    }
+    
+    /* 進一步簡化表格 */
+    .sample-table {
+        font-size: var(--font-size-xs);
+    }
+    
+    .filter-section {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .filter-btn,
+    .clear-btn {
+        padding: 8px 12px;
+        font-size: var(--font-size-sm);
+    }
+    
+    .search-box input {
+        padding: 10px 35px 10px 12px;
+        font-size: var(--font-size-sm);
+    }
+    
+    /* 表格行高調整 */
+    .sample-table td {
+        padding: 8px 4px;
+        vertical-align: top;
+    }
+    
+    /* 狀態標籤調整 */
+    .status-badge {
+        font-size: var(--font-size-xs);
+        padding: 2px 6px;
+    }
+    
+    /* 地點文字縮短 */
+    .spot-location {
+        font-size: var(--font-size-xs);
+        line-height: 1.2;
+        word-break: break-all;
+    }
+    
+    /* 批量操作選單調整 */
+    .batch-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .selected-info {
+        font-size: var(--font-size-xs);
+    }
+    
+    /* 分頁導航調整 */
+    .page-item .page-link {
+        min-width: 30px;
+        height: 30px;
         font-size: var(--font-size-xs);
     }
 }
@@ -1013,3 +1179,146 @@
     visibility: visible;
     transform: translateY(0);
 } 
+
+/* API匯入按鈕樣式 */
+.api-import-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 12px;
+    transition: background-color 0.2s;
+}
+
+.api-import-btn:hover {
+    background-color: rgb(30, 120, 160); /* 比主色深一點的藍綠色 */
+    color: var(--md-sys-color-on-primary);
+}
+
+.api-import-btn i {
+    font-size: 18px;
+}
+
+/* 模態視窗樣式 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: var(--md-sys-color-surface);
+    margin: 40px auto;
+    padding: 24px;
+    width: 90%;
+    max-width: 800px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.modal-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    color: var(--md-sys-color-on-surface);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+/* 模態視窗內容區域樣式 */
+.modal-section {
+    margin-bottom: 32px;
+    padding: 20px;
+    background-color: var(--md-sys-color-surface-container-lowest);
+    border-radius: 8px;
+}
+
+.section-header {
+    margin-bottom: 16px;
+}
+
+.section-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: var(--md-sys-color-on-surface);
+}
+
+.section-header p {
+    margin: 0;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 14px;
+}
+
+/* 表單元素樣式 */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--md-sys-color-on-surface);
+    font-weight: 500;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-group input {
+    width: 100px;
+    padding: 8px 12px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.input-suffix {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 14px;
+}
+
+.helper-text {
+
+}

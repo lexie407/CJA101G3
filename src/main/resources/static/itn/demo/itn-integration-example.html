@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>揪團頁面 - Itn 行程卡片整合範例</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+        
+        .page-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin: 8px 0 0 0;
+        }
+        
+        .main-content {
+            padding: 40px 0;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-btn:hover {
+            background: #f5f5f5;
+        }
+        
+        .filter-btn.active {
+            background: #2196f3;
+            color: white;
+            border-color: #2196f3;
+        }
+        
+        .loading-message {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .stats {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stat-item {
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2196f3;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 頁面標題 -->
+    <div class="header">
+        <div class="container">
+            <h1 class="page-title">🎯 熱門行程揪團</h1>
+            <p class="page-subtitle">發現精彩行程，與同好一起探索台灣之美</p>
+        </div>
+    </div>
+
+    <!-- 主要內容 -->
+    <div class="main-content">
+        <div class="container">
+            <!-- 統計資訊 -->
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalTrips">0</div>
+                    <div class="stat-label">熱門行程</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="avgRating">0.0</div>
+                    <div class="stat-label">平均評分</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="avgPrice">0</div>
+                    <div class="stat-label">平均價格</div>
+                </div>
+            </div>
+
+            <!-- 篩選和標題 -->
+            <div class="section-header">
+                <h2 class="section-title">精選行程</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterTrips('all')">全部</button>
+                    <button class="filter-btn" onclick="filterTrips('culture')">文化景點</button>
+                    <button class="filter-btn" onclick="filterTrips('food')">美食</button>
+                    <button class="filter-btn" onclick="filterTrips('nature')">自然景觀</button>
+                    <button class="filter-btn" onclick="filterTrips('shopping')">購物</button>
+                </div>
+            </div>
+
+            <!-- 行程卡片容器 -->
+            <div id="groupActivityCards"></div>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <div class="footer">
+        <div class="container">
+            <p>&copy; 2025 行程揪團平台 - 使用 Itn 行程卡片元件</p>
+        </div>
+    </div>
+
+    <!-- 引入 Itn 行程卡片元件 -->
+    <script src="../components/itn-trip-card.js"></script>
+    <script src="../components/itn-trip-card-data.js"></script>
+
+    <script>
+        // 全域變數
+        let allTripsData = [];
+        let currentFilter = 'all';
+
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        // 初始化頁面
+        function initializePage() {
+            showLoadingMessage();
+            
+            // 模擬從 API 載入資料
+            setTimeout(() => {
+                loadTripsData();
+            }, 1000);
+        }
+
+        // 載入行程資料
+        function loadTripsData() {
+            try {
+                // 使用範例資料（實際應用中會從 API 獲取）
+                allTripsData = getItnTripSampleData('CATEGORIES');
+                
+                // 更新統計資訊
+                updateStats(allTripsData);
+                
+                // 渲染卡片
+                renderTripCards(allTripsData);
+                
+            } catch (error) {
+                showErrorMessage('載入行程資料失敗：' + error.message);
+            }
+        }
+
+        // 渲染行程卡片
+        function renderTripCards(data) {
+            const options = {
+                onRegisterClick: function(trip, cardElement) {
+                    // 實際應用中會跳轉到報名頁面
+                    handleRegisterClick(trip);
+                },
+                onDetailClick: function(trip, cardElement) {
+                    // 實際應用中會跳轉到詳情頁面
+                    handleDetailClick(trip);
+                },
+                onCardClick: function(trip, cardElement) {
+                    // 卡片點擊效果
+                    console.log('查看行程:', trip.title);
+                }
+            };
+
+            // 使用 Itn 行程卡片元件渲染
+            createItnTripCards('#groupActivityCards', data, options);
+        }
+
+        // 處理報名按鈕點擊
+        function handleRegisterClick(trip) {
+            // 模擬報名流程
+            if (confirm(`確定要報名「${trip.title}」嗎？\n費用：NT$ ${trip.price.toLocaleString()}`)) {
+                alert('報名成功！我們會盡快與您聯繫確認詳情。');
+                
+                // 實際應用中的處理：
+                // window.location.href = `/groupactivity/register/${trip.id}`;
+                // 或者打開報名表單模態框
+            }
+        }
+
+        // 處理詳情按鈕點擊
+        function handleDetailClick(trip) {
+            // 模擬詳情查看
+            const details = `
+行程名稱：${trip.title}
+行程日期：${trip.date}
+行程時長：${trip.duration}
+團體人數：${trip.groupSize}
+費用：NT$ ${trip.price.toLocaleString()}
+評分：${trip.rating} ⭐
+
+行程安排：
+${trip.itinerary.map(item => `• ${item.time} - ${item.name} (${item.duration})`).join('\n')}
+            `;
+            
+            alert(details);
+            
+            // 實際應用中的處理：
+            // window.location.href = `/groupactivity/detail/${trip.id}`;
+            // 或者打開詳情模態框
+        }
+
+        // 篩選行程
+        function filterTrips(category) {
+            // 更新篩選按鈕狀態
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 篩選資料
+            let filteredData = allTripsData;
+            
+            if (category !== 'all') {
+                const categoryMap = {
+                    'culture': '文化景點',
+                    'food': '美食',
+                    'nature': '自然景觀',
+                    'shopping': '購物',
+                    'entertainment': '娛樂'
+                };
+                
+                const targetCategory = categoryMap[category];
+                filteredData = allTripsData.filter(trip => 
+                    trip.itinerary.some(item => item.category === targetCategory)
+                );
+            }
+
+            currentFilter = category;
+            
+            // 重新渲染卡片
+            renderTripCards(filteredData);
+            
+            // 更新統計
+            updateStats(filteredData);
+        }
+
+        // 更新統計資訊
+        function updateStats(data) {
+            const totalTrips = data.length;
+            const avgRating = totalTrips > 0 ? 
+                (data.reduce((sum, trip) => sum + trip.rating, 0) / totalTrips).toFixed(1) : 0;
+            const avgPrice = totalTrips > 0 ? 
+                Math.round(data.reduce((sum, trip) => sum + trip.price, 0) / totalTrips) : 0;
+
+            document.getElementById('totalTrips').textContent = totalTrips;
+            document.getElementById('avgRating').textContent = avgRating;
+            document.getElementById('avgPrice').textContent = avgPrice.toLocaleString();
+        }
+
+        // 顯示載入訊息
+        function showLoadingMessage() {
+            document.getElementById('groupActivityCards').innerHTML = `
+                <div class="loading-message">
+                    <div style="font-size: 48px; margin-bottom: 16px;">🔄</div>
+                    <p>正在載入精彩行程...</p>
+                </div>
+            `;
+        }
+
+        // 顯示錯誤訊息
+        function showErrorMessage(message) {
+            document.getElementById('groupActivityCards').innerHTML = `
+                <div class="error-message">
+                    <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                    <p>${message}</p>
+                    <button onclick="loadTripsData()" style="margin-top: 16px; padding: 8px 16px; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        重新載入
+                    </button>
+                </div>
+            `;
+        }
+
+        // 檢查元件載入狀態
+        if (typeof ItnTripCardComponent === 'undefined') {
+            console.error('❌ Itn 行程卡片元件載入失敗');
+            showErrorMessage('行程卡片元件載入失敗，請重新整理頁面');
+        } else {
+            console.log('✅ Itn 行程卡片元件載入成功');
+        }
+    </script>
+</body>
+</html> 

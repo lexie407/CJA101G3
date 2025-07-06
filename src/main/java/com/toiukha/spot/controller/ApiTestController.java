@@ -1,6 +1,5 @@
 package com.toiukha.spot.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,8 +19,7 @@ import java.util.Map;
 @RequestMapping("/spot/api-test")
 public class ApiTestController {
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     /**
      * 測試政府觀光API連線

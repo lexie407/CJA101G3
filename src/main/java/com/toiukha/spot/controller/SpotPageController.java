@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 import com.toiukha.spot.model.SpotVO;
 import com.toiukha.spot.service.SpotService;
@@ -52,24 +54,75 @@ public class SpotPageController {
      * @return 首頁模板
      */
     @GetMapping("/")
-    public String spotRoot(Model model) {
-        return spotIndex(model);
+    public String spotRoot(Model model, HttpSession session) {
+        return spotIndex(model, session);
     }
 
     @GetMapping("/index")
-    public String spotIndex(Model model) {
+    public String spotIndex(Model model, HttpSession session) {
         try {
+            // 嘗試從服務獲取景點
             List<SpotVO> activeSpots = spotService.getActiveSpots();
+            System.out.println("景點首頁 - 載入景點數量: " + (activeSpots != null ? activeSpots.size() : "null"));
+            
+            if (activeSpots == null || activeSpots.isEmpty()) {
+                System.out.println("沒有找到任何景點，創建測試數據");
+                // 創建測試數據
+                activeSpots = createTestSpots();
+            } else {
+                System.out.println("第一個景點: " + activeSpots.get(0).getSpotName());
+            }
+            
             model.addAttribute("spotList", activeSpots);
             model.addAttribute("currentPage", "home");
+            
+            // 從 session 獲取會員 ID
+            Integer memId = getMemIdFromSession(session);
+            
+            // 若會員已登入，檢查收藏狀態
+            if (memId != null && !activeSpots.isEmpty()) {
+                // 獲取景點ID列表
+                List<Integer> spotIds = activeSpots.stream()
+                    .map(SpotVO::getSpotId)
+                    .collect(Collectors.toList());
+                
+                // 批量檢查收藏狀態
+                Map<Integer, Boolean> favoriteStatusMap = spotFavoriteService.batchCheckFavoriteStatus(memId, spotIds);
+                model.addAttribute("favoriteStatusMap", favoriteStatusMap);
+            }
+            
             return "index";
         } catch (Exception e) {
             e.printStackTrace();
+            System.err.println("載入景點時發生錯誤: " + e.getMessage());
             model.addAttribute("errorMessage", "載入景點資料失敗: " + e.getMessage());
-            model.addAttribute("spotList", new ArrayList<>());
+            model.addAttribute("spotList", createTestSpots());
             model.addAttribute("currentPage", "home");
             return "index";
         }
+    }
+    
+    /**
+     * 創建測試景點數據
+     * @return 測試景點列表
+     */
+    private List<SpotVO> createTestSpots() {
+        List<SpotVO> testSpots = new ArrayList<>();
+        
+        for (int i = 1; i <= 8; i++) {
+            SpotVO spot = new SpotVO();
+            spot.setSpotId(i);
+            spot.setSpotName("測試景點 " + i);
+            spot.setSpotDesc("這是測試景點描述，用於測試首頁顯示功能是否正常工作。這是一個很長的描述，需要在前端進行截斷處理。");
+            spot.setSpotLoc("台北市測試區測試路 " + i + " 號");
+            spot.setSpotStatus((byte) 1);
+            spot.setSpotCreateAt(LocalDateTime.now());
+            spot.setSpotUpdatedAt(LocalDateTime.now());
+            spot.setRegion("台北市");
+            testSpots.add(spot);
+        }
+        
+        return testSpots;
     }
 
     /**
@@ -79,7 +132,7 @@ public class SpotPageController {
      * @param model 模型物件
      * @return 列表頁模板
      */
-    @GetMapping("/list")
+    @GetMapping("/spotlist")
     public String spotList(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "region", required = false) String region,
@@ -125,7 +178,7 @@ public class SpotPageController {
             model.addAttribute("currentPage", "list");
         }
         
-        return "front-end/spot/list";
+        return "front-end/spot/spotlist";
     }
 
     // ========== 2. 景點搜尋 ==========
@@ -228,7 +281,7 @@ public class SpotPageController {
             model.addAttribute("currentPage", "home");
         }
         
-        return "front-end/spot/list"; // 暫時使用列表模板
+        return "front-end/spot/spotlist"; // 暫時使用列表模板
     }
 
     /**
@@ -308,7 +361,7 @@ public class SpotPageController {
             model.addAttribute("currentPage", "home");
         }
         
-        return "front-end/spot/list"; // 暫時使用列表模板
+        return "front-end/spot/spotlist"; // 暫時使用列表模板
     }
 
     // ========== 3. 景點詳情 ==========
@@ -317,7 +370,7 @@ public class SpotPageController {
      * 景點詳情頁面
      * @param spotId 景點ID
      * @param model 模型物件
-     * @param session 會話物件 (檢查收藏狀態)
+     * @param session 會話物件
      * @return 詳情頁模板
      */
     @GetMapping("/detail/{spotId}")
@@ -334,13 +387,18 @@ public class SpotPageController {
             
             model.addAttribute("spot", spot);
             
-            // 使用測試會員ID檢查收藏狀態
-            Integer memId = 10;
-            boolean isFavorited = spotFavoriteService.isFavorited(memId, spotId);
+            // 從 session 獲取會員 ID
+            Integer memId = getMemIdFromSession(session);
+            boolean isFavorited = false;
+            
+            // 若會員已登入，檢查收藏狀態
+            if (memId != null) {
+                isFavorited = spotFavoriteService.isFavorited(memId, spotId);
+            }
             model.addAttribute("isFavorited", isFavorited);
             
             // 查詢收藏數量
-            Long favoriteCount = spotFavoriteService.getFavoriteCount(spotId);
+            Long favoriteCount = spotFavoriteService.getSpotFavoriteCount(spotId);
             model.addAttribute("favoriteCount", favoriteCount);
             
             // 查詢相關景點推薦（同地區的其他景點，最多6個）
@@ -410,7 +468,7 @@ public class SpotPageController {
         // }
 
         // 預先設定系統欄位
-        spotVO.setCrtId(getCurrentUserId());
+        spotVO.setCrtId(getCurrentUserId(session));
         spotVO.setSpotStatus((byte) 0);
 
         // 檢查景點名稱是否重複
@@ -431,7 +489,7 @@ public class SpotPageController {
         try {
             SpotVO savedSpot = spotService.addSpot(spotVO);
             redirectAttr.addFlashAttribute("msg", "景點新增成功！景點ID: " + savedSpot.getSpotId() + "，等待管理員審核後上架。");
-            return "redirect:/spot/list";
+            return "redirect:/spot/spotlist";
         } catch (Exception e) {
             model.addAttribute("errorMsgs", List.of("新增景點時發生錯誤：" + e.getMessage()));
             model.addAttribute("currentPage", "home");
@@ -449,25 +507,25 @@ public class SpotPageController {
      */
     @GetMapping("/favorites")
     public String myFavorites(Model model, HttpSession session) {
-        // TODO: 暫時關閉登入檢查，供測試使用
-        // Integer memId = getMemIdFromSession(session);
-        // if (memId == null) {
-        //     model.addAttribute("errorMessage", "請先登入");
-        //     return "redirect:/members/login";
-        // }
+        // 從 session 獲取會員 ID
+        Integer memId = getMemIdFromSession(session);
+        if (memId == null) {
+            model.addAttribute("errorMessage", "請先登入");
+            return "redirect:/members/login";
+        }
         
-        // 使用測試會員ID (測試用)
-        Integer memId = 10;
-
         try {
             List<SpotFavoriteVO> favoriteRecords = spotFavoriteService.getFavoriteRecords(memId);
             model.addAttribute("favoriteRecords", favoriteRecords);
             // 左側導覽：首頁高亮（因為景點屬於首頁）
             model.addAttribute("currentPage", "home");
+            // 會員次導覽列：收藏高亮
+            model.addAttribute("activeItem", "favorites");
             return "front-end/spot/favorites";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "載入收藏清單失敗");
             model.addAttribute("currentPage", "home");
+            model.addAttribute("activeItem", "favorites");
             return "front-end/spot/favorites";
         }
     }
@@ -489,11 +547,29 @@ public class SpotPageController {
     // ========== 輔助方法 ==========
 
     /**
-     * 獲取當前用戶ID (建立者ID)
-     * @return 用戶ID
+     * 從 Session 獲取當前登入的會員ID
+     * 整合會員模組的登入系統
+     * @param session HTTP Session
+     * @return 會員ID，如果未登入則返回null
      */
-    private Integer getCurrentUserId() {
-        // TODO: 整合完整的會員登入系統後，從Session獲取真實用戶ID
-        return 10; // 使用測試會員ID範圍 10-19
+    private Integer getMemIdFromSession(HttpSession session) {
+        Object memberObj = session.getAttribute("member");
+        if (memberObj instanceof com.toiukha.members.model.MembersVO) {
+            com.toiukha.members.model.MembersVO member = (com.toiukha.members.model.MembersVO) memberObj;
+            return member.getMemId();
+        }
+        return null;
+    }
+
+
+
+    /**
+     * 獲取當前用戶ID (建立者ID)
+     * 整合會員登入系統
+     * @param session HTTP Session
+     * @return 用戶ID，如果未登入則返回null
+     */
+    private Integer getCurrentUserId(HttpSession session) {
+        return getMemIdFromSession(session);
     }
 } 

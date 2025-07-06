@@ -6,7 +6,7 @@
     <title>地圖瀏覽 - 島遊Kha</title>
     
     <!-- 必要資源引用 - 使用相對路徑 -->
-    <th:block th:replace="~{front-end/spot/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{navTemplate :: headResources}"></th:block>
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 地圖頁面樣式 -->
@@ -15,7 +15,7 @@
 <body class="light">
     <div class="app-container">
         <!-- 左側主導覽列 -->
-        <aside th:replace="~{front-end/spot/navTemplate :: navbar}"></aside>
+        <aside th:replace="~{navTemplate :: navbar}"></aside>
         
         <div class="main-content">
             <!-- 頂部次導覽列 - 地圖頁面高亮 -->
@@ -36,7 +36,7 @@
                                         </a>
                                     </li>
                                     <li class="spot-map-breadcrumb__item">
-                                        <a th:href="@{/spot/list}" class="spot-map-breadcrumb__link">
+                                        <a th:href="@{/spot/spotlist}" class="spot-map-breadcrumb__link">
                                             <span class="material-icons">list</span>
                                             景點列表
                                         </a>
@@ -55,16 +55,16 @@
                                     <p class="spot-map-hero__subtitle">探索台灣美景，用地圖發現更多精彩景點</p>
                                     <div class="spot-map-hero__features">
                                         <div class="spot-map-hero__feature">
-                                            <span class="material-icons">location_on</span>
-                                            <span>精準定位</span>
+                                            <!-- <span class="material-icons">location_on</span> -->
+                                            <!-- <span>精準定位</span> -->
                                         </div>
                                         <div class="spot-map-hero__feature">
-                                            <span class="material-icons">filter_list</span>
-                                            <span>智能篩選</span>
+                                            <!-- <span class="material-icons">filter_list</span> -->
+                                            <!-- <span>智能篩選</span> -->
                                         </div>
                                         <div class="spot-map-hero__feature">
-                                            <span class="material-icons">explore</span>
-                                            <span>互動探索</span>
+                                            <!-- <span class="material-icons">explore</span> -->
+                                            <!-- <span>互動探索</span> -->
                                         </div>
                                     </div>
                                 </div>
@@ -219,7 +219,11 @@
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script th:src="@{/js/notification/websocket.js}"></script>
     
-    <!-- 地圖頁面功能 -->
-    <script th:src="@{/js/spot/front-end/map.js}"></script>
+    <!-- Google Maps API 將由 JavaScript 動態載入 -->
+    
+    <!-- 景點模組通用腳本 -->
+    <script th:src="@{/js/spot/front-end/spot-common.js}" defer></script>
+    <!-- 景點地圖頁面腳本 -->
+    <script th:src="@{/js/spot/front-end/map.js}" defer></script>
 </body>
 </html> 

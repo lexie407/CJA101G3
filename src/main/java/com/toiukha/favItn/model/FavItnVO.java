@@ -36,4 +36,12 @@ public class FavItnVO implements Serializable {
 		this.id = id;
 	}
 
+    public Integer getFavItnId() {
+        return id != null ? id.getFavItnId() : null;
+    }
+
+    public Integer getMemId() {
+        return id != null ? id.getMemId() : null;
+    }
+
 }

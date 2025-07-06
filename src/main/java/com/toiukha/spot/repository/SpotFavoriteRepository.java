@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.toiukha.spot.model.SpotFavoriteVO;
 import com.toiukha.spot.model.SpotFavoriteId;
@@ -145,4 +147,50 @@ public interface SpotFavoriteRepository extends JpaRepository<SpotFavoriteVO, Sp
     default boolean existsByMemIdAndSpotId(Integer memId, Integer spotId) {
         return existsByMemIdAndFavSpotId(memId, spotId);
     }
+    
+    /**
+     * 刪除會員對指定景點的收藏，並返回刪除的記錄數
+     * 
+     * @param memId 會員ID
+     * @param spotId 景點ID
+     * @return 刪除的記錄數
+     */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM SpotFavoriteVO sf WHERE sf.memId = :memId AND sf.favSpotId = :spotId")
+    int deleteByMemIdAndSpotIdReturnCount(@Param("memId") Integer memId, @Param("spotId") Integer spotId);
+    
+    /**
+     * 使用原生SQL查詢會員是否已收藏指定景點
+     * 
+     * @param spotId 景點ID
+     * @param memId 會員ID
+     * @return 收藏記錄數量
+     */
+    @Query(value = "SELECT COUNT(*) FROM favspot WHERE favspotid = :spotId AND memid = :memId", nativeQuery = true)
+    int countBySpotIdAndMemId(@Param("spotId") Integer spotId, @Param("memId") Integer memId);
+    
+    /**
+     * 使用INSERT IGNORE插入收藏記錄，避免主鍵衝突
+     * 
+     * @param spotId 景點ID
+     * @param memId 會員ID
+     * @return 影響的記錄數
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "INSERT IGNORE INTO favspot (favspotid, memid, favcreatedat) VALUES (:spotId, :memId, NOW())", nativeQuery = true)
+    int insertIgnore(@Param("spotId") Integer spotId, @Param("memId") Integer memId);
+    
+    /**
+     * 使用原生SQL刪除收藏記錄
+     * 
+     * @param spotId 景點ID
+     * @param memId 會員ID
+     * @return 影響的記錄數
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM favspot WHERE favspotid = :spotId AND memid = :memId", nativeQuery = true)
+    int deleteBySpotIdAndMemIdNative(@Param("spotId") Integer spotId, @Param("memId") Integer memId);
 } 

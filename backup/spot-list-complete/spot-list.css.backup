@@ -1,0 +1,1033 @@
+/* =============================
+   景點列表頁專用樣式 (移除與 back_style.css 衝突的樣式)
+   ============================= */
+
+/* 移除 .main-content, .secondary-nav 等樣式，改用 back_style.css 中的定義 */
+
+/* =============================
+   景點列表專屬樣式
+   ============================= */
+
+/* 景點列表頁面專用樣式 - 統一使用 back_style.css 標準設定 */
+/* 移除所有覆蓋樣式，使用 back_style.css 中的 .content-area-main 標準 padding: 20px */
+
+/* 頁面標題區域 - 使用 spot-common.css 中的 .page-header-section 樣式 */
+/* 如果需要，可以在這裡添加列表頁專用的標題樣式覆蓋 */
+
+.spot-list-page {
+    padding-top: 20px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+.sample-table {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sample-table th:last-child,
+.sample-table td:last-child {
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
+}
+
+/* 篩選控制區 */
+.filter-section {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 320px;
+    position: relative;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 8px;
+    font-size: var(--font-size-base);
+    outline: none;
+    transition: all 0.2s;
+    background: #ffffff;
+}
+
+.search-box input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.search-icon:hover {
+    color: var(--md-sys-color-primary);
+}
+
+/* 篩選按鈕群組 */
+.filter-dropdown-group {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.filter-dropdown {
+    position: relative;
+}
+
+.filter-btn {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border: 1px solid var(--md-sys-color-outline);
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+    min-width: 120px;
+    justify-content: space-between;
+}
+
+.filter-btn:hover {
+    background: var(--md-sys-color-surface-container);
+    border-color: var(--md-sys-color-outline-variant);
+}
+
+.filter-btn.active {
+    background: var(--md-sys-color-primary-container);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.filter-btn.has-value {
+    background: var(--md-sys-color-primary-container);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.filter-arrow {
+    margin-left: 8px;
+    font-size: var(--font-size-xs);
+    transition: transform 0.2s;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.filter-btn.active .filter-arrow {
+    transform: rotate(180deg);
+    color: var(--md-sys-color-primary);
+}
+
+.clear-btn {
+    padding: 12px 16px;
+    border: 1px solid var(--md-sys-color-outline);
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.clear-btn:hover {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+}
+
+/* 下拉選單 */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    min-width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-content {
+    padding: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    font-size: var(--font-size-base);
+}
+
+.option-item:hover {
+    background-color: var(--md-sys-color-surface-container);
+}
+
+.option-item.selected {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.option-item input[type="radio"] {
+    margin: 0;
+    accent-color: var(--md-sys-color-primary);
+}
+
+.option-item label {
+    cursor: pointer;
+    flex: 1;
+    font-size: var(--font-size-sm);
+    color: var(--md-sys-color-on-surface);
+}
+
+/* 右側控制項優化 */
+.right-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.pagination-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-size-sm);
+    color: var(--md-sys-color-on-surface-variant);
+    white-space: nowrap;
+}
+
+.pagination-control select {
+    padding: 5px 8px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 4px;
+    font-size: var(--font-size-sm);
+    outline: none;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    min-width: 70px;
+}
+
+.pagination-control select:focus {
+    border-color: var(--md-sys-color-primary);
+}
+
+/* 表格區域 */
+.table-section {
+    background: var(--md-sys-color-surface);
+    border-radius: 12px;
+    overflow: visible;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
+.table-header {
+    background: var(--md-sys-color-surface-container);
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 排序按鈕樣式 - 現代扁平化設計 */
+.sort-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    min-width: 80px;
+    height: 36px;
+    border: none;
+    background: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 18px;
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sort-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    border-radius: 18px;
+    pointer-events: none;
+}
+
+.sort-btn:hover {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(41, 171, 194, 0.2);
+}
+
+.sort-btn.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(41, 171, 194, 0.3);
+}
+
+.sort-btn.active::before {
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+}
+
+.sort-icon {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    line-height: 1;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sort-btn:hover .sort-icon {
+    transform: scale(1.1);
+}
+
+.sort-text {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+/* 排序按鈕點擊脈衝動畫 */
+@keyframes sortPulse {
+    0% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(41, 171, 194, 0.3);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(41, 171, 194, 0.4);
+    }
+    100% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(41, 171, 194, 0.3);
+    }
+}
+
+.sort-btn.sorting {
+    animation: sortPulse 0.6s ease-in-out;
+}
+
+.table-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.table-title .material-icons {
+    color: var(--md-sys-color-primary);
+    font-size: var(--font-size-2xl);
+}
+
+.count-badge {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.selected-info {
+    font-size: var(--font-size-sm);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.batch-actions {
+    position: relative !important;
+    overflow: visible !important;
+    z-index: 100;
+}
+
+.batch-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--md-sys-color-outline);
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.batch-btn:hover {
+    background: var(--md-sys-color-surface-container);
+    border-color: var(--md-sys-color-primary);
+}
+
+/* 批量操作選單樣式 */
+#batchMenu {
+    position: fixed;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 99999;
+    min-width: 180px;
+    padding: 8px 0;
+    display: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#batchMenu .dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    margin: 0;
+    border: none;
+    background: transparent;
+    color: #333333;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    text-align: left;
+    gap: 8px;
+}
+
+#batchMenu .dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+
+#batchMenu .dropdown-item.danger {
+    color: #d32f2f;
+}
+
+#batchMenu .dropdown-item.danger:hover {
+    background-color: #ffebee;
+}
+
+#batchMenu .material-icons {
+    font-size: 18px;
+    margin-right: 0;
+}
+
+.sample-table th {
+    background: var(--md-sys-color-surface-container);
+    padding: 16px 5px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    font-size: var(--font-size-base);
+    vertical-align: middle;
+}
+
+/* 表格欄位寬度設定 - 調整左右協調性 */
+.sample-table th:nth-child(1) { width: 50px; }   /* 勾選框 */
+.sample-table th:nth-child(2) { width: 80px; }   /* ID */
+.sample-table th:nth-child(3) { width: 30%; }    /* 景點資訊（圖片+文字）- 減少寬度 */
+.sample-table th:nth-child(4) { width: 25%; }    /* 地點 - 增加寬度 */
+.sample-table th:nth-child(5) { width: 100px; }  /* 狀態 */
+.sample-table th:nth-child(6) { width: 120px; }  /* 建立時間 */
+.sample-table th:nth-child(7) { width: 140px; }  /* 操作 */
+
+.sample-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    font-size: var(--font-size-base);
+    color: var(--md-sys-color-on-surface);
+    vertical-align: middle;
+    line-height: 1.5;
+    position: relative;
+    /* 縮小行高讓表格更緊湊 */
+    min-height: 76px;
+}
+
+.sample-table td:first-child {
+    border-radius: 4px 0 0 4px;
+}
+
+.sample-table td:last-child {
+    border-radius: 0 4px 4px 0;
+}
+
+.sample-table tr:hover {
+    background: var(--md-sys-color-surface-container);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sample-table tr.selected:hover {
+    background: rgba(41, 171, 194, 0.16) !important;
+    box-shadow: 0 2px 12px rgba(41, 171, 194, 0.15), 0 0 0 2px rgba(41, 171, 194, 0.3);
+}
+
+.sample-table tr {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 4px;
+    margin: 1px 0;
+}
+
+/* 確保選中狀態下的退回標籤可見 */
+.sample-table tr.selected .status-badge.status-rejected {
+    background: rgba(255, 179, 71, 0.2);
+    color: rgb(217, 119, 6);
+    border: 1px solid rgba(255, 179, 71, 0.5);
+}
+
+/* 複選框動畫優化 */
+.sample-table input[type="checkbox"]:hover {
+    /* transform: scale(1.1); */ /* 移除 transform */
+}
+
+.sample-table tr.selected input[type="checkbox"] {
+    /* transform: scale(1.15); */ /* 移除 transform */
+    box-shadow: 0 0 0 3px rgba(41, 171, 194, 0.2);
+}
+
+/* 選中狀態動畫關鍵幀 */
+@keyframes selectRow {
+    0% {
+        /* transform: scale(1) translateY(0); */ /* 徹底移除 transform */
+        background: var(--md-sys-color-surface);
+        box-shadow: none;
+    }
+    50% {
+        /* transform: scale(1.01) translateY(-2px); */ /* 徹底移除 transform */
+        background: rgba(41, 171, 194, 0.08);
+        box-shadow: 0 4px 12px rgba(41, 171, 194, 0.1);
+    }
+    100% {
+        /* transform: scale(1.005) translateY(0); */ /* 徹底移除 transform */
+        background: rgba(41, 171, 194, 0.12);
+        box-shadow: 0 0 0 2px rgba(41, 171, 194, 0.2);
+    }
+}
+
+@keyframes deselectRow {
+    0% {
+        /* transform: scale(1.005) translateY(0); */ /* 徹底移除 transform */
+        background: rgba(41, 171, 194, 0.12);
+        box-shadow: 0 0 0 2px rgba(41, 171, 194, 0.2);
+    }
+    50% {
+        /* transform: scale(0.99) translateY(-1px); */ /* 徹底移除 transform */
+        background: rgba(41, 171, 194, 0.06);
+        box-shadow: 0 2px 6px rgba(41, 171, 194, 0.05);
+    }
+    100% {
+        /* transform: scale(1) translateY(0); */ /* 徹底移除 transform */
+        background: var(--md-sys-color-surface);
+        box-shadow: none;
+    }
+}
+
+/* 當添加 selected 類別時觸發動畫 */
+.sample-table tr.selected {
+    animation: selectRow 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    border-radius: 4px;
+    position: relative;
+    z-index: 1;
+}
+
+/* 基本選中狀態 (當動畫完成後保持) */
+.sample-table tr.selected:not(:hover) {
+    background: rgba(41, 171, 194, 0.12) !important;
+    box-shadow: 0 0 0 2px rgba(41, 171, 194, 0.2);
+    /* transform: scale(1.005); */ /* 徹底移除 transform */
+}
+
+/* 景點資訊欄位優化 */
+.spot-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 2px 0;
+}
+
+.spot-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-variant);
+    /* 確保圖片尺寸統一 */
+    min-width: 64px;
+    min-height: 64px;
+    max-width: 64px;
+    max-height: 64px;
+    /* 改善圖片顯示品質 */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    /* 圖片載入失敗時的樣式 */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 32px 32px;
+}
+
+.spot-image-placeholder {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    background: var(--md-sys-color-surface-variant);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--md-sys-color-on-surface-variant);
+    flex-shrink: 0;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    /* 確保佔位符尺寸統一 */
+    min-width: 64px;
+    min-height: 64px;
+    max-width: 64px;
+    max-height: 64px;
+}
+
+.spot-text-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0; /* 讓文字能夠正確換行 */
+}
+
+.spot-name {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    color: var(--md-sys-color-on-surface);
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.spot-desc {
+    font-size: var(--font-size-sm);
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.3;
+    margin-top: 2px;
+    word-wrap: break-word;
+}
+
+/* ID 欄位樣式 */
+.spot-id {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: var(--font-size-base);
+}
+
+/* 地點和時間欄位 */
+.spot-location, .spot-date {
+    font-size: var(--font-size-base);
+    color: var(--md-sys-color-on-surface);
+    line-height: 1.4;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: var(--font-size-base);
+    text-decoration: none !important;
+}
+
+.action-btn.btn-view { 
+    background: rgba(29, 78, 216, 0.1); 
+    color: #1d4ed8; 
+    border: 1px solid rgba(29, 78, 216, 0.2);
+}
+.action-btn.btn-edit { 
+    background: rgba(217, 119, 6, 0.1); 
+    color: #d97706; 
+    border: 1px solid rgba(217, 119, 6, 0.2);
+}
+.action-btn.btn-chat { 
+    background: rgba(34, 197, 94, 0.1); 
+    color: #22c55e; 
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.action-btn.btn-delete { 
+    background: rgba(220, 38, 38, 0.1); 
+    color: #dc2626; 
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* 響應式設計 */
+@media (max-width: 992px) {
+    .filter-controls {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .filter-dropdown-group {
+        flex-wrap: wrap;
+        flex: 1 1 100%;
+    }
+
+    .right-controls {
+        margin-left: 0;
+        justify-content: flex-end;
+        flex: 1 1 100%;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        min-width: auto;
+    }
+
+    .filter-dropdown-group {
+        margin-top: 8px;
+    }
+
+    .right-controls {
+        justify-content: center;
+        margin-top: 8px;
+        gap: 8px;
+    }
+
+    .table-title-group {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .table-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .pagination-control {
+        font-size: var(--font-size-xs);
+    }
+
+    .pagination-control select {
+        min-width: 50px;
+        font-size: var(--font-size-xs);
+    }
+}
+
+.pagination-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 4px;
+}
+
+.page-item .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 6px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    text-decoration: none;
+    font-size: var(--font-size-base);
+    transition: all 0.2s;
+}
+
+.page-item.disabled .page-link {
+    color: var(--md-sys-color-outline);
+    cursor: not-allowed;
+}
+
+.page-item.active .page-link {
+    background: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    font-weight: bold;
+}
+
+.page-item:not(.disabled):not(.active) .page-link:hover {
+    background: var(--md-sys-color-surface-container);
+    border-color: var(--md-sys-color-outline-variant);
+}
+
+.page-link .material-icons {
+    font-size: var(--font-size-2xl);
+}
+
+/* 頁碼容器樣式 */
+#pageNumbers {
+    display: flex;
+    gap: 4px;
+    margin: 0 8px;
+}
+
+/* 分頁按鈕樣式統一 */
+.page-item .page-link {
+    cursor: pointer;
+    user-select: none;
+}
+
+.page-item button.page-link {
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline);
+    color: var(--md-sys-color-on-surface);
+}
+
+.page-item.disabled button.page-link {
+    background: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-outline);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.page-item.active button.page-link {
+    background: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.page-item:not(.disabled):not(.active) button.page-link:hover {
+    background: var(--md-sys-color-surface-container);
+    border-color: var(--md-sys-color-primary);
+}
+
+/* 移除所有 .content-area-main 的覆蓋樣式，統一使用 back_style.css 標準設定 */
+
+/* 當沒有資料時的空狀態容器 */
+.empty-state-container {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* 表格容器內部也確保最小高度 */
+.sample-table tbody {
+    min-height: 300px;
+    display: table-row-group;
+}
+
+/* 移除 .content-area-main 覆蓋樣式，統一使用 back_style.css 標準設定 */
+
+/* =============================
+   內嵌樣式轉換為CSS類別
+   ============================= */
+
+/* 隱藏元素 */
+.hidden {
+    display: none !important;
+}
+
+/* 顯示為 inline */
+.display-inline {
+    display: inline !important;
+}
+
+/* 批量操作按鈕的小字體 */
+.batch-btn-small {
+    font-size: var(--font-size-xs);
+}
+
+/* Material Icons 顏色 */
+.icon-success {
+    color: #43a047 !important;
+}
+
+.icon-warning {
+    color: #fbc02d !important;
+}
+
+.icon-danger {
+    color: #e53935 !important;
+}
+
+/* 空狀態容器樣式 */
+.empty-state-container {
+    text-align: center;
+    padding: 40px 0;
+    color: #6b7280;
+}
+
+.empty-state-container .icon {
+    font-size: var(--font-size-3xl);
+    margin-bottom: 10px;
+}
+
+.empty-state-container .title {
+    margin-bottom: 5px;
+}
+
+.empty-state-container .subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* 分頁資訊樣式 */
+.pagination-info {
+    text-align: center;
+    margin-top: 10px;
+    font-size: var(--font-size-base);
+    color: #666;
+}
+
+/* 景點圖片佔位符樣式 */
+/* 已移除不需要的佔位符樣式類別 */
+
+/* 表格操作欄的表單樣式 */
+.action-form {
+    display: inline;
+}
+
+.batch-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    min-width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+}
+
+.batch-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.my-batch-action-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    min-width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+}
+
+.my-batch-action-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+} 

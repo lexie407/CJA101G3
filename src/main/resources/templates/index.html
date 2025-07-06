@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>景點首頁 - 島遊Kha</title>
+    <title>首頁|島遊Kha</title>
     
-    <th:block th:replace="~{/front-end/spot/navTemplate :: headResources}"></th:block> <!-- 改成大家的左側邊欄 -->
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block> <!-- 改成大家的左側邊欄 -->
     <!--  加入共用的css -->
     <!-- 以上都可以改 -->
     
@@ -13,11 +13,13 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 景點首頁樣式 -->
     <link rel="stylesheet" th:href="@{/css/spot/front-end/index.css}">
+    <!-- 收藏功能樣式 -->
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/favorites.css}">
 </head>
 <body class="light">
     <div class="app-container ">
         <!-- 左側主導覽列 -->
-        <aside th:replace="~{/front-end/spot/navTemplate :: navbar}"></aside> <!-- 改成大家的左側邊欄 -->
+        <aside th:replace="~{/navTemplate :: navbar}"></aside> <!-- 改成大家的左側邊欄 -->
         
         <div class="main-content">
             <!-- 頂部次導覽列 -->
@@ -53,41 +55,7 @@
                     </div>
                 </section>
 
-                <!-- 快速操作區 -->
-                <section class="spot-index-quick-actions">
-                    <div class="container">
-                        <div class="spot-index-quick-actions__grid">
-                            <a th:href="@{/spot/map}" class="spot-index-quick-action" title="地圖上看所有景點">
-                                <span class="material-icons" aria-hidden="true">map</span>
-                                <span>地圖瀏覽</span>
-                            </a>
-                            <a th:href="@{/spot/list}" class="spot-index-quick-action" title="用清單檢視所有景點">
-                                <span class="material-icons" aria-hidden="true">list</span>
-                                <span>列表瀏覽</span>
-                            </a>
-                            <a th:href="@{/spot/nearby}" class="spot-index-quick-action" title="查找附近的景點">
-                                <span class="material-icons" aria-hidden="true">near_me</span>
-                                <span>附近景點</span>
-                            </a>
-                            <a th:href="@{/spot/search}" class="spot-index-quick-action" title="用關鍵字搜尋景點">
-                                <span class="material-icons" aria-hidden="true">search</span>
-                                <span>搜尋景點</span>
-                            </a>
-                            <a th:href="@{/spot/random}" class="spot-index-quick-action" title="隨機推薦一個景點">
-                                <span class="material-icons" aria-hidden="true">casino</span>
-                                <span>隨機推薦</span>
-                            </a>
-                            <a th:href="@{/spot/compare}" class="spot-index-quick-action" title="多個景點功能比較">
-                                <span class="material-icons" aria-hidden="true">compare_arrows</span>
-                                <span>景點比較</span>
-                            </a>
-                            <a th:href="@{/spot/favorites}" class="spot-index-quick-action" title="收藏過的景點">
-                                <span class="material-icons" aria-hidden="true">favorite</span>
-                                <span>我的收藏</span>
-                            </a>
-                        </div>
-                    </div>
-                </section>
+                
 
                 <!-- 地區選擇區 -->
                 <section class="spot-index-regions">
@@ -97,7 +65,7 @@
                                 <span class="material-icons">public</span>
                                 地區選擇
                             </h2>
-                            <a href="#" class="spot-index-regions__link">查看更多 →</a>
+                            <!-- 移除查看更多鏈接 -->
                         </div>
                         
                         <div class="spot-index-regions__grid">
@@ -214,14 +182,34 @@
                             </div>
                         </div>
                         
+                        <!-- 調試信息 -->
+                        <!-- <div style="background-color: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc;">
+                            <h4>調試信息</h4>
+                            <p th:text="'spotList是否為空: ' + ${spotList == null ? '是 (null)' : (spotList.isEmpty() ? '是 (空列表)' : '否 (' + spotList.size() + '個景點)')}"></p>
+                            <div th:if="${spotList != null && !spotList.isEmpty()}">
+                                <p>第一個景點信息:</p>
+                                <ul>
+                                    <li th:text="'ID: ' + ${spotList[0].spotId}"></li>
+                                    <li th:text="'名稱: ' + ${spotList[0].spotName}"></li>
+                                    <li th:text="'狀態: ' + ${spotList[0].spotStatus}"></li>
+                                    <li th:text="'地址: ' + ${spotList[0].spotLoc}"></li>
+                                </ul>
+                            </div>
+                        </div> -->
+                        
                         <div th:if="${spotList != null and !spotList.isEmpty()}" class="spot-index-popular__grid">
                             <div th:each="spot, iterStat : ${spotList}" 
                                  th:if="${iterStat.index < 8}" 
-                                 class="spot-index-spot-card">
+                                 class="spot-index-spot-card"
+                                 th:data-spot-id="${spot.spotId}">
                                 <div class="spot-index-spot-card__image">
                                     <!-- 收藏按鈕 -->
-                                    <button class="spot-index-spot-card__favorite" title="加入收藏">
-                                        <span class="material-icons">favorite_border</span>
+                                    <button 
+                                        th:attr="data-spot-id=${spot.spotId}"
+                                        th:title="${favoriteStatusMap != null && favoriteStatusMap.containsKey(spot.spotId) && favoriteStatusMap.get(spot.spotId) ? '取消收藏' : '加入收藏'}"
+                                        th:classappend="${favoriteStatusMap != null && favoriteStatusMap.containsKey(spot.spotId) && favoriteStatusMap.get(spot.spotId) ? 'favorited' : ''}"
+                                        class="spot-index-spot-card__favorite">
+                                        <span class="material-icons" th:text="${favoriteStatusMap != null && favoriteStatusMap.containsKey(spot.spotId) && favoriteStatusMap.get(spot.spotId) ? 'favorite' : 'favorite_border'}">favorite_border</span>
                                     </button>
                                     <!-- 分類標籤 -->
                                     <span class="spot-index-spot-card__category-badge" 
@@ -264,14 +252,7 @@
                                             <span class="material-icons">visibility</span>
                                             查看詳情
                                         </a>
-                                        <div class="spot-index-spot-card__action-btns">
-                                            <button class="spot-index-spot-card__action-btn" title="分享">
-                                                <span class="material-icons">share</span>
-                                            </button>
-                                            <button class="spot-index-spot-card__action-btn" title="加入收藏">
-                                                <span class="material-icons">bookmark_border</span>
-                                            </button>
-                                        </div>
+                                        <!-- 移除分享和書籤按鈕 -->
                                     </div>
                                 </div>
                             </div>
@@ -281,7 +262,7 @@
                         <div th:if="${spotList != null and !spotList.isEmpty()}" class="spot-index-stats">
                             <div class="spot-index-stats__content">
                                 <p class="spot-index-stats__text">已顯示 8 個景點，還有 124 個等你探索</p>
-                                <a th:href="@{/spot/list}" class="spot-index-view-all-btn">
+                                <a th:href="@{/spot/spotlist}" class="spot-index-view-all-btn">
                                     查看更多景點
                                     <span class="material-icons">arrow_forward</span>
                                 </a>
@@ -312,6 +293,8 @@
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script src="/js/notification/websocket.js"></script>
+    <!-- 景點模組通用腳本 -->
+    <script th:src="@{/js/spot/front-end/spot-common.js}"></script>
     <!-- 景點首頁腳本 -->
     <script th:src="@{/js/spot/front-end/index.js}"></script>
 </body>

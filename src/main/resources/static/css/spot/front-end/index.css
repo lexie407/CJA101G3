@@ -812,40 +812,42 @@
     z-index: 2;
 }
 
+/* 收藏按鈕樣式 */
 .spot-index-spot-card__favorite {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(255, 255, 255, 0.9);
+    top: 1rem;
+    right: 1rem;
+    background: white;
     border: none;
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all var(--spot-transition);
-    z-index: 2;
-}
-
-.spot-index-spot-card__favorite:hover {
-    background: var(--md-sys-color-error-container);
-    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    z-index: 10;
 }
 
 .spot-index-spot-card__favorite .material-icons {
-    font-size: 1.1rem;
-    color: var(--md-sys-color-outline);
-    transition: all var(--spot-transition);
+    font-size: 1.4rem;
+    color: var(--md-sys-color-on-surface-variant);
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-.spot-index-spot-card__favorite.active .material-icons {
-    color: var(--md-sys-color-error);
+.spot-index-spot-card__favorite:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.spot-index-spot-card__favorite:hover .material-icons {
-    color: var(--md-sys-color-error);
+.spot-index-spot-card__favorite.favorited {
+    background: var(--md-sys-color-primary);
+}
+
+.spot-index-spot-card__favorite.favorited .material-icons {
+    color: white;
 }
 
 .spot-index-spot-card__icon {
@@ -1537,61 +1539,257 @@
     height: 200px;
 }
 
-/* Toast 通知樣式 */
-.toast {
+/* 載入中動畫 */
+.loading-spinner {
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 登入對話框樣式 */
+.login-dialog {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--md-sys-color-surface-container-high);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.login-dialog--show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.login-dialog__content {
+    background-color: var(--md-sys-color-surface);
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.login-dialog--show .login-dialog__content {
+    transform: translateY(0);
+}
+
+.login-dialog__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.login-dialog__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
     color: var(--md-sys-color-on-surface);
-    padding: 12px 16px;
-    border-radius: 8px;
-    box-shadow: var(--md-sys-elevation-level3);
+}
+
+.login-dialog__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    padding: 4px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.login-dialog__close:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.login-dialog__body {
+    margin-bottom: 24px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.login-dialog__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.login-dialog__button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 20px;
     font-weight: 500;
-    z-index: 10000;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-    max-width: 300px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.login-dialog__button--primary {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.login-dialog__button--secondary {
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.login-dialog__button:hover {
+    filter: brightness(1.1);
+}
+
+/* 提示訊息樣式 - 重新設計 */
+.toast-container {
+    position: fixed;
+    bottom: 20px; /* 底部顯示 */
+    left: 20px; /* 改為左側顯示 */
+    z-index: 99999; /* 增加z-index確保在最上層 */
+    display: flex;
+    flex-direction: column-reverse; /* 新的提示在上方 */
+    gap: 10px;
+    width: auto;
+    max-width: 400px;
+    pointer-events: none; /* 允許點擊穿透容器 */
+}
+
+.toast {
+    position: relative;
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    padding: 12px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateX(-100px) scale(0.9); /* 從左側滑入 */
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    width: 100%;
+    border-left: 4px solid var(--md-sys-color-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    pointer-events: auto; /* 恢復此元素的點擊事件 */
+    min-width: 300px; /* 確保最小寬度 */
 }
 
 .toast--show {
-    transform: translateX(0);
+    opacity: 1;
+    transform: translateX(0) scale(1); /* 顯示時移動到正常位置 */
 }
 
+.toast__content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+}
+
+.toast__content .material-icons {
+    font-size: 20px;
+    margin-top: 2px;
+}
+
+.toast__content span:last-child {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+/* 不同類型的提示樣式 */
 .toast--success {
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+    border-left-color: var(--md-sys-color-primary);
+}
+
+.toast--success .material-icons {
+    color: var(--md-sys-color-primary);
 }
 
 .toast--error {
-    background: var(--md-sys-color-error-container);
-    color: var(--md-sys-color-on-error-container);
+    border-left-color: var(--md-sys-color-error);
+}
+
+.toast--error .material-icons {
+    color: var(--md-sys-color-error);
 }
 
 .toast--warning {
-    background: var(--md-sys-color-tertiary-container);
-    color: var(--md-sys-color-on-tertiary-container);
+    border-left-color: var(--md-sys-color-secondary);
+}
+
+.toast--warning .material-icons {
+    color: var(--md-sys-color-secondary);
 }
 
 .toast--info {
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
+    border-left-color: var(--md-sys-color-tertiary);
 }
 
-.toast .material-icons {
-    font-size: 18px;
+.toast--info .material-icons {
+    color: var(--md-sys-color-tertiary);
 }
 
-/* 漣漪效果動畫 */
-@keyframes ripple {
-    to {
-        transform: scale(4);
-        opacity: 0;
+/* 添加關閉按鈕 */
+.toast__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.toast__close:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.toast__close .material-icons {
+    font-size: 16px;
+}
+
+/* 響應式Toast */
+@media (max-width: 768px) {
+    .toast-container {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        max-width: none;
     }
+    
+    .toast {
+        min-width: auto;
+        transform: translateY(50px) scale(0.9); /* 手機版從下方滑入 */
+    }
+    
+    .toast--show {
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 移除多個Toast堆疊效果，因為現在使用容器處理 */
+.toast + .toast {
+    margin-top: 0;
 }
 
 /* 鍵盤導航樣式 */
@@ -1658,14 +1856,4 @@
 /* 空狀態樣式更新 */
 .spot-index-filter-empty {
     margin: 2rem 0;
-}
-
-/* 響應式Toast */
-@media (max-width: 768px) {
-    .toast {
-        right: 10px;
-        left: 10px;
-        max-width: none;
-        top: 10px;
-    }
 }

@@ -1,0 +1,116 @@
+/* 後台浮動操作按鈕 (FAB) 樣式 */
+.admin-fab-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+}
+
+.admin-fab {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #1976d2 0%, #2196f3 50%, #42a5f5 100%);
+    border-radius: 50%;
+    box-shadow: 0 8px 24px rgba(33, 150, 243, 0.4);
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.admin-fab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    border-radius: 50%;
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.admin-fab:hover::before {
+    transform: translateX(100%);
+}
+
+.admin-fab:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 12px 32px rgba(33, 150, 243, 0.5);
+    background: linear-gradient(135deg, #1565c0 0%, #1976d2 50%, #2196f3 100%);
+}
+
+.admin-fab:active {
+    transform: scale(1.05);
+}
+
+.admin-fab-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+
+.admin-fab-icon .material-icons {
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+.admin-fab-tooltip {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-right: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.admin-fab-tooltip::after {
+    content: '';
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-left-color: rgba(0, 0, 0, 0.8);
+}
+
+.admin-fab:hover .admin-fab-tooltip {
+    opacity: 1;
+    transform: translateY(-50%) translateX(-8px);
+}
+
+@media (max-width: 768px) {
+    .admin-fab-container {
+        bottom: 1.5rem;
+        right: 1.5rem;
+    }
+    .admin-fab {
+        width: 52px;
+        height: 52px;
+    }
+    .admin-fab-icon .material-icons {
+        font-size: 1.6rem;
+    }
+    .admin-fab-tooltip {
+        display: none;
+    }
+} 

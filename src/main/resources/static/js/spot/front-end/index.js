@@ -33,6 +33,9 @@
         initRegionButtons();
         initSortFunctionality();
         
+        // 初始化收藏功能
+        initFavoriteButtons();
+        
         // 獲取初始景點資料
         loadInitialSpots();
         
@@ -46,6 +49,395 @@
         document.addEventListener('DOMContentLoaded', function() {
             if (!prefersReducedMotion) {
                 fadeInContent();
+            }
+        });
+        
+        // 監聽收藏狀態變更事件
+        listenToFavoriteChanges();
+    }
+
+    /**
+     * 初始化收藏按鈕
+     */
+    function initFavoriteButtons() {
+        // 移除可能存在的重複事件監聽器
+        document.removeEventListener('loginDialogCancelled', handleLoginDialogCancelled);
+        
+        const favoriteButtons = document.querySelectorAll('.spot-index-spot-card__favorite');
+        favoriteButtons.forEach(button => {
+            // 移除可能存在的重複事件監聽器
+            button.removeEventListener('click', handleFavoriteButtonClick);
+            // 添加新的事件監聽器
+            button.addEventListener('click', handleFavoriteButtonClick);
+            
+            // 確保按鈕不處於載入狀態
+            if (window.SpotCommon && window.SpotCommon.ensureButtonNormalState) {
+                window.SpotCommon.ensureButtonNormalState(button);
+            }
+        });
+        
+        // 檢查收藏狀態
+        checkInitialFavoriteStatus();
+        
+        // 監聽登入對話框取消事件
+        document.addEventListener('loginDialogCancelled', handleLoginDialogCancelled);
+        
+        // 添加全局錯誤處理，確保按鈕狀態正常
+        window.addEventListener('error', function(event) {
+            console.error('捕獲到全局錯誤，檢查並修復按鈕狀態', event);
+            
+            // 檢查所有收藏按鈕
+            document.querySelectorAll('.spot-index-spot-card__favorite').forEach(button => {
+                if (window.SpotCommon && window.SpotCommon.ensureButtonNormalState) {
+                    window.SpotCommon.ensureButtonNormalState(button);
+                }
+            });
+        });
+        
+        // 5秒後檢查一次所有按鈕狀態，修復可能的問題
+        setTimeout(function() {
+            document.querySelectorAll('.spot-index-spot-card__favorite').forEach(button => {
+                if (window.SpotCommon && window.SpotCommon.ensureButtonNormalState) {
+                    window.SpotCommon.ensureButtonNormalState(button);
+                }
+            });
+        }, 5000);
+    }
+    
+    /**
+     * 處理收藏按鈕點擊事件
+     */
+    function handleFavoriteButtonClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const spotId = this.getAttribute('data-spot-id');
+        if (spotId) {
+            toggleFavorite(spotId, this);
+        }
+        
+        return false;
+    }
+    
+    /**
+     * 處理登入對話框取消事件
+     */
+    function handleLoginDialogCancelled(e) {
+        try {
+            if (e.detail && e.detail.button) {
+                const button = e.detail.button;
+                const originalHTML = e.detail.originalHTML || '<span class="material-icons">favorite_border</span>';
+                
+                // 確保按鈕存在且仍在DOM中
+                if (button && document.body.contains(button)) {
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                    button.classList.remove('favorited');
+                    button.title = '加入收藏';
+                    console.log('登入對話框已取消，恢復按鈕狀態', button);
+                } else {
+                    console.warn('按鈕不存在或已從DOM中移除');
+                }
+            } else {
+                console.warn('事件詳情中缺少按鈕信息');
+            }
+            
+            // 額外的安全措施：檢查所有處於載入狀態的按鈕
+            document.querySelectorAll('.spot-index-spot-card__favorite .loading-spinner').forEach(spinner => {
+                const button = spinner.closest('.spot-index-spot-card__favorite');
+                if (button) {
+                    button.innerHTML = '<span class="material-icons">favorite_border</span>';
+                    button.disabled = false;
+                    button.classList.remove('favorited');
+                    button.title = '加入收藏';
+                    console.log('發現並修復處於載入狀態的按鈕', button);
+                }
+            });
+        } catch (error) {
+            console.error('處理登入對話框取消事件時出錯', error);
+        }
+    }
+    
+    /**
+     * 檢查初始收藏狀態
+     */
+    function checkInitialFavoriteStatus() {
+        if (!window.SpotCommon) return;
+        
+        // 獲取所有景點ID
+        const spotCards = document.querySelectorAll('.spot-index-spot-card');
+        const spotIds = Array.from(spotCards)
+            .map(card => card.getAttribute('data-spot-id'))
+            .filter(id => id); // 過濾掉空值
+            
+        if (spotIds.length === 0) return;
+        
+        // 批量檢查收藏狀態
+        window.SpotCommon.checkBatchFavoriteStatus(spotIds)
+            .then(statusMap => {
+                if (!statusMap) return;
+                
+                // 更新按鈕狀態
+                spotIds.forEach(spotId => {
+                    const isFavorited = statusMap[spotId];
+                    if (isFavorited !== undefined) {
+                        const button = document.querySelector(`.spot-index-spot-card__favorite[data-spot-id="${spotId}"]`);
+                        if (button) {
+                            updateFavoriteButtonState(button, isFavorited);
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('檢查收藏狀態失敗:', error));
+    }
+    
+    /**
+     * 切換收藏狀態
+     */
+    function toggleFavorite(spotId, button) {
+        // 保存原始HTML，以便在取消登入時恢復
+        const originalHTML = button.innerHTML;
+        
+        if (window.SpotCommon) {
+            // 將originalHTML傳遞給SpotCommon
+            window.SpotCommon.toggleFavorite(spotId, button, originalHTML);
+        } else {
+            // 備用實現，如果SpotCommon不可用
+            fallbackToggleFavorite(spotId, button);
+        }
+    }
+    
+    /**
+     * 備用的切換收藏功能
+     */
+    function fallbackToggleFavorite(spotId, button) {
+        if (!spotId || !button) return;
+        
+        // 顯示載入狀態
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<span class="material-icons loading-spinner">sync</span>';
+        button.disabled = true;
+        
+        fetch(`/api/spot/favorites/${spotId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 401) {
+                    // 未登入處理
+                    showLoginDialog(button, originalHTML);
+                    throw new Error('請先登入');
+                }
+                throw new Error('操作失敗');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // 更新按鈕狀態
+                updateFavoriteButtonState(button, data.isFavorited);
+                
+                // 顯示提示訊息
+                showToast(data.isFavorited ? '已加入收藏' : '已取消收藏', data.isFavorited ? 'success' : 'info');
+                
+                // 通知其他頁面
+                localStorage.setItem('spotFavoriteChange', JSON.stringify({
+                    spotId: spotId,
+                    isFavorited: data.isFavorited,
+                    timestamp: new Date().getTime()
+                }));
+            } else {
+                showToast(data.message || '操作失敗', 'error');
+                // 恢復按鈕狀態
+                button.innerHTML = originalHTML;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('收藏操作失敗:', error);
+            
+            if (error.message !== '請先登入') {
+                showToast('操作失敗，請稍後再試', 'error');
+                // 恢復按鈕狀態
+                button.innerHTML = originalHTML;
+                button.disabled = false;
+            }
+        });
+    }
+    
+    /**
+     * 更新收藏按鈕狀態
+     */
+    function updateFavoriteButtonState(button, isFavorited) {
+        if (!button) return;
+        
+        if (isFavorited) {
+            button.innerHTML = '<span class="material-icons">favorite</span>';
+            button.classList.add('favorited');
+            button.title = '取消收藏';
+        } else {
+            button.innerHTML = '<span class="material-icons">favorite_border</span>';
+            button.classList.remove('favorited');
+            button.title = '加入收藏';
+        }
+        
+        button.disabled = false;
+    }
+    
+    /**
+     * 顯示登入對話框
+     */
+    function showLoginDialog(button, originalHTML) {
+        // 檢查是否已經有登入對話框
+        const existingDialog = document.querySelector('.login-dialog');
+        if (existingDialog) {
+            existingDialog.remove();
+        }
+        
+        if (window.SpotCommon && typeof window.SpotCommon.showLoginDialog === 'function') {
+            window.SpotCommon.showLoginDialog(button, originalHTML);
+        } else {
+            // 備用實現
+            const dialog = document.createElement('div');
+            dialog.className = 'login-dialog';
+            dialog.id = 'spotLoginDialog';
+            dialog.innerHTML = `
+                <div class="login-dialog__content">
+                    <div class="login-dialog__header">
+                        <h3 class="login-dialog__title">請先登入</h3>
+                        <button class="login-dialog__close" aria-label="關閉">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    <div class="login-dialog__body">
+                        <p>您需要先登入才能收藏景點。</p>
+                        <p>是否前往登入頁面？</p>
+                    </div>
+                    <div class="login-dialog__footer">
+                        <button class="login-dialog__button login-dialog__button--secondary" data-action="cancel">稍後再說</button>
+                        <button class="login-dialog__button login-dialog__button--primary" data-action="login">前往登入</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            
+            // 確保DOM更新後再添加動畫效果
+            requestAnimationFrame(() => {
+                dialog.classList.add('login-dialog--show');
+            });
+            
+            const closeButton = dialog.querySelector('.login-dialog__close');
+            const cancelButton = dialog.querySelector('[data-action="cancel"]');
+            const loginButton = dialog.querySelector('[data-action="login"]');
+            const dialogContent = dialog.querySelector('.login-dialog__content');
+            
+            // 點擊背景關閉對話框
+            dialog.addEventListener('click', function(e) {
+                if (e.target === dialog) {
+                    closeDialog();
+                }
+            });
+            
+            // 防止點擊內容區域時關閉對話框
+            dialogContent.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            function closeDialog() {
+                // 防止重複關閉
+                if (!dialog.classList.contains('login-dialog--show')) return;
+                
+                dialog.classList.remove('login-dialog--show');
+                setTimeout(() => {
+                    // 確保對話框仍然存在於DOM中
+                    if (document.body.contains(dialog)) {
+                        dialog.remove();
+                    }
+                }, 300);
+                
+                // 恢復按鈕狀態
+                if (button) {
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                    
+                    // 觸發自定義事件，通知其他組件登入對話框已取消
+                    const event = new CustomEvent('loginDialogCancelled', {
+                        detail: {
+                            button: button,
+                            originalHTML: originalHTML
+                        }
+                    });
+                    document.dispatchEvent(event);
+                    console.log('觸發loginDialogCancelled事件', button);
+                }
+            }
+            
+            // 使用一次性事件監聽器，防止重複綁定
+            closeButton.addEventListener('click', closeDialog, { once: true });
+            cancelButton.addEventListener('click', closeDialog, { once: true });
+            
+            loginButton.addEventListener('click', () => {
+                // 保存當前頁面URL到localStorage，以便登入後重定向回來
+                localStorage.setItem('loginRedirectUrl', window.location.href);
+                // 跳轉到登入頁面，並帶上redirect參數
+                window.location.href = '/members/login?redirect=' + encodeURIComponent(window.location.href);
+            }, { once: true });
+        }
+    }
+    
+    /**
+     * 顯示提示訊息 - 已停用，不再顯示任何提示
+     */
+    function showToast(message, type = 'info') {
+        // 提示訊息功能已停用
+        console.log('提示訊息(已停用顯示):', message, type);
+        return null;
+    }
+    
+    /**
+     * 關閉提示訊息
+     */
+    function closeToast(toast) {
+        if (!toast || !document.body.contains(toast)) return;
+        
+        // 清除自動關閉的timeout
+        if (toast.dataset.timeoutId) {
+            clearTimeout(parseInt(toast.dataset.timeoutId));
+        }
+        
+        // 移除顯示類
+        toast.classList.remove('toast--show');
+        
+        // 動畫結束後移除元素
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                toast.remove();
+            }
+        }, 300);
+    }
+    
+    /**
+     * 監聽收藏狀態變更事件
+     */
+    function listenToFavoriteChanges() {
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'spotFavoriteChange') {
+                try {
+                    const data = JSON.parse(e.newValue);
+                    if (data && data.spotId) {
+                        // 更新對應的收藏按鈕
+                        const button = document.querySelector(`.spot-index-spot-card__favorite[data-spot-id="${data.spotId}"]`);
+                        if (button) {
+                            updateFavoriteButtonState(button, data.isFavorited);
+                        }
+                    }
+                } catch (error) {
+                    console.error('處理收藏變更事件失敗:', error);
+                }
             }
         });
     }
@@ -175,13 +567,32 @@
                 
                 const category = this.textContent.trim();
                 
-                // 只有當不是「熱門」時才添加篩選條件，因為「熱門」代表顯示所有景點
-                if (category === '熱門') {
-                    // 移除分類篩選，顯示所有景點
-                    removeFilter('category');
-                    } else {
-                    addFilter('category', category, category);
+                // 根據按鈕類型應用不同的篩選
+                switch(category) {
+                    case '熱門':
+                        // 移除分類篩選，顯示所有景點
+                        removeFilter('category');
+                        // 按熱門度（評分）排序
+                        addFilter('sort', 'popular', '熱門優先');
+                        break;
+                        
+                    case '精選':
+                        // 添加精選篩選（高評分景點）
+                        addFilter('category', 'featured', '精選');
+                        break;
+                        
+                    case '最新':
+                        // 添加最新篩選
+                        removeFilter('category'); // 先移除分類篩選
+                        addFilter('sort', 'newest', '最新優先');
+                        break;
+                        
+                    default:
+                        // 其他分類按正常方式處理
+                        addFilter('category', category, category);
+                        break;
                 }
+                
                 applyFiltersInstantly();
                 
                 return false; // 確保不會有任何導航行為
@@ -297,15 +708,15 @@
                     
                 case 'category':
                     // 分類篩選 - 根據分類名稱篩選
-                    if (filter.value === '熱門') {
-                        // 顯示所有景點，或者可以根據某些條件篩選熱門景點
-                        // 這裡保持所有景點
-                    } else if (filter.value === '精選') {
-                        // 可以根據評分或其他條件篩選精選景點
+                    if (filter.value === 'featured') {
+                        // 精選景點 - 評分高於4.5的景點
                         filteredSpots = filteredSpots.filter(spot => spot.rating >= 4.5);
-                    } else if (filter.value === '最新') {
-                        // 可以根據時間或ID篩選最新景點
-                        filteredSpots = filteredSpots.sort((a, b) => b.id - a.id);
+                    } else {
+                        // 其他分類按正常方式處理
+                        filteredSpots = filteredSpots.filter(spot => 
+                            spot.category === filter.value || 
+                            spot.type === filter.value.toLowerCase()
+                        );
                     }
                     break;
                     
@@ -762,92 +1173,18 @@
     }
 
     /**
-     * 顯示提示訊息
-     */
-    function showToast(message, type = 'info') {
-        // 創建toast元素
-        const toast = document.createElement('div');
-        toast.className = `toast toast--${type}`;
-        toast.innerHTML = `
-            <span class="material-icons">${getToastIcon(type)}</span>
-            <span>${message}</span>
-        `;
-        
-        // 添加到頁面
-        document.body.appendChild(toast);
-        
-        // 顯示動畫
-        setTimeout(() => {
-            toast.classList.add('toast--show');
-        }, 100);
-        
-        // 自動隱藏
-        setTimeout(() => {
-            toast.classList.remove('toast--show');
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                }
-            }, 300);
-        }, 3000);
-    }
-
-    /**
-     * 獲取提示圖示
+     * 獲取提示圖標
      */
     function getToastIcon(type) {
-        const icons = {
-            'success': 'check_circle',
-            'error': 'error',
-            'warning': 'warning',
-            'info': 'info'
-        };
-        return icons[type] || 'info';
+        switch (type) {
+            case 'success': return 'check_circle';
+            case 'error': return 'error';
+            case 'warning': return 'warning';
+            default: return 'info';
+        }
     }
 
-    /**
-     * 全域重置篩選函數
-     */
-    function resetAllFilters() {
-        // 清空所有篩選條件
-        currentFilters = {};
-        
-        // 重置所有控制項
-        const filterSelects = document.querySelectorAll('.spot-index-filter-select');
-        filterSelects.forEach(select => {
-            select.value = '';
-        });
-        
-        // 重置分類按鈕
-        const categoryButtons = document.querySelectorAll('.spot-index-category-item');
-        categoryButtons.forEach(btn => btn.classList.remove('active'));
-        if (categoryButtons.length > 0) {
-            categoryButtons[0].classList.add('active');
-        }
-        
-        // 重置地區按鈕
-        const regionButtons = document.querySelectorAll('.spot-index-region-item');
-        regionButtons.forEach(btn => btn.classList.remove('active'));
-        if (regionButtons.length > 0) {
-            regionButtons[0].classList.add('active');
-        }
-        
-        // 重置排序
-        const sortSelect = document.querySelector('.spot-index-sort-select');
-        if (sortSelect) {
-            sortSelect.value = 'popular';
-        }
-        
-        // 更新顯示
-        updateFilterTags();
-        applyFiltersInstantly();
-        showToast('已重置所有篩選條件', 'info');
-    }
-    
-    // 確保函數在全域範圍內可用
-    window.resetAllFilters = resetAllFilters;
-
-    // 初始化
+    // 執行初始化
     init();
 
 })(); 
