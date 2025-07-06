@@ -69,6 +69,11 @@ public class ActHandlerService {
             throw new IllegalStateException("活動未開放報名");
         }
         
+        // 檢查報名截止時間
+        if (LocalDateTime.now().isAfter(act.getSignupEnd())) {
+            throw new IllegalStateException("報名已截止");
+        }
+        
         // 檢查是否為團主
         if (act.getHostId().equals(memId)) {
             throw new IllegalStateException("團主無需報名自己的活動");
@@ -123,11 +128,14 @@ public class ActHandlerService {
             act.setRecruitStatus(ActStatus.FULL.getValue());
         } else if (act.getRecruitStatus() == ActStatus.FULL.getValue() && 
                    newCount < act.getMaxCap() && 
-                   LocalDateTime.now().isBefore(act.getActStart())) {
-            // 只有在活動開始前才重新開放招募
+                   LocalDateTime.now().isBefore(act.getSignupEnd())) {
+            // 重新開放招募的條件：
+            // 1. 原本是成團狀態
+            // 2. 現在人數 < 上限
+            // 3. 報名還沒截止
             act.setRecruitStatus(ActStatus.OPEN.getValue());
         }
-        // 如果活動已經開始，即使人數不足也不會重新開放招募
+        // 如果報名截止時間到，即使人數不足也不會重新開放招募
         
         actRepo.save(act);
     }

@@ -408,7 +408,11 @@
                             </select>
                             <label for="isPublic">是否公開</label>
                         </div>
-
+                    </div>
+                    
+                    <div class="form-text text-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        活動經公開就不得刪除，請留意！
                     </div>
 
                     <!--系統處理欄位不可編輯-->
@@ -820,8 +824,8 @@
         } else if (parseInt(maxCap) <= 0) {
             markFieldAsInvalid("maxCap", "人數需求必須大於0");
             valid = false;
-        } else if (parseInt(maxCap) < 3) {
-            markFieldAsInvalid("maxCap", "人數需求最少三人");
+        } else if (parseInt(maxCap) < 2) {
+            markFieldAsInvalid("maxCap", "人數需求最少兩人");
             valid = false;
         } else if (parseInt(maxCap) < parseInt(signupCnt)) {
             markFieldAsInvalid("maxCap", "人數上限不可小於目前已報名人數");
