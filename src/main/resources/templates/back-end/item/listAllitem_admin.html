@@ -17,7 +17,7 @@
         <div class="main-content">
             <header class="secondary-nav">
                 <ul>
-<!--                     <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='productlist')}"></div> -->
+                    <!--                     <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='productlist')}"></div> -->
                 </ul>
             </header>
             <main class="content-area-main">
@@ -85,10 +85,11 @@
                                 </div>
                                 <div class="mdc-horizontal-card__actions">
                                     <button type="button" class="mdc-button mdc-button--outlined btn-puton"
-                                        th:data-id="${itemVO.itemId}">上架</button>
+                                        th:data-id="${itemVO.itemId}"
+                                        th:if="${itemVO.itemStatus == 0 or itemVO.itemStatus == 2}">上架</button>
                                     <button type="button"
                                         class="mdc-button mdc-button--outlined btn-putoff btn-putoff-red"
-                                        th:data-id="${itemVO.itemId}">下架</button>
+                                        th:data-id="${itemVO.itemId}" th:if="${itemVO.itemStatus == 1}">下架</button>
                                 </div>
                             </div>
                         </div>

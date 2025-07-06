@@ -338,7 +338,7 @@
             .carousel-btn .material-icons {
                 font-size: 20px;
             }
-            
+
             .carousel-click-hint {
                 bottom: -25px;
                 font-size: 0.8rem;
@@ -361,11 +361,10 @@
                     <div class="carousel-container">
                         <div class="carousel-wrapper">
                             <th:block th:each="ad, status : ${ads}">
-                                <div class="carousel-slide" 
-                                     th:classappend="${status.index == 0 ? 'active' : ''}"
-                                     th:attr="data-store-id=${ad.storeId}"
-                                     style="cursor: pointer;">
-                                    <img th:src="@{/advertisment/DBGifReader(adId=${ad.adId})}" th:alt="${ad.adTitle}" onerror="this.src='https://picsum.photos/800/300?random=1'">
+                                <div class="carousel-slide" th:classappend="${status.index == 0 ? 'active' : ''}"
+                                    th:attr="data-store-id=${ad.storeId}" style="cursor: pointer;">
+                                    <img th:src="@{/advertisment/DBGifReader(adId=${ad.adId})}" th:alt="${ad.adTitle}"
+                                        onerror="this.src='https://picsum.photos/800/300?random=1'">
                                     <div class="carousel-caption">
                                         <h3 th:text="${ad.adTitle}"></h3>
                                         <p style="font-size: 0.9rem; margin-top: 8px; opacity: 0.8;">
@@ -386,10 +385,11 @@
 
                         <div class="carousel-indicators">
                             <th:block th:each="ad, status : ${ads}">
-                                <span class="indicator" th:classappend="${status.index == 0 ? 'active' : ''}" th:onclick="'currentSlide(' + (${status.index} + 1) + ')'"></span>
+                                <span class="indicator" th:classappend="${status.index == 0 ? 'active' : ''}"
+                                    th:onclick="'currentSlide(' + (${status.index} + 1) + ')'"></span>
                             </th:block>
                         </div>
-                        
+
                         <!-- 點擊提示 -->
                         <div class="carousel-click-hint">
                             <i class="fa fa-hand-pointer-o" style="margin-right: 5px;"></i>
@@ -547,17 +547,17 @@
                     $(document).ready(function () {
                         // 初始化輪播功能
                         initCarousel();
-                        
+
                         // 為輪播幻燈片添加點擊事件（使用事件委派）
-                        $(document).on('click', '.carousel-slide', function(e) {
+                        $(document).on('click', '.carousel-slide', function (e) {
                             // 如果點擊的是箭頭按鈕或導航點，則不處理
                             if ($(e.target).closest('.carousel-btn, .carousel-indicators').length > 0) {
                                 return;
                             }
-                            
+
                             var storeId = $(this).data('store-id');
                             console.log('廣告點擊，商店ID:', storeId); // 調試信息
-                            
+
                             if (storeId && storeId !== 'undefined' && storeId !== null) {
                                 // 導航到商店頁面
                                 window.location.href = '/advertisment/storeItems?storeId=' + storeId;
@@ -573,7 +573,8 @@
                             var itemId = $(this).data('itemid');
                             var memId = $(this).data('memid');
                             if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
-                                window.location.href = window.location.origin + '/members/login';
+                                // 跳轉到登入頁面並帶上 redirect 參數
+                                window.location.href = '/members/login?redirect=' + encodeURIComponent('/item/listAllItem');
                                 return;
                             }
                             $.ajax({
@@ -595,7 +596,8 @@
                         $('#cart-fab').click(function () {
                             var memId = $('input[name="memId"]').val();
                             if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
-                                window.location.href = window.location.origin + '/members/login';
+                                // 跳轉到登入頁面並帶上 redirect 參數
+                                window.location.href = '/members/login?redirect=' + encodeURIComponent('/item/listAllItem');
                                 return;
                             }
 
@@ -952,7 +954,8 @@
                             var memId = form.find('input[name="memId"]').val();
                             var quantity = form.find('input[name="quantity"]').val();
                             if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
-                                window.location.href = window.location.origin + '/members/login';
+                                // 跳轉到登入頁面並帶上 redirect 參數
+                                window.location.href = '/members/login?redirect=' + encodeURIComponent('/item/listAllItem');
                                 return;
                             }
                             $.ajax({
