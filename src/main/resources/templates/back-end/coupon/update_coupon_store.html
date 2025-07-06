@@ -50,8 +50,8 @@
                         </div>
                         <div class="mdc-form-row">
                             <label>折扣金額</label>
-                            <input type="number" th:field="*{discValue}" class="mdc-input" min="1" max="99999"
-                                required />
+                            <input type="number" th:field="*{discValue}" class="mdc-input" min="1" max="99999" required
+                                readonly />
                             <span th:if="${#fields.hasErrors('discValue')}" th:errors="*{discValue}"
                                 class="mdc-error"></span>
                         </div>
@@ -177,37 +177,32 @@
                     document.querySelector('form.mdc-form').addEventListener('submit', function (e) {
                         const sta = this.querySelector('input[name="startTime"]');
                         const end = this.querySelector('input[name="endTime"]');
-                        const disc = this.querySelector('input[name="discValue"]');
                         const now = new Date();
-                        let valid = true;
-                        let msg = '';
                         if (sta && sta.value && end && end.value) {
                             const staDate = new Date(sta.value);
                             const endDate = new Date(end.value);
+                            // 1. 結束時間早於開始時間直接阻止
+                            if (endDate < staDate) {
+                                e.preventDefault();
+                                alert('結束時間不能早於開始時間！');
+                                return false;
+                            }
+                            // 2. 開始/結束時間早於現在，合併一個確認框
+                            let timeWarning = '';
                             if (staDate < now) {
-                                valid = false;
-                                msg += '優惠券開始時間不能早於現在時間！\n';
+                                timeWarning += '• 優惠券開始時間早於現在時間\n';
                             }
                             if (endDate < now) {
-                                valid = false;
-                                msg += '優惠券結束時間不能早於現在時間！\n';
+                                timeWarning += '• 優惠券結束時間早於現在時間\n';
                             }
-                            if (endDate < staDate) {
-                                valid = false;
-                                msg += '結束時間不能早於開始時間！\n';
+                            if (timeWarning) {
+                                const confirmTime = confirm('以下時間設定早於現在時間：\n' + timeWarning + '\n確定要設定嗎？');
+                                if (!confirmTime) {
+                                    e.preventDefault();
+                                    alert('已取消設定優惠券時間！');
+                                    return false;
+                                }
                             }
-                        }
-                        if (disc && disc.value) {
-                            const discValue = parseInt(disc.value, 10);
-                            if (discValue < 1 || discValue > 99999) {
-                                valid = false;
-                                msg += '折扣金額必須介於1到99999之間！';
-                            }
-                        }
-                        if (!valid) {
-                            e.preventDefault();
-                            alert(msg);
-                            return false;
                         }
                         // 時間格式轉換
                         if (sta && sta.value) sta.value = sta.value.replace('T', ' ') + ':00';
