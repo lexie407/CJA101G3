@@ -10,7 +10,7 @@ public class textController {
 
 	@GetMapping("/dotest")
 	public String doTest() {
-		return "front-end/commentsreports/text";
+		return "/otherError";
 	}
 	
 }
