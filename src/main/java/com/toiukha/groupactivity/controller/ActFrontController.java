@@ -6,6 +6,7 @@ import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.groupactivity.security.AuthService;
 import com.toiukha.groupactivity.service.ActService;
 import com.toiukha.groupactivity.service.DefaultImageService;
+import com.toiukha.itinerary.model.ItineraryVO;
 import com.toiukha.participant.model.PartService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -37,40 +38,44 @@ public class ActFrontController {
     private PartService partSvc;
     
     @Autowired
-    private AuthService authService;
+    private AuthService authSvc;
 
     //新增活動
     @GetMapping("/add")
     public String addActPage(HttpServletRequest request, Model model) {
         HttpSession session = request.getSession();
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
-        model.addAttribute("currentMemId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);//僅從會員訊息確認是否登入
+        AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
+        if (!memberInfo.isLoggedIn()) {
+            return "redirect:/members/login";
+        }
+        //        model.addAttribute("currentMemberId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);//僅判斷是否有登入
+        model.addAttribute("currentMemberId", memberInfo.getMemId());
         return "front-end/groupactivity/addAct_ajax";
     }
 
     //編輯活動
-    @GetMapping("/edit/{id}")
-    public String editAct(@PathVariable Integer id, Model model, HttpServletRequest request) {
+    @GetMapping("/edit/{actId}")
+    public String editAct(@PathVariable Integer actId, Model model, HttpServletRequest request) {
         HttpSession session = request.getSession();
         
         // 先取得活動資料
-        ActVO actVo = actSvc.getOneAct(id);
+        ActVO actVo = actSvc.getOneAct(actId);
         if (actVo == null) {
             // 活動不存在，重定向到搜尋頁面
             return "redirect:/act/member/search";
         }
         
         // 安全驗證：檢查會員是否有權限編輯此活動
-        if (!authService.canModifyActivity(session, actVo.getHostId())) {
+        if (!authSvc.canModifyActivity(session, actVo.getHostId())) {
             // 無權限：重定向到活動詳情頁面或登入頁
-            AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+            AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
             
             if (!memberInfo.isLoggedIn()) {
                 // 未登入：導向登入頁面
                 return "redirect:/members/login";
             } else {
                 // 已登入但無權限：重定向到活動詳情頁面
-                return "redirect:/act/member/view/" + id;
+                return "redirect:/act/member/view/" + actId;
             }
         }
         
@@ -91,9 +96,12 @@ public class ActFrontController {
         actDto.setIsPublic(actVo.getIsPublic());
         actDto.setAllowCancel(actVo.getAllowCancel());
         actDto.setRecruitStatus(actVo.getRecruitStatus());
+        // 新增：查詢行程名稱
+        ItineraryVO itinerary = actSvc.getItineraryById(actVo.getItnId());
+        actDto.setItnName(itinerary != null ? itinerary.getItnName() : "");
         
         // 從 Redis 取得活動標籤並設定到 DTO 中
-        Map<String, ActTag> tags = actSvc.getActTags(id);
+        Map<String, ActTag> tags = actSvc.getActTags(actId);
         if (tags.containsKey("type")) {
             actDto.setActType(tags.get("type").name());
         }
@@ -102,6 +110,7 @@ public class ActFrontController {
         }
         
         model.addAttribute("actVo", actDto);
+        model.addAttribute("currentMemberId", actVo.getHostId());
         return "front-end/groupactivity/editAct_ajax";
     }
 
@@ -109,16 +118,16 @@ public class ActFrontController {
     @GetMapping("/search")
     public String searchActPage(ModelMap model, HttpServletRequest request) {
         HttpSession session = request.getSession();
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+        AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
         model.addAttribute("currentPage", "groups");
-        model.addAttribute("currentMemId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);
+        model.addAttribute("currentMemberId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);
         return "front-end/groupactivity/searchAct";
     }
 
     //檢視活動詳情
-    @GetMapping("/view/{id}")
-    public String viewAct(@PathVariable Integer id, Model model, HttpServletRequest request) {
-        ActVO actVo = actSvc.getOneAct(id);
+    @GetMapping("/view/{actId}")
+    public String viewAct(@PathVariable Integer actId, Model model, HttpServletRequest request) {
+        ActVO actVo = actSvc.getOneAct(actId);
         model.addAttribute("actVo", actVo);
         model.addAttribute("currentPage", "groups");
 
@@ -126,7 +135,7 @@ public class ActFrontController {
         boolean isHost = false;
 
         HttpSession session = request.getSession();
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+        AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
 
         if (memberInfo.isLoggedIn()) {
             Integer memId = memberInfo.getMemId();
@@ -136,7 +145,7 @@ public class ActFrontController {
                 isHost = true;
             } else {
                 // 如果不是團主，再檢查是否為團員
-                isParticipant = partSvc.getParticipants(id).contains(memId);
+                isParticipant = partSvc.getParticipants(actId).contains(memId);
             }
         }
         
@@ -144,9 +153,9 @@ public class ActFrontController {
         model.addAttribute("isParticipant", isParticipant);
         // 新增：將登入會員ID傳入 Thymeleaf
         if (memberInfo.isLoggedIn()) {
-            model.addAttribute("currentMemId", memberInfo.getMemId());
+            model.addAttribute("currentMemberId", memberInfo.getMemId());
         } else {
-            model.addAttribute("currentMemId", null);
+            model.addAttribute("currentMemberId", null);
         }
         // [優化] 在後端格式化日期
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -162,9 +171,9 @@ public class ActFrontController {
     @GetMapping("/listMy/{hostId}")
     public String listMyAct(@PathVariable Integer hostId, Model model, HttpServletRequest request) {
         HttpSession session = request.getSession();
-        Integer authorizedHostId = authService.getAuthorizedHostId(session, hostId);
+        Integer authorizedHostId = authSvc.getAuthorizedHostId(session, hostId);
         if (authorizedHostId == null) {
-            AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+            AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
             if (!memberInfo.isLoggedIn()) {
                 return "redirect:/members/login";
             } else {
@@ -174,8 +183,8 @@ public class ActFrontController {
         model.addAttribute("actList", actSvc.getByHost(authorizedHostId));
         model.addAttribute("hostId", authorizedHostId);
         model.addAttribute("currentPage", "groups");
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
-        model.addAttribute("currentMemId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);
+        AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
+        model.addAttribute("currentMemberId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);
         return "front-end/groupactivity/listMyAct";
     }
     
@@ -184,10 +193,10 @@ public class ActFrontController {
     public String listMyJoinAct(@PathVariable Integer memId, Model model, HttpServletRequest request) {
         HttpSession session = request.getSession();
         // 安全驗證：檢查會員是否有權限查看指定的參加活動列表
-        Integer authorizedMemId = authService.getAuthorizedMemId(session, memId);
+        Integer authorizedMemId = authSvc.getAuthorizedMemId(session, memId);
         if (authorizedMemId == null) {
             // 無權限：重定向到自己的參加活動列表或登入頁
-            AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+            AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
             if (!memberInfo.isLoggedIn()) {
                 // 未登入：導向登入頁面
                 return "redirect:/members/login";
@@ -197,11 +206,11 @@ public class ActFrontController {
             }
         }
         //memId:用來讓後端查詢符合身分是參團者的的活動getJoinedActsAsCard()
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+        AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
         model.addAttribute("memId", authorizedMemId);
         model.addAttribute("currentPage", "groups");
-        // currentMemId:用來讓前端判斷用戶身分，控制UI顯示的內容
-        model.addAttribute("currentMemId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);
+        // currentMemberId:用來讓前端判斷用戶身分，控制UI顯示的內容
+        model.addAttribute("currentMemberId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);
         return "front-end/groupactivity/listMyJoinAct";
     }
 
@@ -215,7 +224,7 @@ public class ActFrontController {
         boolean isHost = false;
 
         HttpSession session = request.getSession();
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+        AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
 
         if (memberInfo.isLoggedIn()) {
             Integer memId = memberInfo.getMemId();
@@ -228,9 +237,9 @@ public class ActFrontController {
         model.addAttribute("isHost", isHost);
         model.addAttribute("isParticipant", isParticipant);
         if (memberInfo.isLoggedIn()) {
-            model.addAttribute("currentMemId", memberInfo.getMemId());
+            model.addAttribute("currentMemberId", memberInfo.getMemId());
         } else {
-            model.addAttribute("currentMemId", null);
+            model.addAttribute("currentMemberId", null);
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         model.addAttribute("formattedSignupStart", actVo.getSignupStart().format(formatter));

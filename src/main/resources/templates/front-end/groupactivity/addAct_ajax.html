@@ -286,16 +286,11 @@
                     <h3>行程安排</h3>
                     <div class="act-detail-info">
                         <div class="form-floating">
-                            <label class="act-detail-label"></label>
-                                    <input
-                                    type="number"
-                                    name="itnId"
-                                    id="itnId"
-                                    class="form-control"
-                                    placeholder="請輸入行程編號"
-                                    value="1"
-                                    required/>
-                            <label for="itnId">行程編號 <span class="required-mark">*</span></label>
+                            <select id="itinerarySelect" name="itnId" class="form-select" required>
+                                <option value="">請選擇行程</option>
+                                <!-- JS 動態插入選項 -->
+                            </select>
+                            <label for="itinerarySelect">選擇行程 <span class="required-mark">*</span></label>
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -359,20 +354,19 @@
                         </div>
                     </div>
 
-                    <div class="act-detail-info">
-                        <div class="form-floating">
-                            <select
-                                    name="allowCancel"
-                                    id="allowCancel"
-                                    class="form-select"
-                            >
-                                <option value="0">不允許</option>
-                                <option value="1" selected>允許</option>
-                            </select>
-                            <label for="allowCancel">是否允許退出</label>
-                        </div>
-                        <div></div>
-                    </div>
+<!--                    <div class="act-detail-info">-->
+<!--                        <div class="form-floating">-->
+<!--                            <select-->
+<!--                                    name="allowCancel"-->
+<!--                                    id="allowCancel"-->
+<!--                                    class="form-select"-->
+<!--                            >-->
+<!--                                <option value="0">不允許</option>-->
+<!--                                <option value="1" selected>允許</option>-->
+<!--                            </select>-->
+<!--                            <label for="allowCancel">是否允許退出</label>-->
+<!--                        </div>-->
+<!--                    </div>-->
 
                     <hr>
                     <!-- 圖片板塊 -->
@@ -475,11 +469,9 @@
 
 <script th:inline="javascript">
     // 會員ID注入
-    const currentMemId = /*[[${currentMemId}]]*/ null;
-    window.currentMemId = currentMemId;
-</script>
+    const currentMemberId = /*[[${currentMemberId}]]*/ null;
+    console.log("currentMemberId:", currentMemberId);
 
-<script>
     function initializeForm() {
         const form = document.getElementById("addActForm");
         if (!form) {
@@ -498,8 +490,9 @@
         // 表單提交事件
         form.addEventListener("submit", function (e) {
             e.preventDefault();
-            clearAllFieldErrors();
-            handleFormSubmission(this);
+            if (validateForm()) {
+                handleFormSubmission(this);
+            }
         });
     }
 
@@ -702,63 +695,80 @@
     }
 
     // 前端表單驗證（僅用於即時反饋，不阻止提交）
-    function validateForm(formData) {
+    function validateForm() {
+        let valid = true;
+        const formData = new FormData(document.getElementById("addActForm"));
+
         // 檢查活動名稱
         const actName = formData.get("actName");
         if (!actName || actName.toString().trim() === "") {
             markFieldAsInvalid("actName", "請輸入活動名稱");
+            valid = false;
         }
 
         // 檢查行程編號
         const itnId = formData.get("itnId");
         if (!itnId || itnId.toString().trim() === "") {
             markFieldAsInvalid("itnId", "請輸入行程編號");
+            valid = false;
         } else if (parseInt(itnId) <= 0) {
             markFieldAsInvalid("itnId", "行程編號必須大於0");
+            valid = false;
         }
 
         // 檢查報名開始時間
         const signupStart = formData.get("signupStart");
         if (!signupStart) {
             markFieldAsInvalid("signupStart", "請選擇報名開始時間");
+            valid = false;
         }
 
         // 檢查報名截止時間
         const signupEnd = formData.get("signupEnd");
         if (!signupEnd) {
             markFieldAsInvalid("signupEnd", "請選擇報名截止時間");
+            valid = false;
         }
 
         // 檢查活動開始時間
         const actStart = formData.get("actStart");
         if (!actStart) {
             markFieldAsInvalid("actStart", "請選擇活動開始時間");
+            valid = false;
         }
 
         // 檢查活動結束時間
         const actEnd = formData.get("actEnd");
         if (!actEnd) {
             markFieldAsInvalid("actEnd", "請選擇活動結束時間");
+            valid = false;
         }
 
         // 檢查人數需求
         const maxCap = formData.get("maxCap");
         if (!maxCap || maxCap.toString().trim() === "") {
             markFieldAsInvalid("maxCap", "請輸入人數需求");
+            valid = false;
         } else if (parseInt(maxCap) <= 0) {
             markFieldAsInvalid("maxCap", "人數需求必須大於0");
+            valid = false;
+        } else if (parseInt(maxCap) < 3) {
+            markFieldAsInvalid("maxCap", "人數需求最少三人");
+            valid = false;
         }
 
         // 檢查活動類型
         const actType = document.getElementById("actTypeInput").value;
         if (!actType) {
             markFieldAsInvalid("actType", "請選擇活動類型");
+            valid = false;
         }
 
         // 檢查活動地區
         const actCity = document.getElementById("actCityInput").value;
         if (!actCity) {
             markFieldAsInvalid("actCity", "請選擇活動地區");
+            valid = false;
         }
 
         // 時間邏輯驗證
@@ -770,16 +780,21 @@
 
             if (signupEndDate <= signupStartDate) {
                 markFieldAsInvalid("signupEnd", "報名截止時間必須晚於報名開始時間");
+                valid = false;
             }
 
             if (actEndDate <= actStartDate) {
                 markFieldAsInvalid("actEnd", "活動結束時間必須晚於活動開始時間");
+                valid = false;
             }
 
             if (actStartDate <= signupEndDate) {
                 markFieldAsInvalid("actStart", "活動開始時間應晚於報名截止時間");
+                valid = false;
             }
         }
+
+        return valid;
     }
 
     // 初始化實時驗證
@@ -1023,6 +1038,42 @@
     } else {
         initializeForm();
     }
+
+    // ====== 行程下拉選單動態載入 ======
+    (function loadItinerarySelect() {
+
+        if (!currentMemberId) {
+            console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
+            return;
+        }
+        fetch(`/itinerary/creator/${currentMemberId}`)
+            .then(res => res.json())
+            .then(list => {
+                const select = document.getElementById('itinerarySelect');
+                if (!select) return;
+                select.innerHTML = '<option value="">請選擇行程</option>';
+                if (Array.isArray(list) && list.length > 0) {
+                    list.forEach(itn => {
+                        const option = document.createElement('option');
+                        option.value = itn.itnId;
+                        option.textContent = `${itn.itnName}（${itn.itnDesc || '無描述'}）`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = '（查無可用行程，請先建立行程）';
+                    select.appendChild(option);
+                }
+            })
+            .catch(err => {
+                console.error('[行程下拉] 載入行程清單失敗:', err);
+                const select = document.getElementById('itinerarySelect');
+                if (select) {
+                    select.innerHTML = '<option value="">（行程載入失敗）</option>';
+                }
+            });
+    })();
 </script>
 </body>
 </html>

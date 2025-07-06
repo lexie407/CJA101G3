@@ -4,9 +4,9 @@ import com.toiukha.groupactivity.model.ActCardDTO;
 import com.toiukha.groupactivity.model.ActDTO;
 import com.toiukha.groupactivity.model.ActTag;
 import com.toiukha.groupactivity.model.ActVO;
+import com.toiukha.itinerary.model.ItineraryVO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,19 +31,19 @@ public interface ActService {
     ActVO getOneAct(Integer actId);
     List<ActVO> getAll();
     List<ActVO> getByHost(Integer hostId);
-    List<ActVO> getJoinedActs(Integer memId);
+    // ---未使用--- List<ActVO> getJoinedActs(Integer memId);
     List<ActCardDTO> getJoinedActsAsCard(Integer memId);
 
     // 查詢圖片（單獨處理）
     byte[] getActImageOnly(Integer actId);
 
     //===========分頁查詢===========
-    //後台複合查詢（不分頁）
-    List<ActVO> searchActsAll(Specification<ActVO> spec);
+    // ---未使用--- 後台複合查詢（不分頁）
+    // ---未使用--- List<ActVO> searchActsAll(Specification<ActVO> spec);
 
-    //前台查詢（分頁）
-    Page<ActVO> searchActs(Specification<ActVO> spec, Pageable pageable);
-    Page<ActCardDTO> searchActsAsCard(Specification<ActVO> spec, Pageable pageable);
+    // ---未使用--- 前台查詢（分頁）
+    // ---未使用--- Page<ActVO> searchActs(Specification<ActVO> spec, Pageable pageable);
+    // ---未使用--- Page<ActCardDTO> searchActsAsCard(Specification<ActVO> spec, Pageable pageable);
 
     //查詢已公開活動
     Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName, 
@@ -86,7 +86,18 @@ public interface ActService {
     Page<ActCardDTO> searchByTags(List<ActTag> typeTags, List<ActTag> cityTags, Pageable pageable);
 
 
-    //===========測試寫入DB===========
-    ActVO saveTestAct();
+    // ========== 行程相關方法 ==========
+
+    //驗證行程是否存在
+    boolean validateItinerary(Integer itnId);
+
+    //取得行程詳情
+    ItineraryVO getItineraryById(Integer itnId);
+
+    //取得所有公開行程
+    List<ItineraryVO> getPublicItineraries();
+    
+    // ---未使用--- ===========測試寫入DB===========
+    // ---未使用--- ActVO saveTestAct();
 
 }

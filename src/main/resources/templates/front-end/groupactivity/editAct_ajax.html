@@ -1,506 +1,498 @@
 <!DOCTYPE html>
 <html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>編輯活動 | 島遊kha</title>
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
-    <link rel="stylesheet" th:href="@{/css/light.css}" />
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/light.css}"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
     <!-- GroupActivity 模組 CSS -->
     <link
-      rel="stylesheet"
-      th:href="@{/css/groupactivity/styleAct_common.css}"
+            rel="stylesheet"
+            th:href="@{/css/groupactivity/styleAct_common.css}"
     />
-    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}"/>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
     />
-  </head>
-  <body class="light">
-    <div class="app-container">
-      <div th:insert="~{/navTemplate :: navbar}"></div>
+</head>
+<body class="light">
+<div class="app-container">
+    <div th:insert="~{/navTemplate :: navbar}"></div>
 
-      <div class="main-content act-page">
+    <div class="main-content act-page">
         <div th:insert="~{/subnavActFront :: subnav('edit')}"></div>
 
         <main class="content-area-main act-area">
-          <div class="act-detail-container">
-            <form
-              th:action="@{/api/act/update}"
-              method="post"
-              enctype="multipart/form-data"
-              id="editActForm"
-              novalidate
-            >
-              <input type="hidden" name="actId" th:value="${actVo.actId}" />
-
-              <h2>基本資訊</h2>
-              <div class="act-detail-info">
-                <div class="form-floating">
-                  <input
-                    type="text"
-                    name="actName"
-                    id="actName"
-                    class="form-control"
-                    placeholder="請輸入活動名稱"
-                    th:value="${actVo.actName}"
-                    required
-                  />
-                  <label for="actName"
-                    >活動名稱 <span class="required-mark">*</span></label
-                  >
-                  <div class="invalid-feedback"></div>
-                </div>
-              </div>
-
-              <div class="form-floating">
-                <textarea
-                  name="actDesc"
-                  id="actDesc"
-                  class="form-control large-textarea"
-                  placeholder="請輸入活動說明"
-                  th:text="${actVo.actDesc}"
-                ></textarea>
-                <label for="actDesc">活動說明</label>
-              </div>
-
-              <br />
-
-              <div class="act-detail-info">
-                <div class="form-floating">
-                  <input
-                    type="datetime-local"
-                    name="actStart"
-                    id="actStart"
-                    class="form-control"
-                    th:value="${#temporals.format(actVo.actStart,'yyyy-MM-dd''T''HH:mm')}"
-                    required
-                  />
-                  <label for="actStart"
-                    >活動開始時間 <span class="required-mark">*</span></label
-                  >
-                  <div class="invalid-feedback"></div>
-                </div>
-                <div class="form-floating">
-                  <input
-                    type="datetime-local"
-                    name="actEnd"
-                    id="actEnd"
-                    class="form-control"
-                    th:value="${#temporals.format(actVo.actEnd,'yyyy-MM-dd''T''HH:mm')}"
-                    required
-                  />
-                  <label for="actEnd"
-                    >活動結束時間 <span class="required-mark">*</span></label
-                  >
-                  <div class="invalid-feedback"></div>
-                </div>
-              </div>
-
-              <!-- 活動類型和地區 -->
-              <div class="act-detail-info" style="display: block">
-                <!-- 活動類型標籤選擇 -->
-                <div class="tag-section">
-                  <label class="tag-label"
-                    >活動類型 <span class="required-mark">*</span></label
-                  >
-                  <div class="tag-container" id="actTypeContainer">
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="ARTS"
-                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'ARTS')} ? 'selected' : ''"
-                    >
-                      藝文
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="ECOLOGY"
-                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'ECOLOGY')} ? 'selected' : ''"
-                    >
-                      生態
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="OUTDOOR"
-                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'OUTDOOR')} ? 'selected' : ''"
-                    >
-                      戶外
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="SPORTS"
-                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'SPORTS')} ? 'selected' : ''"
-                    >
-                      運動
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="FOOD"
-                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'FOOD')} ? 'selected' : ''"
-                    >
-                      美食
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="FAMILY"
-                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'FAMILY')} ? 'selected' : ''"
-                    >
-                      親子
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="SENIOR"
-                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'SENIOR')} ? 'selected' : ''"
-                    >
-                      銀髮
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="PET"
-                      th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'PET')} ? 'selected' : ''"
-                    >
-                      寵物
-                    </button>
-                  </div>
-                  <input
-                    type="hidden"
-                    name="actType"
-                    id="actTypeInput"
-                    th:value="${actVo.actType}"
-                  />
-                </div>
-
-                <!-- 活動地區標籤選擇 -->
-                <div class="tag-section">
-                  <label class="tag-label"
-                    >活動地區 <span class="required-mark">*</span></label
-                  >
-                  <div class="tag-container" id="actCityContainer">
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="TAIPEI"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAIPEI')} ? 'selected' : ''"
-                    >
-                      台北
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="NEW_TAIPEI"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NEW_TAIPEI')} ? 'selected' : ''"
-                    >
-                      新北
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="TAOYUAN"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAOYUAN')} ? 'selected' : ''"
-                    >
-                      桃園
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="TAICHUNG"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAICHUNG')} ? 'selected' : ''"
-                    >
-                      台中
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="TAINAN"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAINAN')} ? 'selected' : ''"
-                    >
-                      台南
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="KAOHSIUNG"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KAOHSIUNG')} ? 'selected' : ''"
-                    >
-                      高雄
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="KEELUNG"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KEELUNG')} ? 'selected' : ''"
-                    >
-                      基隆
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="HSINCHU"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HSINCHU')} ? 'selected' : ''"
-                    >
-                      新竹
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="MIAOLI"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'MIAOLI')} ? 'selected' : ''"
-                    >
-                      苗栗
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="CHANGHUA"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHANGHUA')} ? 'selected' : ''"
-                    >
-                      彰化
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="NANTOU"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NANTOU')} ? 'selected' : ''"
-                    >
-                      南投
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="YUNLIN"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YUNLIN')} ? 'selected' : ''"
-                    >
-                      雲林
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="CHIAYI"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHIAYI')} ? 'selected' : ''"
-                    >
-                      嘉義
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="PINGTUNG"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'PINGTUNG')} ? 'selected' : ''"
-                    >
-                      屏東
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="YILAN"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YILAN')} ? 'selected' : ''"
-                    >
-                      宜蘭
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="HUALIEN"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HUALIEN')} ? 'selected' : ''"
-                    >
-                      花蓮
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="TAITUNG"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAITUNG')} ? 'selected' : ''"
-                    >
-                      台東
-                    </button>
-                    <button
-                      type="button"
-                      class="tag-button"
-                      data-value="ISLANDS"
-                      th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'ISLANDS')} ? 'selected' : ''"
-                    >
-                      離島
-                    </button>
-                  </div>
-                  <input
-                    type="hidden"
-                    name="actCity"
-                    id="actCityInput"
-                    th:value="${actVo.actCity}"
-                  />
-                </div>
-              </div>
-
-              <hr />
-
-              <!-- 行程板塊 -->
-              <h3>行程安排</h3>
-              <div class="act-detail-info">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    name="itnId"
-                    id="itnId"
-                    class="form-control"
-                    placeholder="請輸入行程編號"
-                    th:value="${actVo.itnId}"
-                    required
-                  />
-                  <label for="itnId">行程編號 <span class="required-mark">*</span></label>
-                  <div class="invalid-feedback"></div>
-                </div>
-              </div>
-              <hr />
-              <!-- 參與者設定 -->
-              <h3>參與者設定</h3>
-              <div class="act-detail-info">
-                <div class="form-floating">
-                  <input
-                    type="datetime-local"
-                    name="signupStart"
-                    id="signupStart"
-                    class="form-control"
-                    th:value="${#temporals.format(actVo.signupStart,'yyyy-MM-dd''T''HH:mm')}"
-                    required
-                  />
-                  <label for="signupStart"
-                    >報名開始時間 <span class="required-mark">*</span></label
-                  >
-                  <div class="invalid-feedback"></div>
-                </div>
-                <div class="form-floating">
-                  <input
-                    type="datetime-local"
-                    name="signupEnd"
-                    id="signupEnd"
-                    class="form-control"
-                    th:value="${#temporals.format(actVo.signupEnd,'yyyy-MM-dd''T''HH:mm')}"
-                    required
-                  />
-                  <label for="signupEnd"
-                    >報名截止時間 <span class="required-mark">*</span></label
-                  >
-                  <div class="invalid-feedback"></div>
-                </div>
-              </div>
-
-              <div class="act-detail-info">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    name="maxCap"
-                    id="maxCap"
-                    class="form-control"
-                    placeholder="請輸入人數需求"
-                    th:value="${actVo.maxCap}"
-                    min="1"
-                    required
-                  />
-                  <label for="maxCap"
-                    >人數需求 <span class="required-mark">*</span></label
-                  >
-                  <div class="invalid-feedback"></div>
-                </div>
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    name="signupCnt"
-                    id="signupCnt"
-                    class="form-control"
-                    th:value="${actVo.signupCnt}"
-                    readonly
-                  />
-                  <label for="signupCnt">已報名人數</label>
-                </div>
-              </div>
-
-              <div class="act-detail-info">
-                <div class="form-floating">
-                  <select name="isPublic" id="isPublic" class="form-select">
-                    <option value="0" th:selected="${actVo.isPublic == 0}">私人</option>
-                    <option value="1" th:selected="${actVo.isPublic == 1}">公開</option>
-                  </select>
-                  <label for="isPublic">是否公開</label>
-                </div>
-                <div class="form-floating">
-                  <select
-                    name="allowCancel"
-                    id="allowCancel"
-                    class="form-select"
-                  >
-                    <option value="0" th:selected="${actVo.allowCancel == 0}">不允許</option>
-                    <option value="1" th:selected="${actVo.allowCancel == 1}">允許</option>
-                  </select>
-                  <label for="allowCancel">是否允許退出</label>
-                </div>
-              </div>
-
-              <div class="act-detail-info">
-                <div class="form-floating">
-                  <select
-                    name="recruitStatus"
-                    id="recruitStatus"
-                    class="form-select"
-                  >
-                    <option value="0" th:selected="${actVo.recruitStatus == 0}">招募中</option>
-                    <option value="1" th:selected="${actVo.recruitStatus == 1}">成團</option>
-                    <option value="2" th:selected="${actVo.recruitStatus == 2}">未成團</option>
-                    <option value="3" th:selected="${actVo.recruitStatus == 3}">已取消</option>
-                    <option value="4" th:selected="${actVo.recruitStatus == 4}">已凍結</option>
-                    <option value="5" th:selected="${actVo.recruitStatus == 5}">已結束</option>
-                  </select>
-                  <label for="recruitStatus">招募狀態</label>
-                </div>
-                <div></div>
-              </div>
-
-              <hr />
-              <!-- 圖片板塊 -->
-              <h3>活動圖片</h3>
-              <div class="act-detail-info">
-                <!-- 現有圖片顯示 -->
-                <div
-                  class="current-image"
-                  th:if="${actVo.actImg != null and actVo.actImg.length > 0}"
-                  style="margin-bottom: 16px"
+            <div class="act-detail-container">
+                <form
+                        th:action="@{/api/act/update}"
+                        method="post"
+                        enctype="multipart/form-data"
+                        id="editActForm"
+                        novalidate
                 >
-                  <label
-                    style="
+                    <input type="hidden" name="actId" th:value="${actVo.actId}"/>
+
+                    <h2>基本資訊</h2>
+                    <div class="act-detail-info">
+                        <div class="form-floating">
+                            <input
+                                    type="text"
+                                    name="actName"
+                                    id="actName"
+                                    class="form-control"
+                                    placeholder="請輸入活動名稱"
+                                    th:value="${actVo.actName}"
+                                    required
+                            />
+                            <label for="actName"
+                            >活動名稱 <span class="required-mark">*</span></label
+                            >
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-floating">
+                <textarea
+                        name="actDesc"
+                        id="actDesc"
+                        class="form-control large-textarea"
+                        placeholder="請輸入活動說明"
+                        th:text="${actVo.actDesc}"
+                ></textarea>
+                        <label for="actDesc">活動說明</label>
+                    </div>
+
+                    <br/>
+
+                    <div class="act-detail-info">
+                        <div class="form-floating">
+                            <input
+                                    type="datetime-local"
+                                    name="actStart"
+                                    id="actStart"
+                                    class="form-control"
+                                    th:value="${#temporals.format(actVo.actStart,'yyyy-MM-dd''T''HH:mm')}"
+                                    required
+                            />
+                            <label for="actStart"
+                            >活動開始時間 <span class="required-mark">*</span></label
+                            >
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-floating">
+                            <input
+                                    type="datetime-local"
+                                    name="actEnd"
+                                    id="actEnd"
+                                    class="form-control"
+                                    th:value="${#temporals.format(actVo.actEnd,'yyyy-MM-dd''T''HH:mm')}"
+                                    required
+                            />
+                            <label for="actEnd"
+                            >活動結束時間 <span class="required-mark">*</span></label
+                            >
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <!-- 活動類型和地區 -->
+                    <div class="act-detail-info" style="display: block">
+                        <!-- 活動類型標籤選擇 -->
+                        <div class="tag-section">
+                            <label class="tag-label"
+                            >活動類型 <span class="required-mark">*</span></label
+                            >
+                            <div class="tag-container" id="actTypeContainer">
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="ARTS"
+                                        th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'ARTS')} ? 'selected' : ''"
+                                >
+                                    藝文
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="ECOLOGY"
+                                        th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'ECOLOGY')} ? 'selected' : ''"
+                                >
+                                    生態
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="OUTDOOR"
+                                        th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'OUTDOOR')} ? 'selected' : ''"
+                                >
+                                    戶外
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="SPORTS"
+                                        th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'SPORTS')} ? 'selected' : ''"
+                                >
+                                    運動
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="FOOD"
+                                        th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'FOOD')} ? 'selected' : ''"
+                                >
+                                    美食
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="FAMILY"
+                                        th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'FAMILY')} ? 'selected' : ''"
+                                >
+                                    親子
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="SENIOR"
+                                        th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'SENIOR')} ? 'selected' : ''"
+                                >
+                                    銀髮
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="PET"
+                                        th:classappend="${actVo.actType != null and #strings.contains(actVo.actType, 'PET')} ? 'selected' : ''"
+                                >
+                                    寵物
+                                </button>
+                            </div>
+                            <input
+                                    type="hidden"
+                                    name="actType"
+                                    id="actTypeInput"
+                                    th:value="${actVo.actType}"
+                            />
+                        </div>
+
+                        <!-- 活動地區標籤選擇 -->
+                        <div class="tag-section">
+                            <label class="tag-label"
+                            >活動地區 <span class="required-mark">*</span></label
+                            >
+                            <div class="tag-container" id="actCityContainer">
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="TAIPEI"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAIPEI')} ? 'selected' : ''"
+                                >
+                                    台北
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="NEW_TAIPEI"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NEW_TAIPEI')} ? 'selected' : ''"
+                                >
+                                    新北
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="TAOYUAN"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAOYUAN')} ? 'selected' : ''"
+                                >
+                                    桃園
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="TAICHUNG"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAICHUNG')} ? 'selected' : ''"
+                                >
+                                    台中
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="TAINAN"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAINAN')} ? 'selected' : ''"
+                                >
+                                    台南
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="KAOHSIUNG"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KAOHSIUNG')} ? 'selected' : ''"
+                                >
+                                    高雄
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="KEELUNG"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'KEELUNG')} ? 'selected' : ''"
+                                >
+                                    基隆
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="HSINCHU"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HSINCHU')} ? 'selected' : ''"
+                                >
+                                    新竹
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="MIAOLI"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'MIAOLI')} ? 'selected' : ''"
+                                >
+                                    苗栗
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="CHANGHUA"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHANGHUA')} ? 'selected' : ''"
+                                >
+                                    彰化
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="NANTOU"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'NANTOU')} ? 'selected' : ''"
+                                >
+                                    南投
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="YUNLIN"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YUNLIN')} ? 'selected' : ''"
+                                >
+                                    雲林
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="CHIAYI"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'CHIAYI')} ? 'selected' : ''"
+                                >
+                                    嘉義
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="PINGTUNG"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'PINGTUNG')} ? 'selected' : ''"
+                                >
+                                    屏東
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="YILAN"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'YILAN')} ? 'selected' : ''"
+                                >
+                                    宜蘭
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="HUALIEN"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'HUALIEN')} ? 'selected' : ''"
+                                >
+                                    花蓮
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="TAITUNG"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'TAITUNG')} ? 'selected' : ''"
+                                >
+                                    台東
+                                </button>
+                                <button
+                                        type="button"
+                                        class="tag-button"
+                                        data-value="ISLANDS"
+                                        th:classappend="${actVo.actCity != null and #strings.contains(actVo.actCity, 'ISLANDS')} ? 'selected' : ''"
+                                >
+                                    離島
+                                </button>
+                            </div>
+                            <input
+                                    type="hidden"
+                                    name="actCity"
+                                    id="actCityInput"
+                                    th:value="${actVo.actCity}"
+                            />
+                        </div>
+                    </div>
+
+                    <hr/>
+
+                    <!-- 行程安排（只顯示，不可編輯） -->
+                    <div class="form-floating mb-3">
+                        <div class="form-control-plaintext" id="itineraryName" style="background: #f8f9fa; color: #495057; font-size:large;">
+                            <span th:text="${actVo.itnName}"></span>
+                        </div>
+                        <label for="itineraryName">行程名稱（僅供顯示）</label>
+                    </div>
+                    <input type="hidden" id="itnId" name="itnId" th:value="${actVo.itnId}"/>
+                    <hr/>
+                    <!-- 參與者設定 -->
+                    <h3>參與者設定</h3>
+                    <div class="act-detail-info">
+                        <div class="form-floating">
+                            <input
+                                    type="datetime-local"
+                                    name="signupStart"
+                                    id="signupStart"
+                                    class="form-control"
+                                    th:value="${#temporals.format(actVo.signupStart,'yyyy-MM-dd''T''HH:mm')}"
+                                    required
+                            />
+                            <label for="signupStart"
+                            >報名開始時間 <span class="required-mark">*</span></label
+                            >
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-floating">
+                            <input
+                                    type="datetime-local"
+                                    name="signupEnd"
+                                    id="signupEnd"
+                                    class="form-control"
+                                    th:value="${#temporals.format(actVo.signupEnd,'yyyy-MM-dd''T''HH:mm')}"
+                                    required
+                            />
+                            <label for="signupEnd"
+                            >報名截止時間 <span class="required-mark">*</span></label
+                            >
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <div class="act-detail-info">
+                        <div class="form-floating">
+                            <input
+                                    type="number"
+                                    name="maxCap"
+                                    id="maxCap"
+                                    class="form-control"
+                                    placeholder="請輸入人數需求"
+                                    th:value="${actVo.maxCap}"
+                                    min="1"
+                                    required
+                            />
+                            <label for="maxCap"
+                            >人數需求 <span class="required-mark">*</span></label
+                            >
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-floating">
+                            <select name="isPublic" id="isPublic" class="form-select">
+                                <option value="0" th:selected="${actVo.isPublic == 0}">私人</option>
+                                <option value="1" th:selected="${actVo.isPublic == 1}">公開</option>
+                            </select>
+                            <label for="isPublic">是否公開</label>
+                        </div>
+
+                    </div>
+
+                    <!--系統處理欄位不可編輯-->
+                    <div class="act-detail-info">
+<!--                        <div class="form-floating">-->
+<!--                            <input-->
+<!--                                    type="number"-->
+<!--                                    name="signupCnt"-->
+<!--                                    id="signupCnt"-->
+<!--                                    class="form-control"-->
+<!--                                    th:value="${actVo.signupCnt}"-->
+<!--                                    readonly-->
+<!--                            />-->
+<!--                            <label for="signupCnt">已報名人數</label>-->
+<!--                        </div>-->
+<!--                        <div class="form-floating">-->
+<!--                            <select-->
+<!--                                    name="allowCancel"-->
+<!--                                    id="allowCancel"-->
+<!--                                    class="form-select"-->
+<!--                            >-->
+<!--                                <option value="0" th:selected="${actVo.allowCancel == 0}">不允許</option>-->
+<!--                                <option value="1" th:selected="${actVo.allowCancel == 1}">允許</option>-->
+<!--                            </select>-->
+<!--                            <label for="allowCancel">是否允許退出</label>-->
+<!--                        </div>-->
+                    </div>
+                    <!--報名狀態不可編輯-->
+                    <div class="act-detail-info">
+                        <!--                <div class="form-floating">-->
+                        <!--                  <select-->
+                        <!--                    name="recruitStatus"-->
+                        <!--                    id="recruitStatus"-->
+                        <!--                    class="form-select"-->
+                        <!--                  >-->
+                        <!--                    <option value="0" th:selected="${actVo.recruitStatus == 0}">招募中</option>-->
+                        <!--                    <option value="1" th:selected="${actVo.recruitStatus == 1}">成團</option>-->
+                        <!--                    <option value="2" th:selected="${actVo.recruitStatus == 2}">未成團</option>-->
+                        <!--                    <option value="3" th:selected="${actVo.recruitStatus == 3}">已取消</option>-->
+                        <!--                    <option value="4" th:selected="${actVo.recruitStatus == 4}">已凍結</option>-->
+                        <!--                    <option value="5" th:selected="${actVo.recruitStatus == 5}">已結束</option>-->
+                        <!--                  </select>-->
+                        <!--                  <label for="recruitStatus">招募狀態</label>-->
+                        <!--                </div>-->
+                    </div>
+
+                    <hr/>
+                    <!-- 圖片板塊 -->
+                    <h3>活動圖片</h3>
+                    <div class="act-detail-info">
+                        <!-- 現有圖片顯示 -->
+                        <div
+                                class="current-image"
+                                th:if="${actVo.actImg != null and actVo.actImg.length > 0}"
+                                style="margin-bottom: 16px"
+                        >
+                            <label
+                                    style="
                       font-weight: bold;
                       color: #333;
                       display: block;
                       margin-bottom: 8px;
                     "
-                    >目前圖片：</label
-                  >
-                  <img
-                    th:src="@{'/api/act/image/' + ${actVo.actId}}"
-                    alt="目前圖片"
-                    style="
+                            >目前圖片：</label
+                            >
+                            <img
+                                    th:src="@{'/api/act/image/' + ${actVo.actId}}"
+                                    alt="目前圖片"
+                                    style="
                       max-width: 200px;
                       max-height: 150px;
                       border: 1px solid #ddd;
                       border-radius: 8px;
                       object-fit: cover;
                     "
-                  />
-                  <small style="color: #666; display: block; margin-top: 8px">
-                    ※ 如果不上傳新圖片，將保留原有圖片
-                  </small>
-                </div>
+                            />
+                            <small style="color: #666; display: block; margin-top: 8px">
+                                ※ 如果不上傳新圖片，將保留原有圖片
+                            </small>
+                        </div>
 
-                <div
-                  th:if="${actVo.actImg == null or actVo.actImg.length == 0}"
-                  style="
+                        <div
+                                th:if="${actVo.actImg == null or actVo.actImg.length == 0}"
+                                style="
                     margin-bottom: 16px;
                     padding: 12px;
                     background-color: #f8f9fa;
@@ -508,115 +500,113 @@
                     border-radius: 8px;
                     color: #666;
                   "
-                >
-                  <strong>目前狀態：</strong> 使用預設圖片
-                </div>
-
-                <!-- 隱藏的檔案輸入框 -->
-                <input
-                  type="file"
-                  name="actImg"
-                  id="actImgInput"
-                  accept="image/*"
-                  class="hidden"
-                  title="選擇活動圖片"
-                />
-
-                <!-- 拖拽上傳區域 -->
-                <div id="dragDropArea" class="drag-drop-area">
-                  <div class="drag-drop-content">
-                    <div class="drag-drop-icon">
-                      <svg
-                        width="48"
-                        height="48"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                      >
-                        <rect
-                          x="3"
-                          y="3"
-                          width="18"
-                          height="18"
-                          rx="2"
-                          ry="2"
-                        />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <polyline points="21,15 16,10 5,21" />
-                      </svg>
-                    </div>
-                    <div class="drag-drop-text">
-                      <p class="drag-drop-main">拖曳圖片到這裡上傳</p>
-                      <p class="drag-drop-sub">
-                        或
-                        <span class="drag-drop-browse">點擊瀏覽</span>
-                        選擇檔案
-                      </p>
-                      <p class="drag-drop-hint">
-                        支援 JPG、PNG、GIF 格式，檔案大小不超過 5MB
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 圖片預覽區域 -->
-                <div id="imagePreview" class="image-preview-container hidden">
-                  <div class="image-preview-wrapper">
-                    <img
-                      id="previewImg"
-                      class="preview-image"
-                      alt="活動圖片預覽"
-                    />
-                    <div class="image-overlay">
-                      <button
-                        type="button"
-                        id="removeImage"
-                        class="remove-image-btn"
-                        title="移除圖片"
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
                         >
-                          <line x1="18" y1="6" x2="6" y2="18"></line>
-                          <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                      </button>
+                            <strong>目前狀態：</strong> 使用預設圖片
+                        </div>
+
+                        <!-- 隱藏的檔案輸入框 -->
+                        <input
+                                type="file"
+                                name="actImg"
+                                id="actImgInput"
+                                accept="image/*"
+                                class="hidden"
+                                title="選擇活動圖片"
+                        />
+
+                        <!-- 拖拽上傳區域 -->
+                        <div id="dragDropArea" class="drag-drop-area">
+                            <div class="drag-drop-content">
+                                <div class="drag-drop-icon">
+                                    <svg
+                                            width="48"
+                                            height="48"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                    >
+                                        <rect
+                                                x="3"
+                                                y="3"
+                                                width="18"
+                                                height="18"
+                                                rx="2"
+                                                ry="2"
+                                        />
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <polyline points="21,15 16,10 5,21"/>
+                                    </svg>
+                                </div>
+                                <div class="drag-drop-text">
+                                    <p class="drag-drop-main">拖曳圖片到這裡上傳</p>
+                                    <p class="drag-drop-sub">
+                                        或
+                                        <span class="drag-drop-browse">點擊瀏覽</span>
+                                        選擇檔案
+                                    </p>
+                                    <p class="drag-drop-hint">
+                                        支援 JPG、PNG、GIF 格式，檔案大小不超過 5MB
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 圖片預覽區域 -->
+                        <div id="imagePreview" class="image-preview-container hidden">
+                            <div class="image-preview-wrapper">
+                                <img
+                                        id="previewImg"
+                                        class="preview-image"
+                                        alt="活動圖片預覽"
+                                />
+                                <div class="image-overlay">
+                                    <button
+                                            type="button"
+                                            id="removeImage"
+                                            class="remove-image-btn"
+                                            title="移除圖片"
+                                    >
+                                        <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                        >
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="compressionInfo" class="compression-info"></div>
+                        </div>
                     </div>
-                  </div>
-                  <div id="compressionInfo" class="compression-info"></div>
-                </div>
-              </div>
 
-              <div class="act-detail-info">
-                <button type="submit" class="act-btn act-btn-primary">
-                  儲存修改
-                </button>
-              </div>
-            </form>
-          </div>
+                    <div class="act-detail-info">
+                        <button type="submit" class="act-btn act-btn-primary">
+                            儲存修改
+                        </button>
+                    </div>
+                </form>
+            </div>
         </main>
-      </div>
     </div>
+</div>
 
-    <!-- 不再需要外部依賴 -->
+<!-- 不再需要外部依賴 -->
 
-    <script th:inline="javascript">
-      // 會員ID注入
-      const currentMemId = /*[[${currentMemId}]]*/ null;
-      window.currentMemId = currentMemId;
-    </script>
+<script th:inline="javascript">
+    const currentMemberId = /*[[${currentMemberId}]]*/ null;
+    const actVO = /*[[${actVo}}]]*/ null;
+    console.log("currentMemberId", currentMemberId , "actVO:", actVO);
 
-    <script>
-      function initializeForm() {
+    function initializeForm() {
         const form = document.getElementById("editActForm");
         if (!form) {
-          return;
+            return;
         }
 
         // 初始化標籤按鈕選擇器
@@ -630,14 +620,14 @@
 
         // 表單提交事件
         form.addEventListener("submit", function (e) {
-          e.preventDefault();
-          clearAllFieldErrors();
-          handleFormSubmission(this);
+            e.preventDefault();
+            clearAllFieldErrors();
+            handleFormSubmission(this);
         });
-      }
+    }
 
-      // 初始化拖拽上傳功能
-      function initializeDragDrop() {
+    // 初始化拖拽上傳功能
+    function initializeDragDrop() {
         const dragDropArea = document.getElementById("dragDropArea");
         const fileInput = document.getElementById("actImgInput");
         const imagePreview = document.getElementById("imagePreview");
@@ -647,7 +637,7 @@
 
         // 點擊拖拽區域開啟檔案選擇器
         dragDropArea.addEventListener("click", () => {
-          fileInput.click();
+            fileInput.click();
         });
 
         // 檔案選擇事件
@@ -661,136 +651,136 @@
 
         // 移除圖片按鈕
         removeBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          removeImage();
+            e.stopPropagation();
+            removeImage();
         });
 
         function handleDragOver(e) {
-          e.preventDefault();
-          e.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
         }
 
         function handleDragEnter(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          dragDropArea.classList.add("drag-over");
+            e.preventDefault();
+            e.stopPropagation();
+            dragDropArea.classList.add("drag-over");
         }
 
         function handleDragLeave(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          // 只有當滑鼠真正離開拖拽區域時才移除樣式
-          if (!dragDropArea.contains(e.relatedTarget)) {
-            dragDropArea.classList.remove("drag-over");
-          }
+            e.preventDefault();
+            e.stopPropagation();
+            // 只有當滑鼠真正離開拖拽區域時才移除樣式
+            if (!dragDropArea.contains(e.relatedTarget)) {
+                dragDropArea.classList.remove("drag-over");
+            }
         }
 
         function handleDrop(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          dragDropArea.classList.remove("drag-over");
+            e.preventDefault();
+            e.stopPropagation();
+            dragDropArea.classList.remove("drag-over");
 
-          const files = e.dataTransfer.files;
-          if (files.length > 0) {
-            const file = files[0];
-            processFile(file);
-          }
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                processFile(file);
+            }
         }
 
         function handleFileSelect(e) {
-          const file = e.target.files[0];
-          if (file) {
-            processFile(file);
-          }
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
         }
 
         function processFile(file) {
-          // 檢查檔案類型
-          if (!file.type.startsWith("image/")) {
-            alert("請選擇圖片檔案（JPG、PNG、GIF）");
-            return;
-          }
+            // 檢查檔案類型
+            if (!file.type.startsWith("image/")) {
+                alert("請選擇圖片檔案（JPG、PNG、GIF）");
+                return;
+            }
 
-          // 檢查檔案大小 (5MB)
-          const maxSize = 5 * 1024 * 1024;
-          if (file.size > maxSize) {
-            alert("檔案大小不能超過 5MB");
-            return;
-          }
+            // 檢查檔案大小 (5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert("檔案大小不能超過 5MB");
+                return;
+            }
 
-          // 顯示預覽圖
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            previewImg.src = e.target.result;
-            showPreview(file);
-          };
-          reader.readAsDataURL(file);
+            // 顯示預覽圖
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                showPreview(file);
+            };
+            reader.readAsDataURL(file);
 
-          // 更新檔案輸入框（用於表單提交）
-          const dataTransfer = new DataTransfer();
-          dataTransfer.items.add(file);
-          fileInput.files = dataTransfer.files;
+            // 更新檔案輸入框（用於表單提交）
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
         }
 
         function showPreview(file) {
-          // 隱藏拖拽區域，顯示預覽
-          dragDropArea.style.display = "none";
-          imagePreview.style.display = "block";
+            // 隱藏拖拽區域，顯示預覽
+            dragDropArea.style.display = "none";
+            imagePreview.style.display = "block";
 
-          // 顯示檔案資訊
-          const fileSize = (file.size / 1024).toFixed(1);
-          compressionInfo.textContent = `檔案大小: ${fileSize} KB`;
+            // 顯示檔案資訊
+            const fileSize = (file.size / 1024).toFixed(1);
+            compressionInfo.textContent = `檔案大小: ${fileSize} KB`;
         }
 
         function removeImage() {
-          // 清空檔案輸入框
-          fileInput.value = "";
+            // 清空檔案輸入框
+            fileInput.value = "";
 
-          // 隱藏預覽，顯示拖拽區域
-          imagePreview.style.display = "none";
-          dragDropArea.style.display = "block";
+            // 隱藏預覽，顯示拖拽區域
+            imagePreview.style.display = "none";
+            dragDropArea.style.display = "block";
 
-          // 清空預覽圖片和資訊
-          previewImg.src = "";
-          compressionInfo.textContent = "";
+            // 清空預覽圖片和資訊
+            previewImg.src = "";
+            compressionInfo.textContent = "";
         }
-      }
+    }
 
-      // 初始化標籤按鈕
-      function initializeTagButtons() {
+    // 初始化標籤按鈕
+    function initializeTagButtons() {
         // 初始化活動類型標籤按鈕
         const actTypeButtons = document.querySelectorAll(
-          "#actTypeContainer .tag-button"
+            "#actTypeContainer .tag-button"
         );
         actTypeButtons.forEach((button) => {
-          button.addEventListener("click", function () {
-            // 清除其他按鈕的選中狀態（只允許選一個）
-            actTypeButtons.forEach((btn) => btn.classList.remove("selected"));
-            // 設置當前按鈕為選中狀態
-            this.classList.add("selected");
-            // 更新隱藏input的值
-            document.getElementById("actTypeInput").value = this.dataset.value;
-          });
+            button.addEventListener("click", function () {
+                // 清除其他按鈕的選中狀態（只允許選一個）
+                actTypeButtons.forEach((btn) => btn.classList.remove("selected"));
+                // 設置當前按鈕為選中狀態
+                this.classList.add("selected");
+                // 更新隱藏input的值
+                document.getElementById("actTypeInput").value = this.dataset.value;
+            });
         });
 
         // 初始化活動地區標籤按鈕
         const actCityButtons = document.querySelectorAll(
-          "#actCityContainer .tag-button"
+            "#actCityContainer .tag-button"
         );
         actCityButtons.forEach((button) => {
-          button.addEventListener("click", function () {
-            // 清除其他按鈕的選中狀態（只允許選一個）
-            actCityButtons.forEach((btn) => btn.classList.remove("selected"));
-            // 設置當前按鈕為選中狀態
-            this.classList.add("selected");
-            // 更新隱藏input的值
-            document.getElementById("actCityInput").value = this.dataset.value;
-          });
+            button.addEventListener("click", function () {
+                // 清除其他按鈕的選中狀態（只允許選一個）
+                actCityButtons.forEach((btn) => btn.classList.remove("selected"));
+                // 設置當前按鈕為選中狀態
+                this.classList.add("selected");
+                // 更新隱藏input的值
+                document.getElementById("actCityInput").value = this.dataset.value;
+            });
         });
-      }
+    }
 
-      // 清除所有欄位錯誤
-      function clearAllFieldErrors() {
+    // 清除所有欄位錯誤
+    function clearAllFieldErrors() {
         // 移除所有 is-invalid 類別
         const invalidFields = document.querySelectorAll(".is-invalid");
         invalidFields.forEach((field) => field.classList.remove("is-invalid"));
@@ -798,161 +788,104 @@
         // 清空所有錯誤訊息
         const feedbackElements = document.querySelectorAll(".invalid-feedback");
         feedbackElements.forEach((element) => (element.textContent = ""));
-      }
+    }
 
-      // 手動為特定欄位顯示錯誤
-      function markFieldAsInvalid(fieldName, errorMessage = "") {
+    // 手動為特定欄位顯示錯誤
+    function markFieldAsInvalid(fieldName, errorMessage = "") {
         const field = document.querySelector(`[name="${fieldName}"]`);
 
         if (field) {
-          field.classList.add("is-invalid");
+            field.classList.add("is-invalid");
 
-          const feedbackElement =
-            field.parentNode.querySelector(".invalid-feedback");
+            const feedbackElement =
+                field.parentNode.querySelector(".invalid-feedback");
 
-          if (feedbackElement && errorMessage) {
-            feedbackElement.textContent = errorMessage;
-            feedbackElement.style.display = "block";
-          }
+            if (feedbackElement && errorMessage) {
+                feedbackElement.textContent = errorMessage;
+                feedbackElement.style.display = "block";
+            }
         }
-      }
+    }
 
-      // 前端表單驗證（僅用於即時反饋，不阻止提交）
-      function validateForm(formData) {
-        // 檢查活動名稱
-        const actName = formData.get("actName");
-        if (!actName || actName.toString().trim() === "") {
-          markFieldAsInvalid("actName", "請輸入活動名稱");
-        }
-
-        // 檢查行程編號
-        const itnId = formData.get("itnId");
-        if (!itnId || itnId.toString().trim() === "") {
-          markFieldAsInvalid("itnId", "請輸入行程編號");
-        } else if (parseInt(itnId) <= 0) {
-          markFieldAsInvalid("itnId", "行程編號必須大於0");
-        }
-
-        // 檢查報名開始時間
-        const signupStart = formData.get("signupStart");
-        if (!signupStart) {
-          markFieldAsInvalid("signupStart", "請選擇報名開始時間");
-        }
-
-        // 檢查報名截止時間
-        const signupEnd = formData.get("signupEnd");
-        if (!signupEnd) {
-          markFieldAsInvalid("signupEnd", "請選擇報名截止時間");
-        }
-
-        // 檢查活動開始時間
-        const actStart = formData.get("actStart");
-        if (!actStart) {
-          markFieldAsInvalid("actStart", "請選擇活動開始時間");
-        }
-
-        // 檢查活動結束時間
-        const actEnd = formData.get("actEnd");
-        if (!actEnd) {
-          markFieldAsInvalid("actEnd", "請選擇活動結束時間");
-        }
-
+    // 前端表單驗證（僅用於即時反饋，不阻止提交）
+    function validateForm() {
+        let valid = true;
+        const formData = new FormData(document.getElementById("editActForm"));
         // 檢查人數需求
         const maxCap = formData.get("maxCap");
+        const signupCnt = formData.get("signupCnt") || 0;
         if (!maxCap || maxCap.toString().trim() === "") {
-          markFieldAsInvalid("maxCap", "請輸入人數需求");
+            markFieldAsInvalid("maxCap", "請輸入人數需求");
+            valid = false;
         } else if (parseInt(maxCap) <= 0) {
-          markFieldAsInvalid("maxCap", "人數需求必須大於0");
+            markFieldAsInvalid("maxCap", "人數需求必須大於0");
+            valid = false;
+        } else if (parseInt(maxCap) < 3) {
+            markFieldAsInvalid("maxCap", "人數需求最少三人");
+            valid = false;
+        } else if (parseInt(maxCap) < parseInt(signupCnt)) {
+            markFieldAsInvalid("maxCap", "人數上限不可小於目前已報名人數");
+            valid = false;
         }
+        // ... 其他驗證 ...
+        return valid;
+    }
 
-        // 檢查活動類型
-        const actType = document.getElementById("actTypeInput").value;
-        if (!actType) {
-          markFieldAsInvalid("actType", "請選擇活動類型");
-        }
-
-        // 檢查活動地區
-        const actCity = document.getElementById("actCityInput").value;
-        if (!actCity) {
-          markFieldAsInvalid("actCity", "請選擇活動地區");
-        }
-
-        // 時間邏輯驗證
-        if (signupStart && signupEnd && actStart && actEnd) {
-          const signupStartDate = new Date(signupStart);
-          const signupEndDate = new Date(signupEnd);
-          const actStartDate = new Date(actStart);
-          const actEndDate = new Date(actEnd);
-
-          if (signupEndDate <= signupStartDate) {
-            markFieldAsInvalid("signupEnd", "報名截止時間必須晚於報名開始時間");
-          }
-
-          if (actEndDate <= actStartDate) {
-            markFieldAsInvalid("actEnd", "活動結束時間必須晚於活動開始時間");
-          }
-
-          if (actStartDate <= signupEndDate) {
-            markFieldAsInvalid("actStart", "活動開始時間應晚於報名截止時間");
-          }
-        }
-      }
-
-      // 初始化實時驗證
-      function initializeRealTimeValidation() {
+    // 初始化實時驗證
+    function initializeRealTimeValidation() {
         // 為所有必填欄位添加實時驗證
         const requiredFields = [
-          "actName",
-          "itnId",
-          "signupStart",
-          "signupEnd",
-          "actStart",
-          "actEnd",
-          "maxCap",
+            "actName",
+            "itnId",
+            "signupStart",
+            "signupEnd",
+            "actStart",
+            "actEnd",
+            "maxCap",
         ];
 
         requiredFields.forEach((fieldName) => {
-          const field = document.querySelector(`[name="${fieldName}"]`);
-          if (field) {
-            // 當用戶輸入或修改內容時，清除該欄位的錯誤狀態
-            field.addEventListener("input", () => clearFieldError(fieldName));
-            field.addEventListener("change", () => clearFieldError(fieldName));
-          }
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                // 當用戶輸入或修改內容時，清除該欄位的錯誤狀態
+                field.addEventListener("input", () => clearFieldError(fieldName));
+                field.addEventListener("change", () => clearFieldError(fieldName));
+            }
         });
-      }
+    }
 
-      // 清除單個欄位的錯誤狀態
-      function clearFieldError(fieldName) {
+    // 清除單個欄位的錯誤狀態
+    function clearFieldError(fieldName) {
         const field = document.querySelector(`[name="${fieldName}"]`);
         if (field) {
-          field.classList.remove("is-invalid");
-          const feedbackElement =
-            field.parentNode.querySelector(".invalid-feedback");
-          if (feedbackElement) {
-            feedbackElement.textContent = "";
-          }
+            field.classList.remove("is-invalid");
+            const feedbackElement =
+                field.parentNode.querySelector(".invalid-feedback");
+            if (feedbackElement) {
+                feedbackElement.textContent = "";
+            }
         }
-      }
+    }
 
-      // 保存表單數據（用於錯誤時恢復）
-      function saveFormData(form) {
+    // 保存表單數據（用於錯誤時恢復）
+    function saveFormData(form) {
         const formData = {};
         const formElements = form.elements;
 
         for (let element of formElements) {
-          if (element.name) {
-            if (element.type === "file") {
-              // 檔案輸入框不保存
-              continue;
-            } else if (element.type === "select-multiple") {
-              // 多選下拉框
-              formData[element.name] = Array.from(element.selectedOptions).map(
-                (option) => option.value
-              );
-            } else {
-              formData[element.name] = element.value;
+            if (element.name) {
+                if (element.type === "file") {
+                    // 檔案輸入框不保存
+                    continue;
+                } else if (element.type === "select-multiple") {
+                    // 多選下拉框
+                    formData[element.name] = Array.from(element.selectedOptions).map(
+                        (option) => option.value
+                    );
+                } else {
+                    formData[element.name] = element.value;
+                }
             }
-          }
         }
 
         // 保存標籤按鈕的值
@@ -960,167 +893,167 @@
         formData.actCity = document.getElementById("actCityInput").value || "";
 
         return formData;
-      }
+    }
 
-      // 恢復表單數據
-      function restoreFormData(savedData) {
+    // 恢復表單數據
+    function restoreFormData(savedData) {
         Object.keys(savedData).forEach((name) => {
-          const element = document.querySelector(`[name="${name}"]`);
-          if (element) {
-            element.value = savedData[name];
-          }
+            const element = document.querySelector(`[name="${name}"]`);
+            if (element) {
+                element.value = savedData[name];
+            }
         });
 
         // 恢復標籤按鈕的選中狀態
         if (savedData.actType) {
-          const typeButton = document.querySelector(
-            `#actTypeContainer .tag-button[data-value="${savedData.actType}"]`
-          );
-          if (typeButton) {
-            document
-              .querySelectorAll("#actTypeContainer .tag-button")
-              .forEach((btn) => btn.classList.remove("selected"));
-            typeButton.classList.add("selected");
-            document.getElementById("actTypeInput").value = savedData.actType;
-          }
+            const typeButton = document.querySelector(
+                `#actTypeContainer .tag-button[data-value="${savedData.actType}"]`
+            );
+            if (typeButton) {
+                document
+                    .querySelectorAll("#actTypeContainer .tag-button")
+                    .forEach((btn) => btn.classList.remove("selected"));
+                typeButton.classList.add("selected");
+                document.getElementById("actTypeInput").value = savedData.actType;
+            }
         }
         if (savedData.actCity) {
-          const cityButton = document.querySelector(
-            `#actCityContainer .tag-button[data-value="${savedData.actCity}"]`
-          );
-          if (cityButton) {
-            document
-              .querySelectorAll("#actCityContainer .tag-button")
-              .forEach((btn) => btn.classList.remove("selected"));
-            cityButton.classList.add("selected");
-            document.getElementById("actCityInput").value = savedData.actCity;
-          }
+            const cityButton = document.querySelector(
+                `#actCityContainer .tag-button[data-value="${savedData.actCity}"]`
+            );
+            if (cityButton) {
+                document
+                    .querySelectorAll("#actCityContainer .tag-button")
+                    .forEach((btn) => btn.classList.remove("selected"));
+                cityButton.classList.add("selected");
+                document.getElementById("actCityInput").value = savedData.actCity;
+            }
         }
-      }
+    }
 
-      // 處理表單提交
-      async function handleFormSubmission(form) {
+    // 處理表單提交
+    async function handleFormSubmission(form) {
         try {
-          const formData = new FormData(form);
+            const formData = new FormData(form);
 
-          // 保存表單數據（用於錯誤時恢復）
-          const savedFormData = saveFormData(form);
+            // 保存表單數據（用於錯誤時恢復）
+            const savedFormData = saveFormData(form);
 
-          // 從隱藏的input中獲取選中的標籤值
-          const selectedType = document.getElementById("actTypeInput").value;
-          const selectedCity = document.getElementById("actCityInput").value;
+            // 從隱藏的input中獲取選中的標籤值
+            const selectedType = document.getElementById("actTypeInput").value;
+            const selectedCity = document.getElementById("actCityInput").value;
 
-          if (selectedType) {
-            formData.set("actType", selectedType);
-          }
+            if (selectedType) {
+                formData.set("actType", selectedType);
+            }
 
-          if (selectedCity) {
-            formData.set("actCity", selectedCity);
-          }
+            if (selectedCity) {
+                formData.set("actCity", selectedCity);
+            }
 
-          // 顯示提交中的狀態
-          const submitBtn = form.querySelector('button[type="submit"]');
-          const originalText = submitBtn.textContent;
-          submitBtn.textContent = "儲存中...";
-          submitBtn.disabled = true;
+            // 顯示提交中的狀態
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = "儲存中...";
+            submitBtn.disabled = true;
 
-          const response = await fetch("/api/act/update", {
-            method: "PUT",
-            body: formData,
-          });
-
-          const result = await response.json();
-
-          if (!response.ok) {
-            // 恢復用戶輸入的數據
-            restoreFormData(savedFormData);
-
-            // 根據錯誤訊息內容為相應欄位標記錯誤
-            const errorMessages = result.errors || [
-              result.error || result.message || "儲存失敗，請檢查輸入內容",
-            ];
-            errorMessages.forEach((msg) => {
-              const lowerMsg = msg.toLowerCase();
-
-              if (msg.includes("活動名稱") || lowerMsg.includes("actname")) {
-                markFieldAsInvalid(
-                  "actName",
-                  msg.includes("活動名稱") ? msg : "活動名稱有誤"
-                );
-              }
-              if (msg.includes("行程編號") || lowerMsg.includes("itnid")) {
-                markFieldAsInvalid(
-                  "itnId",
-                  msg.includes("行程編號") ? msg : "行程編號有誤"
-                );
-              }
-              if (
-                msg.includes("報名開始時間") ||
-                lowerMsg.includes("signupstart")
-              ) {
-                markFieldAsInvalid(
-                  "signupStart",
-                  msg.includes("報名開始時間") ? msg : "報名開始時間有誤"
-                );
-              }
-              if (
-                msg.includes("報名截止時間") ||
-                lowerMsg.includes("signupend")
-              ) {
-                markFieldAsInvalid(
-                  "signupEnd",
-                  msg.includes("報名截止時間") ? msg : "報名截止時間有誤"
-                );
-              }
-              if (
-                msg.includes("活動開始時間") ||
-                lowerMsg.includes("actstart")
-              ) {
-                markFieldAsInvalid(
-                  "actStart",
-                  msg.includes("活動開始時間") ? msg : "活動開始時間有誤"
-                );
-              }
-              if (msg.includes("活動結束時間") || lowerMsg.includes("actend")) {
-                markFieldAsInvalid(
-                  "actEnd",
-                  msg.includes("活動結束時間") ? msg : "活動結束時間有誤"
-                );
-              }
-              if (msg.includes("人數需求") || lowerMsg.includes("maxcap")) {
-                markFieldAsInvalid(
-                  "maxCap",
-                  msg.includes("人數需求") ? msg : "人數需求有誤"
-                );
-              }
+            const response = await fetch("/api/act/update", {
+                method: "PUT",
+                body: formData,
             });
-          } else {
-            showSuccessMessage("活動更新成功！正在跳轉...");
-            // 跳轉到我的活動列表
-            setTimeout(() => {
-              if (result.data?.hostId || result.hostId) {
-                window.location.href = `/act/member/listMy/${
-                  result.data?.hostId || result.hostId
-                }`;
-              } else {
-                window.history.back();
-              }
-            }, 1500);
-          }
-        } catch (error) {
-          alert("網絡錯誤，請稍後再試: " + error.message);
-        } finally {
-          // 恢復提交按鈕狀態
-          const submitBtn = form.querySelector('button[type="submit"]');
-          if (submitBtn) {
-            submitBtn.textContent = "儲存修改";
-            submitBtn.disabled = false;
-          }
-        }
-      }
 
-      // 顯示成功訊息
-      function showSuccessMessage(message) {
+            const result = await response.json();
+
+            if (!response.ok) {
+                // 恢復用戶輸入的數據
+                restoreFormData(savedFormData);
+
+                // 根據錯誤訊息內容為相應欄位標記錯誤
+                const errorMessages = result.errors || [
+                    result.error || result.message || "儲存失敗，請檢查輸入內容",
+                ];
+                errorMessages.forEach((msg) => {
+                    const lowerMsg = msg.toLowerCase();
+
+                    if (msg.includes("活動名稱") || lowerMsg.includes("actname")) {
+                        markFieldAsInvalid(
+                            "actName",
+                            msg.includes("活動名稱") ? msg : "活動名稱有誤"
+                        );
+                    }
+                    if (msg.includes("行程編號") || lowerMsg.includes("itnid")) {
+                        markFieldAsInvalid(
+                            "itnId",
+                            msg.includes("行程編號") ? msg : "行程編號有誤"
+                        );
+                    }
+                    if (
+                        msg.includes("報名開始時間") ||
+                        lowerMsg.includes("signupstart")
+                    ) {
+                        markFieldAsInvalid(
+                            "signupStart",
+                            msg.includes("報名開始時間") ? msg : "報名開始時間有誤"
+                        );
+                    }
+                    if (
+                        msg.includes("報名截止時間") ||
+                        lowerMsg.includes("signupend")
+                    ) {
+                        markFieldAsInvalid(
+                            "signupEnd",
+                            msg.includes("報名截止時間") ? msg : "報名截止時間有誤"
+                        );
+                    }
+                    if (
+                        msg.includes("活動開始時間") ||
+                        lowerMsg.includes("actstart")
+                    ) {
+                        markFieldAsInvalid(
+                            "actStart",
+                            msg.includes("活動開始時間") ? msg : "活動開始時間有誤"
+                        );
+                    }
+                    if (msg.includes("活動結束時間") || lowerMsg.includes("actend")) {
+                        markFieldAsInvalid(
+                            "actEnd",
+                            msg.includes("活動結束時間") ? msg : "活動結束時間有誤"
+                        );
+                    }
+                    if (msg.includes("人數需求") || lowerMsg.includes("maxcap")) {
+                        markFieldAsInvalid(
+                            "maxCap",
+                            msg.includes("人數需求") ? msg : "人數需求有誤"
+                        );
+                    }
+                });
+            } else {
+                showSuccessMessage("活動更新成功！正在跳轉...");
+                // 跳轉到我的活動列表
+                setTimeout(() => {
+                    if (result.data?.hostId || result.hostId) {
+                        window.location.href = `/act/member/listMy/${
+                            result.data?.hostId || result.hostId
+                        }`;
+                    } else {
+                        window.history.back();
+                    }
+                }, 1500);
+            }
+        } catch (error) {
+            alert("網絡錯誤，請稍後再試: " + error.message);
+        } finally {
+            // 恢復提交按鈕狀態
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = "儲存修改";
+                submitBtn.disabled = false;
+            }
+        }
+    }
+
+    // 顯示成功訊息
+    function showSuccessMessage(message) {
         const successDiv = document.createElement("div");
         successDiv.className = "alert alert-success";
         successDiv.textContent = message;
@@ -1130,16 +1063,58 @@
         form.parentNode.insertBefore(successDiv, form);
 
         setTimeout(() => {
-          successDiv.remove();
+            successDiv.remove();
         }, 3000);
-      }
+    }
 
-      // 初始化
-      if (document.readyState === "loading") {
+    // 初始化
+    if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initializeForm);
-      } else {
+    } else {
         initializeForm();
-      }
-    </script>
-  </body>
+    }
+
+    (function loadItinerarySelect() {
+        if (!currentMemberId) {
+            console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
+            return;
+        }
+        fetch(`/itinerary/creator/${currentMemberId}`)
+            .then(res => res.json())
+            .then(list => {
+                const select = document.getElementById('itinerarySelect');
+                const currentItnId = document.getElementById('itnId').value;
+                if (!select) return;
+                select.innerHTML = '<option value="">請選擇行程</option>';
+                if (Array.isArray(list) && list.length > 0) {
+                    list.forEach(itn => {
+                        const option = document.createElement('option');
+                        option.value = itn.itnId;
+                        option.textContent = `${itn.itnName}（${itn.itnDesc || '無描述'}）`;
+                        if (currentItnId && itn.itnId == currentItnId) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = '（查無可用行程，請先建立行程）';
+                    select.appendChild(option);
+                }
+            })
+            .catch(err => {
+                console.error('[行程下拉] 載入行程清單失敗:', err);
+                const select = document.getElementById('itinerarySelect');
+                if (select) {
+                    select.innerHTML = '<option value="">（行程載入失敗）</option>';
+                }
+            });
+        // 當選擇變動時，同步 itnId
+        document.getElementById('itinerarySelect').addEventListener('change', function () {
+            document.getElementById('itnId').value = this.value;
+        });
+    })();
+</script>
+</body>
 </html>

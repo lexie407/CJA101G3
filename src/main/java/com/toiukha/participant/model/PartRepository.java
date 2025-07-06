@@ -28,7 +28,7 @@ public interface PartRepository extends JpaRepository<PartVO, PartVO.CompositeKe
     @Query("select p.memId from PartVO p where p.actId = :actId")
     List<Integer> findMemIdsByActId(Integer actId);
 
-    //一次查詢所有團員的ID、姓名與狀態
+    //一次查詢所有團員的ID、姓名與狀態(提供給groupHome)
     @Query("SELECT new com.toiukha.participant.model.PartDTO(p.actId, p.memId, p.memType, p.joinTime, p.joinStatus, m.memName) " +
             "FROM PartVO p JOIN MembersVO m ON p.memId = m.memId WHERE p.actId = :actId")
     List<PartDTO> findMemberNamesAndStatusByActId(Integer actId);
@@ -40,9 +40,13 @@ public interface PartRepository extends JpaRepository<PartVO, PartVO.CompositeKe
     //查詢會員所參加的活動
     List<PartVO> findByMemId(Integer memId);
 
-    //查詢會員所參加的活動ID
+    //查詢會員所參加的活動ID(只要在名單上的都會有)
     @Query("select p.actId from PartVO p where p.memId = :memId")
     List<Integer> findActIdsByMemId(Integer memId);
+
+    //查詢會員已參加的活動ID(只包含狀態為已參加的活動，排除被剔除和已退出的)
+    @Query("select p.actId from PartVO p where p.memId = :memId and p.joinStatus = 1")
+    List<Integer> findJoinedActIdsByMemId(Integer memId);
 
     /**
      * 根據活動ID和會員ID刪除參加記錄

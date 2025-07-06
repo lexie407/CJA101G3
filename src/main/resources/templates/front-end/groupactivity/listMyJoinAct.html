@@ -143,8 +143,8 @@
 
 
       // 會員ID注入
-      const currentMemId = /*[[${currentMemId}]]*/ null;
-      window.currentMemId = currentMemId;
+              const currentMemberId = /*[[${currentMemberId}]]*/ null;
+        window.currentMemberId = currentMemberId;
 
       // 載入參加的活動列表
       const listEl = document.getElementById("myJoinActList");
@@ -162,6 +162,9 @@
         const isPublic = formData.get("isPublic");
 
         let filtered = allActivities;
+        // 新增：只顯示已參加的活動
+        // filtered = filtered.filter(act => act.joinStatus == 1);
+
 
         // 按名稱篩選
         if (actName && actName.trim()) {

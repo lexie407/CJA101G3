@@ -115,8 +115,8 @@
 
     <script th:inline="javascript">
       // 會員ID注入
-      const currentMemId = /*[[${currentMemId}]]*/ null;
-      window.currentMemId = currentMemId;
+              const currentMemberId = /*[[${currentMemberId}]]*/ null;
+        window.currentMemberId = currentMemberId;
 
       // ====== 活動類型多選互動 ======
       const availableTypes = [

@@ -91,9 +91,25 @@ window.GroupActivityUI = (function () {
         actions.push(
           `<button class="btn btn-icon-zoom" title="查看詳情" onclick="window.location.href='/act/member/view/${activity.actId}'"><i class="fas fa-eye"></i></button>`
         );
-        actions.push(
-          `<button class="btn btn-icon-zoom secondary group-home-btn" title="前往揪團主頁" onclick="window.location.href='/act/group/${activity.actId}/home'"><i class="fas fa-users" data-default-icon="fas fa-users" data-hover-icon="fas fa-arrow-right"></i></button>`
-        );
+        
+        // 根據團員狀態決定是否允許進入揪團主頁
+        if (activity.joinStatus === 2) {
+          // 被剔除的團員：顯示警告訊息
+          actions.push(
+            `<button class="btn btn-icon-zoom error" title="您已被剔除，無法進入揪團主頁" onclick="alert('您已被團主剔除，無法進入揪團主頁。如需重新加入，請聯繫團主。')"><i class="fas fa-ban" data-default-icon="fas fa-ban" data-hover-icon="fas fa-ban"></i></button>`
+          );
+        } else if (activity.joinStatus === 3) {
+          // 已退出的團員：顯示警告訊息
+          actions.push(
+            `<button class="btn btn-icon-zoom error" title="您已退出，無法進入揪團主頁" onclick="alert('您已退出此活動，無法進入揪團主頁。如需重新加入，請重新報名。')"><i class="fas fa-sign-out-alt" data-default-icon="fas fa-sign-out-alt" data-hover-icon="fas fa-sign-out-alt"></i></button>`
+          );
+        } else {
+          // 正常團員：可以進入揪團主頁
+          actions.push(
+            `<button class="btn btn-icon-zoom secondary group-home-btn" title="前往揪團主頁" onclick="window.location.href='/act/group/${activity.actId}/home'"><i class="fas fa-users" data-default-icon="fas fa-users" data-hover-icon="fas fa-arrow-right"></i></button>`
+          );
+        }
+        
         actions.push(
           `<button class="btn btn-icon-zoom error" title="取消報名" onclick="cancelParticipation(${activity.actId})"><i class="fas fa-trash"></i></button>`
         );
@@ -112,6 +128,11 @@ window.GroupActivityUI = (function () {
           actions.push(
             `<button class="btn btn-icon-zoom error" title="刪除" onclick="memberDeleteAct(${activity.actId})"><i class="fas fa-trash"></i></button>`
           );
+        } else {
+          // 公開活動：顯示紅色禁止圖示和警告彈窗
+          actions.push(
+            `<button class="btn btn-icon-zoom error" title="公開活動無法刪除" onclick="alert('公開活動無法刪除，請先將活動設為私人後再進行刪除操作。')"><i class="fas fa-ban" data-default-icon="fas fa-ban" data-hover-icon="fas fa-ban"></i></button>`
+          );
         }
       } else {
         // 搜尋頁面或其他：永遠顯示檢視詳情
@@ -120,7 +141,7 @@ window.GroupActivityUI = (function () {
         );
         if (
           activity.isCurrentUserParticipant === true &&
-          activity.hostId != window.currentMemId
+          activity.hostId != window.currentMemberId
         ) {
           actions.push(
             `<button onclick="cancelParticipation(${activity.actId})" class="act-btn act-btn-danger">取消報名</button>`
@@ -171,6 +192,7 @@ window.GroupActivityUI = (function () {
    * @param {Function} onLoadMore - 載入更多的回調函數
    * @returns {string} HTML 字串
    */
+  // ---未使用---
   function createPaginationButton(pageInfo, onLoadMore) {
     if (pageInfo.last) return "";
 
@@ -193,6 +215,7 @@ window.GroupActivityUI = (function () {
    * @param {Array} actions - 操作按鈕
    * @returns {string} HTML 字串
    */
+  // ---未使用---
   function createMemberItem(member, isHost = false, actions = []) {
     const hostBadge = isHost ? '<span class="act-host-badge">團主</span>' : "";
     const actionsHtml = actions.length > 0 ? actions.join("") : "";
@@ -213,6 +236,7 @@ window.GroupActivityUI = (function () {
    * @param {Object} message - 訊息資料
    * @returns {string} HTML 字串
    */
+  // ---未使用---
   function createChatMessage(message) {
     const timestamp = new Date(
       message.timestamp || Date.now()
@@ -233,6 +257,7 @@ window.GroupActivityUI = (function () {
    * @param {Array} buttons - 按鈕配置
    * @returns {HTMLElement} 模態框元素
    */
+  // ---未使用---
   function createModal(title, content, buttons = []) {
     const modal = document.createElement("div");
     modal.className = "act-modal";
@@ -266,6 +291,7 @@ window.GroupActivityUI = (function () {
    * @param {Object} field - 欄位配置
    * @returns {string} HTML 字串
    */
+  // ---未使用---
   function createFormField(field) {
     const {
       type = "text",
@@ -319,6 +345,7 @@ window.GroupActivityUI = (function () {
    * @param {Object} emptyState - 空狀態配置
    * @returns {string} HTML 字串
    */
+  // ---未使用---
   function createResultsContainer(items, itemRenderer, emptyState = {}) {
     if (!items || items.length === 0) {
       return `

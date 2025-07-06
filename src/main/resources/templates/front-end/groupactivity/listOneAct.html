@@ -1,251 +1,386 @@
 <!DOCTYPE html>
 <html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>活動詳情 | 島遊kha</title>
-  <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
-  <link rel="stylesheet" th:href="@{/css/light.css}" />
-  <link rel="stylesheet" th:href="@{/css/style.css}" />
-  <!-- GroupActivity 模組 CSS -->
-  <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
-  <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
-</head>
-<body class="light">
-<div class="app-container">
-  <div th:insert="~{/navTemplate :: navbar}"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>活動詳情 | 島遊kha</title>
+    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/light.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <!-- GroupActivity 模組 CSS -->
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
+    <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
+  </head>
+  <body class="light">
+    <div class="app-container">
+      <div th:insert="~{/navTemplate :: navbar}"></div>
 
-  <div class="main-content act-page">
-    <div th:insert="~{/subnavActFront :: subnav('my')}"></div>
+      <div class="main-content act-page">
+        <div th:insert="~{/subnavActFront :: subnav('my')}"></div>
 
-    <main class="content-area-main act-area" th:object="${actVo}">
-      <div class="act-detail-container" th:data-act-id="*{actId}">
-        <div class="act-detail-header">
-          <h1 class="act-detail-title" th:text="*{actName}">活動名稱</h1>
-          <p
-                  class="act-detail-meta"
-                  th:text="'活動編號: ' + *{actId} + ' | 團主: ' + *{hostId}"
-          >
-            活動編號: 1 | 團主: 1
-          </p>
-          <span
-                  class="act-status"
-                  th:classappend="${@actService.getRecruitStatusCssClass(actVo)}"
-                  th:text="${@actService.getRecruitStatusDisplayName(actVo)}"
-          >狀態</span
-          >
-        </div>
-
-        <div class="act-detail-content">
-          <div class="act-detail-image-container">
-            <img
-                    th:if="*{actImg != null && actImg.length > 0}"
-                    th:src="@{/api/act/image/{actId}(actId=*{actId})}"
-                    alt="活動圖片"
-                    class="act-detail-image"
-            />
-            <div
-                    th:unless="*{actImg != null && actImg.length > 0}"
-                    class="act-card-image-placeholder"
-                    style="height: 300px"
-            >
-              無圖片
+        <main class="content-area-main act-area" th:object="${actVo}">
+          <div class="act-detail-container" th:data-act-id="*{actId}">
+            <div class="act-detail-header">
+              <h1 class="act-detail-title" th:text="*{actName}">活動名稱</h1>
+              <p
+                class="act-detail-meta"
+                th:text="'活動編號: ' + *{actId} + ' | 團主: ' + *{hostId}"
+              >
+                活動編號: 1 | 團主: 1
+              </p>
+              <span
+                class="act-status"
+                th:classappend="${@actService.getRecruitStatusCssClass(actVo)}"
+                th:text="${@actService.getRecruitStatusDisplayName(actVo)}"
+                >狀態</span
+              >
             </div>
-          </div>
-
-          <div class="act-detail-info">
-            <div class="act-detail-item">
-              <label class="act-detail-label">活動描述</label>
-              <p class="act-detail-value" th:text="*{actDesc}">活動描述</p>
-            </div>
-
-            <div class="act-detail-item">
-              <label class="act-detail-label">報名時間</label>
-              <p class="act-detail-value">
-                    <span
-                            th:text="${#temporals.format(actVo.signupStart, 'yyyy-MM-dd HH:mm')}"
-                    >開始時間</span
-                    >
-                ~
-                <span
-                        th:text="${#temporals.format(actVo.signupEnd, 'yyyy-MM-dd HH:mm')}"
-                >結束時間</span
+            <!-- 活動板塊 -->
+            <div class="act-detail-content">
+              <div class="act-detail-image-container">
+                <img
+                  th:if="*{actImg != null && actImg.length > 0}"
+                  th:src="@{/api/act/image/{actId}(actId=*{actId})}"
+                  alt="活動圖片"
+                  class="act-detail-image"
+                />
+                <div
+                  th:unless="*{actImg != null && actImg.length > 0}"
+                  class="act-card-image-placeholder"
+                  style="height: 300px"
                 >
-              </p>
-            </div>
+                  無圖片
+                </div>
+              </div>
 
-            <div class="act-detail-item">
-              <label class="act-detail-label">活動時間</label>
-              <p class="act-detail-value">
+              <div class="act-detail-info">
+                <div class="act-detail-item">
+                  <label class="act-detail-label">活動描述</label>
+                  <p class="act-detail-value" th:text="*{actDesc}">活動描述</p>
+                </div>
+
+                <div class="act-detail-item">
+                  <label class="act-detail-label">報名時間</label>
+                  <p class="act-detail-value">
                     <span
-                            th:text="${#temporals.format(actVo.actStart, 'yyyy-MM-dd HH:mm')}"
-                    >開始時間</span
+                      th:text="${#temporals.format(actVo.signupStart, 'yyyy-MM-dd HH:mm')}"
+                      >開始時間</span
                     >
-                ~
-                <span
-                        th:text="${#temporals.format(actVo.actEnd, 'yyyy-MM-dd HH:mm')}"
-                >結束時間</span
+                    ~
+                    <span
+                      th:text="${#temporals.format(actVo.signupEnd, 'yyyy-MM-dd HH:mm')}"
+                      >結束時間</span
+                    >
+                  </p>
+                </div>
+
+                <div class="act-detail-item">
+                  <label class="act-detail-label">活動時間</label>
+                  <p class="act-detail-value">
+                    <span
+                      th:text="${#temporals.format(actVo.actStart, 'yyyy-MM-dd HH:mm')}"
+                      >開始時間</span
+                    >
+                    ~
+                    <span
+                      th:text="${#temporals.format(actVo.actEnd, 'yyyy-MM-dd HH:mm')}"
+                      >結束時間</span
+                    >
+                  </p>
+                </div>
+
+                <div class="act-detail-item">
+                  <label class="act-detail-label">人數</label>
+                  <p class="act-detail-value">
+                    <span th:text="*{signupCnt}">0</span> /
+                    <span th:text="*{maxCap}">10</span>
+                  </p>
+                </div>
+
+                <div class="act-detail-item">
+                  <label class="act-detail-label">公開狀態</label>
+                  <p class="act-detail-value" th:if="*{isPublic == 1}">公開</p>
+                  <p class="act-detail-value" th:if="*{isPublic != 1}">私人</p>
+                </div>
+
+                <div class="act-detail-item">
+                  <label class="act-detail-label">允許退出</label>
+                  <p class="act-detail-value" th:if="*{allowCancel == 1}">
+                    允許
+                  </p>
+                  <p class="act-detail-value" th:if="*{allowCancel != 1}">
+                    不允許
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 行程板塊 -->
+            <div class="act-itinerary-section">
+              <h3 class="act-section-title">相關行程</h3>
+              <div class="act-itinerary-container">
+                <div class="act-itinerary-loading" id="itineraryLoading">
+                  <div class="loading-spinner"></div>
+                  <p>載入行程資訊中...</p>
+                </div>
+
+                <div class="act-itinerary-content" id="itineraryContent" style="display: none;">
+                  <div class="act-itinerary-header">
+                    <h4 class="act-itinerary-title" id="itineraryTitle">行程標題</h4>
+                    <span class="act-itinerary-status" id="itineraryStatus">公開</span>
+                  </div>
+                  <div class="act-itinerary-description" id="itineraryDescription">
+                    行程描述將在這裡顯示
+                  </div>
+                  <div class="act-itinerary-spots" id="itinerarySpots">
+                    <h5>行程景點</h5>
+                    <div class="act-spots-list" id="spotsList">
+                      <!-- 景點列表將在這裡動態生成 -->
+                    </div>
+                  </div>
+                </div>
+
+                <div class="act-itinerary-error" id="itineraryError" style="display: none;">
+                  <p>無法載入行程資訊</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+            <div class="act-detail-actions">
+              <!-- 團主專用按鈕 -->
+              <div th:if="${isHost}">
+                <a
+                  th:href="@{'/act/member/edit/' + ${actVo.actId}}"
+                  class="act-btn act-btn-secondary"
                 >
-              </p>
+                  編輯活動
+                </a>
+                <!-- 改成只能從myJoin或myAct-->
+                <a
+                  th:if="${@actService.isPublic(actVo)}"
+                  th:href="@{'/act/group/' + ${actVo.actId} + '/home'}"
+                  class="act-btn act-btn-success"
+                >
+                  前往揪團主頁
+                </a>
+              </div>
+
+              <!-- 非團主按鈕 -->
+              <div th:if="${!isHost}">
+                <!-- 依照是否為團員身份檢查是否可以報名 -->
+                <button
+                  th:if="${!isParticipant and @actService.canSignUp(actVo)}"
+                  onclick="joinActivity()"
+                  class="act-btn act-btn-primary"
+                >
+                  報名參加
+                </button>
+
+                <button
+                  th:if="${isParticipant}"
+                  onclick="cancelParticipation()"
+                  class="act-btn act-btn-danger"
+                >
+                  取消報名
+                </button>
+
+                <!-- 使用ActService檢查是否為公開活動 -->
+                <a
+                  th:if="(${atPage} == 'myJoin' or ${atPage} == 'myHost') and (${isHost} or ${isParticipant})"
+                  th:href="@{'/act/group/' + ${actVo.actId} + '/home'}"
+                  class="act-btn act-btn-success"
+                >
+                  前往揪團主頁
+                </a>
+              </div>
             </div>
-
-            <div class="act-detail-item">
-              <label class="act-detail-label">人數</label>
-              <p class="act-detail-value">
-                <span th:text="*{signupCnt}">0</span> /
-                <span th:text="*{maxCap}">10</span>
-              </p>
-            </div>
-
-            <div class="act-detail-item">
-              <label class="act-detail-label">公開狀態</label>
-              <p class="act-detail-value" th:if="*{isPublic == 1}">公開</p>
-              <p class="act-detail-value" th:if="*{isPublic != 1}">私人</p>
-            </div>
-
-            <div class="act-detail-item">
-              <label class="act-detail-label">允許退出</label>
-              <p class="act-detail-value" th:if="*{allowCancel == 1}">
-                允許
-              </p>
-              <p class="act-detail-value" th:if="*{allowCancel != 1}">
-                不允許
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="act-detail-actions">
-          <!-- 團主專用按鈕 -->
-          <div th:if="${isHost}">
-            <a
-                    th:href="@{'/act/member/edit/' + ${actVo.actId}}"
-                    class="act-btn act-btn-secondary"
-            >
-              編輯活動
-            </a>
-            <!-- 改成只能從myJoin或myAct-->
-            <a
-                    th:if="${@actService.isPublic(actVo)}"
-                    th:href="@{'/act/group/' + ${actVo.actId} + '/home'}"
-                    class="act-btn act-btn-success"
-            >
-              前往揪團主頁
-            </a>
-          </div>
-
-          <!-- 非團主按鈕 -->
-          <div th:if="${!isHost}">
-            <!-- 依照是否為團員身份檢查是否可以報名 -->
-            <button
-                    th:if="${!isParticipant and @actService.canSignUp(actVo)}"
-                    onclick="joinActivity()"
-                    class="act-btn act-btn-primary"
-            >
-              報名參加
-            </button>
-
-            <button
-                    th:if="${isParticipant}"
-                    onclick="cancelParticipation()"
-                    class="act-btn act-btn-danger"
-            >
-              取消報名
-            </button>
-
-            <!-- 使用ActService檢查是否為公開活動 -->
-            <a
-                    th:if="(${atPage} == 'myJoin' or ${atPage} == 'myHost') and (${isHost} or ${isParticipant})"
-                    th:href="@{'/act/group/' + ${actVo.actId} + '/home'}"
-                    class="act-btn act-btn-success"
-            >
-              前往揪團主頁
-            </a>
-          </div>
-        </div>
+        </main>
       </div>
-    </main>
-  </div>
-</div>
+    </div>
 
-<script th:inline="javascript">
-  // 從伺服器取得資料
-  const actId = /*[[${actVo.actId}]]*/ null;
-  const currentMemId = /*[[${currentMemId}]]*/ null;
+    <script th:inline="javascript">
+      // 從伺服器取得資料
+      const actId = /*[[${actVo.actId}]]*/ null;
+              const currentMemberId = /*[[${currentMemberId}]]*/ null;
+      const itnId = /*[[${actVo.itnId}]]*/ null; // 行程ID
+      // const itnId = 1; // 測試用：寫死行程ID為1
 
-  function joinActivity() {
-    if (!actId) {
-      alert("無法取得活動ID");
-      return;
-    }
+      function joinActivity() {
+        if (!actId) {
+          alert("無法取得活動ID");
+          return;
+        }
 
-    if (!currentMemId) {
-      alert("請先登入");
-      // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
-      const currentUrl = encodeURIComponent(window.location.href);
-      window.location.href = `/members/login?redirect=${currentUrl}`;
-      return;
-    }
+        if (!currentMemberId) {
+          alert("請先登入");
+          // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
+          const currentUrl = encodeURIComponent(window.location.href);
+          window.location.href = `/members/login?redirect=${currentUrl}`;
+          return;
+        }
 
-    fetch(`/api/participate/${actId}/signup/${currentMemId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                alert("報名成功！");
-                location.reload();
+        fetch(`/api/participate/${actId}/signup/${currentMemberId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert("報名成功！");
+              location.reload();
+            } else {
+              alert("報名失敗：" + data.error);
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("報名失敗，請稍後再試");
+          });
+      }
+
+      function cancelParticipation() {
+        if (!actId) {
+          alert("無法取得活動ID");
+          return;
+        }
+
+        if (!currentMemberId) {
+          alert("請先登入");
+          // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
+          const currentUrl = encodeURIComponent(window.location.href);
+          window.location.href = `/members/login?redirect=${currentUrl}`;
+          return;
+        }
+
+        if (!confirm("確定要取消報名嗎？")) {
+          return;
+        }
+
+        fetch(`/api/participate/${actId}/signup/${currentMemberId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert("取消報名成功！");
+              location.reload();
+            } else {
+              alert("取消報名失敗：" + data.error);
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("取消報名失敗，請稍後再試");
+          });
+      }
+
+      // 行程相關功能
+      function loadItineraryInfo() {
+        // console.log('開始載入行程資訊，行程ID:', itnId);
+        
+        if (!itnId) {
+          // console.log("此活動沒有關聯行程");
+          document.getElementById('itineraryError').style.display = 'block';
+          document.getElementById('itineraryLoading').style.display = 'none';
+          return;
+        }
+
+        // 顯示載入狀態
+        document.getElementById('itineraryLoading').style.display = 'block';
+        document.getElementById('itineraryContent').style.display = 'none';
+        document.getElementById('itineraryError').style.display = 'none';
+
+        // console.log('呼叫API:', `/api/act/itinerary/${itnId}`);
+        
+        // 呼叫API取得行程詳情
+        fetch(`/api/act/itinerary/${itnId}`)
+          .then(response => {
+            // console.log('API回應狀態:', response.status);
+            return response.json();
+          })
+          .then(data => {
+            // console.log('API回應資料:', data);
+            document.getElementById('itineraryLoading').style.display = 'none';
+            
+            if (data.success && data.data) {
+              const itinerary = data.data;
+              // console.log('行程資料:', itinerary);
+              // console.log('景點數量:', itinerary.itnSpots ? itinerary.itnSpots.length : 0);
+              
+              // 更新行程標題
+              document.getElementById('itineraryTitle').textContent = itinerary.itnName || '未命名行程';
+              
+              // 更新行程狀態
+              const statusElement = document.getElementById('itineraryStatus');
+              statusElement.textContent = itinerary.isPublic == 1 ? '公開' : '私人';
+              statusElement.className = `act-itinerary-status ${itinerary.isPublic == 1 ? 'public' : 'private'}`;
+              
+              // 更新行程描述
+              document.getElementById('itineraryDescription').textContent = 
+                itinerary.itnDesc || '此行程暫無描述';
+              
+              // 顯示行程內容
+              document.getElementById('itineraryContent').style.display = 'block';
+              
+              // 如果有景點資訊，載入景點列表
+              if (itinerary.itnSpots && itinerary.itnSpots.length > 0) {
+                // console.log('開始載入景點列表，景點數量:', itinerary.itnSpots.length);
+                loadItinerarySpots(itinerary.itnSpots);
               } else {
-                alert("報名失敗：" + data.error);
+                // console.log('此行程沒有景點資訊');
+                document.getElementById('spotsList').innerHTML = '<p>此行程暫無景點資訊</p>';
               }
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              alert("報名失敗，請稍後再試");
-            });
-  }
+            } else {
+              throw new Error(data.error || '無法取得行程資訊');
+            }
+          })
+          .catch(error => {
+            console.error('載入行程資訊失敗:', error);
+            document.getElementById('itineraryLoading').style.display = 'none';
+            document.getElementById('itineraryError').style.display = 'block';
+            document.getElementById('itineraryError').innerHTML = 
+              '<p>無法載入行程資訊: ' + error.message + '</p>';
+          });
+      }
 
-  function cancelParticipation() {
-    if (!actId) {
-      alert("無法取得活動ID");
-      return;
-    }
+      function loadItinerarySpots(spots) {
+        // console.log('開始處理景點列表，景點資料:', spots);
+        const spotsListElement = document.getElementById('spotsList');
+        spotsListElement.innerHTML = '';
+        
+        spots.forEach((spot, index) => {
+          // console.log(`處理第${index + 1}個景點:`, spot);
+          const spotElement = document.createElement('div');
+          spotElement.className = 'act-spot-item';
 
-    if (!currentMemId) {
-      alert("請先登入");
-      // 將當前頁面URL作為查詢參數傳遞，以便登入後返回
-      const currentUrl = encodeURIComponent(window.location.href);
-      window.location.href = `/members/login?redirect=${currentUrl}`;
-      return;
-    }
+          const spotName = spot.spotName || '未知景點';
+          const spotAddress = spot.spotAddress || '地址未知';
+          
+          // console.log(`景點名稱: ${spotName}, 地址: ${spotAddress}`);
+          
+          spotElement.innerHTML = `
+            <div class="act-spot-number">${index + 1}</div>
+            <div class="act-spot-info">
+              <h6 class="act-spot-name">${spotName}</h6>
+              <p class="act-spot-address">${spotAddress}</p>
+            </div>
+          `;
+          spotsListElement.appendChild(spotElement);
+        });
+        
+        // console.log('景點列表處理完成，共載入', spots.length, '個景點');
+      }
 
-    if (!confirm("確定要取消報名嗎？")) {
-      return;
-    }
-
-    fetch(`/api/participate/${actId}/signup/${currentMemId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                alert("取消報名成功！");
-                location.reload();
-              } else {
-                alert("取消報名失敗：" + data.error);
-              }
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              alert("取消報名失敗，請稍後再試");
-            });
-  }
-</script>
-</body>
+      // 頁面載入時自動載入行程資訊
+      document.addEventListener('DOMContentLoaded', function() {
+        loadItineraryInfo();
+      });
+    </script>
+  </body>
 </html>
