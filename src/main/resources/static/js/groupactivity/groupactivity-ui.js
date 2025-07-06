@@ -81,6 +81,15 @@ window.GroupActivityUI = (function () {
     // 狀態標籤
     const statusHtml = `<span class="act-status ${status.class}">${status.text}</span>`;
 
+    // ===== 新增：時間檢查 =====
+    let canCancel = true;
+    let now = new Date();
+    let signupEnd = activity.signupEnd ? new Date(activity.signupEnd) : null;
+    let actStart = activity.actStart ? new Date(activity.actStart) : null;
+    if (signupEnd && now > signupEnd) canCancel = false;
+    if (actStart && now > actStart) canCancel = false;
+    // =========================
+
     // 操作按鈕
     let actionsHtml = "";
     if (showActions) {
@@ -110,9 +119,16 @@ window.GroupActivityUI = (function () {
           );
         }
         
-        actions.push(
-          `<button class="btn btn-icon-zoom error" title="取消報名" onclick="cancelParticipation(${activity.actId})"><i class="fas fa-trash"></i></button>`
-        );
+        // 退出按鈕：根據 canCancel 決定顯示
+        if (canCancel) {
+          actions.push(
+            `<button class="btn btn-icon-zoom error" title="取消報名" onclick="cancelParticipation(${activity.actId})"><i class="fas fa-trash"></i></button>`
+          );
+        } else {
+          actions.push(
+            `<button class="btn btn-icon-zoom error" title="報名截止或活動已開始，無法退出" disabled style="opacity:0.6;cursor:not-allowed;"><i class="fas fa-ban"></i></button>`
+          );
+        }
       } else if (showHostActions) {
         // 我揪的團：icon 按鈕設計
         actions.push(
@@ -143,9 +159,15 @@ window.GroupActivityUI = (function () {
           activity.isCurrentUserParticipant === true &&
           activity.hostId != window.currentMemberId
         ) {
-          actions.push(
-            `<button onclick="cancelParticipation(${activity.actId})" class="act-btn act-btn-danger">取消報名</button>`
-          );
+          if (canCancel) {
+            actions.push(
+              `<button onclick="cancelParticipation(${activity.actId})" class="act-btn act-btn-danger">取消報名</button>`
+            );
+          } else {
+            actions.push(
+              `<button class="act-btn act-btn-danger disabled" style="opacity:0.6;cursor:not-allowed;" title="報名截止或活動已開始，無法退出" disabled>❌ 無法退出</button>`
+            );
+          }
         } else if (
           activity.isCurrentUserParticipant === false &&
           activity.recruitStatus === 0

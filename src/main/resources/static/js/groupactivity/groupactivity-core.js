@@ -17,6 +17,21 @@ window.GroupActivityCore = (function () {
     5: { text: "已結束", class: "ended" },
   };
 
+  // 錯誤訊息常數
+  const ERROR_MESSAGES = {
+    SIGNUP_ENDED: "報名已截止",
+    ACT_STARTED: "活動已開始，無法退出",
+    SIGNUP_ENDED_NO_SELF_CANCEL: "報名已截止，團員無法自主退出，請聯繫團主",
+    ALREADY_JOINED: "已報名此活動",
+    FULL_CAPACITY: "活動人數已滿",
+    NOT_HOST: "只有團主可以執行此操作",
+    FROZEN_ACT: "活動已被凍結，無法操作",
+    NETWORK_ERROR: "網路連線錯誤，請稍後再試",
+    SYSTEM_ERROR: "系統繁忙，請稍後再試",
+    LOGIN_REQUIRED: "請先登入",
+    INVALID_ACTIVITY: "活動不存在或已被刪除"
+  };
+
   /**
    * 格式化日期為本地化字串
    * @param {string} dateString - ISO 日期字串
@@ -170,6 +185,52 @@ window.GroupActivityCore = (function () {
     return new Date(startDate) <= new Date(endDate);
   }
 
+  /**
+   * 檢查是否為報名截止前
+   * @param {string} signupEnd - 報名截止時間
+   * @returns {boolean} 是否為截止前
+   */
+  function isBeforeSignupEnd(signupEnd) {
+    if (!signupEnd) return true; // 如果沒有截止時間，預設可以報名
+    const now = new Date();
+    const endTime = new Date(signupEnd);
+    return now < endTime;
+  }
+
+  /**
+   * 檢查是否為活動開始前
+   * @param {string} actStart - 活動開始時間
+   * @returns {boolean} 是否為開始前
+   */
+  function isBeforeActStart(actStart) {
+    if (!actStart) return true; // 如果沒有開始時間，預設可以操作
+    const now = new Date();
+    const startTime = new Date(actStart);
+    return now < startTime;
+  }
+
+  /**
+   * 檢查是否可以報名
+   * @param {number} status - 活動狀態
+   * @param {string} signupEnd - 報名截止時間
+   * @returns {boolean} 是否可以報名
+   */
+  function canSignUp(status, signupEnd) {
+    return status === 0 && isBeforeSignupEnd(signupEnd);
+  }
+
+  /**
+   * 檢查是否可以退出
+   * @param {number} status - 活動狀態
+   * @param {string} signupEnd - 報名截止時間
+   * @param {string} actStart - 活動開始時間
+   * @returns {boolean} 是否可以退出
+   */
+  function canCancel(status, signupEnd, actStart) {
+    return isBeforeSignupEnd(signupEnd) || 
+           (status === 1 && isBeforeActStart(actStart));
+  }
+
   // 公開的 API
   return {
     // 核心工具函數
@@ -189,8 +250,15 @@ window.GroupActivityCore = (function () {
     isValidEmail,
     isValidDateRange,
 
+    // 時間檢查函數
+    isBeforeSignupEnd,
+    isBeforeActStart,
+    canSignUp,
+    canCancel,
+
     // 常數
     STATUS_MAP,
+    ERROR_MESSAGES,
   };
 })();
 

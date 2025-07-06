@@ -10,6 +10,8 @@
     <!-- GroupActivity 模組 CSS -->
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_common.css}"/>
     <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_front.css}" />
+    <!-- GroupActivity 模組 JS -->
+    <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
   </head>
   <body class="light">
     <div class="app-container">
@@ -177,9 +179,10 @@
                   報名參加
                 </button>
 
+                <!-- 團員取消報名按鈕 - 根據時間檢查動態顯示 -->
                 <button
                   th:if="${isParticipant}"
-                  onclick="cancelParticipation()"
+                  id="cancelParticipationBtn"
                   class="act-btn act-btn-danger"
                 >
                   取消報名
@@ -202,8 +205,13 @@
     <script th:inline="javascript">
       // 從伺服器取得資料
       const actId = /*[[${actVo.actId}]]*/ null;
-              const currentMemberId = /*[[${currentMemberId}]]*/ null;
+      const currentMemberId = /*[[${currentMemberId}]]*/ null;
       const itnId = /*[[${actVo.itnId}]]*/ null; // 行程ID
+      const signupEnd = /*[[${actVo.signupEnd}]]*/ null; // 報名截止時間
+      const actStart = /*[[${actVo.actStart}]]*/ null;   // 活動開始時間
+      // console.log("actId:", actId);
+      // console.log("signupEnd:", signupEnd);
+      // console.log("actStart:", actStart);
       // const itnId = 1; // 測試用：寫死行程ID為1
 
       function joinActivity() {
@@ -218,6 +226,17 @@
           const currentUrl = encodeURIComponent(window.location.href);
           window.location.href = `/members/login?redirect=${currentUrl}`;
           return;
+        }
+
+        // 新增：檢查報名截止時間
+        if (signupEnd) {
+          const now = new Date();
+          const endTime = new Date(signupEnd);
+          
+          if (now > endTime) {
+            alert(GroupActivityCore.ERROR_MESSAGES.SIGNUP_ENDED);
+            return;
+          }
         }
 
         fetch(`/api/participate/${actId}/signup/${currentMemberId}`, {
@@ -254,6 +273,44 @@
           window.location.href = `/members/login?redirect=${currentUrl}`;
           return;
         }
+
+        // 除錯：顯示時間資訊
+        // console.log("報名截止時間:", signupEnd);
+        // console.log("活動開始時間:", actStart);
+        
+        // 新增：檢查報名截止時間 - 報名截止後團員無法自主退出
+        if (signupEnd) {
+          const now = new Date();
+          const endTime = new Date(signupEnd);
+          
+          // console.log("現在時間:", now);
+          // console.log("截止時間:", endTime);
+          // console.log("是否已截止:", now > endTime);
+          
+          if (now > endTime) {
+            // console.log("報名已截止，禁止退出");
+            alert(GroupActivityCore.ERROR_MESSAGES.SIGNUP_ENDED_NO_SELF_CANCEL);
+            return;
+          }
+        }
+
+        // 新增：檢查活動開始時間
+        if (actStart) {
+          const now = new Date();
+          const startTime = new Date(actStart);
+          
+          // console.log("現在時間:", now);
+          // console.log("開始時間:", startTime);
+          // console.log("是否已開始:", now > startTime);
+          
+          if (now > startTime) {
+            console.log("活動已開始，禁止退出");
+            alert(GroupActivityCore.ERROR_MESSAGES.ACT_STARTED);
+            return;
+          }
+        }
+
+        console.log("時間檢查通過，允許退出");
 
         if (!confirm("確定要取消報名嗎？")) {
           return;
@@ -380,7 +437,93 @@
       // 頁面載入時自動載入行程資訊
       document.addEventListener('DOMContentLoaded', function() {
         loadItineraryInfo();
+        
+        // 檢查取消報名按鈕的時間限制
+        updateCancelButtonStatus();
       });
+
+      // 更新取消報名按鈕狀態
+      function updateCancelButtonStatus() {
+        // console.log("=== 開始檢查取消報名按鈕狀態 ===");
+        
+        const cancelBtn = document.getElementById('cancelParticipationBtn');
+        // console.log("找到取消報名按鈕:", cancelBtn);
+        
+        if (!cancelBtn) {
+          // console.log("未找到取消報名按鈕，函數結束");
+          return;
+        }
+
+        // console.log("報名截止時間:", signupEnd);
+        // console.log("活動開始時間:", actStart);
+        
+        let canCancel = true;
+        let reason = '';
+
+        // 檢查報名截止時間
+        if (signupEnd) {
+          const now = new Date();
+          const endTime = new Date(signupEnd);
+          
+          // console.log("現在時間:", now);
+          // console.log("截止時間:", endTime);
+          // console.log("是否已截止:", now > endTime);
+          
+          if (now > endTime) {
+            canCancel = false;
+            reason = '報名已截止';
+            console.log("報名已截止，禁止退出");
+          }
+        }
+
+        // 檢查活動開始時間
+        if (actStart) {
+          const now = new Date();
+          const startTime = new Date(actStart);
+          
+          // console.log("現在時間:", now);
+          // console.log("開始時間:", startTime);
+          // console.log("是否已開始:", now > startTime);
+          
+          if (now > startTime) {
+            canCancel = false;
+            reason = '活動已開始';
+            console.log("活動已開始，禁止退出");
+          }
+        }
+
+        console.log("最終結果 - 可以取消:", canCancel, "原因:", reason);
+
+        if (canCancel) {
+          // 可以取消報名
+          console.log("設定為可以取消報名");
+          cancelBtn.onclick = cancelParticipation;
+          cancelBtn.className = 'act-btn act-btn-danger';
+          cancelBtn.innerHTML = '取消報名';
+          cancelBtn.title = '點擊取消報名';
+          cancelBtn.style.opacity = '1';
+          cancelBtn.style.cursor = 'pointer';
+        } else {
+          // 不能取消報名
+          console.log("設定為無法取消報名");
+          cancelBtn.onclick = function() {
+            alert(`無法取消報名：${reason}，請聯繫團主`);
+          };
+          cancelBtn.className = 'act-btn act-btn-danger disabled';
+          cancelBtn.innerHTML = '無法退出';
+          cancelBtn.title = `${reason}，無法自主退出`;
+          cancelBtn.style.opacity = '0.6';
+          cancelBtn.style.cursor = 'not-allowed';
+        }
+        
+        console.log("按鈕最終狀態:", {
+          innerHTML: cancelBtn.innerHTML,
+          className: cancelBtn.className,
+          opacity: cancelBtn.style.opacity,
+          cursor: cancelBtn.style.cursor
+        });
+        console.log("=== 取消報名按鈕狀態檢查完成 ===");
+      }
     </script>
   </body>
 </html>
