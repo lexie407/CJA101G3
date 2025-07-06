@@ -50,6 +50,7 @@ public class ArticleCollectionController {
 		}
 		model.addAttribute("list", nList);
 		model.addAttribute("currentPage", "account");
+		model.addAttribute("activeItem", "favorites");
 		return "front-end/articlecollection/memberArticleCollection";
 	}
 	

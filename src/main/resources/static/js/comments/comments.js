@@ -103,6 +103,12 @@ function initComments(shadowRoot) {
 				commentForm.reset(); // 清空表單
 				imagePreviewContainer.innerHTML = ""; // 清空圖片預覽
 				imagePreviewContainer.style.display = 'none';
+
+				// 手動移除 MaterializeCSS textareaAutoResize 可能殘留的隱藏 div
+				const hiddendiv = shadowRoot.querySelector('.hiddendiv.common');
+				if (hiddendiv) {
+					hiddendiv.remove();
+				}
 			} else {
 				const errorData = await response.json();
 				showStatusMessage(`留言新增失敗: ${errorData.message || response.statusText}`, 'error');
@@ -151,7 +157,7 @@ function initComments(shadowRoot) {
 		}
 
 		// 顯示留言內容
-		const contentParagraph = document.createElement('p');
+		const contentParagraph = document.createElement('pre');
 		contentParagraph.className = 'comment-content-display';
 		contentParagraph.textContent = comment.commCon;
 		commentItem.appendChild(contentParagraph);
@@ -705,6 +711,17 @@ function initComments(shadowRoot) {
 
 	// --- 初始化：立即載入留言 ---
 	fetchComments();
+
+
+	// --- 監聽表單高度變化，以調整 statusMessage 的位置 ---
+	const resizeObserver = new ResizeObserver(() => {
+		if (commentForm.classList.contains('sticky')) {
+			const formHeight = commentForm.offsetHeight;
+			statusMessage.style.top = `${topNavHeight + formHeight}px`;
+		}
+	});
+
+	resizeObserver.observe(commentForm);
 } // This is the missing brace for initComments function
 
 // --- 主程式進入點：直接呼叫 initComments ---

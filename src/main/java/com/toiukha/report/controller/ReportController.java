@@ -1,5 +1,7 @@
 package com.toiukha.report.controller;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.toiukha.members.model.MembersService;
 import com.toiukha.members.model.MembersVO;
+import com.toiukha.notification.model.NotificationService;
+import com.toiukha.notification.model.NotificationVO;
 import com.toiukha.report.model.ReportService;
 import com.toiukha.report.model.ReportVO;
 
@@ -30,6 +34,8 @@ public class ReportController {
 	private ReportService reportService;
 	@Autowired
 	private MembersService membersService;
+	@Autowired
+	NotificationService notificationService;
 
 	//========== DIYI用 ==========//
 	//新增回報案件
@@ -39,6 +45,11 @@ public class ReportController {
 		// 接收回傳的JSON
 		@RequestBody ReportVO reportVO) {
 		reportService.saveReport(reportVO);
+		notificationService.addOneNoti(new NotificationVO(
+				"[系統]系統異常回報新增",
+				"你好，稍早AI夥伴已協助你回報異常，可至「與我聊聊」 > 「回報明細」追蹤進度。",
+				reportVO.getMemId(),
+				getNowTime()));
 		return "已收到";
 
 	}
@@ -137,10 +148,24 @@ public class ReportController {
 		reportService.saveReport(reportVO);
 		if(reportVO.getRepStatus() == 2) {
 			redirectAttributes.addFlashAttribute("successMsg", "案件結案完成!");
+			notificationService.addOneNoti(new NotificationVO(
+					"[系統]系統異常回報結案",
+					"你好，你回報的異常已結案，可至「與我聊聊」 > 「回報明細」查看詳情。",
+					reportVO.getMemId(),
+					getNowTime()));
 		}else {
 			redirectAttributes.addFlashAttribute("successMsg", "案件更新完成!");
+			notificationService.addOneNoti(new NotificationVO(
+					"[系統]系統異常回報更新",
+					"你好，你回報的異常有更新，可至「與我聊聊」 > 「回報明細」查看。",
+					reportVO.getMemId(),
+					getNowTime()));
 		}
 		model.addAttribute("currentPage", "support_agent");
 		return "redirect:/report/allReportList";
+	}
+	
+	Timestamp getNowTime() {
+		return Timestamp.from(Instant.now());
 	}
 }

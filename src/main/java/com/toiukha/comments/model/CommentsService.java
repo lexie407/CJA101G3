@@ -52,12 +52,21 @@ public class CommentsService {
 	}
 	
 	//改留言內容
-	public void changeComm(Integer commId, String commCon, byte[] commImg) {
+	public CommentsVO changeComm(Integer commId, String commCon, byte[] commImg) {
 		commentsRepository.upadteComm(commId, commCon, commImg);
+		return getNewComm(commId);
 	}
 	
-	public void changeComm(Integer commId, String commCon) {
+	public CommentsVO changeComm(Integer commId, String commCon) {
 		commentsRepository.upadteComm(commId, commCon);
+		return getNewComm(commId);
+	}
+	
+	CommentsVO getNewComm(Integer commId) {
+		CommentsVO commentsVO = getOne(commId);
+		Integer likeNum = likeService.getLikeNum(commentsVO.getCommArt(), commentsVO.getCommId());
+		commentsVO.setCommLike(likeNum);
+		return commentsVO;
 	}
 	
 }
