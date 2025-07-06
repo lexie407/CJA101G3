@@ -581,6 +581,7 @@
 <!--                    class="act-btn act-btn-primary"-->
 <!--                    >編輯</a-->
 <!--                  >-->
+
                   <!-- 活動狀態更新下拉選單 -->
                   <div class="status-update-section">
                     <label for="statusSelect"></label>
@@ -647,42 +648,49 @@
               </div>
             </div>
 
-            <!-- 行程資訊區塊 -->
-            <section class="act-itinerary-section">
-              <h4 class="act-itinerary-title">相關行程</h4>
-              <div id="itineraryLoading" class="act-itinerary-loading" style="display:none;">
-                <div class="loading-spinner"></div>
-                <span>行程資訊載入中...</span>
-              </div>
-              <div id="itineraryContent" style="display:none;">
-                <div class="act-itinerary-header">
-                  <span id="itineraryTitle" class="act-itinerary-name"></span>
-                  <span id="itineraryStatus" class="act-itinerary-status"></span>
-                </div>
-                <div class="act-itinerary-desc" id="itineraryDescription"></div>
-                <div class="act-itinerary-spots">
-                  <h5>行程景點</h5>
-                  <div id="spotsList"></div>
-                </div>
-              </div>
-              <div id="itineraryError" class="act-itinerary-error" style="display:none;">
-                <span>無法載入行程資訊</span>
-              </div>
-            </section>
+              <!-- 行程資訊區塊 -->
+              <section class="act-itinerary-section">
+                  <h4 class="act-itinerary-title">相關行程</h4>
+                  <div id="itineraryLoading" class="act-itinerary-loading" style="display:none;">
+                      <div class="loading-spinner"></div>
+                      <span>行程資訊載入中...</span>
+                  </div>
+                  <div id="itineraryContent" style="display:none;">
+                      <div class="act-itinerary-header">
+                          <span id="itineraryTitle" class="act-itinerary-name"></span>
+                          <span id="itineraryStatus" class="act-itinerary-status"></span>
+                      </div>
+                      <div class="act-itinerary-desc" id="itineraryDescription"></div>
+                      <div class="act-itinerary-spots">
+                          <h5>行程景點</h5>
+                          <div id="spotsList"></div>
+                      </div>
+                  </div>
+                  <div id="itineraryError" class="act-itinerary-error" style="display:none;">
+                      <span>無法載入行程資訊</span>
+                  </div>
+              </section>
 
           </div>
         </main>
       </div>
     </div>
+
     <script th:src="@{/webjars/sockjs-client/1.5.1/sockjs.min.js}"></script>
     <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
+    <!-- 這是 groupHome.html 的 JS 區塊，團主/團員都應該看到 -->
     <script th:inline="javascript">
       const actId = /*[[${act.actId}]]*/ null;
       const itnId = /*[[${act.itnId}]]*/ null;
       const isHost = /*[[${isHost}]]*/ false;
       const currentMemberId = /*[[${currentMemberId}]]*/ null;
       let memId = currentMemberId;
-      console.log("actId:", actId, "itnId:", itnId ,"isHost", isHost,"currentMemberId:", currentMemberId);
+      // 報名截止時間
+      const signupEnd = /*[[${#temporals.format(act.signupEnd, 'yyyy-MM-dd HH:mm:ss')}]]*/ null;
+      // 當前時間
+      const now = new Date();
+      // 報名截止是否已過
+      const isSignupEndPassed = signupEnd ? (new Date(signupEnd.replace(/-/g, '/')) < now) : false;
 
       //--未使用:編輯活動詳情
       // function editActivity() {
@@ -723,6 +731,85 @@
         }
       }
 
+      // ==========載入行程相關資訊==================
+      console.log('[行程區塊] 頁面載入，itnId:', itnId);
+
+      function loadItineraryInfo() {
+          console.log('[行程區塊] 開始載入行程資訊，itnId:', itnId);
+          if (!itnId) {
+              // console.warn('[行程區塊] itnId 不存在，無法載入行程');
+              document.getElementById('itineraryError').style.display = 'block';
+              document.getElementById('itineraryLoading').style.display = 'none';
+              return;
+          }
+          document.getElementById('itineraryLoading').style.display = 'block';
+          document.getElementById('itineraryContent').style.display = 'none';
+          document.getElementById('itineraryError').style.display = 'none';
+
+          const apiUrl = `/api/act/itinerary/${itnId}`;
+          console.log('[行程區塊] 呼叫API:', apiUrl);
+          fetch(apiUrl)
+              .then(response => {
+                  console.log('[行程區塊] API回應狀態:', response.status);
+                  return response.json();
+              })
+              .then(data => {
+                  console.log('[行程區塊] API回應資料:', data);
+                  document.getElementById('itineraryLoading').style.display = 'none';
+                  if (data.success && data.data) {
+                      const itinerary = data.data;
+                      console.log('[行程區塊] 行程資料:', itinerary);
+                      document.getElementById('itineraryTitle').textContent = itinerary.itnName || '未命名行程';
+                      const statusElement = document.getElementById('itineraryStatus');
+                      statusElement.textContent = itinerary.isPublic == 1 ? '公開' : '私人';
+                      statusElement.className = `act-itinerary-status ${itinerary.isPublic == 1 ? 'public' : 'private'}`;
+                      document.getElementById('itineraryDescription').textContent = itinerary.itnDesc || '此行程暫無描述';
+                      document.getElementById('itineraryContent').style.display = 'block';
+                      if (itinerary.itnSpots && itinerary.itnSpots.length > 0) {
+                          console.log('[行程區塊] 載入景點列表，數量:', itinerary.itnSpots.length);
+                          loadItinerarySpots(itinerary.itnSpots);
+                      } else {
+                          console.warn('[行程區塊] 此行程無景點資訊');
+                          document.getElementById('spotsList').innerHTML = '<p>此行程暫無景點資訊</p>';
+                      }
+                  } else {
+                      console.error('[行程區塊] 行程API回傳失敗:', data.error);
+                      throw new Error(data.error || '無法取得行程資訊');
+                  }
+              })
+              .catch(error => {
+                  console.error('[行程區塊] 載入行程資訊失敗:', error);
+                  document.getElementById('itineraryLoading').style.display = 'none';
+                  document.getElementById('itineraryError').style.display = 'block';
+                  document.getElementById('itineraryError').innerHTML = '<p>無法載入行程資訊: ' + error.message + '</p>';
+              });
+      }
+
+      function loadItinerarySpots(spots) {
+          const spotsListElement = document.getElementById('spotsList');
+          spotsListElement.innerHTML = '';
+          spots.forEach((spot, index) => {
+              console.log(`[行程區塊] 處理第${index + 1}個景點:`, spot);
+              const spotElement = document.createElement('div');
+              spotElement.className = 'act-spot-item';
+              const spotName = spot.spotName || '未知景點';
+              const spotAddress = spot.spotAddress || '地址未知';
+              spotElement.innerHTML = `
+            <div class="act-spot-number">${index + 1}</div>
+            <div class="act-spot-info">
+              <h6 class="act-spot-name">${spotName}</h6>
+              <p class="act-spot-address">${spotAddress}</p>
+            </div>
+          `;
+              spotsListElement.appendChild(spotElement);
+          });
+          console.log('[行程區塊] 景點列表處理完成，共載入', spots.length, '個景點');
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+          loadItineraryInfo();
+      });
+
       //--未使用:顯示團員列表
       // function showMemberManagement() {
       //   console.log("showMemberManagement 被呼叫");
@@ -752,7 +839,12 @@
       let pendingStatus = {};
       const editBtn = document.getElementById("editMemberBtn");
       if (editBtn) {
-        editBtn.onclick = function () {
+        editBtn.onclick = function (e) {
+          if (!isSignupEndPassed) {
+            e.preventDefault();
+            alert('報名截止後才能編輯團員！');
+            return false;
+          }
           isEditing = true;
           document
                   .querySelectorAll(".toggle-switch")
@@ -766,7 +858,12 @@
       }
       const saveBtn = document.getElementById("saveMemberBtn");
       if (saveBtn) {
-        saveBtn.onclick = function () {
+        saveBtn.onclick = function (e) {
+          if (!isSignupEndPassed) {
+            e.preventDefault();
+            alert('報名截止後才能儲存團員變更！');
+            return false;
+          }
           isEditing = false;
           document
                   .querySelectorAll(".toggle-switch")
@@ -873,84 +970,7 @@
       //  }
 
 
-      // ==========載入行程相關資訊==================
-      console.log('[行程區塊] 頁面載入，itnId:', itnId);
 
-      function loadItineraryInfo() {
-          console.log('[行程區塊] 開始載入行程資訊，itnId:', itnId);
-          if (!itnId) {
-              // console.warn('[行程區塊] itnId 不存在，無法載入行程');
-              document.getElementById('itineraryError').style.display = 'block';
-              document.getElementById('itineraryLoading').style.display = 'none';
-              return;
-          }
-          document.getElementById('itineraryLoading').style.display = 'block';
-          document.getElementById('itineraryContent').style.display = 'none';
-          document.getElementById('itineraryError').style.display = 'none';
-
-          const apiUrl = `/api/act/itinerary/${itnId}`;
-          console.log('[行程區塊] 呼叫API:', apiUrl);
-          fetch(apiUrl)
-              .then(response => {
-                  console.log('[行程區塊] API回應狀態:', response.status);
-                  return response.json();
-              })
-              .then(data => {
-                  console.log('[行程區塊] API回應資料:', data);
-                  document.getElementById('itineraryLoading').style.display = 'none';
-                  if (data.success && data.data) {
-                      const itinerary = data.data;
-                      console.log('[行程區塊] 行程資料:', itinerary);
-                      document.getElementById('itineraryTitle').textContent = itinerary.itnName || '未命名行程';
-                      const statusElement = document.getElementById('itineraryStatus');
-                      statusElement.textContent = itinerary.isPublic == 1 ? '公開' : '私人';
-                      statusElement.className = `act-itinerary-status ${itinerary.isPublic == 1 ? 'public' : 'private'}`;
-                      document.getElementById('itineraryDescription').textContent = itinerary.itnDesc || '此行程暫無描述';
-                      document.getElementById('itineraryContent').style.display = 'block';
-                      if (itinerary.itnSpots && itinerary.itnSpots.length > 0) {
-                          console.log('[行程區塊] 載入景點列表，數量:', itinerary.itnSpots.length);
-                          loadItinerarySpots(itinerary.itnSpots);
-                      } else {
-                          console.warn('[行程區塊] 此行程無景點資訊');
-                          document.getElementById('spotsList').innerHTML = '<p>此行程暫無景點資訊</p>';
-                      }
-                  } else {
-                      console.error('[行程區塊] 行程API回傳失敗:', data.error);
-                      throw new Error(data.error || '無法取得行程資訊');
-                  }
-              })
-              .catch(error => {
-                  console.error('[行程區塊] 載入行程資訊失敗:', error);
-                  document.getElementById('itineraryLoading').style.display = 'none';
-                  document.getElementById('itineraryError').style.display = 'block';
-                  document.getElementById('itineraryError').innerHTML = '<p>無法載入行程資訊: ' + error.message + '</p>';
-              });
-      }
-
-      function loadItinerarySpots(spots) {
-          const spotsListElement = document.getElementById('spotsList');
-          spotsListElement.innerHTML = '';
-          spots.forEach((spot, index) => {
-              console.log(`[行程區塊] 處理第${index + 1}個景點:`, spot);
-              const spotElement = document.createElement('div');
-              spotElement.className = 'act-spot-item';
-              const spotName = spot.spotName || '未知景點';
-              const spotAddress = spot.spotAddress || '地址未知';
-              spotElement.innerHTML = `
-            <div class="act-spot-number">${index + 1}</div>
-            <div class="act-spot-info">
-              <h6 class="act-spot-name">${spotName}</h6>
-              <p class="act-spot-address">${spotAddress}</p>
-            </div>
-          `;
-              spotsListElement.appendChild(spotElement);
-          });
-          console.log('[行程區塊] 景點列表處理完成，共載入', spots.length, '個景點');
-      }
-
-      document.addEventListener('DOMContentLoaded', function() {
-          loadItineraryInfo();
-      });
 
       //============有關聊天室相關的功能=======================================
       // let stompClient = null;

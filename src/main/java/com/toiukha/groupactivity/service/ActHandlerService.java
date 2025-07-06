@@ -113,7 +113,16 @@ public class ActHandlerService {
         if (act.getHostId().equals(memId)) {
             throw new IllegalStateException("團主不能退出自己的活動，請改為取消活動");
         }
-        
+
+        // 新增：檢查報名截止與活動開始
+        LocalDateTime now = LocalDateTime.now();
+        if (act.getSignupEnd() != null && now.isAfter(act.getSignupEnd())) {
+            throw new IllegalStateException("報名已截止，無法退出");
+        }
+        if (act.getActStart() != null && now.isAfter(act.getActStart())) {
+            throw new IllegalStateException("活動已開始，無法退出");
+        }
+
         partRepo.deleteByActIdAndMemId(actId, memId);
         updateActivityStatus(act, act.getSignupCnt() - 1);
     }

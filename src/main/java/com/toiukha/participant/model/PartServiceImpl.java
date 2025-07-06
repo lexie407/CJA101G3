@@ -2,6 +2,7 @@ package com.toiukha.participant.model;
 
 import com.toiukha.groupactivity.service.ActHandlerService;
 import com.toiukha.members.model.MembersService;
+import com.toiukha.groupactivity.model.ActRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,9 @@ public class PartServiceImpl implements PartService {
 
     @Autowired
     private MembersService memSvc;
+
+    @Autowired
+    private ActRepository actRepo;
 
     @Override
     public void signup(Integer actId, Integer memId) {
@@ -66,6 +70,14 @@ public class PartServiceImpl implements PartService {
     public void updateJoinStatus(Integer actId, Integer memId, Byte joinStatus) {
         if (joinStatus == null || (joinStatus != 1 && joinStatus != 2)) {
             throw new IllegalArgumentException("joinStatus 只能為 1(已參加) 或 2(已剔除)");
+        }
+        // 只有報名截止後才允許剔除團員
+        if (joinStatus == 2) {
+            com.toiukha.groupactivity.model.ActVO act = actRepo.findById(actId)
+                .orElseThrow(() -> new IllegalArgumentException("活動不存在"));
+            if (act.getSignupEnd() != null && java.time.LocalDateTime.now().isBefore(act.getSignupEnd())) {
+                throw new IllegalStateException("僅能在報名截止後剔除團員");
+            }
         }
         PartVO part = partRepo.findByActIdAndMemId(actId, memId)
                 .orElseThrow(() -> new IllegalArgumentException("找不到該成員"));
