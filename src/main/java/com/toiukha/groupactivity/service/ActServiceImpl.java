@@ -352,6 +352,68 @@ public class ActServiceImpl implements ActService {
         }
     }
 
+    @Override
+    public void updateActivityStatusByHost(Integer actId, Byte newStatus, Integer operatorId) {
+        ActVO act = actRepo.findById(actId)
+                .orElseThrow(() -> new IllegalArgumentException("活動不存在"));
+        Byte currentStatus = act.getRecruitStatus();
+        LocalDateTime now = LocalDateTime.now();
+        // 禁止對 FROZEN, CANCELLED, ENDED 狀態操作
+        if (currentStatus == ActStatus.FROZEN.getValue() ||
+                currentStatus == ActStatus.CANCELLED.getValue() ||
+                currentStatus == ActStatus.ENDED.getValue()) {
+            throw new IllegalStateException("活動已凍結、取消或結束，無法再更改狀態");
+        }
+        // 一般狀態切換
+        if (now.isBefore(act.getActStart())) {
+            // 活動未開始
+            if ((currentStatus == ActStatus.OPEN.getValue() || currentStatus == ActStatus.FULL.getValue()) && newStatus == ActStatus.CANCELLED.getValue()) {
+                act.setRecruitStatus(ActStatus.CANCELLED.getValue());
+                actRepo.save(act);
+                return;
+            } else {
+                throw new IllegalStateException("活動未開始僅能取消活動");
+            }
+        } else {
+            // 活動已開始
+            if (currentStatus == ActStatus.FULL.getValue() && newStatus == ActStatus.ENDED.getValue()) {
+                act.setRecruitStatus(ActStatus.ENDED.getValue());
+                actRepo.save(act);
+                return;
+            } else {
+                throw new IllegalStateException("活動已開始僅能結束活動");
+            }
+        }
+    }
+
+    @Override
+    public void freezeActivity(Integer actId, Integer adminId) {
+        ActVO act = actRepo.findById(actId)
+                .orElseThrow(() -> new IllegalArgumentException("活動不存在"));
+        if (act.getRecruitStatus() == ActStatus.FROZEN.getValue()) {
+            throw new IllegalStateException("活動已經是凍結狀態");
+        }
+        act.setRecruitStatus(ActStatus.FROZEN.getValue());
+        actRepo.save(act);
+        // 可加操作日誌
+    }
+
+    @Override
+    public void unfreezeActivity(Integer actId, Byte restoreStatus, Integer adminId) {
+        ActVO act = actRepo.findById(actId)
+                .orElseThrow(() -> new IllegalArgumentException("活動不存在"));
+        if (act.getRecruitStatus() != ActStatus.FROZEN.getValue()) {
+            throw new IllegalStateException("活動目前不是凍結狀態");
+        }
+        // 僅允許恢復到 OPEN, FULL, CANCELLED, ENDED, FAILED
+        if (restoreStatus == null || restoreStatus == ActStatus.FROZEN.getValue()) {
+            throw new IllegalArgumentException("解除凍結時必須指定有效狀態");
+        }
+        act.setRecruitStatus(restoreStatus);
+        actRepo.save(act);
+        // 可加操作日誌
+    }
+
     //檢查活動狀態（招募中）
     @Override
     public boolean isRecruiting(ActVO actVo) {
@@ -504,6 +566,7 @@ public class ActServiceImpl implements ActService {
     // ---未使用---     
     // ---未使用---     return actRepo.save(actVo);
     // ---未使用--- }
+
 
 
 }

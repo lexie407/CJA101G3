@@ -66,6 +66,9 @@ public interface ActService {
 
     //變更活動狀態
     void changeStatus(Integer actId, Byte status, Integer operatorId, boolean admin);
+    void updateActivityStatusByHost(Integer actId, Byte newStatus, Integer operatorId);
+    void freezeActivity(Integer actId, Integer adminId);
+    void unfreezeActivity(Integer actId, Byte restoreStatus, Integer adminId);
 
     //檢查活動狀態（招募中,成團,可報名,是否公開,是否允許退出）
     boolean isRecruiting(ActVO actVo);

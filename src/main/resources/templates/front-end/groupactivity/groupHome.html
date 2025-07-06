@@ -678,24 +678,18 @@
 
     <script th:src="@{/webjars/sockjs-client/1.5.1/sockjs.min.js}"></script>
     <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
-    <!-- 這是 groupHome.html 的 JS 區塊，團主/團員都應該看到 -->
     <script th:inline="javascript">
       const actId = /*[[${act.actId}]]*/ null;
       const itnId = /*[[${act.itnId}]]*/ null;
       const isHost = /*[[${isHost}]]*/ false;
       const currentMemberId = /*[[${currentMemberId}]]*/ null;
-      let memId = currentMemberId;
+      // let memId = currentMemberId;
       // 報名截止時間
       const signupEnd = /*[[${#temporals.format(act.signupEnd, 'yyyy-MM-dd HH:mm:ss')}]]*/ null;
       // 當前時間
       const now = new Date();
       // 報名截止是否已過
       const isSignupEndPassed = signupEnd ? (new Date(signupEnd.replace(/-/g, '/')) < now) : false;
-
-      //--未使用:編輯活動詳情
-      // function editActivity() {
-      //   window.location.href = "/act/member/edit/" + actId;
-      // }
 
       //更新活動狀態
       function updateActivityStatus() {
@@ -810,30 +804,6 @@
           loadItineraryInfo();
       });
 
-      //--未使用:顯示團員列表
-      // function showMemberManagement() {
-      //   console.log("showMemberManagement 被呼叫");
-      //   document.getElementById("memberManagementModal").style.display =
-      //     "block";
-      //   // fetch(`/api/group/${actId}/members`)
-      //   fetch(`/api/participate/${actId}/members`)
-      //     .then((res) => res.json())
-      //     .then((list) => {
-      //       const container = document.getElementById("memberManagementList");
-      //       container.innerHTML = "";
-      //       list.forEach((mem) => {
-      //         const div = document.createElement("div");
-      //         div.className = "member-item";
-      //         div.innerHTML = `會員${mem.memId} <button onclick="kickMember(${mem.memId})" class="act-btn act-btn-danger">剔除</button>`;
-      //         container.appendChild(div);
-      //       });
-      //     });
-      // }
-      //--未使用:關閉團員列表
-      // function closeMemberManagement() {
-      //   document.getElementById("memberManagementModal").style.display = "none";
-      // }
-
       // 批次編輯團員狀態
       let isEditing = false;
       let pendingStatus = {};
@@ -944,32 +914,6 @@
           console.log(`團員 ${memId} 狀態變更為: ${statusText}`);
         };
       });
-
-      //--未使用:剔除團員
-      //  function kickMember(memberId) {
-      //    if (confirm("確定要剔除該團員？")) {
-      //      // 使用現有的API端點，將團員狀態設為已剔除(2)
-      //      const url = `/api/participate/${actId}/members/${memberId}/status?joinStatus=2`;
-      //
-      //      fetch(url, { method: "PUT" })
-      //        .then((res) => {
-      //          if (res.ok) {
-      //            alert('團員剔除成功！');
-      //            location.reload();
-      //          } else {
-      //            return res.text().then(text => {
-      //              throw new Error(text || '剔除團員失敗');
-      //            });
-      //          }
-      //        })
-      //        .catch((error) => {
-      //          console.error('剔除團員時發生錯誤:', error);
-      //          alert('剔除團員時發生錯誤：' + error.message);
-      //        });
-      //    }
-      //  }
-
-
 
 
       //============有關聊天室相關的功能=======================================
