@@ -1,187 +1,315 @@
-// 🧪 Itn 行程卡片元件快速測試腳本
-// 
-// 📍 執行位置：
-// 1. 主要測試：在 `test-itn-trip-card.html` 頁面開啟後，按 F12 開啟開發者工具
-//    網址：http://localhost:8080/itn/test/test-itn-trip-card.html
-// 
-// 2. 整合測試：在 `itn-integration-example.html` 頁面開啟後，按 F12 開啟開發者工具
-//    網址：http://localhost:8080/itn/demo/itn-integration-example.html
-// 
-// 3. 本地伺服器：確保已啟動 Spring Boot 應用程式或使用其他本地伺服器
-// 
-// 💡 使用方式：
-// 1. 開啟上述任一頁面
-// 2. 按 F12 開啟瀏覽器開發者工具
-// 3. 切換到 Console 分頁
-// 4. 複製此腳本內容並貼上執行
-// 
-// 在瀏覽器控制台執行此腳本來快速驗證元件功能
+/**
+ * 行程卡片元件快速測試腳本
+ * 用於快速驗證元件功能
+ */
 
-console.log('🚀 開始 Itn 行程卡片元件快速測試...');
+class ItnQuickTest {
+    constructor() {
+        this.testResults = [];
+        this.apiBaseUrl = '/api/itinerary/cards';
+    }
 
-// 測試 1: 檢查元件是否載入
-console.log('\n📋 測試 1: 元件載入檢查');
-console.log('ItnTripCardComponent:', typeof ItnTripCardComponent);
-console.log('createItnTripCards:', typeof createItnTripCards);
-console.log('getItnTripSampleData:', typeof getItnTripSampleData);
-console.log('validateItnTripData:', typeof validateItnTripData);
+    /**
+     * 執行所有測試
+     */
+    async runAllTests() {
+        console.log('🧪 開始執行行程卡片元件測試...');
+        
+        try {
+            // 1. 測試 API 端點
+            await this.testAPIEndpoints();
+            
+            // 2. 測試元件載入
+            await this.testComponentLoading();
+            
+            // 3. 測試資料格式
+            await this.testDataFormat();
+            
+            // 4. 測試互動功能
+            await this.testInteractions();
+            
+            // 5. 顯示測試結果
+            this.showTestResults();
+            
+        } catch (error) {
+            console.error('❌ 測試過程中發生錯誤:', error);
+        }
+    }
 
-// 測試 2: 資料格式驗證
-console.log('\n📋 測試 2: 資料格式驗證');
-const basicData = getItnTripSampleData('BASIC');
-const validation = validateItnTripData(basicData);
-console.log('基本資料驗證結果:', validation);
-
-// 測試 3: 創建元件實例
-console.log('\n📋 測試 3: 元件實例創建');
-try {
-    const component = new ItnTripCardComponent();
-    console.log('✅ 元件實例創建成功');
-    console.log('元件方法:', Object.getOwnPropertyNames(Object.getPrototypeOf(component)));
-} catch (error) {
-    console.error('❌ 元件實例創建失敗:', error);
-}
-
-// 測試 4: 測試容器檢查
-console.log('\n📋 測試 4: 容器檢查');
-const testContainer = document.getElementById('testContainer');
-if (!testContainer) {
-    console.log('⚠️  測試容器不存在，創建臨時容器...');
-    const tempContainer = document.createElement('div');
-    tempContainer.id = 'tempTestContainer';
-    tempContainer.style.position = 'fixed';
-    tempContainer.style.top = '10px';
-    tempContainer.style.right = '10px';
-    tempContainer.style.width = '300px';
-    tempContainer.style.height = '400px';
-    tempContainer.style.backgroundColor = '#f0f0f0';
-    tempContainer.style.border = '1px solid #ccc';
-    tempContainer.style.zIndex = '9999';
-    tempContainer.style.overflow = 'auto';
-    document.body.appendChild(tempContainer);
-    
-    // 測試 5: 實際渲染測試
-    console.log('\n📋 測試 5: 實際渲染測試');
-    try {
-        createItnTripCards('#tempTestContainer', basicData, {
-            onRegisterClick: function(trip) {
-                console.log('🎯 報名按鈕點擊:', trip.title);
+    /**
+     * 測試 API 端點
+     */
+    async testAPIEndpoints() {
+        console.log('📡 測試 API 端點...');
+        
+        const tests = [
+            {
+                name: '基本卡片資料載入',
+                url: this.apiBaseUrl + '?limit=3',
+                expected: 'success'
             },
-            onDetailClick: function(trip) {
-                console.log('🔍 詳情按鈕點擊:', trip.title);
+            {
+                name: '搜尋功能測試',
+                url: this.apiBaseUrl + '?keyword=台北&limit=2',
+                expected: 'success'
             },
-            onCardClick: function(trip) {
-                console.log('📱 卡片點擊:', trip.title);
+            {
+                name: '篩選功能測試',
+                url: this.apiBaseUrl + '?isPublic=true&limit=2',
+                expected: 'success'
             }
+        ];
+
+        for (const test of tests) {
+            try {
+                const response = await fetch(test.url);
+                const data = await response.json();
+                
+                const passed = response.ok && data.success;
+                this.addTestResult(test.name, passed, data);
+                
+                console.log(`  ${passed ? '✅' : '❌'} ${test.name}`);
+                
+            } catch (error) {
+                this.addTestResult(test.name, false, error.message);
+                console.log(`  ❌ ${test.name}: ${error.message}`);
+            }
+        }
+    }
+
+    /**
+     * 測試元件載入
+     */
+    async testComponentLoading() {
+        console.log('🔧 測試元件載入...');
+        
+        const tests = [
+            {
+                name: 'ItnTripCardComponent 類別',
+                test: () => typeof window.ItnTripCardComponent !== 'undefined',
+                expected: true
+            },
+            {
+                name: 'createItnTripCards 函數',
+                test: () => typeof window.createItnTripCards === 'function',
+                expected: true
+            },
+            {
+                name: 'ItnTripCardLoader 類別',
+                test: () => typeof window.ItnTripCardLoader !== 'undefined',
+                expected: true
+            },
+            {
+                name: 'loadItineraryCards 函數',
+                test: () => typeof window.loadItineraryCards === 'function',
+                expected: true
+            }
+        ];
+
+        for (const test of tests) {
+            const passed = test.test();
+            this.addTestResult(test.name, passed, passed ? '載入成功' : '載入失敗');
+            console.log(`  ${passed ? '✅' : '❌'} ${test.name}`);
+        }
+    }
+
+    /**
+     * 測試資料格式
+     */
+    async testDataFormat() {
+        console.log('📋 測試資料格式...');
+        
+        try {
+            const response = await fetch(this.apiBaseUrl + '?limit=1');
+            const data = await response.json();
+            
+            if (!data.success || !data.data || data.data.length === 0) {
+                this.addTestResult('資料格式驗證', false, 'API 返回資料格式錯誤');
+                return;
+            }
+            
+            const trip = data.data[0];
+            const requiredFields = ['id', 'title', 'date', 'duration', 'groupSize', 'price', 'itinerary'];
+            
+            const missingFields = requiredFields.filter(field => !trip.hasOwnProperty(field));
+            
+            if (missingFields.length > 0) {
+                this.addTestResult('必要欄位檢查', false, `缺少欄位: ${missingFields.join(', ')}`);
+            } else {
+                this.addTestResult('必要欄位檢查', true, '所有必要欄位都存在');
+            }
+            
+            // 測試行程項目格式
+            if (trip.itinerary && trip.itinerary.length > 0) {
+                const item = trip.itinerary[0];
+                const itemFields = ['time', 'duration', 'name', 'location', 'category'];
+                const missingItemFields = itemFields.filter(field => !item.hasOwnProperty(field));
+                
+                if (missingItemFields.length > 0) {
+                    this.addTestResult('行程項目格式', false, `缺少欄位: ${missingItemFields.join(', ')}`);
+                } else {
+                    this.addTestResult('行程項目格式', true, '行程項目格式正確');
+                }
+            }
+            
+        } catch (error) {
+            this.addTestResult('資料格式驗證', false, error.message);
+        }
+    }
+
+    /**
+     * 測試互動功能
+     */
+    async testInteractions() {
+        console.log('🖱️ 測試互動功能...');
+        
+        // 創建測試容器
+        const testContainer = document.createElement('div');
+        testContainer.id = 'test-container';
+        testContainer.style.display = 'none';
+        document.body.appendChild(testContainer);
+        
+        try {
+            // 測試基本渲染
+            if (typeof window.createItnTripCards === 'function') {
+                const testData = [{
+                    id: 'test001',
+                    title: '測試行程',
+                    date: '2025-01-01',
+                    duration: '4小時',
+                    groupSize: '2-4人',
+                    price: 800,
+                    rating: 4.5,
+                    itinerary: [{
+                        time: '09:00',
+                        duration: '2小時',
+                        name: '測試景點',
+                        location: '測試地點',
+                        category: '文化景點'
+                    }]
+                }];
+                
+                window.createItnTripCards('#test-container', testData);
+                
+                const cards = testContainer.querySelectorAll('.itn-trip-card');
+                if (cards.length > 0) {
+                    this.addTestResult('基本渲染功能', true, `成功渲染 ${cards.length} 張卡片`);
+                } else {
+                    this.addTestResult('基本渲染功能', false, '沒有渲染出卡片');
+                }
+            }
+            
+            // 測試自動載入
+            if (typeof window.loadItineraryCards === 'function') {
+                this.addTestResult('自動載入功能', true, '函數存在，可正常使用');
+            } else {
+                this.addTestResult('自動載入功能', false, '函數不存在');
+            }
+            
+        } catch (error) {
+            this.addTestResult('互動功能測試', false, error.message);
+        } finally {
+            // 清理測試容器
+            document.body.removeChild(testContainer);
+        }
+    }
+
+    /**
+     * 添加測試結果
+     */
+    addTestResult(name, passed, details) {
+        this.testResults.push({
+            name,
+            passed,
+            details,
+            timestamp: new Date().toLocaleTimeString()
         });
-        console.log('✅ 卡片渲染成功');
-        
-        // 檢查渲染的卡片數量
-        const cards = document.querySelectorAll('.itn-trip-card');
-        console.log('渲染的卡片數量:', cards.length);
-        
-    } catch (error) {
-        console.error('❌ 卡片渲染失敗:', error);
     }
-} else {
-    console.log('✅ 測試容器存在');
+
+    /**
+     * 顯示測試結果
+     */
+    showTestResults() {
+        console.log('\n📊 測試結果總結:');
+        console.log('='.repeat(50));
+        
+        const passed = this.testResults.filter(r => r.passed).length;
+        const total = this.testResults.length;
+        
+        console.log(`總測試數: ${total}`);
+        console.log(`通過: ${passed}`);
+        console.log(`失敗: ${total - passed}`);
+        console.log(`成功率: ${((passed / total) * 100).toFixed(1)}%`);
+        
+        console.log('\n詳細結果:');
+        this.testResults.forEach(result => {
+            const icon = result.passed ? '✅' : '❌';
+            console.log(`${icon} ${result.name}: ${result.details}`);
+        });
+        
+        // 在頁面上顯示結果
+        this.displayResultsOnPage();
+    }
+
+    /**
+     * 在頁面上顯示結果
+     */
+    displayResultsOnPage() {
+        const resultsDiv = document.createElement('div');
+        resultsDiv.id = 'test-results';
+        resultsDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 10000;
+            font-family: monospace;
+            font-size: 14px;
+        `;
+        
+        const passed = this.testResults.filter(r => r.passed).length;
+        const total = this.testResults.length;
+        
+        resultsDiv.innerHTML = `
+            <h3>🧪 測試結果</h3>
+            <p><strong>總測試數:</strong> ${total}</p>
+            <p><strong>通過:</strong> ${passed}</p>
+            <p><strong>失敗:</strong> ${total - passed}</p>
+            <p><strong>成功率:</strong> ${((passed / total) * 100).toFixed(1)}%</p>
+            <hr>
+            <h4>詳細結果:</h4>
+            ${this.testResults.map(result => `
+                <div style="margin: 5px 0; padding: 5px; border-left: 3px solid ${result.passed ? '#4caf50' : '#f44336'};">
+                    <strong>${result.passed ? '✅' : '❌'} ${result.name}</strong><br>
+                    <small>${result.details}</small>
+                </div>
+            `).join('')}
+            <button onclick="this.parentElement.remove()" style="margin-top: 10px; padding: 5px 10px;">關閉</button>
+        `;
+        
+        document.body.appendChild(resultsDiv);
+    }
 }
 
-// 測試 6: 效能測試
-console.log('\n📋 測試 6: 效能測試');
-const startTime = performance.now();
-const fullData = getItnTripSampleData('FULL');
-const endTime = performance.now();
-console.log('資料載入時間:', (endTime - startTime).toFixed(2), 'ms');
-
-// 測試 7: 錯誤處理測試
-console.log('\n📋 測試 7: 錯誤處理測試');
-const invalidData = [
-    {
-        title: '無效資料',
-        // 缺少必要欄位
-    }
-];
-const errorValidation = validateItnTripData(invalidData);
-console.log('錯誤資料驗證結果:', errorValidation);
-
-// 測試 8: 瀏覽器相容性檢查
-console.log('\n📋 測試 8: 瀏覽器相容性檢查');
-console.log('User Agent:', navigator.userAgent);
-console.log('支援 ES6:', typeof Promise !== 'undefined');
-console.log('支援 fetch:', typeof fetch !== 'undefined');
-console.log('支援 CSS Grid:', CSS.supports('display', 'grid'));
-
-// 測試 9: 記憶體檢查
-console.log('\n📋 測試 9: 記憶體檢查');
-if (performance.memory) {
-    console.log('記憶體使用:', {
-        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB',
-        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + 'MB',
-        limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024) + 'MB'
-    });
-} else {
-    console.log('⚠️  無法獲取記憶體資訊');
-}
-
-// 測試結果總結
-console.log('\n🎯 測試結果總結');
-console.log('='.repeat(50));
-
-const testResults = {
-    '元件載入': typeof ItnTripCardComponent !== 'undefined',
-    '便利函數': typeof createItnTripCards !== 'undefined',
-    '資料獲取': typeof getItnTripSampleData !== 'undefined',
-    '資料驗證': typeof validateItnTripData !== 'undefined',
-    '資料格式': validation.valid,
-    '錯誤處理': !errorValidation.valid && errorValidation.errors.length > 0
+// 全域測試函數
+window.runItnTests = function() {
+    const tester = new ItnQuickTest();
+    return tester.runAllTests();
 };
 
-let passedTests = 0;
-let totalTests = Object.keys(testResults).length;
-
-Object.entries(testResults).forEach(([test, result]) => {
-    const status = result ? '✅' : '❌';
-    console.log(`${status} ${test}: ${result ? '通過' : '失敗'}`);
-    if (result) passedTests++;
-});
-
-console.log('='.repeat(50));
-console.log(`總測試數: ${totalTests}`);
-console.log(`通過測試: ${passedTests}`);
-console.log(`失敗測試: ${totalTests - passedTests}`);
-console.log(`成功率: ${Math.round((passedTests / totalTests) * 100)}%`);
-
-if (passedTests === totalTests) {
-    console.log('🎉 所有測試通過！元件可以安全使用。');
+// 自動執行測試（如果頁面載入完成）
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🚀 頁面載入完成，可以執行測試');
+        console.log('執行測試指令: runItnTests()');
+    });
 } else {
-    console.log('⚠️  部分測試失敗，請檢查相關功能。');
-}
-
-// 清理臨時容器
-setTimeout(() => {
-    const tempContainer = document.getElementById('tempTestContainer');
-    if (tempContainer) {
-        console.log('\n🧹 清理臨時測試容器...');
-        tempContainer.remove();
-    }
-}, 10000); // 10秒後自動清理
-
-console.log('\n📝 測試完成！請查看上方結果。');
-console.log('💡 提示：臨時測試容器將在 10 秒後自動移除。');
-
-// 📋 測試環境檢查
-console.log('\n🔍 測試環境檢查');
-console.log('當前頁面:', window.location.href);
-console.log('頁面標題:', document.title);
-
-// 檢查是否在正確的測試頁面
-const isTestPage = window.location.href.includes('test-itn-trip-card.html') || 
-                   window.location.href.includes('itn-integration-example.html') ||
-                   window.location.href.includes('itn-trip-card-demo.html');
-console.log('是否在測試頁面:', isTestPage ? '✅ 是' : '❌ 否');
-
-if (!isTestPage) {
-    console.warn('⚠️  建議在測試頁面執行此腳本以獲得最佳測試效果');
-    console.warn('   測試頁面：itn/test/test-itn-trip-card.html 或 itn/demo/itn-integration-example.html 或 itn/demo/itn-trip-card-demo.html');
+    console.log('🚀 頁面已載入，可以執行測試');
+    console.log('執行測試指令: runItnTests()');
 } 

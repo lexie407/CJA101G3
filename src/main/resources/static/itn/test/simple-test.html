@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 行程卡片元件簡單測試</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #666;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        #cardsContainer {
+            min-height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            background: #fafafa;
+        }
+        
+        #cardsContainer:empty::after {
+            content: '📋 這裡將顯示行程卡片...';
+            color: #999;
+            font-style: italic;
+            display: block;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .console {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 行程卡片元件簡單測試</h1>
+        
+        <div class="test-section">
+            <h3>📡 API 測試</h3>
+            <button onclick="testAPI()">測試 API 端點</button>
+            <div id="apiStatus" class="status info">點擊按鈕測試 API</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 元件載入測試</h3>
+            <button onclick="testComponent()">測試元件載入</button>
+            <div id="componentStatus" class="status info">點擊按鈕測試元件</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📱 卡片渲染測試</h3>
+            <button onclick="testRendering()">測試卡片渲染</button>
+            <div id="renderStatus" class="status info">點擊按鈕測試渲染</div>
+            <div id="cardsContainer"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 控制台輸出</h3>
+            <div id="console" class="console">等待測試開始...</div>
+        </div>
+    </div>
+
+    <!-- 載入元件檔案 -->
+    <script src="/itn/components/itn-trip-card.js"></script>
+    <script src="/itn/components/itn-trip-card-loader.js"></script>
+    <script src="/itn/components/itn-trip-card-data.js"></script>
+    
+    <script>
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? '#68d391' : type === 'error' ? '#fc8181' : '#63b3ed';
+            console.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `status ${type}`;
+            element.textContent = message;
+        }
+        
+        async function testAPI() {
+            log('🌐 開始測試 API 端點...', 'info');
+            updateStatus('apiStatus', '測試中...', 'info');
+            
+            try {
+                const response = await fetch('/api/itinerary/cards?limit=3');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log(`✅ API 測試成功: 返回 ${data.data.length} 筆資料`, 'success');
+                    updateStatus('apiStatus', `API 測試成功 (${data.data.length} 筆資料)`, 'success');
+                } else {
+                    log(`❌ API 測試失敗: ${data.message || '未知錯誤'}`, 'error');
+                    updateStatus('apiStatus', 'API 測試失敗', 'error');
+                }
+            } catch (error) {
+                log(`❌ API 測試錯誤: ${error.message}`, 'error');
+                updateStatus('apiStatus', 'API 測試錯誤', 'error');
+            }
+        }
+        
+        function testComponent() {
+            log('🔧 開始測試元件載入...', 'info');
+            updateStatus('componentStatus', '測試中...', 'info');
+            
+            const tests = [
+                { name: 'ItnTripCardComponent', test: () => typeof window.ItnTripCardComponent !== 'undefined' },
+                { name: 'createItnTripCards', test: () => typeof window.createItnTripCards === 'function' },
+                { name: 'ItnTripCardLoader', test: () => typeof window.ItnTripCardLoader !== 'undefined' },
+                { name: 'loadItineraryCards', test: () => typeof window.loadItineraryCards === 'function' },
+                { name: 'getItnTripSampleData', test: () => typeof window.getItnTripSampleData === 'function' }
+            ];
+            
+            let passed = 0;
+            let total = tests.length;
+            
+            tests.forEach(test => {
+                if (test.test()) {
+                    log(`✅ ${test.name} 載入成功`, 'success');
+                    passed++;
+                } else {
+                    log(`❌ ${test.name} 載入失敗`, 'error');
+                }
+            });
+            
+            const successRate = Math.round((passed / total) * 100);
+            log(`📊 元件載入測試完成: ${passed}/${total} (${successRate}%)`, 'info');
+            
+            if (successRate === 100) {
+                updateStatus('componentStatus', '所有元件載入成功', 'success');
+            } else {
+                updateStatus('componentStatus', `部分元件載入失敗 (${successRate}%)`, 'error');
+            }
+        }
+        
+        function testRendering() {
+            log('📱 開始測試卡片渲染...', 'info');
+            updateStatus('renderStatus', '測試中...', 'info');
+            
+            try {
+                // 檢查元件是否載入
+                if (typeof createItnTripCards === 'undefined') {
+                    throw new Error('createItnTripCards 函數未載入');
+                }
+                
+                if (typeof getItnTripSampleData === 'undefined') {
+                    throw new Error('getItnTripSampleData 函數未載入');
+                }
+                
+                // 獲取測試資料
+                const data = getItnTripSampleData('BASIC');
+                log(`📋 載入測試資料: ${data.length} 筆`, 'info');
+                
+                // 渲染卡片
+                createItnTripCards('#cardsContainer', data, {
+                    onRegisterClick: function(trip) {
+                        log(`🎯 報名按鈕點擊: ${trip.title}`, 'info');
+                    },
+                    onDetailClick: function(trip) {
+                        log(`🔍 詳情按鈕點擊: ${trip.title}`, 'info');
+                    },
+                    onCardClick: function(trip) {
+                        log(`📱 卡片點擊: ${trip.title}`, 'info');
+                    }
+                });
+                
+                log('✅ 卡片渲染成功', 'success');
+                updateStatus('renderStatus', '卡片渲染成功', 'success');
+                
+            } catch (error) {
+                log(`❌ 卡片渲染失敗: ${error.message}`, 'error');
+                updateStatus('renderStatus', '卡片渲染失敗', 'error');
+            }
+        }
+        
+        // 頁面載入完成後自動檢查
+        window.addEventListener('load', function() {
+            log('🚀 頁面載入完成，可以開始測試', 'success');
+        });
+    </script>
+</body>
+</html> 

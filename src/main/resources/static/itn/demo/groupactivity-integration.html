@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>揪團模組 - 行程卡片整合範例</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+        
+        .page-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin: 8px 0 0 0;
+        }
+        
+        .main-content {
+            padding: 40px 0;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .search-input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        
+        .search-btn {
+            padding: 10px 20px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .search-btn:hover {
+            background: #1976d2;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-btn:hover {
+            background: #f5f5f5;
+        }
+        
+        .filter-btn.active {
+            background: #2196f3;
+            color: white;
+            border-color: #2196f3;
+        }
+        
+        .stats {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2196f3;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .loading-message {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 60px;
+        }
+        
+        .demo-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-info h3 {
+            margin: 0 0 15px 0;
+            color: #1976d2;
+        }
+        
+        .demo-info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .demo-info li {
+            margin-bottom: 8px;
+            color: #424242;
+        }
+        
+        @media (max-width: 768px) {
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .filter-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 頁面標題 -->
+    <div class="header">
+        <div class="container">
+            <h1 class="page-title">🎯 揪團模組 - 行程卡片整合</h1>
+            <p class="page-subtitle">展示如何在揪團頁面中自動載入行程卡片</p>
+        </div>
+    </div>
+
+    <!-- 主要內容 -->
+    <div class="main-content">
+        <div class="container">
+            <!-- 說明資訊 -->
+            <div class="demo-info">
+                <h3>📋 整合說明</h3>
+                <ul>
+                    <li>此頁面展示如何在揪團模組中自動載入行程卡片</li>
+                    <li>行程資料會自動從行程 API 抓取並格式化</li>
+                    <li>支援搜尋、篩選、自動刷新等功能</li>
+                    <li>點擊卡片或按鈕會觸發相應的回調函數</li>
+                </ul>
+            </div>
+
+            <!-- 統計資訊 -->
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalTrips">0</div>
+                    <div class="stat-label">熱門行程</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="avgRating">0.0</div>
+                    <div class="stat-label">平均評分</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="avgPrice">0</div>
+                    <div class="stat-label">平均價格</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="lastUpdate">--</div>
+                    <div class="stat-label">最後更新</div>
+                </div>
+            </div>
+
+            <!-- 搜尋和篩選 -->
+            <div class="section-header">
+                <h2 class="section-title">精選行程</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="search-input" placeholder="搜尋行程...">
+                    <button onclick="searchTrips()" class="search-btn">搜尋</button>
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterTrips('all')">全部</button>
+                    <button class="filter-btn" onclick="filterTrips('public')">公開行程</button>
+                    <button class="filter-btn" onclick="filterTrips('private')">私人行程</button>
+                </div>
+            </div>
+
+            <!-- 行程卡片容器 -->
+            <div id="groupActivityCards"></div>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <div class="footer">
+        <div class="container">
+            <p>&copy; 2025 揪團平台 - 行程卡片整合範例</p>
+        </div>
+    </div>
+
+    <!-- 引入行程卡片元件 -->
+    <script src="../components/itn-trip-card.js"></script>
+    <script src="../components/itn-trip-card-loader.js"></script>
+
+    <script>
+        // 全域變數
+        let currentFilter = 'all';
+        let currentKeyword = '';
+
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        // 初始化頁面
+        function initializePage() {
+            // 載入行程卡片
+            loadItineraryCards('#groupActivityCards', {
+                limit: 12,
+                onLoadStart: function() {
+                    console.log('開始載入行程卡片...');
+                },
+                onLoadSuccess: function(data, total) {
+                    console.log('行程卡片載入成功');
+                    updateStats(data, total);
+                    updateLastUpdate();
+                },
+                onLoadError: function(error) {
+                    console.error('行程卡片載入失敗:', error);
+                },
+                cardOptions: {
+                    onRegisterClick: function(tripId, tripData) {
+                        console.log('報名按鈕被點擊:', tripId);
+                        // 這裡可以跳轉到揪團報名頁面
+                        alert(`準備報名行程: ${tripData.title}`);
+                    },
+                    onDetailClick: function(tripId, tripData) {
+                        console.log('詳情按鈕被點擊:', tripId);
+                        // 這裡可以跳轉到行程詳情頁面
+                        alert(`查看行程詳情: ${tripData.title}`);
+                    },
+                    onCardClick: function(tripId, tripData) {
+                        console.log('卡片被點擊:', tripId);
+                        // 這裡可以跳轉到行程詳情頁面
+                        alert(`點擊行程卡片: ${tripData.title}`);
+                    }
+                }
+            });
+
+            // 設定搜尋框回車事件
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchTrips();
+                }
+            });
+        }
+
+        // 搜尋行程
+        function searchTrips() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            currentKeyword = keyword;
+            
+            searchItineraryCards('#groupActivityCards', keyword, {
+                limit: 12,
+                cardOptions: getCardOptions()
+            });
+        }
+
+        // 篩選行程
+        function filterTrips(filter) {
+            currentFilter = filter;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 根據篩選條件載入資料
+            let isPublic = null;
+            if (filter === 'public') {
+                isPublic = true;
+            } else if (filter === 'private') {
+                isPublic = false;
+            }
+            
+            filterItineraryCards('#groupActivityCards', isPublic, {
+                limit: 12,
+                keyword: currentKeyword,
+                cardOptions: getCardOptions()
+            });
+        }
+
+        // 獲取卡片配置選項
+        function getCardOptions() {
+            return {
+                onRegisterClick: function(tripId, tripData) {
+                    console.log('報名按鈕被點擊:', tripId);
+                    alert(`準備報名行程: ${tripData.title}`);
+                },
+                onDetailClick: function(tripId, tripData) {
+                    console.log('詳情按鈕被點擊:', tripId);
+                    alert(`查看行程詳情: ${tripData.title}`);
+                },
+                onCardClick: function(tripId, tripData) {
+                    console.log('卡片被點擊:', tripId);
+                    alert(`點擊行程卡片: ${tripData.title}`);
+                }
+            };
+        }
+
+        // 更新統計資訊
+        function updateStats(data, total) {
+            document.getElementById('totalTrips').textContent = total;
+            
+            if (data && data.length > 0) {
+                // 計算平均評分
+                const totalRating = data.reduce((sum, trip) => sum + (trip.rating || 0), 0);
+                const avgRating = (totalRating / data.length).toFixed(1);
+                document.getElementById('avgRating').textContent = avgRating;
+                
+                // 計算平均價格
+                const totalPrice = data.reduce((sum, trip) => sum + (trip.price || 0), 0);
+                const avgPrice = Math.round(totalPrice / data.length);
+                document.getElementById('avgPrice').textContent = avgPrice.toLocaleString();
+            }
+        }
+
+        // 更新最後更新時間
+        function updateLastUpdate() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-TW');
+            document.getElementById('lastUpdate').textContent = timeString;
+        }
+
+        // 重新載入
+        function reloadCards() {
+            reloadItineraryCards('#groupActivityCards', {
+                limit: 12,
+                keyword: currentKeyword,
+                cardOptions: getCardOptions()
+            });
+        }
+
+        // 全域函數，供按鈕調用
+        window.searchTrips = searchTrips;
+        window.filterTrips = filterTrips;
+        window.reloadCards = reloadCards;
+    </script>
+</body>
+</html> 

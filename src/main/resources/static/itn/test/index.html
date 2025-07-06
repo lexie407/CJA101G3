@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 行程卡片元件測試中心</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        #searchInput {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            min-width: 200px;
+        }
+        
+        .search-btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .result-count {
+            margin-left: auto;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+        
+        .itinerary-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            background: #f9f9f9;
+            border-radius: 8px;
+            font-size: 18px;
+        }
+        
+        .load-more-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .load-more-btn {
+            padding: 12px 30px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .load-more-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .api-test {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .api-test h3 {
+            margin: 0 0 15px 0;
+            color: #1976d2;
+        }
+        
+        .api-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .api-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .api-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+            grid-column: 1 / -1;
+        }
+        
+        .loading:after {
+            content: "⏳";
+            font-size: 24px;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+        
+        @media (max-width: 768px) {
+            .itinerary-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            #searchInput {
+                width: 100%;
+            }
+            
+            .result-count {
+                margin: 10px 0 0 0;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 行程卡片元件測試</h1>
+            <p>顯示所有行程，支援搜尋功能</p>
+        </div>
+        
+        <div class="content">
+            <div class="api-test">
+                <h3>📡 API 連接測試</h3>
+                <p>測試後端 API 是否正常運作</p>
+                <button onclick="testAPI()" class="search-btn">測試 API 端點</button>
+                <div id="apiResult" class="api-result"></div>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="搜尋行程名稱、地點...">
+                <button id="searchButton" class="search-btn">🔍 搜尋</button>
+                <div id="resultCount" class="result-count">載入中...</div>
+            </div>
+            
+            <div class="filter-container">
+                <button class="filter-btn active" data-filter="all">全部行程</button>
+                <button class="filter-btn" data-filter="public">公開行程</button>
+                <button class="filter-btn" data-filter="private">私人行程</button>
+                <!-- 可以根據需求增加更多篩選按鈕 -->
+            </div>
+            
+            <div id="itineraryContainer" class="itinerary-container">
+                <div class="loading"></div>
+            </div>
+            
+            <div class="load-more-container">
+                <button id="loadMoreButton" class="load-more-btn">載入更多行程</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入行程卡片元件 -->
+    <script src="/itn/components/itn-trip-card.js"></script>
+    <script src="/itn/components/itn-trip-card-loader.js"></script>
+    <script src="/itn/components/itn-trip-card-data.js"></script>
+    
+    <script>
+        // 全域變數
+        let allItineraries = []; // 儲存所有行程
+        let filteredItineraries = []; // 儲存篩選後的行程
+        const DISPLAY_COUNT = 6; // 預設顯示筆數
+        let currentDisplayCount = DISPLAY_COUNT;
+        let currentFilter = 'all';
+        let currentSearchKeyword = '';
+        
+        // 載入所有行程資料
+        async function loadAllItineraries() {
+            try {
+                updateLoadingState(true);
+                
+                // 呼叫 API 獲取所有行程，不限制數量
+                const response = await fetch('/api/itinerary/cards?limit=1000');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allItineraries = data.data; // 儲存所有行程
+                    filteredItineraries = [...allItineraries]; // 初始篩選結果為全部
+                    
+                    // 顯示前幾筆
+                    displayItineraries(filteredItineraries.slice(0, currentDisplayCount));
+                    
+                    // 更新搜尋結果計數
+                    updateResultCount(filteredItineraries.length);
+                    
+                    // 更新載入更多按鈕狀態
+                    updateLoadMoreButton();
+                } else {
+                    showError('載入行程失敗: ' + (data.message || '未知錯誤'));
+                }
+            } catch (error) {
+                showError('載入行程失敗: ' + error.message);
+            } finally {
+                updateLoadingState(false);
+            }
+        }
+        
+        // 顯示行程函數
+        function displayItineraries(itineraries) {
+            const container = document.getElementById('itineraryContainer');
+            container.innerHTML = ''; // 清空容器
+            
+            if (itineraries.length === 0) {
+                container.innerHTML = '<div class="no-results">沒有符合的行程</div>';
+                return;
+            }
+            
+            // 渲染行程卡片
+            createItnTripCards('#itineraryContainer', itineraries, {
+                onRegisterClick: function(trip) {
+                    console.log('報名按鈕點擊:', trip.title);
+                    alert('您點擊了「' + trip.title + '」的報名按鈕');
+                },
+                onDetailClick: function(trip) {
+                    console.log('詳情按鈕點擊:', trip.title);
+                    alert('您點擊了「' + trip.title + '」的詳情按鈕');
+                },
+                onCardClick: function(trip) {
+                    console.log('卡片點擊:', trip.title);
+                }
+            });
+        }
+        
+        // 搜尋功能
+        function searchItineraries(keyword) {
+            currentSearchKeyword = keyword.trim();
+            
+            // 重置顯示計數
+            currentDisplayCount = DISPLAY_COUNT;
+            
+            // 先套用篩選
+            applyFilter(currentFilter, false);
+            
+            if (!currentSearchKeyword) {
+                // 空關鍵字，只套用篩選
+                return;
+            }
+            
+            // 在篩選結果中搜尋
+            filteredItineraries = filteredItineraries.filter(itinerary => 
+                (itinerary.title && itinerary.title.toLowerCase().includes(currentSearchKeyword.toLowerCase())) || 
+                (itinerary.description && itinerary.description.toLowerCase().includes(currentSearchKeyword.toLowerCase())) ||
+                (itinerary.itinerary && itinerary.itinerary.some(spot => 
+                    (spot.name && spot.name.toLowerCase().includes(currentSearchKeyword.toLowerCase())) ||
+                    (spot.location && spot.location.toLowerCase().includes(currentSearchKeyword.toLowerCase()))
+                ))
+            );
+            
+            // 顯示搜尋結果
+            displayItineraries(filteredItineraries.slice(0, currentDisplayCount));
+            updateResultCount(filteredItineraries.length);
+            updateLoadMoreButton();
+        }
+        
+        // 篩選功能
+        function applyFilter(filter, updateDisplay = true) {
+            currentFilter = filter;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            
+            // 套用篩選
+            if (filter === 'all') {
+                filteredItineraries = [...allItineraries];
+            } else if (filter === 'public') {
+                filteredItineraries = allItineraries.filter(itinerary => itinerary.isPublic === true);
+            } else if (filter === 'private') {
+                filteredItineraries = allItineraries.filter(itinerary => itinerary.isPublic === false);
+            }
+            
+            if (updateDisplay) {
+                // 重新套用搜尋
+                if (currentSearchKeyword) {
+                    searchItineraries(currentSearchKeyword);
+                } else {
+                    // 顯示篩選結果
+                    displayItineraries(filteredItineraries.slice(0, currentDisplayCount));
+                    updateResultCount(filteredItineraries.length);
+                    updateLoadMoreButton();
+                }
+            }
+        }
+        
+        // 更新結果計數
+        function updateResultCount(count) {
+            const countElement = document.getElementById('resultCount');
+            if (countElement) {
+                countElement.textContent = `共 ${count} 筆行程`;
+            }
+        }
+        
+        // 更新載入更多按鈕狀態
+        function updateLoadMoreButton() {
+            const button = document.getElementById('loadMoreButton');
+            if (currentDisplayCount >= filteredItineraries.length) {
+                button.style.display = 'none';
+            } else {
+                button.style.display = 'inline-block';
+            }
+        }
+        
+        // 更新載入狀態
+        function updateLoadingState(isLoading) {
+            const container = document.getElementById('itineraryContainer');
+            if (isLoading) {
+                container.innerHTML = '<div class="loading"></div>';
+            }
+        }
+        
+        // 顯示錯誤
+        function showError(message) {
+            const container = document.getElementById('itineraryContainer');
+            container.innerHTML = `<div class="no-results">❌ ${message}</div>`;
+            updateResultCount(0);
+        }
+        
+        // 測試 API
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'api-result';
+            resultDiv.textContent = '測試中...';
+            
+            try {
+                const response = await fetch('/api/itinerary/cards?limit=1000');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'api-result success';
+                    resultDiv.textContent = `✅ API 測試成功: 返回 ${data.data.length} 筆行程資料`;
+                } else {
+                    resultDiv.className = 'api-result error';
+                    resultDiv.textContent = `❌ API 測試失敗: ${data.message || '未知錯誤'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'api-result error';
+                resultDiv.textContent = `❌ API 測試錯誤: ${error.message}`;
+            }
+        }
+        
+        // 載入更多
+        function loadMore() {
+            currentDisplayCount += DISPLAY_COUNT;
+            displayItineraries(filteredItineraries.slice(0, currentDisplayCount));
+            updateLoadMoreButton();
+        }
+        
+        // 初始化頁面
+        document.addEventListener('DOMContentLoaded', () => {
+            // 載入所有行程
+            loadAllItineraries();
+            
+            // 綁定搜尋按鈕事件
+            const searchButton = document.getElementById('searchButton');
+            const searchInput = document.getElementById('searchInput');
+            
+            if (searchButton && searchInput) {
+                searchButton.addEventListener('click', () => {
+                    searchItineraries(searchInput.value);
+                });
+                
+                // 輸入框按 Enter 也觸發搜尋
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        searchItineraries(searchInput.value);
+                    }
+                });
+            }
+            
+            // 綁定篩選按鈕事件
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    applyFilter(btn.dataset.filter);
+                });
+            });
+            
+            // 綁定載入更多按鈕事件
+            document.getElementById('loadMoreButton').addEventListener('click', loadMore);
+        });
+    </script>
+</body>
+</html> 

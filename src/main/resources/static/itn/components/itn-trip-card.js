@@ -248,7 +248,7 @@ class ItnTripCardComponent {
 
     /**
      * 驗證資料格式
-     * @param {Array} data - 資料陣列
+     * @param {Array} data - 行程資料陣列
      */
     validateData(data) {
         if (!Array.isArray(data) || data.length === 0) {
@@ -256,6 +256,7 @@ class ItnTripCardComponent {
         }
         
         data.forEach((trip, index) => {
+            // 驗證必要欄位
             const required = ['title', 'date', 'duration', 'groupSize', 'price', 'itinerary'];
             const missing = required.filter(field => !trip[field]);
             
@@ -263,10 +264,57 @@ class ItnTripCardComponent {
                 throw new Error(`第 ${index + 1} 筆資料缺少必要欄位: ${missing.join(', ')}`);
             }
             
+            // 驗證資料類型
+            if (typeof trip.title !== 'string' || trip.title.trim() === '') {
+                throw new Error(`第 ${index + 1} 筆資料的標題不能為空`);
+            }
+            
+            if (typeof trip.price !== 'number' || trip.price < 0) {
+                throw new Error(`第 ${index + 1} 筆資料的價格必須是正數`);
+            }
+            
             if (!Array.isArray(trip.itinerary) || trip.itinerary.length === 0) {
                 throw new Error(`第 ${index + 1} 筆資料的行程安排必須是非空陣列`);
             }
+            
+            // 驗證行程項目
+            trip.itinerary.forEach((item, itemIndex) => {
+                const itemRequired = ['time', 'duration', 'name', 'location', 'category'];
+                const itemMissing = itemRequired.filter(field => !item[field]);
+                
+                if (itemMissing.length > 0) {
+                    throw new Error(`第 ${index + 1} 筆資料的第 ${itemIndex + 1} 個行程項目缺少欄位: ${itemMissing.join(', ')}`);
+                }
+                
+                // 驗證時間格式
+                if (!this.isValidTimeFormat(item.time)) {
+                    throw new Error(`第 ${index + 1} 筆資料的第 ${itemIndex + 1} 個行程項目時間格式錯誤: ${item.time}`);
+                }
+                
+                // 驗證分類
+                const validCategories = ['文化景點', '美食', '自然景觀', '購物', '娛樂'];
+                if (!validCategories.includes(item.category)) {
+                    throw new Error(`第 ${index + 1} 筆資料的第 ${itemIndex + 1} 個行程項目分類無效: ${item.category}`);
+                }
+            });
+            
+            // 驗證評分範圍
+            if (trip.rating !== undefined) {
+                if (typeof trip.rating !== 'number' || trip.rating < 0 || trip.rating > 5) {
+                    throw new Error(`第 ${index + 1} 筆資料的評分必須在 0-5 之間`);
+                }
+            }
         });
+    }
+
+    /**
+     * 驗證時間格式 (HH:MM)
+     * @param {string} time - 時間字符串
+     * @returns {boolean} 是否有效
+     */
+    isValidTimeFormat(time) {
+        const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        return timeRegex.test(time);
     }
 
     /**
@@ -343,6 +391,130 @@ class ItnTripCardComponent {
                     <small>${this.escapeHtml(message)}</small>
                 </div>
             `;
+        }
+    }
+
+    /**
+     * 更新特定卡片
+     * @param {string} tripId - 行程ID
+     * @param {Object} newData - 新的行程資料
+     * @param {Object} options - 配置選項
+     */
+    updateCard(tripId, newData, options = {}) {
+        try {
+            const cardElement = document.querySelector(`[data-trip-id="${tripId}"]`);
+            if (!cardElement) {
+                throw new Error(`找不到行程卡片: ${tripId}`);
+            }
+            
+            const config = { ...this.defaultOptions, ...options };
+            const updatedCard = this.createCard(newData, 0, config);
+            
+            cardElement.parentNode.replaceChild(updatedCard, cardElement);
+            console.log(`✅ 成功更新行程卡片: ${tripId}`);
+            
+        } catch (error) {
+            console.error('❌ 更新卡片時發生錯誤:', error);
+        }
+    }
+
+    /**
+     * 重新渲染所有卡片
+     * @param {string} containerSelector - 容器選擇器
+     * @param {Array} data - 行程資料
+     * @param {Object} options - 配置選項
+     */
+    reRender(containerSelector, data, options = {}) {
+        this.render(containerSelector, data, options);
+    }
+
+    /**
+     * 獲取所有卡片資料
+     * @param {string} containerSelector - 容器選擇器
+     * @returns {Array} 卡片資料陣列
+     */
+    getCardsData(containerSelector) {
+        const container = document.querySelector(containerSelector);
+        if (!container) return [];
+        
+        const cards = container.querySelectorAll('.itn-trip-card');
+        return Array.from(cards).map(card => {
+            return {
+                id: card.getAttribute('data-trip-id'),
+                element: card
+            };
+        });
+    }
+
+    /**
+     * 篩選卡片
+     * @param {string} containerSelector - 容器選擇器
+     * @param {Function} filterFunction - 篩選函數
+     */
+    filterCards(containerSelector, filterFunction) {
+        const container = document.querySelector(containerSelector);
+        if (!container) return;
+        
+        const cards = container.querySelectorAll('.itn-trip-card');
+        cards.forEach(card => {
+            const tripId = card.getAttribute('data-trip-id');
+            const shouldShow = filterFunction(tripId, card);
+            card.style.display = shouldShow ? 'block' : 'none';
+        });
+    }
+
+    /**
+     * 排序卡片
+     * @param {string} containerSelector - 容器選擇器
+     * @param {string} sortBy - 排序依據 ('price', 'rating', 'date')
+     * @param {string} order - 排序順序 ('asc', 'desc')
+     */
+    sortCards(containerSelector, sortBy = 'price', order = 'asc') {
+        const container = document.querySelector(containerSelector);
+        if (!container) return;
+        
+        const cards = Array.from(container.querySelectorAll('.itn-trip-card'));
+        
+        cards.sort((a, b) => {
+            let aValue, bValue;
+            
+            switch (sortBy) {
+                case 'price':
+                    aValue = parseFloat(a.querySelector('.price').textContent.replace(/[^\d]/g, ''));
+                    bValue = parseFloat(b.querySelector('.price').textContent.replace(/[^\d]/g, ''));
+                    break;
+                case 'rating':
+                    aValue = parseFloat(a.querySelector('.rating').textContent);
+                    bValue = parseFloat(b.querySelector('.rating').textContent);
+                    break;
+                case 'date':
+                    aValue = new Date(a.querySelector('.trip-date').textContent);
+                    bValue = new Date(b.querySelector('.trip-date').textContent);
+                    break;
+                default:
+                    return 0;
+            }
+            
+            if (order === 'asc') {
+                return aValue > bValue ? 1 : -1;
+            } else {
+                return aValue < bValue ? 1 : -1;
+            }
+        });
+        
+        // 重新排列卡片
+        cards.forEach(card => container.appendChild(card));
+    }
+
+    /**
+     * 銷毀組件
+     * @param {string} containerSelector - 容器選擇器
+     */
+    destroy(containerSelector) {
+        const container = document.querySelector(containerSelector);
+        if (container) {
+            container.innerHTML = '';
+            console.log(`✅ 成功銷毀行程卡片組件: ${containerSelector}`);
         }
     }
 
@@ -670,4 +842,50 @@ window.loadItnTripCardsFromAPI = async function(containerSelector, apiUrl, optio
     const component = new ItnTripCardComponent();
     await component.renderFromAPI(containerSelector, apiUrl, options);
     return component;
+};
+
+// 新增便利函數
+window.updateItnTripCard = function(tripId, newData, options) {
+    const component = new ItnTripCardComponent();
+    component.updateCard(tripId, newData, options);
+};
+
+window.sortItnTripCards = function(containerSelector, sortBy, order) {
+    const component = new ItnTripCardComponent();
+    component.sortCards(containerSelector, sortBy, order);
+};
+
+window.filterItnTripCards = function(containerSelector, filterFunction) {
+    const component = new ItnTripCardComponent();
+    component.filterCards(containerSelector, filterFunction);
+};
+
+window.destroyItnTripCards = function(containerSelector) {
+    const component = new ItnTripCardComponent();
+    component.destroy(containerSelector);
+};
+
+// 全域實例管理
+window.ItnTripCardInstances = new Map();
+
+// 創建並管理實例
+window.createItnTripCardInstance = function(instanceId, containerSelector, data, options) {
+    const component = new ItnTripCardComponent();
+    component.render(containerSelector, data, options);
+    window.ItnTripCardInstances.set(instanceId, component);
+    return component;
+};
+
+// 獲取實例
+window.getItnTripCardInstance = function(instanceId) {
+    return window.ItnTripCardInstances.get(instanceId);
+};
+
+// 銷毀實例
+window.destroyItnTripCardInstance = function(instanceId) {
+    const component = window.ItnTripCardInstances.get(instanceId);
+    if (component) {
+        component.destroy();
+        window.ItnTripCardInstances.delete(instanceId);
+    }
 }; 
