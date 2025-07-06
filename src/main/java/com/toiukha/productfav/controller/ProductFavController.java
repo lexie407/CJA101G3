@@ -203,11 +203,16 @@ public class ProductFavController {
             model.addAttribute("favorites", favorites);
             model.addAttribute("favoriteCount", favorites.size());
             model.addAttribute("member", member);
+            // 設定導覽列的 active 狀態
+            model.addAttribute("activeItem", "myFavorites");
             
             return "front-end/productfav/myFavorites";
             
         } catch (Exception e) {
             model.addAttribute("errorMessage", "載入收藏清單失敗：" + e.getMessage());
+            // 設定導覽列的 active 狀態
+            model.addAttribute("activeItem", "myFavorites");
+            
             return "front-end/productfav/myFavorites";
         }
     }

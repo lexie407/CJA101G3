@@ -168,6 +168,9 @@ public class AdController {
 			model.addAttribute("currentStoreName", currentStore.getStoreName());
 		}
 		
+        // 設定導覽列的 active 狀態
+		model.addAttribute("activeItem","myAds");
+		
 		return "front-end/advertisment/addAd";
 	}
 	
@@ -384,6 +387,9 @@ public class AdController {
 
         model.addAttribute("startTimeStr", startTimeStr);
         model.addAttribute("endTimeStr", endTimeStr);
+        
+        // 設定導覽列的 active 狀態
+		model.addAttribute("activeItem","myAds");
 
         return "front-end/advertisment/update_ad_input";
 	}
@@ -602,6 +608,9 @@ public class AdController {
         List<AdVO> list = adSvc.getAllByStoreId(currentStoreId);
         
         model.addAttribute("adListData", list);
+        // 設定導覽列的 active 狀態
+		model.addAttribute("activeItem","myAds");
+		
         return "front-end/advertisment/myAds";
     }
     
@@ -615,6 +624,7 @@ public class AdController {
 		// 使用真實的商店資料
 		Map<Integer, String> storeNamesMap = getStoreNamesMap();
 		model.addAttribute("storeNamesMap", storeNamesMap);
+		
 		
 		return "front-end/advertisment/listAllAd"; // 回傳所有廣告的列表頁面
 	}
@@ -644,6 +654,9 @@ public class AdController {
 		
 		model.addAttribute("adVO", adVO);
 		model.addAttribute("storeNamesMap", storeNamesMap);
+        // 設定導覽列的 active 狀態
+		model.addAttribute("activeItem","myAds");
+		
 		return "front-end/advertisment/adDetail"; // 回傳廣告詳情頁面
 	}
 	

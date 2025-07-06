@@ -9,6 +9,10 @@
     <header class="secondary-nav-ul">
         <ul>
             <li>
+                <a th:href="@{/advertisment/myAds}"
+                   th:classappend="${activeItem == 'myAds' ? 'active' : ''}">我的廣告</a>
+            </li>
+            <li>
             	<!-- th:href=頁面的url mapping，記得要改 -->
                 <a th:href="@{/item/listAllItem_back}"
                    th:classappend="${activeItem == 'allItem' ? 'active' : ''}">商品列表</a>
@@ -17,6 +21,7 @@
                 <a th:href="@{/item/addItem_back}"
                    th:classappend="${activeItem == 'addItem' ? 'active' : ''}">新增商品</a>
             </li>
+
            
 
         </ul>

@@ -155,11 +155,7 @@
         <div th:insert="~{/navTemplate :: navbar}"></div>
         <div class="main-content">
             <header class="secondary-nav">
-                <ul>
-                    <!-- 頁面導航 -->
-                    <li><a href="/item/listAllItem">商品列表</a></li>
-                    <li><a href="/productfav/myFavorites" class="active">我的收藏</a></li>
-                </ul>
+                <div th:insert="~{/subnavStore_front::subnav(${activeItem})}"></div>
             </header>
             <main class="content-area-main">
                 <!-- 頁面標題 -->
@@ -227,7 +223,7 @@
                                     
                                     <div class="fav-date">
                                         <i class="fas fa-clock me-1"></i>
-                                        收藏於 <span th:text="${#temporals.format(favorite.favAt, 'yyyy/MM/dd')}">2024/01/01</span>
+                                        收藏於 <span th:text="${favorite.favAt != null ? #dates.format(favorite.favAt, 'yyyy/MM/dd') : '未知日期'}">2024/01/01</span>
                                     </div>
                                     
                                     <!-- 商品動作按鈕 -->
@@ -339,8 +335,6 @@
                 }
             });
         }
-        
-
         
         // 更新收藏計數
         function updateFavoriteCount(count) {
