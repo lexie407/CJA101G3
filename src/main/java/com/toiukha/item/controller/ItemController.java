@@ -274,6 +274,20 @@ public class ItemController {
 		}
 		return "fail";
 	}
+	//停售
+	@PostMapping("putOut")
+	@ResponseBody
+	public String putOut(@RequestParam("itemId") Integer itemId) {
+		ItemVO item = itemSvc.getOneItem(itemId);
+		if (item != null) {
+			item.setItemStatus(3); // 3: 停售
+		
+			itemSvc.updateItem(item);
+			return "success";
+		}
+		return "fail";
+	}
+	
 	//==================item 網頁=======================
 	//商品列表
 	@GetMapping("listAllItem")
