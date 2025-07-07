@@ -59,7 +59,15 @@ function initComments(shadowRoot) {
 			}
 			const article = await response.json();
 			ARTICLE_CATEGORY = article.artCat; // 假設 artCat 是文章類別的數字代碼
-			ARTICLE_OWNER_ID = article.artHol; // 假設 artHol 是文章擁有者的 ID
+
+			const response2 = await fetch(`/commentsAPI/getArt/${artId}`);
+			if (!response2.ok) {
+				throw new Error(`無法獲取文章資料: ${response.status} ${response.statusText}`);
+			}
+			
+			art = await response2.json();
+			ARTICLE_OWNER_ID = art.artHol; 
+
 		} catch (error) {
 			console.error('載入文章詳情失敗:', error);
 			showStatusMessage('載入文章詳情失敗，部分功能可能受限。', 'error');
@@ -255,7 +263,7 @@ function initComments(shadowRoot) {
 		commentItem.appendChild(actionsDiv);
 
 		// --- 處理最佳解邏輯 ---
-		if (ARTICLE_CATEGORY === 2 && CURRENT_USER_ID === ARTICLE_OWNER_ID) { // 發問中 & 文章擁有者
+		if (ARTICLE_CATEGORY === 2 && CURRENT_USER_ID == ARTICLE_OWNER_ID) { // 發問中 & 文章擁有者
 			const bestAnswerButton = document.createElement('button');
 			bestAnswerButton.className = 'btn-small waves-effect waves-light green darken-1 best-answer-button';
 			bestAnswerButton.textContent = '選我最佳解';
