@@ -1086,16 +1086,53 @@
         initializeForm();
     }
 
+    // ====== 行程下拉選單動態載入 ======
+    // (function loadItinerarySelect() {
+    //     if (!currentMemberId) {
+    //         console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
+    //         return;
+    //     }
+    //     fetch(`/itinerary/creator/${currentMemberId}`)
+    //         .then(res => res.json())
+    //         .then(list => {
+    //             const select = document.getElementById('itinerarySelect');
+    //             if (!select) return;
+    //             select.innerHTML = '<option value="">請選擇行程</option>';
+    //             if (Array.isArray(list) && list.length > 0) {
+    //                 list.forEach(itn => {
+    //                     const option = document.createElement('option');
+    //                     option.value = itn.itnId;
+    //                     option.textContent = `${itn.itnName}（${itn.itnDesc || '無描述'}）`;
+    //                     if (itnId && itn.itnId == itnId) {
+    //                         option.selected = true;
+    //                     }
+    //                     select.appendChild(option);
+    //                 });
+    //             } else {
+    //                 const option = document.createElement('option');
+    //                 option.value = '';
+    //                 option.textContent = '（查無可用行程，請先建立行程）';
+    //                 select.appendChild(option);
+    //             }
+    //         })
+    //         .catch(err => {
+    //             console.error('[行程下拉] 載入行程清單失敗:', err);
+    //             const select = document.getElementById('itinerarySelect');
+    //             if (select) {
+    //                 select.innerHTML = '<option value="">（行程載入失敗）</option>';
+    //             }
+    //         });
+    // })();
+    // 改用假API
     (function loadItinerarySelect() {
         if (!currentMemberId) {
             console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
             return;
         }
-        fetch(`/itinerary/creator/${currentMemberId}`)
+        fetch(`/api/act/itinerary/creator/${currentMemberId}`)
             .then(res => res.json())
             .then(list => {
                 const select = document.getElementById('itinerarySelect');
-                const currentItnId = document.getElementById('itnId').value;
                 if (!select) return;
                 select.innerHTML = '<option value="">請選擇行程</option>';
                 if (Array.isArray(list) && list.length > 0) {
@@ -1103,7 +1140,7 @@
                         const option = document.createElement('option');
                         option.value = itn.itnId;
                         option.textContent = `${itn.itnName}（${itn.itnDesc || '無描述'}）`;
-                        if (currentItnId && itn.itnId == currentItnId) {
+                        if (itnId && itn.itnId == itnId) {
                             option.selected = true;
                         }
                         select.appendChild(option);
@@ -1122,10 +1159,6 @@
                     select.innerHTML = '<option value="">（行程載入失敗）</option>';
                 }
             });
-        // 當選擇變動時，同步 itnId
-        document.getElementById('itinerarySelect').addEventListener('change', function () {
-            document.getElementById('itnId').value = this.value;
-        });
     })();
 </script>
 </body>

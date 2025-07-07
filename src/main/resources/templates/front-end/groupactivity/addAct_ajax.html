@@ -1055,12 +1055,11 @@
 
     // ====== 行程下拉選單動態載入 ======
     (function loadItinerarySelect() {
-
         if (!currentMemberId) {
             console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
             return;
         }
-        fetch(`/itinerary/creator/${currentMemberId}`)
+        fetch(`/api/act/itinerary/creator/${currentMemberId}`)
             .then(res => res.json())
             .then(list => {
                 const select = document.getElementById('itinerarySelect');
@@ -1071,7 +1070,6 @@
                         const option = document.createElement('option');
                         option.value = itn.itnId;
                         option.textContent = `${itn.itnName}（${itn.itnDesc || '無描述'}）`;
-                        // === 新增：自動選定 ===
                         if (itnId && itn.itnId == itnId) {
                             option.selected = true;
                         }
