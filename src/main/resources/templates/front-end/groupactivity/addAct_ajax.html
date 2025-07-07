@@ -483,7 +483,8 @@
 <script th:inline="javascript">
     // 會員ID注入
     const currentMemberId = /*[[${currentMemberId}]]*/ null;
-    console.log("currentMemberId:", currentMemberId);
+    const itnId = /*[[${itnId}]]*/ null; // 行程ID
+    console.log("itnId", itnId, "currentMemberId:", currentMemberId);
 
     function initializeForm() {
         const form = document.getElementById("addActForm");
@@ -1070,6 +1071,10 @@
                         const option = document.createElement('option');
                         option.value = itn.itnId;
                         option.textContent = `${itn.itnName}（${itn.itnDesc || '無描述'}）`;
+                        // === 新增：自動選定 ===
+                        if (itnId && itn.itnId == itnId) {
+                            option.selected = true;
+                        }
                         select.appendChild(option);
                     });
                 } else {
