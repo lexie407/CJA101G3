@@ -12,6 +12,9 @@ public class OrderWithItemsDTO {
     private Integer ordSta;
     private Timestamp creDate;
     private List<OrderItemDetailDTO> orderItems;
+    private Integer originalTotal;    // 原價總計
+    private Integer couponDiscount;   // 優惠券折抵金額
+    private Integer finalTotal;       // 實付金額
     
     public OrderWithItemsDTO() {
         super();
@@ -81,6 +84,13 @@ public class OrderWithItemsDTO {
     public void setOrderItems(List<OrderItemDetailDTO> orderItems) {
         this.orderItems = orderItems;
     }
+    
+    public Integer getOriginalTotal() { return originalTotal; }
+    public void setOriginalTotal(Integer originalTotal) { this.originalTotal = originalTotal; }
+    public Integer getCouponDiscount() { return couponDiscount; }
+    public void setCouponDiscount(Integer couponDiscount) { this.couponDiscount = couponDiscount; }
+    public Integer getFinalTotal() { return finalTotal; }
+    public void setFinalTotal(Integer finalTotal) { this.finalTotal = finalTotal; }
     
     // 內部類別：訂單項目詳細資訊
     public static class OrderItemDetailDTO {
@@ -178,5 +188,22 @@ public class OrderWithItemsDTO {
         public void setItem(ItemVO item) {
             this.item = item;
         }
+    }
+    
+    /**
+     * 計算原價總計、折扣、實付金額
+     * @param couponDiscount 優惠券折抵金額（可為null）
+     */
+    public void calculateTotals(Integer couponDiscount) {
+        // 原價總計
+        int oriTotal = 0;
+        if (orderItems != null) {
+            for (OrderItemDetailDTO item : orderItems) {
+                oriTotal += (item.getOriPrice() != null ? item.getOriPrice() : 0) * (item.getOrdTotal() != null ? item.getOrdTotal() : 0);
+            }
+        }
+        this.originalTotal = oriTotal;
+        this.couponDiscount = (couponDiscount != null) ? couponDiscount : 0;
+        this.finalTotal = getOrderTotal() - this.couponDiscount;
     }
 } 

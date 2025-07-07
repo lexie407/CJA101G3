@@ -16,14 +16,11 @@
                 <div th:insert="~{/subnavStore_front::subnav(${activeItem})}"></div>
             </header>
             <main class="content-area-main">
-                <!-- Material Design 搜尋與日期區間 -->
+                <!-- Material Design 搜尋 -->
                 <div class="mdc-search-bar">
                     <span class="material-icons mdc-search-icon">search</span>
                     <input type="text" id="ticketSearchInput" placeholder="搜尋票券名稱或ID"
                         class="mdc-input mdc-search-input">
-                    <input type="date" id="dateStart" class="mdc-date-input" style="margin-left:12px;">
-                    <span style="margin:0 4px;">~</span>
-                    <input type="date" id="dateEnd" class="mdc-date-input">
                     <select id="statusSelect" class="mdc-status-select" style="margin-left:12px;">
                         <option value="">全部狀態</option>
                         <option value="0">未使用</option>
@@ -111,23 +108,7 @@
                         padding: 8px 0;
                     }
 
-                    .mdc-date-input {
-                        border: none;
-                        outline: none;
-                        font-size: 1.08rem;
-                        background: transparent;
-                        padding: 8px 0;
-                        color: #1976d2;
-                        width: 130px;
-                    }
 
-                    .mdc-date-input::-webkit-input-placeholder {
-                        color: #bdbdbd;
-                    }
-
-                    .mdc-date-input:focus {
-                        background: #e3f2fd;
-                    }
 
                     .mdc-horizontal-list {
                         display: flex;
@@ -241,27 +222,22 @@
                     }
                 </style>
                 <script>
-                    document.querySelectorAll('#ticketSearchInput, #dateStart, #dateEnd, #statusSelect').forEach(function (input) {
+                    document.querySelectorAll('#ticketSearchInput, #statusSelect').forEach(function (input) {
                         input.addEventListener('input', filterTickets);
                         input.addEventListener('change', filterTickets);
                     });
                     function filterTickets() {
                         const keyword = document.getElementById('ticketSearchInput').value.trim().toLowerCase();
-                        const dateStart = document.getElementById('dateStart').value;
-                        const dateEnd = document.getElementById('dateEnd').value;
                         const status = document.getElementById('statusSelect').value;
                         document.querySelectorAll('.mdc-horizontal-card').forEach(function (card) {
                             const name = card.getAttribute('data-name').toLowerCase();
                             const id = card.getAttribute('data-id').toLowerCase();
                             const cardStatus = card.querySelector('.mdc-horizontal-card__subtitle span[th\\:if]')?.textContent || '';
                             let matchKeyword = !keyword || name.includes(keyword) || id.includes(keyword);
-                            let matchDate = true;
-                            if (dateStart && card.getAttribute('data-start') < dateStart) matchDate = false;
-                            if (dateEnd && card.getAttribute('data-end') > dateEnd) matchDate = false;
                             let matchStatus = !status;
                             if (status === '0') matchStatus = card.textContent.includes('未使用');
                             if (status === '1') matchStatus = card.textContent.includes('已使用');
-                            if (matchKeyword && matchDate && matchStatus) {
+                            if (matchKeyword && matchStatus) {
                                 card.style.display = '';
                             } else {
                                 card.style.display = 'none';

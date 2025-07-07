@@ -324,13 +324,13 @@
                                     我要評論
                                 </button>
                             </div>
-                            
+
                             <!-- 檢舉按鈕（新增，不影響原有結構） -->
                             <div class="mt-2" style="text-align: right;">
-                                <a th:href="@{/item-report/form-from-order(ordId=${orderItem.ordId}, itemId=${orderItem.itemId})}" 
-                                   class="btn-material"
-                                   style="background: #f44336; text-decoration: none; font-size: 0.85rem; padding: 2px 8px;"
-                                   title="檢舉此商品">
+                                <a th:href="@{/item-report/form-from-order(ordId=${orderItem.ordId}, itemId=${orderItem.itemId})}"
+                                    class="btn-material"
+                                    style="background: #f44336; text-decoration: none; font-size: 0.85rem; padding: 2px 8px;"
+                                    title="檢舉此商品">
                                     ⚠️ 檢舉商品
                                 </a>
                             </div>
@@ -340,7 +340,19 @@
                         <div class="row mt-3 pt-3 border-top">
                             <div class="col-md-8"></div>
                             <div class="col-md-4 text-end">
-                                <h6>訂單總計: $<span th:text="${order.orderTotal}"></span></h6>
+                                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                                    <div style="font-size: 0.95rem; color: #666;">
+                                        商品總金額: $<span th:text="${order.originalTotal}"></span>
+                                    </div>
+                                    <div th:if="${order.couponDiscount != null and order.couponDiscount > 0}"
+                                        style="font-size: 0.95rem; color: #d32f2f;">
+                                        優惠券折抵: -$<span th:text="${order.couponDiscount}"></span>
+                                    </div>
+                                    <div
+                                        style="font-size: 1.1rem; font-weight: 600; color: #1976d2; border-top: 1px solid #e3e6ea; padding-top: 4px; margin-top: 2px;">
+                                        訂單總計: $<span th:text="${order.finalTotal}"></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
