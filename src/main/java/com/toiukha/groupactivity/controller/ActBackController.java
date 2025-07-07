@@ -5,6 +5,8 @@ import com.toiukha.groupactivity.model.ActStatus;
 import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.groupactivity.service.ActService;
 import com.toiukha.groupactivity.service.DefaultImageService;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -42,6 +44,7 @@ public class ActBackController {
     //列出所有的活動
     @GetMapping("/listAllAct")
     public String listAllAct(Model model) {
+
         model.addAttribute("actList", actSvc.getAll());
         return "back-end/groupactivity/listAllAct";
     }
@@ -100,7 +103,7 @@ public class ActBackController {
 
     @PostMapping("/update")
     public String updateAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
-                            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+                            @RequestParam(value = "upFile", required = false) MultipartFile file) throws IOException {
         // 如果沒有上傳新圖片，保留原有圖片
         if (file != null && !file.isEmpty()) {
             actDto.setActImg(file.getBytes());
@@ -125,17 +128,29 @@ public class ActBackController {
         return "redirect:/act/admin/listAllAct";
     }
 
-//    @GetMapping(value = "/image/{actId}", produces = MediaType.IMAGE_JPEG_VALUE)
-//    @ResponseBody
-//    public ResponseEntity<byte[]> getImage(@PathVariable Integer actId) {
-//        ActVO actVo = actSvc.getOneAct(actId);
-//        if (actVo != null && actVo.getActImg() != null && actVo.getActImg().length > 0) {
-//            return ResponseEntity.ok(actVo.getActImg());
-//        } else {
-//            // 如果沒有圖片，回傳預設圖片
-//            return ResponseEntity.ok(defaultImageService.getDefaultImage());
-//        }
-//    }
+    // 活動圖片載入 API
+    @GetMapping("/DBGifReader")
+    public void getActImage(
+            @RequestParam("actId") Integer actId,
+            HttpServletResponse response) throws IOException {
+
+        ActVO act = actSvc.getOneAct(actId);
+        byte[] imageBytes = act.getActImg();
+
+        response.setContentType("image/jpeg");
+        ServletOutputStream out = response.getOutputStream();
+
+        if (imageBytes != null && imageBytes.length > 0) {
+            out.write(imageBytes);
+        } else {
+            // 使用預設圖片
+            byte[] defaultImage = defaultImageService.getDefaultImage();
+            out.write(defaultImage);
+        }
+
+        out.flush();
+        out.close();
+    }
 
     /** 變更狀態 */
     @PostMapping("/changeStatus")

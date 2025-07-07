@@ -298,15 +298,15 @@
               ※ 如果不上傳新圖片，將保留原有圖片
             </small>
             <div
-              class="current-image"
-              th:if="${actVo.actImg != null and actVo.actImg.length > 0}"
-              style="margin-top: 10px"
+                    class="current-image"
+                    th:if="${actVo.actImg != null and actVo.actImg.length > 0}"
+                    style="margin-top: 10px"
             >
               <label style="font-weight: bold; color: #333">目前圖片：</label>
               <img
-                th:src="@{'/act/admin/image/' + ${actVo.actId}}"
-                alt="目前圖片"
-                style="
+                      th:src="@{'/act/admin/DBGifReader?actId=' + ${actVo.actId}}"
+                      alt="目前圖片"
+                      style="
                   max-width: 200px;
                   max-height: 150px;
                   border: 1px solid #ddd;

@@ -111,12 +111,12 @@
                   ></td>
                   <td>
                     <img
-                      th:if="${act.actImg != null and act.actImg.length > 0}"
-                      th:src="@{'/act/admin/image/' + ${act.actId}}"
-                      alt="活動圖片"
-                      width="120"
-                      height="auto"
-                      style="
+                            th:if="${act.actImg != null and act.actImg.length > 0}"
+                            th:src="@{'/act/admin/DBGifReader?actId=' + ${act.actId}}"
+                            alt="活動圖片"
+                            width="120"
+                            height="auto"
+                            style="
                         max-width: 120px;
                         max-height: 80px;
                         object-fit: cover;
