@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import com.toiukha.like.model.LikeService;
 import com.toiukha.like.model.LikeVO;
 import com.toiukha.forum.article.entity.Article;
@@ -332,7 +330,12 @@ public class ArticleController {
             response.put("message", "文章更新成功");
             return ResponseEntity.ok(response);
             
-        } catch (Exception e) {
+        } catch (NoSuchElementException ne){
+            response.put("success", false);
+            response.put("message", "找不到文章: " + ne.getMessage());
+            System.err.println("找不到文章: " + ne.getMessage());
+        }
+        catch (Exception e) {
             response.put("success", false);
             response.put("message", "更新文章時發生錯誤: " + e.getMessage());
             System.err.println("更新文章時發生錯誤: " + e.getMessage());

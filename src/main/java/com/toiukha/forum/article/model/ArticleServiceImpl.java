@@ -156,7 +156,7 @@ public class ArticleServiceImpl implements ArticleService {
     public Article updateBasic(Integer artId, Byte artCat, Byte artSta, String artTitle, String artCon) {
         Article artVO = articleRepository.findById(artId).orElse(null);
         if (artVO == null) {
-            artVO = new Article(); // FIXME: 這裡應該拋出一個例外，表示找不到文章
+            throw new NoSuchElementException("找不到 ID 為 " + artId + " 的文章");
         }
         artVO.setArtId(artId);
         artVO.setArtCat(artCat);

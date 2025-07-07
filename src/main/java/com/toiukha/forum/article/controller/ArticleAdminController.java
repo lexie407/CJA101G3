@@ -108,7 +108,7 @@ public class ArticleAdminController {
         ArticleMapper.updateEntity(art, form);
         articleService.update(art);
 
-        return "redirect:/forum/admin/listAllArticle"; //重新導向 TODO: 確定導向到listArticle頁面嗎？
+        return "redirect:/forum/admin/listAllArticle"; //重新導向
     }
 
     @PostMapping("/delete/{artId}")
