@@ -21,6 +21,7 @@ import com.toiukha.productfav.model.ProductFavService;
 import com.toiukha.productfav.model.ProductFavVO;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * ProductFav Controller
@@ -187,9 +188,11 @@ public class ProductFavController {
      * @return 收藏清單頁面
      */
     @GetMapping("/myFavorites")
-    public String showMyFavorites(HttpSession session, Model model) {
+    public String showMyFavorites(HttpSession session, Model model, HttpServletRequest request) {
         // 檢查登入狀態
         if (!isMemberLoggedIn(session)) {
+            // 保存原始請求URI，登入後可以重定向回來
+            session.setAttribute("location", request.getRequestURI());
             return "redirect:/members/login";
         }
         
@@ -210,9 +213,8 @@ public class ProductFavController {
             
         } catch (Exception e) {
             model.addAttribute("errorMessage", "載入收藏清單失敗：" + e.getMessage());
-            // 設定導覽列的 active 狀態
+            // 即使發生錯誤，也要設定導覽列的 active 狀態
             model.addAttribute("activeItem", "myFavorites");
-            
             return "front-end/productfav/myFavorites";
         }
     }

@@ -154,6 +154,15 @@
             color: var(--text-color-secondary);
             font-size: 1.2rem;
         }
+        .btn-back {
+            transition: all 0.3s ease;
+        }
+        .btn-back:hover {
+            background-color: #5a6268 !important;
+            color: white !important;
+            text-decoration: none !important;
+            transform: translateX(-2px);
+        }
     </style>
 </head>
 <body class="light">
@@ -163,12 +172,16 @@
     
     <div class="main-content">
         <!-- 引入子導航 -->
-<!--         <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='ad')}"></div> -->
+        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='ad')}"></div>
         
         <main class="content-area-main">
             <div class="admin-container">
                 <div class="page-header">
                     <h1 class="page-title">廣告審核管理</h1>
+                    <a href="/advertisment/admin/dashboard" class="btn btn-back" style="background-color: #6c757d; color: white; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                        <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                        廣告管理
+                    </a>
                 </div>
             
             <!-- 導航標籤 -->

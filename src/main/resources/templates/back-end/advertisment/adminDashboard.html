@@ -152,7 +152,7 @@
 		
 		<div class="main-content">
 			<!-- 引入全域下拉導航 -->
-			<div th:insert="~{/navBackDropdownTemplate :: topNavigation}"></div>
+        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='ad')}"></div>
 			
 			<main class="content-area-main">
 				<div class="admin-container">
