@@ -210,15 +210,30 @@ public class ProductFavController {
             
             // 獲取商品詳細信息
             Map<Integer, ItemVO> itemDetails = new HashMap<>();
+            Map<Integer, String> itemImages = new HashMap<>();
             for (ProductFavVO favorite : favorites) {
                 ItemVO item = itemService.getOneItem(favorite.getItemId());
                 if (item != null) {
                     itemDetails.put(favorite.getItemId(), item);
+                    
+                    // 處理圖片：轉換為 base64
+                    if (item.getItemImg() != null && item.getItemImg().length > 0) {
+                        try {
+                            String base64Image = java.util.Base64.getEncoder().encodeToString(item.getItemImg());
+                            itemImages.put(favorite.getItemId(), "data:image/jpeg;base64," + base64Image);
+                        } catch (Exception e) {
+                            System.err.println("圖片轉換失敗，商品ID: " + favorite.getItemId());
+                            itemImages.put(favorite.getItemId(), "/images/default-product.png"); // 預設圖片
+                        }
+                    } else {
+                        itemImages.put(favorite.getItemId(), "/images/default-product.png"); // 預設圖片
+                    }
                 }
             }
             
             model.addAttribute("favorites", favorites);
             model.addAttribute("itemDetails", itemDetails);
+            model.addAttribute("itemImages", itemImages);
             model.addAttribute("favoriteCount", favorites.size());
             model.addAttribute("member", member);
             // 設定導覽列的 active 狀態

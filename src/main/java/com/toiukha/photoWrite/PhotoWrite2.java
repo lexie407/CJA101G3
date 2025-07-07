@@ -3,7 +3,7 @@ package com.toiukha.photoWrite;
 import java.sql.*;
 import java.io.*;
 
-class PhotoWrite {
+class PhotoWrite2 {
 
 	public static void main(String argv[]) {
 		Connection con = null;
@@ -12,8 +12,8 @@ class PhotoWrite {
 		String url = "jdbc:mysql://localhost:3306/toiukha?serverTimezone=Asia/Taipei";
 		String userid = "root";
 		String passwd = "0212";
-		String photos = "src/main/resources/static/DB_photos1"; //測試用圖片已置於【專案錄徑】底下的【resources/DB_photos1】目錄內
-		String update = "update Item set ITEMIMG =? where ITEMID=?";
+		String photos = "src/main/resources/static/DB_photo3"; //測試用圖片已置於【專案錄徑】底下的【resources/DB_photos1】目錄內
+		String update = "update advertisment set ADIMAGE =? where ADID=?";
 
 		int count = 1;
 		try {
