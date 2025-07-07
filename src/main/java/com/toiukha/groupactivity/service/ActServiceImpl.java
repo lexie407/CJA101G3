@@ -88,8 +88,9 @@ public class ActServiceImpl implements ActService {
                 actVo.setActImg(defImgSvc.getDefaultImage());
             }
         }
-        //儲存VO物件到mySQL
-        actRepo.save(actVo);
+        
+        // 使用 ActHandlerService 處理活動編輯邏輯
+        actHandlerSvc.handleActivityUpdate(actVo);
         
         // 更新活動標籤到Redis
         if (actDto.getActType() != null && actDto.getActCity() != null) {

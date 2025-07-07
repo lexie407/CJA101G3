@@ -49,9 +49,15 @@ public class ActHandlerService {
         // 1. 設定初始狀態
         actVO.setSignupCnt(0);
         actVO.setRecruitStatus(ActStatus.OPEN.getValue());
+        
+        // 2. 設定預設的allowCancel值（如果為null則設為1，表示允許退出）
+        if (actVO.getAllowCancel() == null) {
+            actVO.setAllowCancel((byte) 1);
+        }
+        
         ActVO savedAct = actRepo.save(actVO);
         
-        // 2. 團主自動報名
+        // 3. 團主自動報名
         PartVO hostParticipant = new PartVO();
         hostParticipant.setActId(savedAct.getActId());
         hostParticipant.setMemId(savedAct.getHostId());
@@ -60,9 +66,43 @@ public class ActHandlerService {
         hostParticipant.setJoinStatus((byte) 1);
         partRepo.save(hostParticipant);
         
-        // 3. 更新活動人數
+        // 4. 更新活動人數
         savedAct.setSignupCnt(1);
         actRepo.save(savedAct);
+        
+        // 5. 記錄創建操作（可選）
+        System.out.println("活動創建完成 - 活動ID: " + savedAct.getActId() + 
+                          ", 初始人數: " + savedAct.getSignupCnt() + 
+                          ", 初始狀態: " + savedAct.getRecruitStatus() + 
+                          ", 允許退出: " + savedAct.getAllowCancel());
+    }
+    
+    /**
+     * 處理活動編輯：保持現有人數統計和參加者關係
+     */
+    @Transactional
+    public void handleActivityUpdate(ActVO actVO) {
+        // 1. 獲取現有活動資料
+        ActVO existingAct = actRepo.findById(actVO.getActId())
+                .orElseThrow(() -> new IllegalArgumentException("活動不存在"));
+        
+        // 2. 保持現有的系統計算欄位不變
+        actVO.setSignupCnt(existingAct.getSignupCnt());
+        actVO.setRecruitStatus(existingAct.getRecruitStatus());
+        
+        // 3. 如果allowCancel為null，保持原有設定
+        if (actVO.getAllowCancel() == null) {
+            actVO.setAllowCancel(existingAct.getAllowCancel());
+        }
+        
+        // 4. 儲存更新後的活動資料
+        actRepo.save(actVO);
+        
+        // 5. 記錄編輯操作（可選）
+        System.out.println("活動編輯完成 - 活動ID: " + actVO.getActId() + 
+                          ", 保持人數: " + actVO.getSignupCnt() + 
+                          ", 保持狀態: " + actVO.getRecruitStatus() + 
+                          ", 允許退出: " + actVO.getAllowCancel());
     }
     
     /**
