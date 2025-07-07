@@ -33,21 +33,16 @@
 
 				<hr>
 
-				<li>
-					<div class="member-info-area">
-						<img th:src="@{/images/user.png}" alt="User Avatar" class="member-avatar"> <span
-							class="member-name">廠商名稱</span>
-					</div>
-				</li>
+			
 				
 				<li>
-					<div class="logout-area">
-					<form th:action="@{/store/logout}" method="post">
-						<button type="submit" class="logout-btn material-button">
-							<span class="material-icons">logout</span> 登出
-						</button>
-						</form>
-					</div>
+					<div th:if="${session.store != null}" class="logout-area">
+    <form th:action="@{/store/logout}" method="post">
+        <button type="submit" class="logout-btn material-button">
+            <span class="material-icons">logout</span> 登出
+        </button>
+    </form>
+</div>
 				</li>
 			</ul>
 		</aside>
