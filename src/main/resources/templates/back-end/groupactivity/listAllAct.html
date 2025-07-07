@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>所有活動 | 島遊kha後台</title>
+  <title>所有活動 | 後台 | 島遊kha</title>
 
   <!-- 模板與樣式 -->
   <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
@@ -12,22 +12,19 @@
   <link rel="stylesheet" th:href="@{/css/groupactivity/styleAct_admin.css}" />
 
   <!-- DataTables CSS -->
-  <link
-          rel="stylesheet"
-          href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"
-  />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"/>
   <!-- Responsive 外掛 CSS -->
-  <link
-          rel="stylesheet"
-          href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css"
-  />
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css"/>
 </head>
 <body class="light">
     <div class="app-container">
+      <!--前台:側邊攔，通用樣式，不用改-->
       <div th:insert="~{/navBackTemplate :: navbar}"></div>
 
       <div class="main-content act-page">
-        <div th:insert="~{/subnavActBack :: subnav('list')}"></div>
+        <!--前台:頂部次導覽:各模組複製subnavXxx.html改好後，修正下面為subnav模組名 :: subnav('模板的要點亮的key')，-->
+        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='actlist')}"></div>
+        <!--<div th:insert="~{/subnavActBack :: subnav('list')}"></div>-->
 
         <main class="content-area-main act-area">
           <!--  頂部複合搜尋   -->
@@ -59,21 +56,21 @@
           <br />
 
           <!-- 新增活動按鈕 -->
-          <div style="margin-bottom: 20px">
-            <a
-              th:href="@{/act/admin/addAct}"
-              class="act-btn act-add"
-              style="
-                background-color: #28a745;
-                color: white;
-                padding: 10px 20px;
-                text-decoration: none;
-                border-radius: 4px;
-              "
-            >
-              新增活動
-            </a>
-          </div>
+<!--          <div style="margin-bottom: 20px">-->
+<!--            <a-->
+<!--              th:href="@{/act/admin/addAct}"-->
+<!--              class="act-btn act-add"-->
+<!--              style="-->
+<!--                background-color: #28a745;-->
+<!--                color: white;-->
+<!--                padding: 10px 20px;-->
+<!--                text-decoration: none;-->
+<!--                border-radius: 4px;-->
+<!--              "-->
+<!--            >-->
+<!--              新增活動-->
+<!--            </a>-->
+<!--          </div>-->
 
           <!--  資料總表   -->
           <div style="max-width: calc(100vw - 220px); overflow-x: auto">
@@ -168,23 +165,23 @@
                   </td>
                   <td th:text="${recruitStatusMap[act.recruitStatus]}"></td>
 
-                  <!--不確定-->
+                  <!--管理員操作-->
                   <td>
                     <a
                       class="act-btn act-edit"
                       th:href="@{'/act/admin/editAct/' + ${act.actId}}"
                       >編輯</a
                     >
-                    <form
-                      th:action="@{'/act/admin/delete/' + ${act.actId}}"
-                      method="post"
-                      style="display: inline"
-                      onsubmit="return confirmDelete();"
-                    >
-                      <button class="act-btn act-delete" type="submit">
-                        刪除
-                      </button>
-                    </form>
+<!--                    <form-->
+<!--                      th:action="@{'/act/admin/delete/' + ${act.actId}}"-->
+<!--                      method="post"-->
+<!--                      style="display: inline"-->
+<!--                      onsubmit="return confirmDelete();"-->
+<!--                    >-->
+<!--                      <button class="act-btn act-delete" type="submit">-->
+<!--                        刪除-->
+<!--                      </button>-->
+<!--                    </form>-->
                   </td>
                 </tr>
               </tbody>

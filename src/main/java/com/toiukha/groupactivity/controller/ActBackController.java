@@ -44,7 +44,6 @@ public class ActBackController {
     //列出所有的活動
     @GetMapping("/listAllAct")
     public String listAllAct(Model model) {
-
         model.addAttribute("actList", actSvc.getAll());
         return "back-end/groupactivity/listAllAct";
     }
@@ -101,6 +100,12 @@ public class ActBackController {
         return "back-end/groupactivity/editAct";
     }
 
+    @PostMapping("/delete/{actId}")
+    public String deleteAct(@PathVariable Integer actId) {
+        actSvc.deleteAct(actId);
+        return "redirect:/act/admin/listAllAct";
+    }
+
     @PostMapping("/update")
     public String updateAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
                             @RequestParam(value = "upFile", required = false) MultipartFile file) throws IOException {
@@ -121,35 +126,87 @@ public class ActBackController {
         return "redirect:/act/admin/listAllAct";
     }
 
+    // 活動圖片載入
+//    @GetMapping("/DBGifReader")
+//    public void getActImage(
+//            @RequestParam("actId") Integer actId,
+//            HttpServletResponse response) throws IOException {
+//
+//        ActVO act = actSvc.getOneAct(actId);
+//        byte[] imageBytes = act.getActImg();
+//
+//        response.setContentType("image/jpeg");
+//        ServletOutputStream out = response.getOutputStream();
+//
+//        if (imageBytes != null && imageBytes.length > 0) {
+//            out.write(imageBytes);
+//        } else {
+//            // 使用預設圖片
+//            byte[] defaultImage = defaultImageService.getDefaultImage();
+//            out.write(defaultImage);
+//        }
+//
+//        out.flush();
+//        out.close();
+//    }
 
-    @PostMapping("/delete/{actId}")
-    public String deleteAct(@PathVariable Integer actId) {
-        actSvc.deleteAct(actId);
-        return "redirect:/act/admin/listAllAct";
-    }
-
-    // 活動圖片載入 API
+    // 活動圖片載入
     @GetMapping("/DBGifReader")
     public void getActImage(
             @RequestParam("actId") Integer actId,
             HttpServletResponse response) throws IOException {
 
-        ActVO act = actSvc.getOneAct(actId);
-        byte[] imageBytes = act.getActImg();
+        ServletOutputStream out = null;
+        try {
+            ActVO act = actSvc.getOneAct(actId);
+            byte[] imageBytes = null;
 
-        response.setContentType("image/jpeg");
-        ServletOutputStream out = response.getOutputStream();
+            if (act != null) {
+                imageBytes = act.getActImg();
+            }
 
-        if (imageBytes != null && imageBytes.length > 0) {
-            out.write(imageBytes);
-        } else {
-            // 使用預設圖片
-            byte[] defaultImage = defaultImageService.getDefaultImage();
-            out.write(defaultImage);
+            response.setContentType("image/jpeg");
+            out = response.getOutputStream();
+
+            if (imageBytes != null && imageBytes.length > 0) {
+                out.write(imageBytes);
+            } else {
+                // 使用預設圖片
+                try {
+                    byte[] defaultImage = defaultImageService.getDefaultImage();
+                    out.write(defaultImage);
+                } catch (Exception e) {
+                    System.err.println("載入預設圖片失敗: " + e.getMessage());
+                    // 如果連預設圖片都無法載入，返回一個最小的透明PNG
+                    String emptyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+                    byte[] emptyImage = java.util.Base64.getDecoder().decode(emptyPng);
+                    response.setContentType("image/png");
+                    out.write(emptyImage);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("圖片載入錯誤 (actId: " + actId + "): " + e.getMessage());
+            // 確保回應正確關閉
+            if (out != null) {
+                try {
+                    String emptyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+                    byte[] emptyImage = java.util.Base64.getDecoder().decode(emptyPng);
+                    response.setContentType("image/png");
+                    out.write(emptyImage);
+                } catch (Exception ex) {
+                    System.err.println("寫入空白圖片失敗: " + ex.getMessage());
+                }
+            }
+        } finally {
+            if (out != null) {
+                try {
+                    out.flush();
+                    out.close();
+                } catch (Exception e) {
+                    System.err.println("關閉輸出流失敗: " + e.getMessage());
+                }
+            }
         }
-
-        out.flush();
-        out.close();
     }
 
     /** 變更狀態 */
