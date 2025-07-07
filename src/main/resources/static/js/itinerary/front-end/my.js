@@ -976,19 +976,10 @@ function formatDate(dateString) {
  */
 function createActivity(itineraryId, itineraryName) {
     if (!itineraryId) {
-        console.error('行程 ID 不存在');
+        alert('找不到 itnId');
         return;
     }
-    
-    // 顯示確認對話框
-    showConfirmModal(
-        '建立揪團',
-        `確定要以「${itineraryName}」建立揪團活動嗎？系統會自動複製此行程作為揪團活動的行程。`,
-        function() {
-            // 導向到建立揪團頁面，並帶上行程ID
-            window.location.href = `/groupactivity/create?itnId=${itineraryId}`;
-        }
-    );
+    window.location.href = `/act/member/add?itnId=${itineraryId}`;
 }
 
 /**

@@ -249,15 +249,5 @@
     </div>
 
     <script th:src="@{/js/itinerary/front-end/my.js}"></script>
-    <script>
-        document.getElementById('CreateActByItnId').addEventListener('click', function() {
-        console.log("讀到行程id", itnId, typeof itnId);
-        if (!itnId) {
-          alert('找不到 itnId');
-          return;
-        }
-        window.location.href = `/act/member/add?itnId=${itnId}`;
-      });
-    </script>
 </body>
 </html>
