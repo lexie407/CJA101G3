@@ -4,6 +4,7 @@ import com.toiukha.groupactivity.model.ActDTO;
 import com.toiukha.groupactivity.model.ActStatus;
 import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.groupactivity.service.ActService;
+import com.toiukha.groupactivity.service.ActHandlerService;
 import com.toiukha.groupactivity.service.DefaultImageService;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,11 +31,14 @@ import java.util.Map;
 @RequestMapping("/act/admin")
 public class ActBackController {
 
-    @Autowired
+        @Autowired
     ActService actSvc;
-
+    
     @Autowired
     private DefaultImageService defaultImageService;
+    
+    @Autowired
+    private ActHandlerService actHandlerSvc;
 
     @ModelAttribute("recruitStatusMap")
     public Map<Byte, String> getRecruitStatusMap() {
@@ -143,7 +147,8 @@ public class ActBackController {
             model.addAttribute("actVo", actDto);
             return "back-end/groupactivity/editAct";
         }
-        // ...原本圖片處理與更新邏輯...
+        
+        // 處理圖片
         if (file != null && !file.isEmpty()) {
             actDto.setActImg(file.getBytes());
         } else {
@@ -154,7 +159,11 @@ public class ActBackController {
                 actDto.setActImg(defaultImageService.getDefaultImage());
             }
         }
-        actSvc.updateAct(actDto);
+        
+        // 使用 ActHandlerService 處理管理員活動更新，可以完整設置所有欄位
+        ActVO actVo = actDto.toVO();
+        actHandlerSvc.handleActivityUpdateByAdmin(actVo);
+        
         return "redirect:/act/admin/listAllAct";
     }
 

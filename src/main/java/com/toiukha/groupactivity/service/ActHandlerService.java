@@ -106,6 +106,36 @@ public class ActHandlerService {
     }
     
     /**
+     * 管理員專用：處理活動編輯 - 可以完整設置所有欄位
+     */
+    @Transactional
+    public void handleActivityUpdateByAdmin(ActVO actVO) {
+        // 1. 獲取現有活動資料
+        ActVO existingAct = actRepo.findById(actVO.getActId())
+                .orElseThrow(() -> new IllegalArgumentException("活動不存在"));
+        
+        // 2. 自動注入既有的活動相關資料（如果新值為null）
+        if (actVO.getSignupCnt() == null) {
+            actVO.setSignupCnt(existingAct.getSignupCnt());
+        }
+        if (actVO.getRecruitStatus() == null) {
+            actVO.setRecruitStatus(existingAct.getRecruitStatus());
+        }
+        if (actVO.getAllowCancel() == null) {
+            actVO.setAllowCancel(existingAct.getAllowCancel());
+        }
+        
+        // 3. 儲存更新後的活動資料
+        actRepo.save(actVO);
+        
+        // 4. 記錄管理員編輯操作
+        System.out.println("管理員活動編輯完成 - 活動ID: " + actVO.getActId() + 
+                          ", 人數: " + actVO.getSignupCnt() + 
+                          ", 狀態: " + actVO.getRecruitStatus() + 
+                          ", 允許退出: " + actVO.getAllowCancel());
+    }
+    
+    /**
      * 處理參加者報名：人數+1 → 可能觸發「成團」狀態
      */
     @Transactional
@@ -161,7 +191,12 @@ public class ActHandlerService {
             throw new IllegalStateException("團主不能退出自己的活動，請改為取消活動");
         }
 
-        // 新增：檢查報名截止與活動開始
+        // 新增：檢查是否允許退出
+        if (actVo.getAllowCancel() != null && actVo.getAllowCancel() == 0) {
+            throw new IllegalStateException("此活動不允許退出");
+        }
+
+        // 檢查報名截止與活動開始
         LocalDateTime now = LocalDateTime.now();
         if (actVo.getSignupEnd() != null && now.isAfter(actVo.getSignupEnd())) {
             throw new IllegalStateException("報名已截止，無法退出");
@@ -251,8 +286,12 @@ public class ActHandlerService {
             throw new IllegalStateException("活動已經是凍結狀態");
         }
         act.setRecruitStatus(ActStatus.FROZEN.getValue());
+        // 新增：凍結時自動設置為不允許退出
+        act.setAllowCancel((byte) 0);
         actRepo.save(act);
         // 可加操作日誌
+        System.out.println("活動已凍結 - 活動ID: " + actId + 
+                          ", 設置為不允許退出: " + act.getAllowCancel());
     }
 
     /**
@@ -269,7 +308,11 @@ public class ActHandlerService {
             throw new IllegalArgumentException("解除凍結時必須指定有效狀態");
         }
         act.setRecruitStatus(restoreStatus);
+        // 新增：解除凍結時恢復為允許退出
+        act.setAllowCancel((byte) 1);
         actRepo.save(act);
         // 可加操作日誌
+        System.out.println("活動已解除凍結 - 活動ID: " + actId + 
+                          ", 恢復為允許退出: " + act.getAllowCancel());
     }
 } 

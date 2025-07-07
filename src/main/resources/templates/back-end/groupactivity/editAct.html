@@ -210,6 +210,16 @@
 
           <div class="form-row">
             <div class="form-group">
+              <label>已報名人數</label>
+              <input type="number" th:field="*{signupCnt}" min="0" style="border: 1px solid #888;" />
+              <small style="color: #666; display: block; margin-top: 5px">
+                ※ 管理員可以調整已報名人數
+              </small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
               <label>報名開始時間 *</label>
               <input type="datetime-local" th:field="*{signupStart}" required style="border: 1px solid #888;" />
               <span

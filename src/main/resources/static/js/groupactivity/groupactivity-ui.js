@@ -88,6 +88,8 @@ window.GroupActivityUI = (function () {
     let actStart = activity.actStart ? new Date(activity.actStart) : null;
     if (signupEnd && now > signupEnd) canCancel = false;
     if (actStart && now > actStart) canCancel = false;
+    // 新增：檢查是否允許退出
+    if (activity.allowCancel === 0) canCancel = false;
     // =========================
 
     // 操作按鈕

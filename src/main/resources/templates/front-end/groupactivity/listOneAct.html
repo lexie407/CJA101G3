@@ -289,6 +289,12 @@
         // console.log("報名截止時間:", signupEnd);
         // console.log("活動開始時間:", actStart);
         
+        // 新增：檢查是否允許退出
+        if (allowCancel === 0) {
+          alert(GroupActivityCore.ERROR_MESSAGES.ALLOW_CANCEL_DISABLED);
+          return;
+        }
+
         // 新增：檢查報名截止時間 - 報名截止後團員無法自主退出
         if (signupEnd) {
           const now = new Date();
