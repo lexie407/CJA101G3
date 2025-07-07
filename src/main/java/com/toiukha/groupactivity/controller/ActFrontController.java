@@ -42,14 +42,15 @@ public class ActFrontController {
 
     //新增活動
     @GetMapping("/add")
-    public String addActPage(HttpServletRequest request, Model model) {
+    public String addActPage(@RequestParam(value = "itnId", required = false) Integer itnId,
+                             HttpServletRequest request, Model model) {
         HttpSession session = request.getSession();
         AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(session);
         if (!memberInfo.isLoggedIn()) {
             return "redirect:/members/login";
         }
-        //        model.addAttribute("currentMemberId", memberInfo.isLoggedIn() ? memberInfo.getMemId() : null);//僅判斷是否有登入
         model.addAttribute("currentMemberId", memberInfo.getMemId());
+        model.addAttribute("itnId", itnId);
         return "front-end/groupactivity/addAct_ajax";
     }
 
