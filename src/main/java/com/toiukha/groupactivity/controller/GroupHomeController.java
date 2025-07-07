@@ -42,6 +42,11 @@ public class GroupHomeController {
             return "redirect:/act/member/search";
         }
 
+        // 檢查活動是否被凍結
+        if (act.getRecruitStatus() == 4) {
+            return "redirect:/act/member/search?error=frozen";
+        }
+
         // 檢查活動是否為公開活動（僅非團主且非參加者時禁止進入）
         AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(request.getSession());
         if (!memberInfo.isLoggedIn()) {
@@ -92,6 +97,11 @@ public class GroupHomeController {
 
         if (act == null) {
             return "redirect:/act/member/search";
+        }
+
+        // 檢查活動是否被凍結
+        if (act.getRecruitStatus() == 4) {
+            return "redirect:/act/member/search?error=frozen";
         }
 
         AuthService.MemberInfo memberInfo = authSvc.getCurrentMember(request.getSession());
@@ -145,6 +155,11 @@ public class GroupHomeController {
                 return ResponseEntity.status(404).body(Map.of("error", "活動不存在"));
             }
 
+            // 檢查活動是否被凍結
+            if (act.getRecruitStatus() == 4) {
+                return ResponseEntity.status(403).body(Map.of("error", "活動已被凍結，無法進入"));
+            }
+
             boolean isHost = act.getHostId().equals(memberInfo.getMemId());
             boolean isParticipant = partSvc.getParticipants(actId).contains(memberInfo.getMemId());
 
@@ -182,6 +197,11 @@ public class GroupHomeController {
 
         if (act == null) {
             return "redirect:/act/member/search";
+        }
+
+        // 檢查活動是否被凍結
+        if (act.getRecruitStatus() == 4) {
+            return "redirect:/act/member/search?error=frozen";
         }
 
         // 檢查活動是否為公開活動（僅非團主且非參加者時禁止進入）

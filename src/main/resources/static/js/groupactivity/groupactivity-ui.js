@@ -115,10 +115,18 @@ window.GroupActivityUI = (function () {
             `<button class="btn btn-icon-zoom error" title="您已退出，無法進入揪團主頁" onclick="alert('您已退出此活動，無法進入揪團主頁。如需重新加入，請重新報名。')"><i class="fas fa-sign-out-alt" data-default-icon="fas fa-sign-out-alt" data-hover-icon="fas fa-sign-out-alt"></i></button>`
           );
         } else {
-          // 正常團員：可以進入揪團主頁
-          actions.push(
-            `<button class="btn btn-icon-zoom secondary group-home-btn" title="前往揪團主頁" onclick="window.location.href='/act/group/${activity.actId}/home'"><i class="fas fa-users" data-default-icon="fas fa-users" data-hover-icon="fas fa-arrow-right"></i></button>`
-          );
+          // 檢查活動是否被凍結
+          if (activity.recruitStatus === 4) {
+            // 活動被凍結：顯示禁止符號
+            actions.push(
+              `<button class="btn btn-icon-zoom error" title="活動已被凍結，無法進入揪團主頁" disabled style="opacity:0.6;cursor:not-allowed;"><i class="fas fa-ban" data-default-icon="fas fa-ban" data-hover-icon="fas fa-ban"></i></button>`
+            );
+          } else {
+            // 正常團員：可以進入揪團主頁
+            actions.push(
+              `<button class="btn btn-icon-zoom secondary group-home-btn" title="前往揪團主頁" onclick="window.location.href='/act/group/${activity.actId}/home'"><i class="fas fa-users" data-default-icon="fas fa-users" data-hover-icon="fas fa-arrow-right"></i></button>`
+            );
+          }
         }
         
         // 退出按鈕：根據 canCancel 決定顯示
@@ -136,12 +144,31 @@ window.GroupActivityUI = (function () {
         actions.push(
           `<button class="btn btn-icon-zoom" title="查看詳情" onclick="viewAct(${activity.actId})"><i class="fas fa-eye"></i></button>`
         );
-        actions.push(
-          `<button class="btn btn-icon-zoom secondary group-home-btn" title="前往揪團主頁" onclick="window.location.href='/act/group/${activity.actId}/home'"><i class="fas fa-users" data-default-icon="fas fa-users" data-hover-icon="fas fa-arrow-right"></i></button>`
-        );
-        actions.push(
-          `<button class="btn btn-icon-zoom tertiary" title="編輯" onclick="editAct(${activity.actId})"><i class="fas fa-pen"></i></button>`
-        );
+        
+        // 檢查活動是否被凍結
+        if (activity.recruitStatus === 4) {
+          // 活動被凍結：顯示禁止符號
+          actions.push(
+            `<button class="btn btn-icon-zoom error" title="活動已被凍結，無法進入揪團主頁" disabled style="opacity:0.6;cursor:not-allowed;"><i class="fas fa-ban" data-default-icon="fas fa-ban" data-hover-icon="fas fa-ban"></i></button>`
+          );
+        } else {
+          // 正常情況：可以進入揪團主頁
+          actions.push(
+            `<button class="btn btn-icon-zoom secondary group-home-btn" title="前往揪團主頁" onclick="window.location.href='/act/group/${activity.actId}/home'"><i class="fas fa-users" data-default-icon="fas fa-users" data-hover-icon="fas fa-arrow-right"></i></button>`
+          );
+        }
+        // 檢查活動是否被凍結
+        if (activity.recruitStatus === 4) {
+          // 活動被凍結：顯示禁止編輯按鈕
+          actions.push(
+            `<button class="btn btn-icon-zoom error" title="活動已被凍結，無法編輯" disabled style="opacity:0.6;cursor:not-allowed;"><i class="fas fa-ban" data-default-icon="fas fa-ban" data-hover-icon="fas fa-ban"></i></button>`
+          );
+        } else {
+          // 正常情況：可以編輯活動
+          actions.push(
+            `<button class="btn btn-icon-zoom tertiary" title="編輯" onclick="editAct(${activity.actId})"><i class="fas fa-pen"></i></button>`
+          );
+        }
         if (activity.isPublic != 1) {
           actions.push(
             `<button class="btn btn-icon-zoom error" title="刪除" onclick="memberDeleteAct(${activity.actId})"><i class="fas fa-trash"></i></button>`

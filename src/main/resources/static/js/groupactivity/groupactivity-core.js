@@ -23,6 +23,8 @@ window.GroupActivityCore = (function () {
     ACT_STARTED: "活動已開始，無法退出",
     SIGNUP_ENDED_NO_SELF_CANCEL: "報名已截止，團員無法自主退出，請聯繫團主",
     ALLOW_CANCEL_DISABLED: "此活動不允許退出，請聯繫團主",
+    FROZEN_ACT_NO_ACCESS: "活動已被凍結，無法進入揪團主頁",
+    FROZEN_ACT_NO_EDIT: "活動已被凍結，無法編輯",
     ALREADY_JOINED: "已報名此活動",
     FULL_CAPACITY: "活動人數已滿",
     NOT_HOST: "只有團主可以執行此操作",
@@ -280,6 +282,16 @@ window.viewAct = function (actId) {
  * @param {number} actId - 活動 ID
  */
 window.editAct = function (actId) {
+  // 檢查活動是否被凍結（如果頁面有提供活動狀態資訊）
+  const activityElement = document.querySelector(`[data-act-id="${actId}"]`);
+  if (activityElement) {
+    const recruitStatus = activityElement.getAttribute('data-recruit-status');
+    if (recruitStatus === '4') {
+      alert(GroupActivityCore.ERROR_MESSAGES.FROZEN_ACT_NO_EDIT);
+      return;
+    }
+  }
+  
   window.location.href = `/act/member/edit/${actId}`;
 };
 

@@ -64,6 +64,12 @@ public class ActFrontController {
             // 活動不存在，重定向到搜尋頁面
             return "redirect:/act/member/search";
         }
+
+        // 檢查活動是否被凍結
+        if (actVo.getRecruitStatus() == 4) {
+            // 活動被凍結，重定向到活動詳情頁面
+            return "redirect:/act/member/view/" + actId + "?error=frozen";
+        }
         
         // 安全驗證：檢查會員是否有權限編輯此活動
         if (!authSvc.canModifyActivity(session, actVo.getHostId())) {

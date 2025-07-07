@@ -150,11 +150,23 @@
 
                   <!--管理員操作-->
                   <td>
+                    <!-- 正常狀態：可以編輯活動 -->
                     <a
+                      th:if="${act.recruitStatus != 4}"
                       class="act-btn act-edit"
                       th:href="@{'/act/admin/editAct/' + ${act.actId}}"
                       >編輯</a
                     >
+                    <!-- 活動被凍結時顯示禁止編輯按鈕 -->
+                    <button
+                      th:if="${act.recruitStatus == 4}"
+                      class="act-btn act-delete disabled"
+                      style="opacity:0.6;cursor:not-allowed;"
+                      title="活動已被凍結，無法編輯"
+                      disabled
+                    >
+                      ❌ 無法編輯
+                    </button>
 <!--                    <form-->
 <!--                      th:action="@{'/act/admin/delete/' + ${act.actId}}"-->
 <!--                      method="post"-->

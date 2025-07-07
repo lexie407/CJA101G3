@@ -154,20 +154,42 @@
             <div class="act-detail-actions">
               <!-- 團主專用按鈕 -->
               <div th:if="${isHost}">
+                <!-- 正常狀態：可以編輯活動 -->
                 <a
+                  th:if="${actVo.recruitStatus != 4}"
                   th:href="@{'/act/member/edit/' + ${actVo.actId}}"
                   class="act-btn act-btn-secondary"
                 >
                   編輯活動
                 </a>
+                <!-- 活動被凍結時顯示禁止編輯按鈕 -->
+                <button
+                  th:if="${actVo.recruitStatus == 4}"
+                  class="act-btn act-btn-danger disabled"
+                  style="opacity:0.6;cursor:not-allowed;"
+                  title="活動已被凍結，無法編輯"
+                  disabled
+                >
+                  ❌ 無法編輯
+                </button>
                 <!-- 改成只能從myJoin或myAct-->
                 <a
-                  th:if="${@actService.isPublic(actVo)}"
+                  th:if="${@actService.isPublic(actVo) and actVo.recruitStatus != 4}"
                   th:href="@{'/act/group/' + ${actVo.actId} + '/home'}"
                   class="act-btn act-btn-success"
                 >
                   前往揪團主頁
                 </a>
+                <!-- 活動被凍結時顯示禁止符號 -->
+                <button
+                  th:if="${@actService.isPublic(actVo) and actVo.recruitStatus == 4}"
+                  class="act-btn act-btn-danger disabled"
+                  style="opacity:0.6;cursor:not-allowed;"
+                  title="活動已被凍結，無法進入揪團主頁"
+                  disabled
+                >
+                  ❌ 無法進入
+                </button>
               </div>
 
               <!-- 非團主按鈕 -->
@@ -192,12 +214,22 @@
 
                 <!-- 使用ActService檢查是否為公開活動 -->
                 <a
-                  th:if="(${atPage} == 'myJoin' or ${atPage} == 'myHost') and (${isHost} or ${isParticipant})"
+                  th:if="(${atPage} == 'myJoin' or ${atPage} == 'myHost') and (${isHost} or ${isParticipant}) and actVo.recruitStatus != 4"
                   th:href="@{'/act/group/' + ${actVo.actId} + '/home'}"
                   class="act-btn act-btn-success"
                 >
                   前往揪團主頁
                 </a>
+                <!-- 活動被凍結時顯示禁止符號 -->
+                <button
+                  th:if="(${atPage} == 'myJoin' or ${atPage} == 'myHost') and (${isHost} or ${isParticipant}) and actVo.recruitStatus == 4"
+                  class="act-btn act-btn-danger disabled"
+                  style="opacity:0.6;cursor:not-allowed;"
+                  title="活動已被凍結，無法進入揪團主頁"
+                  disabled
+                >
+                  ❌ 無法進入
+                </button>
 
                 <!-- 分享按鈕 UI -->
                 <button id="shareIconBtn" class="act-btn act-btn-primary rounded-circle" title="分享">

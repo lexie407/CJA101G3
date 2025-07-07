@@ -101,7 +101,15 @@ public class ActBackController {
     //編輯活動頁面
     @GetMapping("/editAct/{actId}")
     public String editAct(@PathVariable Integer actId, Model model) {
-        model.addAttribute("actVo", actSvc.getOneAct(actId));
+        ActVO actVo = actSvc.getOneAct(actId);
+        
+        // 檢查活動是否被凍結
+        if (actVo != null && actVo.getRecruitStatus() == 4) {
+            // 活動被凍結，重定向到活動列表頁面
+            return "redirect:/act/admin/listAllAct?error=frozen";
+        }
+        
+        model.addAttribute("actVo", actVo);
         return "back-end/groupactivity/editAct";
     }
 
