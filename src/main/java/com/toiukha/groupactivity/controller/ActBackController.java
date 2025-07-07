@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -106,19 +107,50 @@ public class ActBackController {
         return "redirect:/act/admin/listAllAct";
     }
 
+//    @PostMapping("/update")
+//    public String updateAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
+//                            @RequestParam(value = "upFile", required = false) MultipartFile file) throws IOException {
+//        // 如果沒有上傳新圖片，保留原有圖片
+//        if (file != null && !file.isEmpty()) {
+//            actDto.setActImg(file.getBytes());
+//        } else {
+//            // 取得原有活動資料，保留原有圖片
+//            ActVO originalAct = actSvc.getOneAct(actDto.getActId());
+//            if (originalAct != null && originalAct.getActImg() != null && originalAct.getActImg().length > 0) {
+//                actDto.setActImg(originalAct.getActImg());
+//            } else {
+//                // 如果原本就沒有圖片，使用預設圖片
+//                actDto.setActImg(defaultImageService.getDefaultImage());
+//            }
+//        }
+//        actSvc.updateAct(actDto);
+//        return "redirect:/act/admin/listAllAct";
+//    }
+
     @PostMapping("/update")
-    public String updateAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
-                            @RequestParam(value = "upFile", required = false) MultipartFile file) throws IOException {
-        // 如果沒有上傳新圖片，保留原有圖片
+    public String updateAct(
+            @Valid @ModelAttribute("actVo") ActDTO actDto,
+            BindingResult bindingResult,
+            @RequestParam(value = "upFile", required = false) MultipartFile file,
+            Model model
+    ) throws IOException {
+        if (bindingResult.hasErrors()) {
+            // 保留原有圖片顯示
+            ActVO originalAct = actSvc.getOneAct(actDto.getActId());
+            if (originalAct != null) {
+                actDto.setActImg(originalAct.getActImg());
+            }
+            model.addAttribute("actVo", actDto);
+            return "back-end/groupactivity/editAct";
+        }
+        // ...原本圖片處理與更新邏輯...
         if (file != null && !file.isEmpty()) {
             actDto.setActImg(file.getBytes());
         } else {
-            // 取得原有活動資料，保留原有圖片
             ActVO originalAct = actSvc.getOneAct(actDto.getActId());
             if (originalAct != null && originalAct.getActImg() != null && originalAct.getActImg().length > 0) {
                 actDto.setActImg(originalAct.getActImg());
             } else {
-                // 如果原本就沒有圖片，使用預設圖片
                 actDto.setActImg(defaultImageService.getDefaultImage());
             }
         }

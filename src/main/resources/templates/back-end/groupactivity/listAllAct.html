@@ -55,23 +55,6 @@
 
           <br />
 
-          <!-- 新增活動按鈕 -->
-<!--          <div style="margin-bottom: 20px">-->
-<!--            <a-->
-<!--              th:href="@{/act/admin/addAct}"-->
-<!--              class="act-btn act-add"-->
-<!--              style="-->
-<!--                background-color: #28a745;-->
-<!--                color: white;-->
-<!--                padding: 10px 20px;-->
-<!--                text-decoration: none;-->
-<!--                border-radius: 4px;-->
-<!--              "-->
-<!--            >-->
-<!--              新增活動-->
-<!--            </a>-->
-<!--          </div>-->
-
           <!--  資料總表   -->
           <div style="max-width: calc(100vw - 220px); overflow-x: auto">
             <table
@@ -104,7 +87,7 @@
                   <td th:text="${act.actId}">A001</td>
                   <td th:text="${act.actName}">台東單車行</td>
                   <td
-                    th:text="${#strings.length(act.actDesc) > 20} ? ${act.actDesc.substring(0,20) + '...'} : ${act.actDesc}"
+                    th:text="${#strings.length(act.actDesc) > 10} ? ${act.actDesc.substring(0,10) + '...'} : ${act.actDesc}"
                   ></td>
                   <td>
                     <img
@@ -187,6 +170,27 @@
               </tbody>
             </table>
           </div>
+
+          <br>
+
+
+          <!-- 新增活動按鈕:管理員新增活動人數計算會有錯誤 -->
+<!--                    <div style="margin-bottom: 20px">-->
+<!--                      <a-->
+<!--                        th:href="@{/act/admin/addAct}"-->
+<!--                        class="act-btn act-add"-->
+<!--                        style="-->
+<!--                          background-color: #28a745;-->
+<!--                          color: white;-->
+<!--                          padding: 10px 20px;-->
+<!--                          text-decoration: none;-->
+<!--                          border-radius: 4px;-->
+<!--                        "-->
+<!--                      >-->
+<!--                        新增活動-->
+<!--                      </a>-->
+<!--                    </div>-->
+
         </main>
       </div>
     </div>
@@ -213,7 +217,7 @@
               renderer: DataTable.Responsive.renderer.tableAll(),
             },
           },
-          lengthMenu: [20, 50, 100], //分頁顯示每頁可以顯示的筆數
+          lengthMenu: [5, 10, 20, 50, 100], //分頁顯示每頁可以顯示的筆數
           searching: true, //搜尋功能, 預設是開啟
           paging: true, //分頁功能, 預設是開啟
           ordering: true, //排序功能, 預設是開啟
