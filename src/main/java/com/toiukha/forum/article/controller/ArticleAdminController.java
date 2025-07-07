@@ -7,6 +7,9 @@ import com.toiukha.forum.article.model.ArticleService;
 import com.toiukha.forum.article.model.ArticleStatus;
 import com.toiukha.forum.util.ArticleMapper;
 import com.toiukha.forum.util.Debug;
+import com.toiukha.notification.model.NotificationService;
+import com.toiukha.notification.model.NotificationVO;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -21,6 +24,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,11 +37,13 @@ import java.util.stream.Collectors;
 public class ArticleAdminController {
 
     private final ArticleService articleService;
+    private final NotificationService notificationService;
 
     // 使用建構子注入 ArticleService
     @Autowired
-    public ArticleAdminController(ArticleService articleService) {
+    public ArticleAdminController(ArticleService articleService, NotificationService notificationService) {
         this.articleService = articleService;
+        this.notificationService = notificationService;
     }
 
 
@@ -261,6 +267,31 @@ public class ArticleAdminController {
         model.addAttribute("currentPage", "forum");
         return "back-end/forum/listArticle";
     }
+
+    /********************** 發送通知 ************************/
+
+    @PostMapping("/sendNotification")
+    @ResponseBody
+    public String sendNotification(@RequestParam("message") String message,
+                                   @RequestParam("memberId") Integer memberId,
+                                   HttpSession session) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        // 取得 adminId
+        Integer adminId = (Integer) session.getAttribute("adminId");
+        Debug.log("討論區通知", "發送通知給會員ID: " + memberId + ", 內容: " + message + ", 管理員ID: " + adminId);
+
+        NotificationVO noti = new NotificationVO(
+                "討論區通知",     // 通知標題
+                message,        // 通知內容
+                memberId,       // 通知對象會員
+                adminId,           // 管理員發送為 null
+                now             // 發送時間
+        );
+
+        notificationService.addOneNoti(noti);
+        return "OK";
+    }
+
 
     /********************** 例外處理器 ************************/
 
