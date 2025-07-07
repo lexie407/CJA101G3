@@ -78,7 +78,7 @@
                             <div class="input-field">
                                 <textarea id="artCon" name="artCon" style="display:none;"></textarea>
                                 <div id="editor">
-                                    <p>來寫點什麼吧……</p>
+
                                 </div>
                             </div>
                         </div>
@@ -119,6 +119,7 @@
     const quill = new Quill('#editor', {
         modules: {
             toolbar: [
+                [{ 'size': ['small', false, 'large', 'huge'] }],
                 ['bold', 'italic', 'underline', 'strike'],
                 ['link', 'image', 'video'],
 
