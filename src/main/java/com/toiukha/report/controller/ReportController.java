@@ -67,8 +67,7 @@ public class ReportController {
 	@GetMapping("/memberReportList")
 	public String memberReportList(HttpServletRequest req, ModelMap model) {
 //		要記得放入會員資料
-//		Integer memId = (Integer)req.getSession().getAttribute(???);
-		Integer memId = 1;
+		Integer memId = ((MembersVO)req.getSession().getAttribute("member")).getMemId();
 		List<ReportVO> list = reportService.getMemberReports(memId);
 		model.addAttribute("currentPage", "chatWithMe");
 		model.addAttribute("currentPage2", "memberReportList");
