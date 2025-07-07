@@ -212,23 +212,22 @@
                                 
                                 <!-- 商品資訊 -->
                                 <div class="product-info">
-                                    <h6 class="product-name">
-                                        商品ID: [[${favorite.itemId}]]
+                                    <h6 class="product-name" th:text="${itemDetails[favorite.itemId]?.itemName ?: '商品ID: ' + favorite.itemId}">
+                                        商品名稱
                                     </h6>
                                     
                                     <div class="product-price">
-                                        <!-- 可以透過 AJAX 或其他方式獲取商品價格 -->
-                                        <span class="item-price" th:data-item-id="${favorite.itemId}">載入中...</span>
+                                        <span class="item-price" th:text="${itemDetails[favorite.itemId]?.itemPrice != null ? 'NT$ ' + itemDetails[favorite.itemId].itemPrice : '價格未提供'}">NT$ 0</span>
                                     </div>
                                     
                                     <div class="fav-date">
                                         <i class="fas fa-clock me-1"></i>
-                                        收藏於 <span th:text="${favorite.favAt != null ? #dates.format(favorite.favAt, 'yyyy/MM/dd') : '未知日期'}">2024/01/01</span>
+                                        收藏於 <span th:text="${favorite.favAt != null ? #temporals.format(favorite.favAt, 'yyyy/MM/dd') : '未知日期'}">2024/01/01</span>
                                     </div>
                                     
                                     <!-- 商品動作按鈕 -->
                                     <div class="mt-3">
-                                        <a href="/item/listAllItem" 
+                                        <a th:href="@{'/item/listAllItem#item-' + ${favorite.itemId}}" 
                                            class="btn btn-outline-primary btn-sm me-2">
                                             <i class="fas fa-shopping-cart me-1"></i>去購買
                                         </a>
@@ -282,8 +281,8 @@
                     const card = document.querySelector(`[data-item-id="${itemId}"]`);
                     card.classList.add('loading');
                     
-                    // 獲取會員ID（測試用）
-                    var memId = 1; // 暫時硬編碼，實際應從session或其他方式獲取
+                    // 獲取會員ID
+                    var memId = '[[${member.memId}]]';
                     
                     fetch('/productfav/remove_from_favorite', {
                         method: 'POST',

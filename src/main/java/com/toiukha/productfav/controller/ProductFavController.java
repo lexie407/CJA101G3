@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.toiukha.members.model.MembersVO;
 import com.toiukha.productfav.model.ProductFavService;
 import com.toiukha.productfav.model.ProductFavVO;
+import com.toiukha.item.model.ItemService;
+import com.toiukha.item.model.ItemVO;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +35,9 @@ public class ProductFavController {
     
     @Autowired
     private ProductFavService productFavService;
+    
+    @Autowired
+    private ItemService itemService;
     
     /**
      * 檢查會員是否已登入
@@ -203,7 +208,17 @@ public class ProductFavController {
             // 獲取收藏清單
             List<ProductFavVO> favorites = productFavService.getMemberFavorites(memId);
             
+            // 獲取商品詳細信息
+            Map<Integer, ItemVO> itemDetails = new HashMap<>();
+            for (ProductFavVO favorite : favorites) {
+                ItemVO item = itemService.getOneItem(favorite.getItemId());
+                if (item != null) {
+                    itemDetails.put(favorite.getItemId(), item);
+                }
+            }
+            
             model.addAttribute("favorites", favorites);
+            model.addAttribute("itemDetails", itemDetails);
             model.addAttribute("favoriteCount", favorites.size());
             model.addAttribute("member", member);
             // 設定導覽列的 active 狀態
