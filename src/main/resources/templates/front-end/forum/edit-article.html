@@ -265,10 +265,16 @@
     
     // 載入文章資料
     function loadArticle(artId) {
-        fetch(`/article/${artId}`)
+        fetch(`/api/article/${artId}`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('載入文章失敗');
+                    if (response.status === 403) {
+                        throw new Error('這篇文章已下架，無法編輯。');
+                    } else if (response.status === 404) {
+                        throw new Error('找不到這篇文章，可能已被刪除或不存在。');
+                    } else {
+                        throw new Error(`載入失敗 (${response.status})`);
+                    }
                 }
                 return response.json();
             })
@@ -298,6 +304,7 @@
                 console.error('載入文章錯誤:', error);
                 showError('載入文章失敗: ' + error.message);
                 hideLoading();
+                document.getElementById('editArticleForm').style.display = 'none'; // 隱藏表單以避免提交
             });
     }
     
@@ -404,6 +411,7 @@
             console.error('更新文章錯誤:', error);
             hideLoading();
             showError('更新失敗: ' + error.message);
+            document.getElementById('editArticleForm').style.display = 'none'; // 隱藏表單以避免提交
         });
     }
     

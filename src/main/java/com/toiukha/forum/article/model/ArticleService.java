@@ -53,6 +53,9 @@ public interface ArticleService {
     // 根據關鍵字搜尋文章，並返回排序後 ArticleDTO 列表
     List<ArticleDTO> searchDTO(String keyword, String sortBy, String sortDirection);
 
+    // 根據關鍵字搜尋文章，在不影響舊有邏輯下新增artSta 過濾
+    List<ArticleDTO> searchDTO(String keyword, String sortBy, String sortDirection, ArticleStatus artStatus);
+
     ArticleDTO getDTOById(Integer id);
 
     // 依照會員、單一分類跟狀態的查詢

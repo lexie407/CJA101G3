@@ -6,6 +6,7 @@
     <title>文章 | 前台 | 島遊kha</title>
 	    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" th:href="@{/vendors/quillEditor/quill.snow.css}">
 	<link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
 	<link rel="stylesheet" th:href="@{/css/forum/category.css}">
 
@@ -254,6 +255,14 @@
     .share-menu-item.line-share .material-icons {
         color: #00b900;
     }
+
+	.article-content.ql-editor {
+		padding: 0;
+		min-height: auto;
+		line-height: normal;
+		white-space: pre-line;
+	}
+
 </style>
 
 
@@ -351,7 +360,7 @@
           </div>
         </div>
 
-        <div class="article-content">
+        <div class="article-content ql-editor">
           ${article.artCon}
         </div>
 
@@ -863,21 +872,26 @@
         }
         // console.log(`${contextPath}/article/${artId}`);
 
-        fetch(`/article/${artId}`)
-            .then(response => {
-                if (!response.ok) {
-                    console.error(`Fetch error: ${response.status} ${response.statusText}`);
-                    throw new Error('網路錯誤或文章不存在');
-                }
-                return response.json();
-            })
-            .then(article => {
-                renderArticle(article);
-            })
-            .catch(error => {
-                console.error('載入文章失敗:', error);
-                $('#articleDetail').html('載入文章失敗，請稍後再試。');
-            });
+		fetch(`/api/article/${artId}`)
+				.then(response => {
+					if (!response.ok) {
+						if (response.status === 403) {
+							throw new Error('這篇文章已下架，無法檢視。');
+						} else if (response.status === 404) {
+							throw new Error('找不到這篇文章，可能已被刪除或不存在。');
+						} else {
+							throw new Error('發生未知錯誤，請稍後再試。');
+						}
+					}
+					return response.json();
+				})
+				.then(article => {
+					renderArticle(article);
+				})
+				.catch(error => {
+					console.error('載入文章失敗:', error);
+					$('#articleDetail').html(`<p class="error-msg">${error.message}</p>`);
+				});
     });
 </script>
 </body>

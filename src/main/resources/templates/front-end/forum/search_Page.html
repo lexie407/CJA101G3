@@ -31,13 +31,22 @@
             <!-- 搜尋區塊 -->
             <div class="search-section">
                 <div class="basic-search">
-                    <form action="/forum/searchByTitle" method="get">
+                    <form action="/forum/search" method="get" onsubmit="return validateSearch()">
                         <div class="search-input-container">
                             <input type="text" class="search-input" placeholder="輸入搜尋關鍵字..." id="mainSearch" name="keyword" required
                                    th:value="${keyword}">
                             <button class="search-button" type="submit">
                                 <span class="material-icons search-icon">search</span>
                             </button>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1em;">
+                            <!-- 搜尋類型選擇（radio） -->
+                            <label>
+                                <input type="radio" name="searchType" value="keyword" checked onchange="switchSearchInput()"> 標題關鍵字
+                            </label>
+                            <label>
+                                <input type="radio" name="searchType" value="id" onchange="switchSearchInput()"> 文章 ID
+                            </label>
                         </div>
                     </form>
                     <!--        <button class="advanced-toggle" onclick="toggleAdvanced()">-->
@@ -64,7 +73,7 @@
                                 <span th:case="*">文章*</span>
                         </span>
                             <span  class="result-title" th:text="${article.artTitle}">文章標題</span>
-                            <div class="result-snippet" th:utext="${#strings.abbreviate(article.artCon, 150)}">文章內容只放150個字</div>
+                            <div class="result-snippet" th:utext="${article.artPreview}">文章內容只放50個字</div>
                             <div class="result-meta">
                             <span>
                                 <span class="material-icons" style="font-size: 14px;">schedule</span>
@@ -89,8 +98,42 @@
 <!--<script th:src="@{/js/forum/frontEnd/search_Page.js}" ></script>-->
 
 <script>
-    // 將所有 .result-snippet 內的 <img> 標籤移除
+    // 表單驗證（避免送出空白）
+    function validateSearch() {
+        const selected = document.querySelector('input[name="searchType"]:checked').value;
+        const input = document.getElementById("mainSearch").value.trim();
+
+        if (input.length === 0) return false;
+
+        if (selected === "id" && isNaN(input)) {
+            alert("請輸入有效的文章 ID（數字）");
+            return false;
+        }
+
+        return true;
+    }
+
+    function switchSearchInput() {
+        const selected = document.querySelector('input[name="searchType"]:checked').value;
+        const searchInput = document.getElementById("mainSearch");
+
+        if (selected === "id") {
+            searchInput.name = "id";
+            searchInput.placeholder = "請輸入文章 ID...";
+            searchInput.type = "number";
+        } else {
+            searchInput.name = "keyword";
+            searchInput.placeholder = "請輸入標題關鍵字...";
+            searchInput.type = "text";
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        // ✅ 初次載入預設 input 屬性正確
+        switchSearchInput();
+
+
+        // 將所有 .result-snippet 內的 <img> 標籤移除
         document.querySelectorAll('.result-snippet').forEach(function (el) {
             // 移除所有 <img ...> 標籤
             el.innerHTML = el.innerHTML.replace(/<img[^>]*>/gi, '');

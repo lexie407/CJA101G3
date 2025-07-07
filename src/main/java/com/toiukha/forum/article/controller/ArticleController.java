@@ -9,6 +9,8 @@ import com.toiukha.forum.article.model.ArticleServiceImpl;
 import com.toiukha.forum.article.model.ArticleStatus;
 import com.toiukha.forum.util.Debug;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
@@ -49,13 +51,27 @@ public class ArticleController {
         this.apService = apService;
     }
 
-// 取得單篇文章 DTO
+// 取得單篇文章 DTO，文章上下架都會撈到
     @GetMapping("/article/{artId:\\d+}")
     public ArticleDTO getArticleDTO(@PathVariable Integer artId) {
         Debug.log();
         return articleService.getDTOById(artId);
     }
 
+    // 取得單篇文章 DTO，而且只允許訪問已上架的文章
+    @GetMapping("/api/article/{artId}")
+    public ResponseEntity<ArticleDTO> getArticleDTOWithPublished(@PathVariable Integer artId) {
+        Debug.log(artId);
+        ArticleDTO dto = articleService.getDTOById(artId);
+        if (dto == null) {
+            Debug.log("文章不存在");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }else if (dto.getArtSta() != ArticleStatus.PUBLISHED.getValue()) {
+            Debug.log("文章已下架");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); //回傳 403 Forbidden禁止訪問
+        }
+        return ResponseEntity.ok(dto);
+    }
 
 // 取得全部文章 DTO(自訂排序)
     @GetMapping("/articles")

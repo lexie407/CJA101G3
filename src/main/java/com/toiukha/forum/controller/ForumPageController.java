@@ -4,6 +4,7 @@ import com.toiukha.forum.article.dto.ArticleDTO;
 import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticlePicturesService;
 import com.toiukha.forum.article.model.ArticleService;
+import com.toiukha.forum.article.model.ArticleStatus;
 import com.toiukha.forum.util.Debug;
 import com.toiukha.members.model.MembersVO;
 import jakarta.servlet.http.HttpSession;
@@ -133,7 +134,7 @@ public class ForumPageController {
         return "front-end/forum/edit-article";
     }
 
-    // 使用標題關鍵字搜尋文章
+    // 使用標題關鍵字搜尋文章，因為會查到上下架資料所以另開API
     @GetMapping("searchByTitle")
     public String searchByTitle(
 //            @NotBlank(message = "文章標題: 請勿空白")
@@ -159,6 +160,43 @@ public class ForumPageController {
         model.addAttribute("keyword", title);
         return "front-end/forum/search_Page";
     }
+
+    // 使用標題關鍵字搜尋文章，因為會查到上下架資料所以另開API
+    @GetMapping("search")
+    public String search(
+            @RequestParam(value = "keyword", required = false) String title,
+            @RequestParam(value = "id", required = false) Integer id,
+            Model model) {
+        model.addAttribute("currentPage", "forum");
+
+        if ((title == null || title.isBlank()) && id == null) {
+            model.addAttribute("errorMessage", "請輸入關鍵字或文章 ID！");
+            model.addAttribute("articleList", List.of());
+            return "front-end/forum/search_Page";
+        }
+
+        List<ArticleDTO> results = new ArrayList<>();
+
+        // 如果有提供文章 ID，則查詢單篇文章
+        if (id != null) {
+            ArticleDTO articleDTO = articleService.getDTOById(id);
+            if (articleDTO != null && articleDTO.getArtSta() == ArticleStatus.PUBLISHED.getValue()) {
+                results.add(articleDTO);
+            }
+        } else {
+            // 如果沒有提供文章 ID，則根據標題關鍵字搜尋
+            results = articleService.searchDTO(title,ARTICLE_CREATINE.name(), DESC.name(),ArticleStatus.PUBLISHED);
+        }
+
+        if (results.isEmpty()) {
+            model.addAttribute("errorMessage", "沒有相符結果");
+        }
+
+        model.addAttribute("articleList", results);
+        model.addAttribute("keyword", title);
+        return "front-end/forum/search_Page";
+    }
+
 
     // 會員專屬文章與問題查詢（從 session 取得會員編號）
     @GetMapping("/members/articles")
