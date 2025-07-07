@@ -296,6 +296,7 @@ public class ItemController {
 	public String back_listAllEmp(Model model) {
 		model.addAttribute("currentPage", "partner");
 		model.addAttribute("activeItem", "allItem");
+		model.addAttribute("currentPage2", "allItem");
 		return "back-end/item/listAllItem_admin";
 	}
 	//管理員商品列表

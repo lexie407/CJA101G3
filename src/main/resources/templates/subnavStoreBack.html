@@ -18,5 +18,11 @@
             審核商家
           </a>
         </li>
+         <li>
+          <a th:href="@{/item/listAllItem_admin}"
+             th:classappend="${currentPage2=='allItem'} ? 'active' : ''">
+            商品管理
+          </a>
+        </li>
       </ul>
     </th:block>
