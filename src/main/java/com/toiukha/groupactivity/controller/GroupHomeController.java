@@ -6,6 +6,8 @@ import com.toiukha.groupactivity.service.ActService;
 import com.toiukha.members.model.MembersService;
 import com.toiukha.participant.model.PartDTO;
 import com.toiukha.participant.model.PartService;
+import com.toiukha.participant.model.PartRepository;
+import com.toiukha.participant.model.PartVO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,6 +32,7 @@ public class GroupHomeController {
     //    @Autowired private ExpenseSheetService expenseSheetService;
     @Autowired private MembersService membersSvc;
     @Autowired private RedisTemplate<String, String> redisTemplate;
+    @Autowired private PartRepository partRepo;
 
     @GetMapping("/{actId}/home")
     public String groupHome(@PathVariable Integer actId, Model model, HttpServletRequest request) {
@@ -46,6 +49,14 @@ public class GroupHomeController {
         }
         boolean isHost = act.getHostId().equals(memberInfo.getMemId());
         boolean isParticipant = partSvc.getParticipants(actId).contains(memberInfo.getMemId());
+        // 僅允許團主或未被剔除的團員進入
+        if (!isHost) {
+            java.util.Optional<PartVO> partOpt = partRepo.findByActIdAndMemId(actId, memberInfo.getMemId());
+            if (partOpt.isEmpty() || partOpt.get().getJoinStatus() == null || partOpt.get().getJoinStatus() != 1) {
+                // 非團主且不是已參加狀態，導回搜尋
+                return "redirect:/act/member/search";
+            }
+        }
         if (act.getIsPublic() != 1 && !isHost && !isParticipant) {
             return "redirect:/act/member/search";
         }

@@ -10,6 +10,7 @@ public class ActCardDTO implements Serializable {
     private String actName;
     private String actDesc;
     private LocalDateTime actStart;
+    private LocalDateTime signupEnd;
     private Integer signupCnt;
     private Integer maxCap;
     private Byte recruitStatus;
@@ -53,6 +54,14 @@ public class ActCardDTO implements Serializable {
 
     public void setActStart(LocalDateTime actStart) {
         this.actStart = actStart;
+    }
+
+    public LocalDateTime getSignupEnd() {
+        return signupEnd;
+    }
+
+    public void setSignupEnd(LocalDateTime signupEnd) {
+        this.signupEnd = signupEnd;
     }
 
     public Integer getSignupCnt() {
@@ -200,6 +209,7 @@ public class ActCardDTO implements Serializable {
         dto.setActName(actVO.getActName());
         dto.setActDesc(actVO.getActDesc());
         dto.setActStart(actVO.getActStart());
+        dto.setSignupEnd(actVO.getSignupEnd());
         dto.setSignupCnt(actVO.getSignupCnt() != null ? actVO.getSignupCnt() : 0);
         dto.setMaxCap(actVO.getMaxCap());
         dto.setRecruitStatus(actVO.getRecruitStatus());

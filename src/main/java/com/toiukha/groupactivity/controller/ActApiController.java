@@ -260,89 +260,42 @@ public class ActApiController {
         return "statusChanged";
     }
 
-    // ---未使用--- 查詢所有活動(測試用api)
-    @GetMapping("/all")
-    public List<ActCardDTO> getAllAct() {
-        List<ActVO> allActs = actSvc.getAll();
-        return allActs.stream().map(ActCardDTO::fromVO).toList();
-    }
-
-    //多條件查詢（限公開活動）
-    @GetMapping("/search")
-    public PageResDTO<ActCardDTO> search(@RequestParam(required = false) Byte recruitStatus,
-                                         @RequestParam(required = false) String actName,
-                                         @RequestParam(required = false) Integer hostId,
-                                         @RequestParam(required = false) LocalDateTime actStart,
-                                         @RequestParam(required = false) Integer maxCap,
-                                         HttpServletRequest request,
-                                         @PageableDefault(size = 9, sort = {"actStart"}, direction = Sort.Direction.DESC) Pageable pageable) {
-        // 取得當前用戶
-        AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
-        Integer currentUserId = memberInfo.isLoggedIn() ? memberInfo.getMemId() : null;
-        
-        // 呼叫新的搜尋方法
-        Page<ActCardDTO> page = actSvc.searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, currentUserId, pageable);
-        return PageResDTO.of(page);
-    }
-
-    //根據標籤搜尋活動
-    @GetMapping("/searchByTags")
-    public PageResDTO<ActCardDTO> searchByTags(
-            @RequestParam(value = "type", required = false) List<String> types,
-            @RequestParam(value = "city", required = false) String city,
-            @PageableDefault(size = 9, sort = {"actStart"}, direction = Sort.Direction.DESC) Pageable pageable) {
-
-        List<ActTag> typeTags = new ArrayList<>();
-        List<ActTag> cityTags = new ArrayList<>();
-
+    //團主權限：活動狀態切換（不含凍結）
+    @PutMapping("/{actId}/status/host")
+    public ResponseEntity<?> changeStatusByHost(@PathVariable Integer actId,
+                                                @RequestParam Byte status,
+                                                @RequestParam Integer operatorId,
+                                                HttpServletRequest request) {
+        // 權限驗證（可依需求擴充）
+        HttpSession session = request.getSession();
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(session);
+        // 這裡可加團主驗證
         try {
-            // 處理多個類型標籤
-            if (types != null && !types.isEmpty()) {
-                for (String type : types) {
-                    if (type != null && !type.isEmpty()) {
-                        typeTags.add(ActTag.valueOf(type));
-                    }
-                }
-            }
-            // 處理五大區對應多個縣市
-            if (city != null && !city.isEmpty()) {
-                switch (city) {
-                    case "NORTH":
-                        cityTags.addAll(Arrays.asList(
-                            ActTag.TAIPEI, ActTag.NEW_TAIPEI, ActTag.KEELUNG, ActTag.TAOYUAN, ActTag.HSINCHU, ActTag.YILAN
-                        ));
-                        break;
-                    case "CENTRAL":
-                        cityTags.addAll(Arrays.asList(
-                            ActTag.TAICHUNG, ActTag.MIAOLI, ActTag.CHANGHUA, ActTag.NANTOU, ActTag.YUNLIN
-                        ));
-                        break;
-                    case "SOUTH":
-                        cityTags.addAll(Arrays.asList(
-                            ActTag.TAINAN, ActTag.KAOHSIUNG, ActTag.CHIAYI, ActTag.PINGTUNG
-                        ));
-                        break;
-                    case "EAST":
-                        cityTags.addAll(Arrays.asList(
-                            ActTag.HUALIEN, ActTag.TAITUNG
-                        ));
-                        break;
-                    case "ISLANDS":
-                        cityTags.addAll(Arrays.asList(
-                            ActTag.ISLANDS
-                        ));
-                        break;
-                    default:
-                        // 若傳入單一縣市
-                        cityTags.add(ActTag.valueOf(city));
-                }
-            }
-        } catch (IllegalArgumentException e) {
-            // 無效的標籤值，使用預設搜尋
+            actSvc.updateActivityStatusByHost(actId, status, operatorId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "狀態更新成功"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
         }
+    }
 
-        Page<ActCardDTO> page = actSvc.searchByTags(typeTags, cityTags, pageable);
-        return PageResDTO.of(page);
+    //管理員專屬：凍結/解凍  freeze=true 設為凍結，freeze=false 解除凍結（需指定恢復狀態）
+    @PutMapping("/{actId}/status/freeze")
+    public ResponseEntity<?> freezeOrUnfreeze(@PathVariable Integer actId,
+                                              @RequestParam boolean freeze,
+                                              @RequestParam Integer adminId,
+                                              @RequestParam(required = false) Byte restoreStatus) {
+        // 權限驗證（僅管理員可用）
+        try {
+            if (freeze) {
+                actSvc.freezeActivity(actId, adminId);
+                return ResponseEntity.ok(Map.of("success", true, "message", "活動已凍結"));
+            } else {
+                actSvc.unfreezeActivity(actId, restoreStatus, adminId);
+                return ResponseEntity.ok(Map.of("success", true, "message", "活動已解除凍結"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        }
     }
 
     //查詢單一活動
@@ -443,6 +396,86 @@ public class ActApiController {
         ));
     }
 
+    //多條件查詢（限公開活動）
+    @GetMapping("/search")
+    public PageResDTO<ActCardDTO> search(@RequestParam(required = false) Byte recruitStatus,
+                                         @RequestParam(required = false) String actName,
+                                         @RequestParam(required = false) Integer hostId,
+                                         @RequestParam(required = false) LocalDateTime actStart,
+                                         @RequestParam(required = false) Integer maxCap,
+                                         HttpServletRequest request,
+                                         @PageableDefault(size = 9, sort = {"actStart"}, direction = Sort.Direction.DESC) Pageable pageable) {
+        // 取得當前用戶
+        AuthService.MemberInfo memberInfo = authService.getCurrentMember(request.getSession());
+        Integer currentUserId = memberInfo.isLoggedIn() ? memberInfo.getMemId() : null;
+
+        // 呼叫新的搜尋方法
+        Page<ActCardDTO> page = actSvc.searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, currentUserId, pageable);
+        return PageResDTO.of(page);
+    }
+
+
+    //根據標籤搜尋活動
+    @GetMapping("/searchByTags")
+    public PageResDTO<ActCardDTO> searchByTags(
+            @RequestParam(value = "type", required = false) List<String> types,
+            @RequestParam(value = "city", required = false) String city,
+            @PageableDefault(size = 9, sort = {"actStart"}, direction = Sort.Direction.DESC) Pageable pageable) {
+
+        List<ActTag> typeTags = new ArrayList<>();
+        List<ActTag> cityTags = new ArrayList<>();
+
+        try {
+            // 處理多個類型標籤
+            if (types != null && !types.isEmpty()) {
+                for (String type : types) {
+                    if (type != null && !type.isEmpty()) {
+                        typeTags.add(ActTag.valueOf(type));
+                    }
+                }
+            }
+            // 處理五大區對應多個縣市
+            if (city != null && !city.isEmpty()) {
+                switch (city) {
+                    case "NORTH":
+                        cityTags.addAll(Arrays.asList(
+                                ActTag.TAIPEI, ActTag.NEW_TAIPEI, ActTag.KEELUNG, ActTag.TAOYUAN, ActTag.HSINCHU, ActTag.YILAN
+                        ));
+                        break;
+                    case "CENTRAL":
+                        cityTags.addAll(Arrays.asList(
+                                ActTag.TAICHUNG, ActTag.MIAOLI, ActTag.CHANGHUA, ActTag.NANTOU, ActTag.YUNLIN
+                        ));
+                        break;
+                    case "SOUTH":
+                        cityTags.addAll(Arrays.asList(
+                                ActTag.TAINAN, ActTag.KAOHSIUNG, ActTag.CHIAYI, ActTag.PINGTUNG
+                        ));
+                        break;
+                    case "EAST":
+                        cityTags.addAll(Arrays.asList(
+                                ActTag.HUALIEN, ActTag.TAITUNG
+                        ));
+                        break;
+                    case "ISLANDS":
+                        cityTags.addAll(Arrays.asList(
+                                ActTag.ISLANDS
+                        ));
+                        break;
+                    default:
+                        // 若傳入單一縣市
+                        cityTags.add(ActTag.valueOf(city));
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            // 無效的標籤值，使用預設搜尋
+        }
+
+        Page<ActCardDTO> page = actSvc.searchByTags(typeTags, cityTags, pageable);
+        return PageResDTO.of(page);
+    }
+
+
     // 會員刪除活動（僅限未公開活動）
     @DeleteMapping("/member/delete/{actId}")
     public ResponseEntity<Map<String, Object>> memberDeleteActivity(@PathVariable Integer actId, HttpServletRequest request) {
@@ -485,7 +518,7 @@ public class ActApiController {
 
     //================其他方法=================
 
-    // 圖片顯示API - 參考members模組的錯誤處理模式
+    // 圖片顯示API
     @GetMapping("/image/{actId}")
     public void getActImage(
             @PathVariable Integer actId,
@@ -553,7 +586,170 @@ public class ActApiController {
                 )
         );
     }
-    
+
+
+    //取得公開行程
+    @GetMapping("/itineraries")
+    public ResponseEntity<?> getPublicItineraries() {
+        try {
+            List<ItineraryVO> itineraries = actSvc.getPublicItineraries();
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", itineraries
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "error", "取得行程列表失敗: " + e.getMessage()
+            ));
+        }
+    }
+
+    //驗證行程存在
+    @GetMapping("/validate-itinerary/{itnId}")
+    public ResponseEntity<?> validateItinerary(@PathVariable Integer itnId) {
+        try {
+            boolean isValid = actSvc.validateItinerary(itnId);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "valid", isValid
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "error", "驗證行程失敗: " + e.getMessage()
+            ));
+        }
+    }
+
+    //取得單一行程詳情
+    @GetMapping("/itinerary/{itnId}")
+    public ResponseEntity<?> getItineraryDetail(@PathVariable Integer itnId) {
+        try {
+            ItineraryVO itnVo = actSvc.getItineraryById(itnId);
+            if (itnVo == null) {
+                return ResponseEntity.ok(Map.of(
+                        "success", false,
+                        "error", "行程不存在"
+                ));
+            }
+            // 封裝成簡單DTO
+            ItinerarySimpleDTO dto = new ItinerarySimpleDTO();
+            dto.setItnId(itnVo.getItnId());
+            dto.setItnName(itnVo.getItnName());
+            dto.setItnDesc(itnVo.getItnDesc());
+            dto.setIsPublic(itnVo.getIsPublic() == null ? null : itnVo.getIsPublic().intValue());
+            // 景點轉換
+            List<SpotSimpleDTO> spotList = new ArrayList<>();
+            if (itnVo.getItnSpots() != null) {
+                for (var itnSpot : itnVo.getItnSpots()) {
+                    if (itnSpot.getSpot() != null) {
+                        SpotSimpleDTO spotDto = new SpotSimpleDTO();
+                        spotDto.setSpotName(itnSpot.getSpot().getSpotName());
+                        spotDto.setSpotAddress(itnSpot.getSpot().getSpotLoc());
+                        spotList.add(spotDto);
+                    }
+                }
+            }
+            dto.setItnSpots(spotList);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", dto
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "error", "取得行程詳情失敗: " + e.getMessage()
+            ));
+        }
+    }
+
+
+// ========== 錯誤驗證處理 ==========
+
+    /**
+     * 判斷是否為Spring技術錯誤訊息，過濾掉不適合顯示給用戶的技術訊息
+     */
+    private boolean isSpringTechnicalError(String message) {
+        if (message == null) {
+            return true;
+        }
+
+        // 過濾包含Spring框架技術關鍵字的錯誤訊息
+        String[] technicalKeywords = {
+                "Failed to convert",
+                "PropertyEditor",
+                "org.springframework",
+                "StandardMultipartHttpServletRequest",
+                "Cannot convert value of type",
+                "required type",
+                "property editor",
+                "type mismatch",
+                "ConversionFailedException",
+                "CustomNumberEditor",
+                "returned inappropriate value"
+        };
+
+        String lowerMessage = message.toLowerCase();
+        for (String keyword : technicalKeywords) {
+            if (lowerMessage.contains(keyword.toLowerCase())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 去除 BindingResult 中某個欄位的 FieldError 紀錄
+     * 用於解決 MultipartFile 與 byte[] 型別不符導致的驗證錯誤
+     *
+     * @param actDto 活動DTO物件
+     * @param result 驗證結果
+     * @param removedFieldname 要移除錯誤的欄位名稱
+     * @return 移除指定欄位錯誤後的 BindingResult
+     */
+    private BindingResult removeFieldError(ActDTO actDto, BindingResult result, String removedFieldname) {
+        List<FieldError> errorsListToKeep = result.getFieldErrors().stream()
+                .filter(fieldError -> !fieldError.getField().equals(removedFieldname))
+                .collect(java.util.stream.Collectors.toList());
+
+        result = new BeanPropertyBindingResult(actDto, "actDTO");
+        for (FieldError fieldError : errorsListToKeep) {
+            result.addError(fieldError);
+        }
+        return result;
+    }
+
+    /**
+     * 移除編輯時不適用的時間驗證錯誤
+     * 編輯活動時允許過去的時間（例如已開始或已結束的活動）
+     *
+     * @param actDto 活動DTO物件
+     * @param result 驗證結果
+     * @return 移除時間驗證錯誤後的 BindingResult
+     */
+    private BindingResult removeTimeValidationErrors(ActDTO actDto, BindingResult result) {
+        List<FieldError> errorsListToKeep = result.getFieldErrors().stream()
+                .filter(fieldError -> {
+                    String field = fieldError.getField();
+                    String message = fieldError.getDefaultMessage();
+
+                    // 移除時間欄位的 @Future 驗證錯誤
+                    if ((field.equals("actStart") || field.equals("actEnd")) &&
+                            message != null && message.contains("日期必須是在今日(不含)之後")) {
+                        return false;
+                    }
+                    return true;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        result = new BeanPropertyBindingResult(actDto, "actDTO");
+        for (FieldError fieldError : errorsListToKeep) {
+            result.addError(fieldError);
+        }
+        return result;
+    }
 
 
 
@@ -563,10 +759,6 @@ public class ActApiController {
     // ========================================
 
     // ---未使用--- 測試端點 - 檢查資料庫狀態
-    /**
-     * 測試端點 - 檢查資料庫狀態
-     * 用途：檢查資料庫中的活動資料和圖片狀態
-     */
     @GetMapping("/debug")
     public Object debug() {
         List<ActVO> allActs = actSvc.getAll();
@@ -582,11 +774,14 @@ public class ActApiController {
         );
     }
 
+    // ---未使用--- 查詢所有活動(測試用api)
+    @GetMapping("/all")
+    public List<ActCardDTO> getAllAct() {
+        List<ActVO> allActs = actSvc.getAll();
+        return allActs.stream().map(ActCardDTO::fromVO).toList();
+    }
+
     // ---未使用--- 測試端點 - 圖片上傳
-    /**
-     * 測試端點 - 圖片上傳
-     * 用途：測試前端傳送的 base64 圖片是否能正確解碼
-     */
     @PostMapping("/test-image")
     public Object testImage(@RequestBody Map<String, Object> request) {
         String base64 = (String) request.get("actImgBase64");
@@ -614,10 +809,6 @@ public class ActApiController {
     }
 
     // ---未使用--- 測試端點 - 圖片回傳
-    /**
-     * 測試端點 - 圖片回傳
-     * 用途：檢查特定活動的圖片資料格式和狀態
-     */
     @GetMapping("/test-image-response/{actId}")
     public Object testImageResponse(@PathVariable Integer actId) {
         ActVO act = actSvc.getOneAct(actId);
@@ -635,10 +826,6 @@ public class ActApiController {
     }
 
     // ---未使用--- 測試端點 - 預設圖片
-    /**
-     * 測試端點 - 預設圖片
-     * 用途：檢查預設圖片功能是否正常
-     */
     @GetMapping("/test-default-image")
     public Object testDefaultImage() {
         try {
@@ -658,10 +845,6 @@ public class ActApiController {
     }
     
     // ---未使用--- 測試端點 - 活動狀態排程器
-    /**
-     * 測試端點 - 活動狀態排程器
-     * 用途：手動觸發活動狀態檢查（僅供開發測試用）
-     */
     @PostMapping("/test-scheduler")
     public ResponseEntity<?> testScheduler(HttpServletRequest request) {
         try {
@@ -693,10 +876,6 @@ public class ActApiController {
     }
     
     // ---未使用--- 批量注入活動標籤測試端點
-    /**
-     * 批量注入活動標籤測試端點
-     * 一次性為現有的 10 個活動注入標籤資料
-     */
     @PostMapping("/inject-tags")
     public ResponseEntity<?> injectTags(HttpServletRequest request) {
         try {
@@ -769,179 +948,6 @@ public class ActApiController {
             return ResponseEntity.status(500).body(Map.of(
                 "success", false,
                 "error", "批量注入標籤失敗: " + e.getMessage()
-            ));
-        }
-    }
-
-    /**
-     * 判斷是否為Spring技術錯誤訊息，過濾掉不適合顯示給用戶的技術訊息
-     */
-    private boolean isSpringTechnicalError(String message) {
-        if (message == null) {
-            return true;
-        }
-        
-        // 過濾包含Spring框架技術關鍵字的錯誤訊息
-        String[] technicalKeywords = {
-            "Failed to convert",
-            "PropertyEditor",
-            "org.springframework",
-            "StandardMultipartHttpServletRequest", 
-            "Cannot convert value of type",
-            "required type",
-            "property editor",
-            "type mismatch",
-            "ConversionFailedException",
-            "CustomNumberEditor",
-            "returned inappropriate value"
-        };
-        
-        String lowerMessage = message.toLowerCase();
-        for (String keyword : technicalKeywords) {
-            if (lowerMessage.contains(keyword.toLowerCase())) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
-    /**
-     * 去除 BindingResult 中某個欄位的 FieldError 紀錄
-     * 用於解決 MultipartFile 與 byte[] 型別不符導致的驗證錯誤
-     * 
-     * @param actDto 活動DTO物件
-     * @param result 驗證結果
-     * @param removedFieldname 要移除錯誤的欄位名稱
-     * @return 移除指定欄位錯誤後的 BindingResult
-     */
-    private BindingResult removeFieldError(ActDTO actDto, BindingResult result, String removedFieldname) {
-        List<FieldError> errorsListToKeep = result.getFieldErrors().stream()
-                .filter(fieldError -> !fieldError.getField().equals(removedFieldname))
-                .collect(java.util.stream.Collectors.toList());
-
-        result = new BeanPropertyBindingResult(actDto, "actDTO");
-        for (FieldError fieldError : errorsListToKeep) {
-            result.addError(fieldError);
-        }
-        return result;
-    }
-
-    /**
-     * 移除編輯時不適用的時間驗證錯誤
-     * 編輯活動時允許過去的時間（例如已開始或已結束的活動）
-     * 
-     * @param actDto 活動DTO物件
-     * @param result 驗證結果
-     * @return 移除時間驗證錯誤後的 BindingResult
-     */
-    private BindingResult removeTimeValidationErrors(ActDTO actDto, BindingResult result) {
-        List<FieldError> errorsListToKeep = result.getFieldErrors().stream()
-                .filter(fieldError -> {
-                    String field = fieldError.getField();
-                    String message = fieldError.getDefaultMessage();
-                    
-                    // 移除時間欄位的 @Future 驗證錯誤
-                    if ((field.equals("actStart") || field.equals("actEnd")) && 
-                        message != null && message.contains("日期必須是在今日(不含)之後")) {
-                        return false;
-                    }
-                    return true;
-                })
-                .collect(java.util.stream.Collectors.toList());
-
-        result = new BeanPropertyBindingResult(actDto, "actDTO");
-        for (FieldError fieldError : errorsListToKeep) {
-            result.addError(fieldError);
-        }
-        return result;
-    }
-
-    // ========== 行程相關 API ==========
-
-    /**
-     * 取得所有公開行程
-     * @return 公開行程列表
-     */
-    @GetMapping("/itineraries")
-    public ResponseEntity<?> getPublicItineraries() {
-        try {
-            List<ItineraryVO> itineraries = actSvc.getPublicItineraries();
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "data", itineraries
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "success", false,
-                "error", "取得行程列表失敗: " + e.getMessage()
-            ));
-        }
-    }
-
-    /**
-     * 驗證行程是否存在
-     * @param itnId 行程ID
-     * @return 驗證結果
-     */
-    @GetMapping("/validate-itinerary/{itnId}")
-    public ResponseEntity<?> validateItinerary(@PathVariable Integer itnId) {
-        try {
-            boolean isValid = actSvc.validateItinerary(itnId);
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "valid", isValid
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "success", false,
-                "error", "驗證行程失敗: " + e.getMessage()
-            ));
-        }
-    }
-
-    /**
-     * 取得行程詳情
-     * @param itnId 行程ID
-     * @return 行程詳情
-     */
-    @GetMapping("/itinerary/{itnId}")
-    public ResponseEntity<?> getItineraryDetail(@PathVariable Integer itnId) {
-        try {
-            ItineraryVO itnVo = actSvc.getItineraryById(itnId);
-            if (itnVo == null) {
-                return ResponseEntity.ok(Map.of(
-                    "success", false,
-                    "error", "行程不存在"
-                ));
-            }
-            // 封裝成簡單DTO
-            ItinerarySimpleDTO dto = new ItinerarySimpleDTO();
-            dto.setItnId(itnVo.getItnId());
-            dto.setItnName(itnVo.getItnName());
-            dto.setItnDesc(itnVo.getItnDesc());
-            dto.setIsPublic(itnVo.getIsPublic() == null ? null : itnVo.getIsPublic().intValue());
-            // 景點轉換
-            List<SpotSimpleDTO> spotList = new ArrayList<>();
-            if (itnVo.getItnSpots() != null) {
-                for (var itnSpot : itnVo.getItnSpots()) {
-                    if (itnSpot.getSpot() != null) {
-                        SpotSimpleDTO spotDto = new SpotSimpleDTO();
-                        spotDto.setSpotName(itnSpot.getSpot().getSpotName());
-                        spotDto.setSpotAddress(itnSpot.getSpot().getSpotLoc());
-                        spotList.add(spotDto);
-                    }
-                }
-            }
-            dto.setItnSpots(spotList);
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "data", dto
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "success", false,
-                "error", "取得行程詳情失敗: " + e.getMessage()
             ));
         }
     }

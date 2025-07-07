@@ -24,7 +24,23 @@ public class ActHandlerService {
     
     @Autowired
     private PartRepository partRepo;
-    
+
+    /**
+     * 查詢會員參加的活動（不包括自己當團主的活動）
+     */
+    public List<ActVO> getJoinedActivities(Integer memId) {
+        List<Integer> actIds = partRepo.findActIdsByMemId(memId);
+        List<ActVO> activities = actRepo.findAllById(actIds);
+
+        // 過濾掉自己當團主的活動
+        activities = activities.stream()
+                .filter(activity -> !activity.getHostId().equals(memId))
+                .collect(java.util.stream.Collectors.toList());
+
+        activities.sort((a, b) -> Integer.compare(b.getActId(), a.getActId()));
+        return activities;
+    }
+
     /**
      * 處理活動新增：團主自動報名 → 人數+1
      */
@@ -50,32 +66,28 @@ public class ActHandlerService {
     }
     
     /**
-     * 處理活動刪除：刪除所有參加者 → 人數歸零
-     */
-    @Transactional
-    public void handleActivityDeletion(Integer actId) {
-        partRepo.deleteByActId(actId);
-        actRepo.deleteById(actId);
-    }
-    
-    /**
      * 處理參加者報名：人數+1 → 可能觸發「成團」狀態
      */
     @Transactional
     public void handleParticipantSignup(Integer actId, Integer memId) {
         // 檢查活動狀態
-        ActVO act = actRepo.findById(actId).orElseThrow();
-        if (act.getRecruitStatus() != ActStatus.OPEN.getValue()) {
+        ActVO actVo = actRepo.findById(actId).orElseThrow();
+        if (actVo.getRecruitStatus() != ActStatus.OPEN.getValue()) {
             throw new IllegalStateException("活動未開放報名");
         }
         
+        // 檢查報名截止時間
+        if (LocalDateTime.now().isAfter(actVo.getSignupEnd())) {
+            throw new IllegalStateException("報名已截止");
+        }
+        
         // 檢查是否為團主
-        if (act.getHostId().equals(memId)) {
+        if (actVo.getHostId().equals(memId)) {
             throw new IllegalStateException("團主無需報名自己的活動");
         }
         
         // 檢查人數限制
-        if (act.getSignupCnt() >= act.getMaxCap()) {
+        if (actVo.getSignupCnt() >= actVo.getMaxCap()) {
             throw new IllegalStateException("人數已滿");
         }
         
@@ -94,7 +106,7 @@ public class ActHandlerService {
         partRepo.save(participant);
         
         // 更新活動狀態
-        updateActivityStatus(act, act.getSignupCnt() + 1);
+        updateActivityStatus(actVo, actVo.getSignupCnt() + 1);
     }
     
     /**
@@ -102,49 +114,122 @@ public class ActHandlerService {
      */
     @Transactional
     public void handleParticipantCancellation(Integer actId, Integer memId) {
-        ActVO act = actRepo.findById(actId).orElseThrow();
+        ActVO actVo = actRepo.findById(actId).orElseThrow();
         
         // 檢查是否為團主
-        if (act.getHostId().equals(memId)) {
+        if (actVo.getHostId().equals(memId)) {
             throw new IllegalStateException("團主不能退出自己的活動，請改為取消活動");
         }
-        
-        partRepo.deleteByActIdAndMemId(actId, memId);
-        updateActivityStatus(act, act.getSignupCnt() - 1);
-    }
-    
-    /**
-     * 更新活動狀態
-     */
-    private void updateActivityStatus(ActVO act, Integer newCount) {
-        act.setSignupCnt(newCount);
-        
-        if (newCount >= act.getMaxCap()) {
-            act.setRecruitStatus(ActStatus.FULL.getValue());
-        } else if (act.getRecruitStatus() == ActStatus.FULL.getValue() && 
-                   newCount < act.getMaxCap() && 
-                   LocalDateTime.now().isBefore(act.getActStart())) {
-            // 只有在活動開始前才重新開放招募
-            act.setRecruitStatus(ActStatus.OPEN.getValue());
+
+        // 新增：檢查報名截止與活動開始
+        LocalDateTime now = LocalDateTime.now();
+        if (actVo.getSignupEnd() != null && now.isAfter(actVo.getSignupEnd())) {
+            throw new IllegalStateException("報名已截止，無法退出");
         }
-        // 如果活動已經開始，即使人數不足也不會重新開放招募
-        
-        actRepo.save(act);
+        if (actVo.getActStart() != null && now.isAfter(actVo.getActStart())) {
+            throw new IllegalStateException("活動已開始，無法退出");
+        }
+
+        partRepo.deleteByActIdAndMemId(actId, memId);
+        updateActivityStatus(actVo, actVo.getSignupCnt() - 1);
+    }
+
+    /**
+     * 處理活動刪除：刪除所有參加者 → 人數歸零
+     */
+    @Transactional
+    public void handleActivityDeletion(Integer actId) {
+        partRepo.deleteByActId(actId);
+        actRepo.deleteById(actId);
     }
     
     /**
-     * 查詢會員參加的活動（不包括自己當團主的活動）
+     * 更新活動狀態:系統自動運算
      */
-    public List<ActVO> getJoinedActivities(Integer memId) {
-        List<Integer> actIds = partRepo.findActIdsByMemId(memId);
-        List<ActVO> activities = actRepo.findAllById(actIds);
+    private void updateActivityStatus(ActVO actVo, Integer newCount) {
+        actVo.setSignupCnt(newCount);
         
-        // 過濾掉自己當團主的活動
-        activities = activities.stream()
-                .filter(activity -> !activity.getHostId().equals(memId))
-                .collect(java.util.stream.Collectors.toList());
-                
-        activities.sort((a, b) -> Integer.compare(b.getActId(), a.getActId()));
-        return activities;
+        if (newCount >= actVo.getMaxCap()) {
+            actVo.setRecruitStatus(ActStatus.FULL.getValue());
+        } else if (actVo.getRecruitStatus() == ActStatus.FULL.getValue() &&
+                   newCount < actVo.getMaxCap() &&
+                   LocalDateTime.now().isBefore(actVo.getSignupEnd())) {
+            // 重新開放招募的條件：
+            // 1. 原本是成團狀態
+            // 2. 現在人數 < 上限
+            // 3. 報名還沒截止
+            actVo.setRecruitStatus(ActStatus.OPEN.getValue());
+        }
+        // 如果報名截止時間到，即使人數不足也不會重新開放招募
+
+        actRepo.save(actVo);
+    }
+
+    /**
+     * 團主/一般權限：活動狀態切換
+     */
+    public void updateActivityStatusByHost(Integer actId, Byte newStatus, Integer operatorId) {
+        ActVO actVo = actRepo.findById(actId)
+            .orElseThrow(() -> new IllegalArgumentException("活動不存在"));
+        Byte currentStatus = actVo.getRecruitStatus();
+        LocalDateTime now = LocalDateTime.now();
+        // 禁止對 FROZEN, CANCELLED, ENDED 狀態操作
+        if (currentStatus == ActStatus.FROZEN.getValue() ||
+            currentStatus == ActStatus.CANCELLED.getValue() ||
+            currentStatus == ActStatus.ENDED.getValue()) {
+            throw new IllegalStateException("活動已凍結、取消或結束，無法再更改狀態");
+        }
+        // 一般狀態切換
+        if (now.isBefore(actVo.getActStart())) {
+            // 活動未開始
+            if ((currentStatus == ActStatus.OPEN.getValue() || currentStatus == ActStatus.FULL.getValue()) && newStatus == ActStatus.CANCELLED.getValue()) {
+                actVo.setRecruitStatus(ActStatus.CANCELLED.getValue());
+                actRepo.save(actVo);
+                return;
+            } else {
+                throw new IllegalStateException("活動未開始僅能取消活動");
+            }
+        } else {
+            // 活動已開始
+            if (currentStatus == ActStatus.FULL.getValue() && newStatus == ActStatus.ENDED.getValue()) {
+                actVo.setRecruitStatus(ActStatus.ENDED.getValue());
+                actRepo.save(actVo);
+                return;
+            } else {
+                throw new IllegalStateException("活動已開始僅能結束活動");
+            }
+        }
+    }
+
+    /**
+     * 管理員專屬：凍結活動
+     */
+    public void freezeActivity(Integer actId, Integer adminId) {
+        ActVO act = actRepo.findById(actId)
+            .orElseThrow(() -> new IllegalArgumentException("活動不存在"));
+        if (act.getRecruitStatus() == ActStatus.FROZEN.getValue()) {
+            throw new IllegalStateException("活動已經是凍結狀態");
+        }
+        act.setRecruitStatus(ActStatus.FROZEN.getValue());
+        actRepo.save(act);
+        // 可加操作日誌
+    }
+
+    /**
+     * 管理員專屬：解除凍結（恢復到指定狀態）
+     */
+    public void unfreezeActivity(Integer actId, Byte restoreStatus, Integer adminId) {
+        ActVO act = actRepo.findById(actId)
+            .orElseThrow(() -> new IllegalArgumentException("活動不存在"));
+        if (act.getRecruitStatus() != ActStatus.FROZEN.getValue()) {
+            throw new IllegalStateException("活動目前不是凍結狀態");
+        }
+        // 僅允許恢復到 OPEN, FULL, CANCELLED, ENDED, FAILED
+        if (restoreStatus == null || restoreStatus == ActStatus.FROZEN.getValue()) {
+            throw new IllegalArgumentException("解除凍結時必須指定有效狀態");
+        }
+        act.setRecruitStatus(restoreStatus);
+        actRepo.save(act);
+        // 可加操作日誌
     }
 } 

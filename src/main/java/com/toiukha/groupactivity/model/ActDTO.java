@@ -37,15 +37,16 @@ public class ActDTO implements Serializable {
     private Integer hostId;
 
     @NotNull(message = "報名開始時間不得為空")
+    @Future(message="報名開始時間必須在今日(不含)之後")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime signupStart;
 
     @NotNull(message = "報名截止時間不得為空")
-    //@Future(message="日期必須是在今日(不含)之後")
+    @Future(message="報名截止時間必須在今日(不含)之後")
     private LocalDateTime signupEnd;
 
-    @NotNull(message = "活動人數最少三人!")
-    @Min(3)
+    @NotNull(message = "活動人數最少兩人!")
+    @Min(2)
     private Integer maxCap;
 
     //報名人數由程式計算

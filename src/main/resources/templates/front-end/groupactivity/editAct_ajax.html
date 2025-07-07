@@ -408,33 +408,37 @@
                             </select>
                             <label for="isPublic">是否公開</label>
                         </div>
+                    </div>
 
+                    <div class="form-text text-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        活動經公開就不得刪除，請留意！
                     </div>
 
                     <!--系統處理欄位不可編輯-->
                     <div class="act-detail-info">
-<!--                        <div class="form-floating">-->
-<!--                            <input-->
-<!--                                    type="number"-->
-<!--                                    name="signupCnt"-->
-<!--                                    id="signupCnt"-->
-<!--                                    class="form-control"-->
-<!--                                    th:value="${actVo.signupCnt}"-->
-<!--                                    readonly-->
-<!--                            />-->
-<!--                            <label for="signupCnt">已報名人數</label>-->
-<!--                        </div>-->
-<!--                        <div class="form-floating">-->
-<!--                            <select-->
-<!--                                    name="allowCancel"-->
-<!--                                    id="allowCancel"-->
-<!--                                    class="form-select"-->
-<!--                            >-->
-<!--                                <option value="0" th:selected="${actVo.allowCancel == 0}">不允許</option>-->
-<!--                                <option value="1" th:selected="${actVo.allowCancel == 1}">允許</option>-->
-<!--                            </select>-->
-<!--                            <label for="allowCancel">是否允許退出</label>-->
-<!--                        </div>-->
+                        <!--                        <div class="form-floating">-->
+                        <!--                            <input-->
+                        <!--                                    type="number"-->
+                        <!--                                    name="signupCnt"-->
+                        <!--                                    id="signupCnt"-->
+                        <!--                                    class="form-control"-->
+                        <!--                                    th:value="${actVo.signupCnt}"-->
+                        <!--                                    readonly-->
+                        <!--                            />-->
+                        <!--                            <label for="signupCnt">已報名人數</label>-->
+                        <!--                        </div>-->
+                        <!--                        <div class="form-floating">-->
+                        <!--                            <select-->
+                        <!--                                    name="allowCancel"-->
+                        <!--                                    id="allowCancel"-->
+                        <!--                                    class="form-select"-->
+                        <!--                            >-->
+                        <!--                                <option value="0" th:selected="${actVo.allowCancel == 0}">不允許</option>-->
+                        <!--                                <option value="1" th:selected="${actVo.allowCancel == 1}">允許</option>-->
+                        <!--                            </select>-->
+                        <!--                            <label for="allowCancel">是否允許退出</label>-->
+                        <!--                        </div>-->
                     </div>
                     <!--報名狀態不可編輯-->
                     <div class="act-detail-info">
@@ -600,7 +604,7 @@
 
 <script th:inline="javascript">
     const currentMemberId = /*[[${currentMemberId}]]*/ null;
-    const actVO = /*[[${actVo}}]]*/ null;
+    const actVO = /*[[${actVo}]]*/ null;
     console.log("currentMemberId", currentMemberId , "actVO:", actVO);
 
     function initializeForm() {
@@ -820,8 +824,8 @@
         } else if (parseInt(maxCap) <= 0) {
             markFieldAsInvalid("maxCap", "人數需求必須大於0");
             valid = false;
-        } else if (parseInt(maxCap) < 3) {
-            markFieldAsInvalid("maxCap", "人數需求最少三人");
+        } else if (parseInt(maxCap) < 2) {
+            markFieldAsInvalid("maxCap", "人數需求最少兩人");
             valid = false;
         } else if (parseInt(maxCap) < parseInt(signupCnt)) {
             markFieldAsInvalid("maxCap", "人數上限不可小於目前已報名人數");

@@ -508,6 +508,24 @@
       .status-update-section button:hover {
         background: #545b62;
       }
+
+      .status-update-section select:disabled {
+        background: #f8f9fa;
+        color: #6c757d;
+        cursor: not-allowed;
+        border-color: #dee2e6;
+      }
+
+      .status-update-section button:disabled {
+        background: #6c757d !important;
+        color: #fff;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+
+      .status-update-section button:disabled:hover {
+        background: #6c757d !important;
+      }
     </style>
   </head>
   <body class="light">
@@ -581,17 +599,16 @@
 <!--                    class="act-btn act-btn-primary"-->
 <!--                    >編輯</a-->
 <!--                  >-->
+
                   <!-- 活動狀態更新下拉選單 -->
                   <div class="status-update-section">
-                    <label for="statusSelect"></label>
-                    <select id="statusSelect" th:data-current-status="${act.recruitStatus}">
-<!--                      <option value="0" th:selected="${act.recruitStatus == 0}">招募中</option>-->
-                      <option value="1" th:selected="${act.recruitStatus == 1}">成團</option>
-                      <option value="3" th:selected="${act.recruitStatus == 3}">已取消</option>
-                      <option value="5" th:selected="${act.recruitStatus == 5}">已結束</option>
+                    <label for="statusSelect">狀態變更：</label>
+                    <select id="statusSelect" th:data-current-status="${act.recruitStatus}" 
+                            th:data-act-start="${#temporals.format(act.actStart, 'yyyy-MM-dd HH:mm:ss')}">
+                      <!-- 動態選項將由JavaScript填充 -->
                     </select>
-                    <button onclick="updateActivityStatus()">
-                      更新
+                    <button id="updateStatusBtn" onclick="updateActivityStatus()">
+                      更新狀態
                     </button>
                   </div>
                 </div>
@@ -647,33 +664,34 @@
               </div>
             </div>
 
-            <!-- 行程資訊區塊 -->
-            <section class="act-itinerary-section">
-              <h4 class="act-itinerary-title">相關行程</h4>
-              <div id="itineraryLoading" class="act-itinerary-loading" style="display:none;">
-                <div class="loading-spinner"></div>
-                <span>行程資訊載入中...</span>
-              </div>
-              <div id="itineraryContent" style="display:none;">
-                <div class="act-itinerary-header">
-                  <span id="itineraryTitle" class="act-itinerary-name"></span>
-                  <span id="itineraryStatus" class="act-itinerary-status"></span>
-                </div>
-                <div class="act-itinerary-desc" id="itineraryDescription"></div>
-                <div class="act-itinerary-spots">
-                  <h5>行程景點</h5>
-                  <div id="spotsList"></div>
-                </div>
-              </div>
-              <div id="itineraryError" class="act-itinerary-error" style="display:none;">
-                <span>無法載入行程資訊</span>
-              </div>
-            </section>
+              <!-- 行程資訊區塊 -->
+              <section class="act-itinerary-section">
+                  <h4 class="act-itinerary-title">相關行程</h4>
+                  <div id="itineraryLoading" class="act-itinerary-loading" style="display:none;">
+                      <div class="loading-spinner"></div>
+                      <span>行程資訊載入中...</span>
+                  </div>
+                  <div id="itineraryContent" style="display:none;">
+                      <div class="act-itinerary-header">
+                          <span id="itineraryTitle" class="act-itinerary-name"></span>
+                          <span id="itineraryStatus" class="act-itinerary-status"></span>
+                      </div>
+                      <div class="act-itinerary-desc" id="itineraryDescription"></div>
+                      <div class="act-itinerary-spots">
+                          <h5>行程景點</h5>
+                          <div id="spotsList"></div>
+                      </div>
+                  </div>
+                  <div id="itineraryError" class="act-itinerary-error" style="display:none;">
+                      <span>無法載入行程資訊</span>
+                  </div>
+              </section>
 
           </div>
         </main>
       </div>
     </div>
+
     <script th:src="@{/webjars/sockjs-client/1.5.1/sockjs.min.js}"></script>
     <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
     <script th:inline="javascript">
@@ -681,13 +699,102 @@
       const itnId = /*[[${act.itnId}]]*/ null;
       const isHost = /*[[${isHost}]]*/ false;
       const currentMemberId = /*[[${currentMemberId}]]*/ null;
-      let memId = currentMemberId;
-      console.log("actId:", actId, "itnId:", itnId ,"isHost", isHost,"currentMemberId:", currentMemberId);
+      // let memId = currentMemberId;
+      // 報名截止時間
+      const signupEnd = /*[[${#temporals.format(act.signupEnd, 'yyyy-MM-dd HH:mm:ss')}]]*/ null;
+      // 當前時間
+      const now = new Date();
+      // 報名截止是否已過
+      const isSignupEndPassed = signupEnd ? (new Date(signupEnd.replace(/-/g, '/')) < now) : false;
 
-      //--未使用:編輯活動詳情
-      // function editActivity() {
-      //   window.location.href = "/act/member/edit/" + actId;
-      // }
+      // 狀態映射表
+      const statusMap = {
+        0: '招募中',
+        1: '成團',
+        2: '未成團',
+        3: '已取消',
+        4: '系統凍結',
+        5: '已結束'
+      };
+
+      // 初始化狀態選單
+      function initializeStatusSelect() {
+        const statusSelect = document.getElementById('statusSelect');
+        const updateBtn = document.getElementById('updateStatusBtn');
+        const currentStatus = parseInt(statusSelect.getAttribute('data-current-status'));
+        const actStartStr = statusSelect.getAttribute('data-act-start');
+        const actStart = new Date(actStartStr.replace(/-/g, '/'));
+        const now = new Date();
+        
+        console.log('初始化狀態選單:', {
+          currentStatus,
+          actStart: actStartStr,
+          now: now.toISOString(),
+          isBeforeStart: now < actStart
+        });
+
+        // 清空選項
+        statusSelect.innerHTML = '';
+
+        // 檢查是否為終止狀態（已取消、已結束、系統凍結）
+        const isTerminalStatus = currentStatus === 3 || currentStatus === 5 || currentStatus === 4;
+        
+        if (isTerminalStatus) {
+          // 終止狀態：只顯示當前狀態且禁用
+          const currentOption = document.createElement('option');
+          currentOption.value = currentStatus;
+          currentOption.textContent = statusMap[currentStatus];
+          currentOption.selected = true;
+          statusSelect.appendChild(currentOption);
+          
+          statusSelect.disabled = true;
+          updateBtn.disabled = true;
+          updateBtn.textContent = '狀態已鎖定';
+          updateBtn.style.background = '#6c757d';
+          updateBtn.style.cursor = 'not-allowed';
+          
+          console.log('狀態已鎖定，無法變更');
+          return;
+        }
+
+        // 添加當前狀態選項
+        const currentOption = document.createElement('option');
+        currentOption.value = currentStatus;
+        currentOption.textContent = statusMap[currentStatus];
+        currentOption.selected = true;
+        statusSelect.appendChild(currentOption);
+
+        // 根據時間和當前狀態決定可選擇的目標狀態
+        if (now < actStart) {
+          // 活動未開始：只能從招募中/成團 → 已取消
+          if (currentStatus === 0 || currentStatus === 1) {
+            const cancelOption = document.createElement('option');
+            cancelOption.value = 3;
+            cancelOption.textContent = statusMap[3];
+            statusSelect.appendChild(cancelOption);
+            console.log('活動未開始，可選擇：已取消');
+          }
+        } else {
+          // 活動已開始：只能從成團 → 已結束
+          if (currentStatus === 1) {
+            const endOption = document.createElement('option');
+            endOption.value = 5;
+            endOption.textContent = statusMap[5];
+            statusSelect.appendChild(endOption);
+            console.log('活動已開始，可選擇：已結束');
+          }
+        }
+
+        // 如果沒有可選擇的狀態（除了當前狀態），禁用控件
+        if (statusSelect.options.length <= 1) {
+          statusSelect.disabled = true;
+          updateBtn.disabled = true;
+          updateBtn.textContent = '無可變更狀態';
+          updateBtn.style.background = '#6c757d';
+          updateBtn.style.cursor = 'not-allowed';
+          console.log('無可變更的狀態選項');
+        }
+      }
 
       //更新活動狀態
       function updateActivityStatus() {
@@ -701,58 +808,149 @@
           return;
         }
 
-        if (confirm(`確定要將活動狀態更改為 ${statusSelect.options[statusSelect.selectedIndex].text} 嗎？`)) {
-          // 構建URL參數
-          const url = `/api/act/${actId}/status/${status}?operatorId=${currentMemberId}&admin=false`;
-
-          fetch(url, { method: "PUT" })
-                  .then((res) => {
-                    if (res.ok) {
-                      alert('活動狀態更新成功！');
-                      location.reload();
-                    } else {
-                      return res.text().then(text => {
-                        throw new Error(text || '狀態更新失敗');
-                      });
-                    }
-                  })
-                  .catch((error) => {
-                    console.error('更新活動狀態時發生錯誤:', error);
-                    alert('更新活動狀態時發生錯誤：' + error.message);
-                  });
+        // 確認對話框：強調不可逆性
+        const targetStatusName = statusMap[status];
+        const confirmMessage = `重要提醒\n\n即將將活動狀態變更為「${targetStatusName}」\n\n此操作無法復原，確定要繼續嗎？`;
+        
+        if (!confirm(confirmMessage)) {
+          // 用戶取消，重置選單到當前狀態
+          statusSelect.value = currentStatus;
+          return;
         }
+
+        // 顯示載入狀態
+        const updateBtn = document.getElementById('updateStatusBtn');
+        const originalText = updateBtn.textContent;
+        updateBtn.disabled = true;
+        updateBtn.textContent = '更新中...';
+        updateBtn.style.background = '#6c757d';
+
+        // 構建URL參數
+        const url = `/api/act/${actId}/status/host?status=${status}&operatorId=${currentMemberId}`;
+
+        console.log('發送狀態更新請求:', { url });
+
+        fetch(url, { 
+          method: "PUT"
+        })
+        .then((res) => {
+          if (res.ok) {
+            alert('活動狀態更新成功！');
+            location.reload();
+          } else {
+            return res.text().then(text => {
+              throw new Error(text || '狀態更新失敗');
+            });
+          }
+        })
+        .catch((error) => {
+          console.error('更新活動狀態時發生錯誤:', error);
+          alert('更新活動狀態時發生錯誤：' + error.message);
+          
+          // 恢復按鈕狀態
+          updateBtn.disabled = false;
+          updateBtn.textContent = originalText;
+          updateBtn.style.background = '';
+          
+          // 重置選單到當前狀態
+          statusSelect.value = currentStatus;
+        });
       }
 
-      //--未使用:顯示團員列表
-      // function showMemberManagement() {
-      //   console.log("showMemberManagement 被呼叫");
-      //   document.getElementById("memberManagementModal").style.display =
-      //     "block";
-      //   // fetch(`/api/group/${actId}/members`)
-      //   fetch(`/api/participate/${actId}/members`)
-      //     .then((res) => res.json())
-      //     .then((list) => {
-      //       const container = document.getElementById("memberManagementList");
-      //       container.innerHTML = "";
-      //       list.forEach((mem) => {
-      //         const div = document.createElement("div");
-      //         div.className = "member-item";
-      //         div.innerHTML = `會員${mem.memId} <button onclick="kickMember(${mem.memId})" class="act-btn act-btn-danger">剔除</button>`;
-      //         container.appendChild(div);
-      //       });
-      //     });
-      // }
-      //--未使用:關閉團員列表
-      // function closeMemberManagement() {
-      //   document.getElementById("memberManagementModal").style.display = "none";
-      // }
+      // ==========載入行程相關資訊==================
+      console.log('[行程區塊] 頁面載入，itnId:', itnId);
+
+      function loadItineraryInfo() {
+          console.log('[行程區塊] 開始載入行程資訊，itnId:', itnId);
+          if (!itnId) {
+              // console.warn('[行程區塊] itnId 不存在，無法載入行程');
+              document.getElementById('itineraryError').style.display = 'block';
+              document.getElementById('itineraryLoading').style.display = 'none';
+              return;
+          }
+          document.getElementById('itineraryLoading').style.display = 'block';
+          document.getElementById('itineraryContent').style.display = 'none';
+          document.getElementById('itineraryError').style.display = 'none';
+
+          const apiUrl = `/api/act/itinerary/${itnId}`;
+          console.log('[行程區塊] 呼叫API:', apiUrl);
+          fetch(apiUrl)
+              .then(response => {
+                  console.log('[行程區塊] API回應狀態:', response.status);
+                  return response.json();
+              })
+              .then(data => {
+                  console.log('[行程區塊] API回應資料:', data);
+                  document.getElementById('itineraryLoading').style.display = 'none';
+                  if (data.success && data.data) {
+                      const itinerary = data.data;
+                      console.log('[行程區塊] 行程資料:', itinerary);
+                      document.getElementById('itineraryTitle').textContent = itinerary.itnName || '未命名行程';
+                      const statusElement = document.getElementById('itineraryStatus');
+                      statusElement.textContent = itinerary.isPublic == 1 ? '公開' : '私人';
+                      statusElement.className = `act-itinerary-status ${itinerary.isPublic == 1 ? 'public' : 'private'}`;
+                      document.getElementById('itineraryDescription').textContent = itinerary.itnDesc || '此行程暫無描述';
+                      document.getElementById('itineraryContent').style.display = 'block';
+                      if (itinerary.itnSpots && itinerary.itnSpots.length > 0) {
+                          console.log('[行程區塊] 載入景點列表，數量:', itinerary.itnSpots.length);
+                          loadItinerarySpots(itinerary.itnSpots);
+                      } else {
+                          console.warn('[行程區塊] 此行程無景點資訊');
+                          document.getElementById('spotsList').innerHTML = '<p>此行程暫無景點資訊</p>';
+                      }
+                  } else {
+                      console.error('[行程區塊] 行程API回傳失敗:', data.error);
+                      throw new Error(data.error || '無法取得行程資訊');
+                  }
+              })
+              .catch(error => {
+                  console.error('[行程區塊] 載入行程資訊失敗:', error);
+                  document.getElementById('itineraryLoading').style.display = 'none';
+                  document.getElementById('itineraryError').style.display = 'block';
+                  document.getElementById('itineraryError').innerHTML = '<p>無法載入行程資訊: ' + error.message + '</p>';
+              });
+      }
+
+      function loadItinerarySpots(spots) {
+          const spotsListElement = document.getElementById('spotsList');
+          spotsListElement.innerHTML = '';
+          spots.forEach((spot, index) => {
+              console.log(`[行程區塊] 處理第${index + 1}個景點:`, spot);
+              const spotElement = document.createElement('div');
+              spotElement.className = 'act-spot-item';
+              const spotName = spot.spotName || '未知景點';
+              const spotAddress = spot.spotAddress || '地址未知';
+              spotElement.innerHTML = `
+            <div class="act-spot-number">${index + 1}</div>
+            <div class="act-spot-info">
+              <h6 class="act-spot-name">${spotName}</h6>
+              <p class="act-spot-address">${spotAddress}</p>
+            </div>
+          `;
+              spotsListElement.appendChild(spotElement);
+          });
+          console.log('[行程區塊] 景點列表處理完成，共載入', spots.length, '個景點');
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+          loadItineraryInfo();
+          // 初始化狀態選單（只有團主才需要）
+          if (isHost) {
+            initializeStatusSelect();
+          }
+      });
 
       // 批次編輯團員狀態
       let isEditing = false;
       let pendingStatus = {};
       const editBtn = document.getElementById("editMemberBtn");
       if (editBtn) {
-        editBtn.onclick = function () {
+        editBtn.onclick = function (e) {
+          if (!isSignupEndPassed) {
+            e.preventDefault();
+            alert('報名截止後才能編輯團員！');
+            return false;
+          }
           isEditing = true;
           document
                   .querySelectorAll(".toggle-switch")
@@ -766,7 +964,12 @@
       }
       const saveBtn = document.getElementById("saveMemberBtn");
       if (saveBtn) {
-        saveBtn.onclick = function () {
+        saveBtn.onclick = function (e) {
+          if (!isSignupEndPassed) {
+            e.preventDefault();
+            alert('報名截止後才能儲存團員變更！');
+            return false;
+          }
           isEditing = false;
           document
                   .querySelectorAll(".toggle-switch")
@@ -848,109 +1051,6 @@
         };
       });
 
-      //--未使用:剔除團員
-      //  function kickMember(memberId) {
-      //    if (confirm("確定要剔除該團員？")) {
-      //      // 使用現有的API端點，將團員狀態設為已剔除(2)
-      //      const url = `/api/participate/${actId}/members/${memberId}/status?joinStatus=2`;
-      //
-      //      fetch(url, { method: "PUT" })
-      //        .then((res) => {
-      //          if (res.ok) {
-      //            alert('團員剔除成功！');
-      //            location.reload();
-      //          } else {
-      //            return res.text().then(text => {
-      //              throw new Error(text || '剔除團員失敗');
-      //            });
-      //          }
-      //        })
-      //        .catch((error) => {
-      //          console.error('剔除團員時發生錯誤:', error);
-      //          alert('剔除團員時發生錯誤：' + error.message);
-      //        });
-      //    }
-      //  }
-
-
-      // ==========載入行程相關資訊==================
-      console.log('[行程區塊] 頁面載入，itnId:', itnId);
-
-      function loadItineraryInfo() {
-          console.log('[行程區塊] 開始載入行程資訊，itnId:', itnId);
-          if (!itnId) {
-              // console.warn('[行程區塊] itnId 不存在，無法載入行程');
-              document.getElementById('itineraryError').style.display = 'block';
-              document.getElementById('itineraryLoading').style.display = 'none';
-              return;
-          }
-          document.getElementById('itineraryLoading').style.display = 'block';
-          document.getElementById('itineraryContent').style.display = 'none';
-          document.getElementById('itineraryError').style.display = 'none';
-
-          const apiUrl = `/api/act/itinerary/${itnId}`;
-          console.log('[行程區塊] 呼叫API:', apiUrl);
-          fetch(apiUrl)
-              .then(response => {
-                  console.log('[行程區塊] API回應狀態:', response.status);
-                  return response.json();
-              })
-              .then(data => {
-                  console.log('[行程區塊] API回應資料:', data);
-                  document.getElementById('itineraryLoading').style.display = 'none';
-                  if (data.success && data.data) {
-                      const itinerary = data.data;
-                      console.log('[行程區塊] 行程資料:', itinerary);
-                      document.getElementById('itineraryTitle').textContent = itinerary.itnName || '未命名行程';
-                      const statusElement = document.getElementById('itineraryStatus');
-                      statusElement.textContent = itinerary.isPublic == 1 ? '公開' : '私人';
-                      statusElement.className = `act-itinerary-status ${itinerary.isPublic == 1 ? 'public' : 'private'}`;
-                      document.getElementById('itineraryDescription').textContent = itinerary.itnDesc || '此行程暫無描述';
-                      document.getElementById('itineraryContent').style.display = 'block';
-                      if (itinerary.itnSpots && itinerary.itnSpots.length > 0) {
-                          console.log('[行程區塊] 載入景點列表，數量:', itinerary.itnSpots.length);
-                          loadItinerarySpots(itinerary.itnSpots);
-                      } else {
-                          console.warn('[行程區塊] 此行程無景點資訊');
-                          document.getElementById('spotsList').innerHTML = '<p>此行程暫無景點資訊</p>';
-                      }
-                  } else {
-                      console.error('[行程區塊] 行程API回傳失敗:', data.error);
-                      throw new Error(data.error || '無法取得行程資訊');
-                  }
-              })
-              .catch(error => {
-                  console.error('[行程區塊] 載入行程資訊失敗:', error);
-                  document.getElementById('itineraryLoading').style.display = 'none';
-                  document.getElementById('itineraryError').style.display = 'block';
-                  document.getElementById('itineraryError').innerHTML = '<p>無法載入行程資訊: ' + error.message + '</p>';
-              });
-      }
-
-      function loadItinerarySpots(spots) {
-          const spotsListElement = document.getElementById('spotsList');
-          spotsListElement.innerHTML = '';
-          spots.forEach((spot, index) => {
-              console.log(`[行程區塊] 處理第${index + 1}個景點:`, spot);
-              const spotElement = document.createElement('div');
-              spotElement.className = 'act-spot-item';
-              const spotName = spot.spotName || '未知景點';
-              const spotAddress = spot.spotAddress || '地址未知';
-              spotElement.innerHTML = `
-            <div class="act-spot-number">${index + 1}</div>
-            <div class="act-spot-info">
-              <h6 class="act-spot-name">${spotName}</h6>
-              <p class="act-spot-address">${spotAddress}</p>
-            </div>
-          `;
-              spotsListElement.appendChild(spotElement);
-          });
-          console.log('[行程區塊] 景點列表處理完成，共載入', spots.length, '個景點');
-      }
-
-      document.addEventListener('DOMContentLoaded', function() {
-          loadItineraryInfo();
-      });
 
       //============有關聊天室相關的功能=======================================
       // let stompClient = null;
