@@ -21,9 +21,9 @@
     <div th:insert="~{/navBackTemplate :: navbar}"></div>
 
     <div class="main-content">
-        <!--頂部次導覽:  TODO:新導覽列做好時切換成新的導覽列-->
-<!--        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>  -->
-        <div th:insert="~{back-end/forum/subnavForum :: subnav('all')}"></div>
+        <!--頂部次導覽:-->
+        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>
+<!--        <div th:insert="~{back-end/forum/subnavForum :: subnav('all')}"></div>-->
 
         <!--main 以下為頁面主要內容 -->
         <main class="content-area-main">

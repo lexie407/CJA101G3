@@ -42,9 +42,9 @@
     <div th:insert="~{/navBackTemplate :: navbar}"></div>
 
     <div class="main-content">
-<!--      次導覽列  TODO:新導覽列做好時切換成新的導覽列-->
-        <!--        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>-->
-        <div th:insert="~{back-end/forum/subnavForum :: subnav('select')}"></div>
+<!--      次導覽列  -->
+                <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>
+<!--        <div th:insert="~{back-end/forum/subnavForum :: subnav('select')}"></div>-->
 
         <main class="content-area-main">
             <h4><span>資料查詢:</span></h4>
