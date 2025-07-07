@@ -71,16 +71,16 @@ public class LoginInterceptorConfig implements WebMvcConfigurer {
 						        "/api/act/*/status/*",      // 狀態變更 API
 						        "/api/participate/*",        // 報名/取消 API
 						        
-						        "/act/member/view/*",         // 活動詳情頁
-						        "/act/member/listOneAct",     // 單一活動頁面
+//						        "/act/member/view/*",         // 活動詳情頁
+//						        "/act/member/listOneAct",     // 單一活動頁面
 						        "/act/group/*/home",          // 揪團主頁
 						        "/act/group/*/chat",          // 聊天室頁面
 						        "/act/group/*/chat/history",  // 聊天室歷史
 						        "/act/group/*/expense",       // 分帳頁面
-						        "/api/act/get/*",             // 取得活動詳情 API
-						        "/api/act/itinerary/*",       // 取得行程詳情 API
-						        "/api/act/tags/*",            // 取得活動標籤 API
-						        "/api/act/image/*",            // 取得活動圖片 API
+//						        "/api/act/get/*",             // 取得活動詳情 API
+//						        "/api/act/itinerary/*",       // 取得行程詳情 API
+//						        "/api/act/tags/*",            // 取得活動標籤 API
+//						        "/api/act/image/*",            // 取得活動圖片 API
 
 
 

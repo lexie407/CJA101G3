@@ -134,6 +134,11 @@
       </div>
     </div>
 
+    <!-- 登入、通知推播 -->
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../../js/notification/websocket.js"></script>
+
     <!-- GroupActivity 模組 -->
     <script th:src="@{/js/groupactivity/groupactivity-core.js}"></script>
     <script th:src="@{/js/groupactivity/groupactivity-ui.js}"></script>
@@ -143,7 +148,7 @@
 
 
       // 會員ID注入
-              const currentMemberId = /*[[${currentMemberId}]]*/ null;
+        const currentMemberId = /*[[${currentMemberId}]]*/ null;
         window.currentMemberId = currentMemberId;
 
       // 載入參加的活動列表
