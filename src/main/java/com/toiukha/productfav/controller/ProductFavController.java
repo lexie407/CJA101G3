@@ -19,8 +19,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.toiukha.members.model.MembersVO;
 import com.toiukha.productfav.model.ProductFavService;
 import com.toiukha.productfav.model.ProductFavVO;
+import com.toiukha.item.model.ItemService;
+import com.toiukha.item.model.ItemVO;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * ProductFav Controller
@@ -32,6 +35,9 @@ public class ProductFavController {
     
     @Autowired
     private ProductFavService productFavService;
+    
+    @Autowired
+    private ItemService itemService;
     
     /**
      * 檢查會員是否已登入
@@ -187,9 +193,11 @@ public class ProductFavController {
      * @return 收藏清單頁面
      */
     @GetMapping("/myFavorites")
-    public String showMyFavorites(HttpSession session, Model model) {
+    public String showMyFavorites(HttpSession session, Model model, HttpServletRequest request) {
         // 檢查登入狀態
         if (!isMemberLoggedIn(session)) {
+            // 保存原始請求URI，登入後可以重定向回來
+            session.setAttribute("location", request.getRequestURI());
             return "redirect:/members/login";
         }
         
@@ -200,7 +208,17 @@ public class ProductFavController {
             // 獲取收藏清單
             List<ProductFavVO> favorites = productFavService.getMemberFavorites(memId);
             
+            // 獲取商品詳細信息
+            Map<Integer, ItemVO> itemDetails = new HashMap<>();
+            for (ProductFavVO favorite : favorites) {
+                ItemVO item = itemService.getOneItem(favorite.getItemId());
+                if (item != null) {
+                    itemDetails.put(favorite.getItemId(), item);
+                }
+            }
+            
             model.addAttribute("favorites", favorites);
+            model.addAttribute("itemDetails", itemDetails);
             model.addAttribute("favoriteCount", favorites.size());
             model.addAttribute("member", member);
             // 設定導覽列的 active 狀態
@@ -210,9 +228,8 @@ public class ProductFavController {
             
         } catch (Exception e) {
             model.addAttribute("errorMessage", "載入收藏清單失敗：" + e.getMessage());
-            // 設定導覽列的 active 狀態
+            // 即使發生錯誤，也要設定導覽列的 active 狀態
             model.addAttribute("activeItem", "myFavorites");
-            
             return "front-end/productfav/myFavorites";
         }
     }

@@ -516,34 +516,31 @@
                     <div class="order-details">
                         <div class="order-detail-item">
                             <div class="detail-label">訂單編號</div>
-                            <div class="detail-value" th:text="${orderItem.ordId}">訂單編號</div>
+                            <div class="detail-value" th:text="${ordId}">訂單編號</div>
                         </div>
                         <div class="order-detail-item">
-                            <div class="detail-label">購買日期</div>
-                            <div class="detail-value" th:text="${#temporals.format(orderItem.orderDate, 'yyyy-MM-dd')}">購買日期</div>
+                            <div class="detail-label">商品編號</div>
+                            <div class="detail-value" th:text="${item.itemId}">商品編號</div>
                         </div>
                         <div class="order-detail-item">
-                            <div class="detail-label">訂單狀態</div>
-                            <div class="detail-value">
-                                <span th:if="${orderItem.orderStatus == 1}">已完成</span>
-                                <span th:if="${orderItem.orderStatus == 0}">處理中</span>
-                            </div>
+                            <div class="detail-label">檢舉會員</div>
+                            <div class="detail-value" th:text="${member.memName}">會員名稱</div>
                         </div>
                         <div class="order-detail-item">
                             <div class="detail-label">商品價格</div>
                             <div class="detail-value">
-                                NT$ <span th:text="${orderItem.discPrice != null ? orderItem.discPrice : orderItem.oriPrice}">0</span>
+                                NT$ <span th:text="${item.itemPrice}">0</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="item-preview">
-                        <img th:src="@{/item/DBGifReader(id=${orderItem.itemId})}" 
+                        <img th:src="@{'/item/DBGifReader/' + ${item.itemId}}" 
                              alt="商品圖片" class="item-image">
                         <div class="item-details">
-                            <h5 th:text="${orderItem.itemName}">商品名稱</h5>
-                            <p>商品編號：<span th:text="${orderItem.itemId}">商品編號</span></p>
-                            <p>購買數量：<span th:text="${orderItem.quantity}">數量</span></p>
+                            <h5 th:text="${item.itemName}">商品名稱</h5>
+                            <p>商品編號：<span th:text="${item.itemId}">商品編號</span></p>
+                            <p>庫存數量：<span th:text="${item.stockQuantity}">庫存數量</span></p>
                         </div>
                     </div>
                 </div>
@@ -556,9 +553,9 @@
                     </div>
                     
                     <form th:action="@{/item-report/submit-from-order}" method="post" enctype="multipart/form-data" id="reportForm">
-                        <input type="hidden" name="memId" th:value="${memId}">
-                        <input type="hidden" name="ordId" th:value="${orderItem.ordId}">
-                        <input type="hidden" name="itemId" th:value="${orderItem.itemId}">
+                        <input type="hidden" name="memId" th:value="${member.memId}">
+                        <input type="hidden" name="ordId" th:value="${ordId}">
+                        <input type="hidden" name="itemId" th:value="${item.itemId}">
                         
                         <div class="form-group">
                             <label class="form-label">
@@ -566,41 +563,44 @@
                             </label>
                             <div class="reason-options">
                                 <div class="reason-option">
-                                    <input type="radio" id="reason1" name="reasonType" value="商品描述不符" required>
+                                    <input type="radio" id="reason1" name="repReason" value="商品描述不符" required>
                                     <label for="reason1">商品描述不符</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason2" name="reasonType" value="品質問題" required>
+                                    <input type="radio" id="reason2" name="repReason" value="品質問題" required>
                                     <label for="reason2">品質問題</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason3" name="reasonType" value="虛假宣傳" required>
+                                    <input type="radio" id="reason3" name="repReason" value="虛假宣傳" required>
                                     <label for="reason3">虛假宣傳</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason4" name="reasonType" value="配送問題" required>
+                                    <input type="radio" id="reason4" name="repReason" value="配送問題" required>
                                     <label for="reason4">配送問題</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason5" name="reasonType" value="服務態度" required>
-                                    <label for="reason5">服務態度</label>
+                                    <input type="radio" id="reason5" name="repReason" value="服務態度不佳" required>
+                                    <label for="reason5">服務態度不佳</label>
                                 </div>
                                 <div class="reason-option">
-                                    <input type="radio" id="reason6" name="reasonType" value="其他" required>
+                                    <input type="radio" id="reason6" name="repReason" value="其他" required>
                                     <label for="reason6">其他</label>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label" for="repReason">
+                            <label class="form-label" for="repDescription">
                                 詳細說明 <span class="required">*</span>
                             </label>
-                            <textarea id="repReason" name="repReason" class="form-control textarea" 
+                            <textarea id="repDescription" name="repDescription" class="form-control textarea" 
                                     placeholder="請詳細描述您遇到的問題，這將有助於我們更好地處理您的檢舉..." 
-                                    required minlength="10" maxlength="500"></textarea>
+                                    minlength="10" maxlength="500"></textarea>
                             <div class="form-help">請提供10-500字的詳細說明，包括具體的問題描述</div>
                         </div>
+                        
+                        <!-- 隱藏的欄位用於組合檢舉理由 -->
+                        <input type="hidden" id="combinedReason" name="repReason">
                         
                         <div class="form-group">
                             <label class="form-label" for="repImg">證據圖片（選填）</label>
@@ -677,8 +677,29 @@
             uploadText.textContent = `已選擇：${file.name}`;
         }
 
-        // 表單提交載入動畫
-        document.getElementById('reportForm').addEventListener('submit', function() {
+        // 表單提交處理
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            // 獲取選中的檢舉類型
+            const selectedReason = document.querySelector('input[name="repReason"]:checked');
+            const description = document.getElementById('repDescription').value;
+            
+            if (!selectedReason) {
+                e.preventDefault();
+                alert('請選擇檢舉理由類型！');
+                return;
+            }
+            
+            if (!description.trim()) {
+                e.preventDefault();
+                alert('請填寫詳細說明！');
+                return;
+            }
+            
+            // 組合檢舉理由
+            const combinedReason = `檢舉類型：${selectedReason.value}\n詳細說明：${description}`;
+            document.getElementById('combinedReason').value = combinedReason;
+            
+            // 顯示載入動畫
             const loading = document.createElement('div');
             loading.className = 'loading';
             loading.innerHTML = '<div class="spinner"></div>';
@@ -686,5 +707,6 @@
         });
     </script>
 </body>
+</html> 
 </html> 
 </html> 
