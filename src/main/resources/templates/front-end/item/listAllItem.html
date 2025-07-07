@@ -152,7 +152,8 @@
         /* 圖片輪播樣式 */
         .carousel-container {
             position: relative;
-            max-width: 100%;
+            max-width: 1200px; /* 限制最大寬度以維持良好比例 */
+            width: 100%;
             margin: 0 auto 32px auto;
             overflow: hidden;
             border-radius: 12px;
@@ -167,7 +168,22 @@
         .carousel-wrapper {
             position: relative;
             width: 100%;
-            height: 300px;
+            aspect-ratio: 6 / 4; /* 6:4 橫式比例 */
+            max-height: 400px; /* 限制最大高度 */
+            min-height: 250px; /* 限制最小高度 */
+        }
+
+        /* 針對不支援 aspect-ratio 的舊瀏覽器的備用方案 */
+        @supports not (aspect-ratio: 1) {
+            .carousel-wrapper {
+                height: 300px; /* 備用固定高度 */
+            }
+            
+            @media (max-width: 768px) {
+                .carousel-wrapper {
+                    height: 200px; /* 手機版備用高度 */
+                }
+            }
         }
 
         .carousel-slide {
@@ -196,8 +212,10 @@
         .carousel-slide img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* 保持原比例填滿容器 */
+            object-position: center; /* 圖片居中顯示 */
             border-radius: 12px;
+            transition: transform 0.3s ease; /* 添加滑順的縮放動畫 */
         }
 
         .carousel-caption {
@@ -307,7 +325,8 @@
         /* 響應式設計 */
         @media (max-width: 768px) {
             .carousel-wrapper {
-                height: 200px;
+                min-height: 180px; /* 手機版較小的最小高度 */
+                max-height: 280px; /* 手機版較小的最大高度 */
             }
 
             .carousel-caption {

@@ -387,6 +387,159 @@
             transform: translateY(-1px) scale(1.02);
         }
         
+        /* 檢舉進度追蹤樣式 */
+        .progress-timeline {
+            margin: 16px 0;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-timeline:hover {
+            background: linear-gradient(135deg, #e8f4f8, #f1f8ff);
+            border-color: #2196f3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+        }
+        
+        .timeline-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .timeline-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 0 20px;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e9ecef;
+            transform: translateY(-50%);
+            border-radius: 2px;
+        }
+        
+        .timeline-progress {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transform: translateY(-50%);
+            border-radius: 2px;
+            transition: width 0.8s ease-in-out;
+        }
+        
+        .timeline-item {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .timeline-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            border: 3px solid;
+        }
+        
+        .timeline-item.completed .timeline-icon {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.2);
+        }
+        
+        .timeline-item.active .timeline-icon {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.3);
+        }
+        
+        .timeline-item.pending .timeline-icon {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+            color: #6c757d;
+        }
+        
+        .timeline-item.rejected .timeline-icon {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2);
+        }
+        
+        .timeline-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #495057;
+            max-width: 80px;
+            line-height: 1.2;
+        }
+        
+        .timeline-item.completed .timeline-label {
+            color: #28a745;
+        }
+        
+        .timeline-item.active .timeline-label {
+            color: #e67e22;
+            font-weight: 600;
+        }
+        
+        .timeline-item.rejected .timeline-label {
+            color: #dc3545;
+        }
+        
+        .timeline-date {
+            font-size: 10px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* 進度百分比顯示 */
+        .progress-percentage {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #495057;
+        }
+        
+        .progress-percentage .percentage {
+            font-weight: 600;
+            color: #28a745;
+        }
+
         /* 響應式設計 - 參考 listCompletedOrders.html */
         @media (max-width: 768px) {
             .order-card,
@@ -427,6 +580,26 @@
                 width: 100%;
                 max-width: 200px;
                 margin: 0 auto;
+            }
+            
+            .progress-timeline {
+                padding: 12px;
+                margin: 12px 0;
+            }
+            
+            .timeline-container {
+                margin: 0 10px;
+            }
+            
+            .timeline-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+            
+            .timeline-label {
+                font-size: 10px;
+                max-width: 60px;
             }
         }
     </style>
@@ -486,6 +659,70 @@
                         </div>
                         
                         <div class="order-items">
+                            <!-- 檢舉進度追蹤 -->
+                            <div class="progress-timeline" 
+                                 th:onclick="'showProgressDetails(' + ${reportItem.report.repId} + ', ' + ${reportItem.report.repStatus} + ')'"
+                                 style="cursor: pointer;" 
+                                 title="點擊查看詳細說明">
+                                <div class="timeline-header">
+                                    <span>📊</span>
+                                    <span>檢舉處理進度</span>
+                                    <span style="font-size: 12px; color: #6c757d; margin-left: auto;">點擊查看詳情</span>
+                                </div>
+                                <div class="timeline-container">
+                                    <div class="timeline-line"></div>
+                                    <div class="timeline-progress" 
+                                         th:style="${reportItem.report.repStatus == 0 ? 'width: 33%' : 
+                                                   (reportItem.report.repStatus == 1 ? 'width: 100%' : 'width: 66%')}">
+                                    </div>
+                                    
+                                    <!-- 步驟1: 檢舉提交 -->
+                                    <div class="timeline-item completed">
+                                        <div class="timeline-icon">✓</div>
+                                        <div class="timeline-label">檢舉提交</div>
+                                        <div class="timeline-date" th:text="${#temporals.format(reportItem.report.repAt, 'MM/dd')}"></div>
+                                    </div>
+                                    
+                                    <!-- 步驟2: 審核中 -->
+                                    <div class="timeline-item" 
+                                         th:class="${reportItem.report.repStatus == 0 ? 'timeline-item active' : 'timeline-item completed'}">
+                                        <div class="timeline-icon" 
+                                             th:text="${reportItem.report.repStatus == 0 ? '⏳' : '✓'}">⏳</div>
+                                        <div class="timeline-label">管理員審核</div>
+                                        <div class="timeline-date" 
+                                             th:text="${reportItem.report.repStatus == 0 ? '審核中' : 
+                                                      (reportItem.report.rptProcTime != null ? #temporals.format(reportItem.report.rptProcTime, 'MM/dd') : '已處理')}">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 步驟3: 處理結果 -->
+                                    <div class="timeline-item" 
+                                         th:class="${reportItem.report.repStatus == 0 ? 'timeline-item pending' : 
+                                                   (reportItem.report.repStatus == 1 ? 'timeline-item completed' : 'timeline-item rejected')}">
+                                        <div class="timeline-icon" 
+                                             th:text="${reportItem.report.repStatus == 0 ? '?' : 
+                                                      (reportItem.report.repStatus == 1 ? '✓' : '✗')}">?</div>
+                                        <div class="timeline-label" 
+                                             th:text="${reportItem.report.repStatus == 0 ? '等待結果' : 
+                                                      (reportItem.report.repStatus == 1 ? '檢舉通過' : '檢舉駁回')}">等待結果</div>
+                                        <div class="timeline-date" 
+                                             th:text="${reportItem.report.repStatus == 0 ? '' : 
+                                                      (reportItem.report.rptProcTime != null ? #temporals.format(reportItem.report.rptProcTime, 'MM/dd') : '已完成')}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 進度百分比 -->
+                                <div class="progress-percentage">
+                                    <span>處理進度: </span>
+                                    <span class="percentage" 
+                                          th:text="${reportItem.report.repStatus == 0 ? '33%' : 
+                                                   (reportItem.report.repStatus == 1 ? '100%' : '100%')}">33%</span>
+                                    <span th:text="${reportItem.report.repStatus == 0 ? ' - 審核中' : 
+                                                   (reportItem.report.repStatus == 1 ? ' - 已完成 (通過)' : ' - 已完成 (駁回)')}"> - 審核中</span>
+                                </div>
+                            </div>
+                            
                             <div class="item-details">
                                 <img th:src="@{'/item/DBGifReader?itemId=' + ${reportItem.item.itemId}}" 
                                      alt="商品圖片" 
@@ -570,6 +807,55 @@
                 document.getElementById('imageModal').style.display = 'none';
             }
         });
+        
+        // 進度條動畫效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 為所有進度條添加動畫效果
+            const progressBars = document.querySelectorAll('.timeline-progress');
+            
+            progressBars.forEach((bar, index) => {
+                // 初始設置為0寬度
+                bar.style.width = '0%';
+                
+                // 延遲執行動畫，創造依次顯示的效果
+                setTimeout(() => {
+                    const targetWidth = bar.getAttribute('style').match(/width:\s*(\d+%)/);
+                    if (targetWidth) {
+                        bar.style.width = targetWidth[1];
+                    }
+                }, index * 200 + 500); // 每個進度條延遲200ms，初始延遲500ms
+            });
+            
+            // 為時間軸項目添加淡入動畫
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            timelineItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(10px)';
+                
+                setTimeout(() => {
+                    item.style.transition = 'all 0.5s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, index * 150 + 300);
+            });
+        });
+        
+        // 進度追蹤交互功能
+        function showProgressDetails(reportId, status) {
+            let message = '';
+            switch(status) {
+                case 0:
+                    message = '您的檢舉正在等待管理員審核中，請耐心等待。我們會在1-3個工作日內完成審核。';
+                    break;
+                case 1:
+                    message = '恭喜！您的檢舉已經通過審核。相關商品已被標記或下架，感謝您對平台品質的貢獻！';
+                    break;
+                case 2:
+                    message = '很抱歉，經過審核後認為此檢舉不符合處理標準。如有疑問，歡迎聯繫客服。';
+                    break;
+            }
+            alert(message);
+        }
     </script>
 </body>
 </html> 
