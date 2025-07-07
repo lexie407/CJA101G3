@@ -168,7 +168,7 @@ var stompClient = null;
 	   });
 	   
 	   //登入按鈕
-	   const loginBtn = null;
+	   let loginBtn = null;
 	   if(document.getElementsByClassName("logout-btn").length > 0){
 			loginBtn = document.getElementsByClassName("logout-btn")[0];
 	   

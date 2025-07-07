@@ -620,6 +620,11 @@
       </div>
     </div>
 
+    <!-- 登入、通知推播 -->
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../../js/notification/websocket.js"></script>
+
     <script th:inline="javascript">
       // 全域變數
       const actId = /*[[${act.actId}]]*/ null;

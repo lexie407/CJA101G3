@@ -539,7 +539,7 @@ public class ActApiController {
             }
             
         } catch (Exception e) {
-            // 參考members模組的錯誤處理：發生錯誤時使用預設圖片
+            // 發生錯誤時使用預設圖片
             System.err.println("獲取活動圖片錯誤 (actId: " + actId + "): " + e.getMessage());
             try {
                 byte[] defaultImage = defaultImageService.getDefaultImage();

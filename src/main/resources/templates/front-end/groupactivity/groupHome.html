@@ -578,6 +578,9 @@
                       <span th:case="3" class="status-badge status-cancel"
                         >已取消</span
                       >
+                      <span th:case="4" class="status-badge status-frozen"
+                        >已凍結</span
+                      >
                       <span th:case="5" class="status-badge status-end"
                         >已結束</span
                       >
@@ -692,8 +695,14 @@
       </div>
     </div>
 
-    <script th:src="@{/webjars/sockjs-client/1.5.1/sockjs.min.js}"></script>
-    <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>
+    <!-- 登入、通知推播 -->
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../../js/notification/websocket.js"></script>
+
+<!--    <script th:src="@{/webjars/sockjs-client/1.5.1/sockjs.min.js}"></script>-->
+<!--    <script th:src="@{/webjars/stomp-websocket/2.3.4/stomp.min.js}"></script>-->
+
     <script th:inline="javascript">
       const actId = /*[[${act.actId}]]*/ null;
       const itnId = /*[[${act.itnId}]]*/ null;

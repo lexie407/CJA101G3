@@ -4,11 +4,15 @@ import com.toiukha.groupactivity.model.ActDTO;
 import com.toiukha.groupactivity.model.ActStatus;
 import com.toiukha.groupactivity.model.ActVO;
 import com.toiukha.groupactivity.service.ActService;
+import com.toiukha.groupactivity.service.ActHandlerService;
 import com.toiukha.groupactivity.service.DefaultImageService;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,11 +31,14 @@ import java.util.Map;
 @RequestMapping("/act/admin")
 public class ActBackController {
 
-    @Autowired
+        @Autowired
     ActService actSvc;
-
+    
     @Autowired
     private DefaultImageService defaultImageService;
+    
+    @Autowired
+    private ActHandlerService actHandlerSvc;
 
     @ModelAttribute("recruitStatusMap")
     public Map<Byte, String> getRecruitStatusMap() {
@@ -94,30 +101,12 @@ public class ActBackController {
     //編輯活動頁面
     @GetMapping("/editAct/{actId}")
     public String editAct(@PathVariable Integer actId, Model model) {
-        model.addAttribute("actVo", actSvc.getOneAct(actId));
+        ActVO actVo = actSvc.getOneAct(actId);
+        
+        // 管理員可以編輯所有活動，包括凍結的活動
+        model.addAttribute("actVo", actVo);
         return "back-end/groupactivity/editAct";
     }
-
-    @PostMapping("/update")
-    public String updateAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
-                            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
-        // 如果沒有上傳新圖片，保留原有圖片
-        if (file != null && !file.isEmpty()) {
-            actDto.setActImg(file.getBytes());
-        } else {
-            // 取得原有活動資料，保留原有圖片
-            ActVO originalAct = actSvc.getOneAct(actDto.getActId());
-            if (originalAct != null && originalAct.getActImg() != null && originalAct.getActImg().length > 0) {
-                actDto.setActImg(originalAct.getActImg());
-            } else {
-                // 如果原本就沒有圖片，使用預設圖片
-                actDto.setActImg(defaultImageService.getDefaultImage());
-            }
-        }
-        actSvc.updateAct(actDto);
-        return "redirect:/act/admin/listAllAct";
-    }
-
 
     @PostMapping("/delete/{actId}")
     public String deleteAct(@PathVariable Integer actId) {
@@ -125,17 +114,144 @@ public class ActBackController {
         return "redirect:/act/admin/listAllAct";
     }
 
-//    @GetMapping(value = "/image/{actId}", produces = MediaType.IMAGE_JPEG_VALUE)
-//    @ResponseBody
-//    public ResponseEntity<byte[]> getImage(@PathVariable Integer actId) {
-//        ActVO actVo = actSvc.getOneAct(actId);
-//        if (actVo != null && actVo.getActImg() != null && actVo.getActImg().length > 0) {
-//            return ResponseEntity.ok(actVo.getActImg());
+//    @PostMapping("/update")
+//    public String updateAct(@Valid @ModelAttribute("actVo") ActDTO actDto,
+//                            @RequestParam(value = "upFile", required = false) MultipartFile file) throws IOException {
+//        // 如果沒有上傳新圖片，保留原有圖片
+//        if (file != null && !file.isEmpty()) {
+//            actDto.setActImg(file.getBytes());
 //        } else {
-//            // 如果沒有圖片，回傳預設圖片
-//            return ResponseEntity.ok(defaultImageService.getDefaultImage());
+//            // 取得原有活動資料，保留原有圖片
+//            ActVO originalAct = actSvc.getOneAct(actDto.getActId());
+//            if (originalAct != null && originalAct.getActImg() != null && originalAct.getActImg().length > 0) {
+//                actDto.setActImg(originalAct.getActImg());
+//            } else {
+//                // 如果原本就沒有圖片，使用預設圖片
+//                actDto.setActImg(defaultImageService.getDefaultImage());
+//            }
 //        }
+//        actSvc.updateAct(actDto);
+//        return "redirect:/act/admin/listAllAct";
 //    }
+
+    @PostMapping("/update")
+    public String updateAct(
+            @Valid @ModelAttribute("actVo") ActDTO actDto,
+            BindingResult bindingResult,
+            @RequestParam(value = "upFile", required = false) MultipartFile file,
+            Model model
+    ) throws IOException {
+        if (bindingResult.hasErrors()) {
+            // 保留原有圖片顯示
+            ActVO originalAct = actSvc.getOneAct(actDto.getActId());
+            if (originalAct != null) {
+                actDto.setActImg(originalAct.getActImg());
+            }
+            model.addAttribute("actVo", actDto);
+            return "back-end/groupactivity/editAct";
+        }
+        
+        // 處理圖片
+        if (file != null && !file.isEmpty()) {
+            actDto.setActImg(file.getBytes());
+        } else {
+            ActVO originalAct = actSvc.getOneAct(actDto.getActId());
+            if (originalAct != null && originalAct.getActImg() != null && originalAct.getActImg().length > 0) {
+                actDto.setActImg(originalAct.getActImg());
+            } else {
+                actDto.setActImg(defaultImageService.getDefaultImage());
+            }
+        }
+        
+        // 使用 ActHandlerService 處理管理員活動更新，可以完整設置所有欄位
+        ActVO actVo = actDto.toVO();
+        actHandlerSvc.handleActivityUpdateByAdmin(actVo);
+        
+        return "redirect:/act/admin/listAllAct";
+    }
+
+    // 活動圖片載入
+//    @GetMapping("/DBGifReader")
+//    public void getActImage(
+//            @RequestParam("actId") Integer actId,
+//            HttpServletResponse response) throws IOException {
+//
+//        ActVO act = actSvc.getOneAct(actId);
+//        byte[] imageBytes = act.getActImg();
+//
+//        response.setContentType("image/jpeg");
+//        ServletOutputStream out = response.getOutputStream();
+//
+//        if (imageBytes != null && imageBytes.length > 0) {
+//            out.write(imageBytes);
+//        } else {
+//            // 使用預設圖片
+//            byte[] defaultImage = defaultImageService.getDefaultImage();
+//            out.write(defaultImage);
+//        }
+//
+//        out.flush();
+//        out.close();
+//    }
+
+    // 活動圖片載入
+    @GetMapping("/DBGifReader")
+    public void getActImage(
+            @RequestParam("actId") Integer actId,
+            HttpServletResponse response) throws IOException {
+
+        ServletOutputStream out = null;
+        try {
+            ActVO act = actSvc.getOneAct(actId);
+            byte[] imageBytes = null;
+
+            if (act != null) {
+                imageBytes = act.getActImg();
+            }
+
+            response.setContentType("image/jpeg");
+            out = response.getOutputStream();
+
+            if (imageBytes != null && imageBytes.length > 0) {
+                out.write(imageBytes);
+            } else {
+                // 使用預設圖片
+                try {
+                    byte[] defaultImage = defaultImageService.getDefaultImage();
+                    out.write(defaultImage);
+                } catch (Exception e) {
+                    System.err.println("載入預設圖片失敗: " + e.getMessage());
+                    // 如果連預設圖片都無法載入，返回一個最小的透明PNG
+                    String emptyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+                    byte[] emptyImage = java.util.Base64.getDecoder().decode(emptyPng);
+                    response.setContentType("image/png");
+                    out.write(emptyImage);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("圖片載入錯誤 (actId: " + actId + "): " + e.getMessage());
+            // 確保回應正確關閉
+            if (out != null) {
+                try {
+                    String emptyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+                    byte[] emptyImage = java.util.Base64.getDecoder().decode(emptyPng);
+                    response.setContentType("image/png");
+                    out.write(emptyImage);
+                } catch (Exception ex) {
+                    System.err.println("寫入空白圖片失敗: " + ex.getMessage());
+                }
+            }
+        } finally {
+            if (out != null) {
+                try {
+                    out.flush();
+                    out.close();
+                } catch (Exception e) {
+                    System.err.println("關閉輸出流失敗: " + e.getMessage());
+                }
+            }
+        }
+    }
 
     /** 變更狀態 */
     @PostMapping("/changeStatus")

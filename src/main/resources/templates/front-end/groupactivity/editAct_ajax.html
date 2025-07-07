@@ -417,6 +417,11 @@
 
                     <!--系統處理欄位不可編輯-->
                     <div class="act-detail-info">
+                        <!-- 隱藏字段：保持系統計算欄位的值 -->
+                        <input type="hidden" name="signupCnt" th:value="${actVo.signupCnt}"/>
+                        <input type="hidden" name="allowCancel" th:value="${actVo.allowCancel}"/>
+                        <input type="hidden" name="recruitStatus" th:value="${actVo.recruitStatus}"/>
+                        
                         <!--                        <div class="form-floating">-->
                         <!--                            <input-->
                         <!--                                    type="number"-->
@@ -600,7 +605,10 @@
     </div>
 </div>
 
-<!-- 不再需要外部依賴 -->
+<!-- 登入、通知推播 -->
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="../../js/notification/websocket.js"></script>
 
 <script th:inline="javascript">
     const currentMemberId = /*[[${currentMemberId}]]*/ null;
