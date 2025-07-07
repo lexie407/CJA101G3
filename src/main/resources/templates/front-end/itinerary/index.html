@@ -42,7 +42,7 @@
                                 <div class="card-content">
                                     <h3>台北一日遊</h3>
                                     <p>暢遊台北熱門景點，適合親子與好友同遊。</p>
-                                    <a th:href="@{/itinerary/detail/1}" class="btn">查看行程</a>
+                                    <a th:href="@{/itinerary/detail/1(from=list)}" class="btn">查看行程</a>
                                 </div>
                             </div>
                             <div class="itinerary-featured-card">
@@ -50,7 +50,7 @@
                                 <div class="card-content">
                                     <h3>美食之旅</h3>
                                     <p>品嚐台灣各地美食，吃貨必備行程！</p>
-                                    <a th:href="@{/itinerary/detail/3}" class="btn">查看行程</a>
+                                    <a th:href="@{/itinerary/detail/3(from=list)}" class="btn">查看行程</a>
                                 </div>
                             </div>
                         </div>
@@ -104,7 +104,7 @@
                             熱門排行
                         </h2>
                         <div class="hot-grid">
-                            <a th:href="@{/itinerary/detail/1}" class="hot-card">
+                            <a th:href="@{/itinerary/detail/1(from=list)}" class="hot-card">
                                 <div class="hot-card__rank hot-card__rank--gold">1</div>
                                 <div class="hot-card__content">
                                     <h3 class="hot-card__title">台北一日遊</h3>
@@ -115,7 +115,7 @@
                                     </div>
                                 </div>
                             </a>
-                            <a th:href="@{/itinerary/detail/10}" class="hot-card">
+                            <a th:href="@{/itinerary/detail/10(from=list)}" class="hot-card">
                                 <div class="hot-card__rank hot-card__rank--silver">2</div>
                                 <div class="hot-card__content">
                                     <h3 class="hot-card__title">清境踏青趣</h3>
@@ -126,7 +126,7 @@
                                     </div>
                                 </div>
                             </a>
-                            <a th:href="@{/itinerary/detail/3}" class="hot-card">
+                            <a th:href="@{/itinerary/detail/3(from=list)}" class="hot-card">
                                 <div class="hot-card__rank hot-card__rank--bronze">3</div>
                                 <div class="hot-card__content">
                                     <h3 class="hot-card__title">美食之旅</h3>

@@ -483,4 +483,16 @@ public class SpotVO implements Serializable {
                 ", region='" + region + '\'' +
                 '}';
     }
+
+    public Double getSpotRating() {
+        return googleRating != null ? googleRating : 0.0;
+    }
+
+    public String getSpotRegion() {
+        return region != null ? region : "未分類";
+    }
+
+    public String getSpotAddress() {
+        return spotLoc != null ? spotLoc : "";
+    }
 } 

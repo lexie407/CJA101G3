@@ -1285,9 +1285,10 @@ function updatePaginationButtons() {
             pageItem.className = 'page-item' + (i === currentPage ? ' active' : '');
             
             const pageButton = document.createElement('button');
+            pageButton.type = 'button';  // 確保已設置
             pageButton.className = 'page-link';
-            pageButton.textContent = i + 1;
-            pageButton.onclick = () => goToPage(i);
+            pageButton.textContent = (i + 1).toString();
+            pageButton.addEventListener('click', () => goToPage(i));
             
             pageItem.appendChild(pageButton);
             pageNumbers.appendChild(pageItem);

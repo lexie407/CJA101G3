@@ -35,10 +35,7 @@
                         <h2 class="spot-detail-error__title">找不到景點</h2>
                         <p class="spot-detail-error__message" th:text="${errorMessage}">景點不存在或已被移除</p>
                         <div class="spot-detail-error__actions">
-                                                            <a th:href="@{/spot/spotlist}" class="spot-detail-btn spot-detail-btn--primary">
-                                <span class="material-icons">arrow_back</span>
-                                回到景點列表
-                            </a>
+                            <a th:href="@{/spot/list}" class="spot-detail-btn spot-detail-btn--primary">返回列表</a>
                             <a th:href="@{/spot/}" class="spot-detail-btn spot-detail-btn--secondary">
                                 <span class="material-icons">home</span>
                                 回到首頁
@@ -63,7 +60,7 @@
                                             </a>
                                         </li>
                                         <li class="spot-detail-breadcrumb__item">
-                                            <a th:href="@{/spot/spotlist}" class="spot-detail-breadcrumb__link">
+                                            <a th:href="@{/spot/list}" class="spot-detail-breadcrumb__link">
                                                 <span class="material-icons">list</span>
                                                 景點列表
                                             </a>

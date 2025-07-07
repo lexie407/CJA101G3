@@ -180,10 +180,18 @@
                                     </div>
                                 </div>
                                 <div class="card-footer">
-                                    <a th:href="@{/itinerary/detail/{id}(id=${itinerary.itnId})}" class="itn-capsule-btn">
+                                    <a th:href="@{/itinerary/detail/{id}(id=${itinerary.itnId}, from=my)}" class="itn-capsule-btn">
                                         <span class="material-icons">visibility</span>
                                         查看行程
                                     </a>
+                                    <button class="itn-capsule-btn create-activity-btn"
+                                            id="CreateActByItnId"
+                                            th:data-id="${itinerary.itnId}"
+                                            th:data-name="${itinerary.itnName}"
+                                            onclick="createActivity(this.getAttribute('data-id'), this.getAttribute('data-name'))">
+                                        <span class="material-icons">group_add</span>
+                                        建立揪團
+                                    </button>
                                     <button th:if="${itinerary.isPublicItinerary()}" 
                                             class="itn-capsule-outline-btn toggle-public-btn"
                                             th:data-id="${itinerary.itnId}"
@@ -241,5 +249,15 @@
     </div>
 
     <script th:src="@{/js/itinerary/front-end/my.js}"></script>
+    <script>
+        document.getElementById('CreateActByItnId').addEventListener('click', function() {
+        console.log("讀到行程id", itnId, typeof itnId);
+        if (!itnId) {
+          alert('找不到 itnId');
+          return;
+        }
+        window.location.href = `/act/member/add?itnId=${itnId}`;
+      });
+    </script>
 </body>
 </html>

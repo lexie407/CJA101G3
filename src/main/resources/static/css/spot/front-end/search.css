@@ -188,26 +188,124 @@
 
 /* 5. 進階搜尋 */
 .spot-search-advanced {
+    margin-top: 1rem;
     background: var(--md-sys-color-surface-container-low);
     border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--spot-search-border-radius);
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    display: none;
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: var(--spot-search-card-shadow);
 }
 
-.spot-search-advanced.active {
-    display: block;
-    animation: spot-search-expand 0.3s ease-out;
+.spot-search-advanced__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--md-sys-color-surface-container);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
-.spot-search-advanced__row {
+.spot-search-advanced__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+}
+
+.spot-search-advanced__title .material-icons {
+    font-size: 1.25rem;
+    color: var(--md-sys-color-primary);
+}
+
+.spot-search-advanced__content {
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 1.5rem;
-    align-items: end;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
 }
 
+/* 進階搜尋切換按鈕 */
+.spot-search-advanced-toggle-btn {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 8px;
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--spot-search-transition);
+    margin-left: 0.5rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-search-advanced-toggle-btn:hover {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-search-advanced-toggle-btn.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-search-advanced-toggle-btn.active:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) 90%, black 10%);
+}
+
+.spot-search-advanced-toggle-btn .material-icons {
+    font-size: 1.25rem;
+}
+
+/* 統一的控制按鈕樣式 */
+.spot-search-control-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--spot-search-transition);
+    font-family: inherit;
+}
+
+.spot-search-control-btn:hover {
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-primary);
+    background: color-mix(in srgb, var(--md-sys-color-primary) 5%, transparent);
+    transform: translateY(-1px);
+}
+
+.spot-search-control-btn .material-icons {
+    font-size: 1.25rem;
+}
+
+/* 重置按鈕特定樣式 */
+.spot-search-reset-btn {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.spot-search-reset-btn:hover {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    border-color: var(--md-sys-color-error);
+}
+
+/* 進階搜尋表單元素 */
 .spot-search-advanced__group {
     display: flex;
     flex-direction: column;
@@ -218,72 +316,40 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    font-size: 0.9rem;
     font-weight: 500;
     color: var(--md-sys-color-on-surface);
-    font-size: 0.9rem;
+}
+
+.spot-search-advanced__label .material-icons {
+    font-size: 1.1rem;
+    color: var(--md-sys-color-primary);
 }
 
 .spot-search-advanced__select {
-    padding: 0.75rem 1rem;
+    width: 100%;
+    padding: 0.5rem 2rem 0.5rem 1rem;
     border: 1px solid var(--md-sys-color-outline-variant);
     border-radius: 8px;
     background: var(--md-sys-color-surface);
     color: var(--md-sys-color-on-surface);
     font-size: 0.9rem;
-    transition: border-color var(--spot-search-transition);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    transition: all var(--spot-search-transition);
+}
+
+.spot-search-advanced__select:hover {
+    border-color: var(--md-sys-color-primary);
 }
 
 .spot-search-advanced__select:focus {
     outline: none;
     border-color: var(--md-sys-color-primary);
-}
-
-.spot-search-reset-btn {
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
-    border: none;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    transition: all var(--spot-search-transition);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-}
-
-.spot-search-reset-btn:hover {
-    background: var(--md-sys-color-secondary);
-    color: var(--md-sys-color-on-secondary);
-    transform: translateY(-2px);
-}
-
-.spot-search-advanced-toggle {
-    background: none;
-    border: 1px solid var(--md-sys-color-outline-variant);
-    color: var(--md-sys-color-primary);
-    border-radius: 25px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: all var(--spot-search-transition);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0 auto;
-    font-weight: 500;
-}
-
-.spot-search-advanced-toggle:hover {
-    background: var(--md-sys-color-primary-container);
-    border-color: var(--md-sys-color-primary);
-}
-
-.spot-search-advanced-toggle.active .spot-search-advanced-toggle__arrow {
-    transform: rotate(180deg);
-}
-
-.spot-search-advanced-toggle__arrow {
-    transition: transform var(--spot-search-transition);
+    box-shadow: 0 0 0 2px rgba(var(--md-sys-color-primary-rgb), 0.2);
 }
 
 /* 6. 熱門搜尋 */
@@ -410,9 +476,6 @@
 }
 
 .spot-search-results-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
@@ -432,6 +495,31 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    justify-content: space-between;
+}
+
+/* 篩選條件摘要 */
+.spot-search-filter-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.9rem;
+}
+
+.spot-search-filter-summary .material-icons {
+    font-size: 1rem;
+}
+
+.filter-tag {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-left: 0.25rem;
 }
 
 .spot-search-results-count {
@@ -1065,4 +1153,41 @@
     .spot-search-results-grid {
         grid-template-columns: 1fr !important;
     }
+}
+
+/* 搜尋結果提示樣式 */
+.spot-search-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: opacity 0.3s;
+}
+
+.spot-search-notification--success {
+    border-left: 4px solid #4caf50;
+}
+
+.spot-search-notification--info {
+    border-left: 4px solid #2196f3;
+}
+
+.spot-search-notification .material-icons {
+    font-size: 1.2rem;
+}
+
+.spot-search-notification--success .material-icons {
+    color: #4caf50;
+}
+
+.spot-search-notification--info .material-icons {
+    color: #2196f3;
 }

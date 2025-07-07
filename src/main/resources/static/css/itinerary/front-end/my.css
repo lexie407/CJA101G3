@@ -18,3 +18,21 @@
     font-size: 14px;
     margin-right: 2px;
 } 
+
+/* 建立揪團按鈕樣式 */
+.create-activity-btn {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8a65 100%) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3) !important;
+}
+
+.create-activity-btn:hover {
+    background: linear-gradient(135deg, #ff5722 0%, #ff6b35 100%) !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4) !important;
+    transform: translateY(-1px);
+}
+
+.create-activity-btn:active {
+    transform: translateY(0);
+} 

@@ -64,11 +64,13 @@ public class ItineraryPageController {
     public String itnlist(
                           @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer isPublic,
+            @RequestParam(required = false) Integer creatorType,
+            HttpSession session,
             Model model) {
         
         try {
-            // 使用測試會員ID (測試用)
-            Integer memId = 10;
+            // 獲取當前登入會員ID
+            Integer memId = getMemIdFromSession(session);
             
             // 根據條件查詢行程列表
             List<ItineraryVO> itineraryList;
@@ -80,18 +82,22 @@ public class ItineraryPageController {
                 itineraryList = itineraryService.getAllPublicItineraries();
             }
             
-            // 檢查每個行程的收藏狀態並組合建立者名稱
+            // 根據建立者類型篩選
+            if (creatorType != null) {
+                itineraryList = itineraryList.stream()
+                    .filter(itinerary -> itinerary.getCreatorType() != null && 
+                            itinerary.getCreatorType().equals(creatorType.byteValue()))
+                    .collect(Collectors.toList());
+            }
+            
+            // 設置建立者顯示名稱
+            itineraryService.setCreatorDisplayNames(itineraryList, memId);
+            
+            // 檢查每個行程的收藏狀態
+            if (memId != null) {
             List<Integer> favoriteIds = favItnService.findFavoriteIdsByMemId(memId);
             for (ItineraryVO itinerary : itineraryList) {
                 itinerary.setIsFavorited(favoriteIds.contains(itinerary.getItnId()));
-                
-                // 組合建立者顯示名稱
-                if (itinerary.getCreatorType() != null && itinerary.getCreatorType() == 1) {
-                    // 直接設定顯示名稱，不查詢會員資料
-                    itinerary.setCreatorDisplayName("會員 " + itinerary.getCrtId());
-                    
-                    // 如果有需要，可以在這裡添加會員查詢邏輯
-                    // 但目前先避免使用未定義的方法
                 }
             }
             

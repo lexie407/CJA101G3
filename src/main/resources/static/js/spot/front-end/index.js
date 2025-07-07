@@ -455,10 +455,7 @@
                     filteredSpots = filteredSpots.filter(spot => spot.rating >= minRating);
                     break;
                     
-                case 'distance':
-                    // 這裡可以根據實際需求實作距離篩選
-                    // 目前先保留所有景點
-                    break;
+
                     
                 case 'ticket':
                     filteredSpots = filteredSpots.filter(spot => spot.ticketType === filter.value);
@@ -515,10 +512,7 @@
                 // 按最新排序
                 filteredSpots.sort((a, b) => b.id - a.id);
                 break;
-            case 'distance':
-                // 按距離排序（這裡隨機排序作為示例）
-                filteredSpots.sort(() => Math.random() - 0.5);
-                break;
+
         }
     }
 
@@ -673,7 +667,6 @@
     function getFilterTypeLabel(filterType) {
         const labels = {
             'rating': '評分',
-            'distance': '距離',
             'ticket': '門票',
             'type': '類型',
             'category': '分類',

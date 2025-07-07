@@ -39,6 +39,14 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
     List<SpotVO> findBySpotNameContainingAndSpotStatus(String spotName, byte spotStatus);
     
     /**
+     * 根據景點地址查詢 (模糊搜尋)
+     * @param spotLoc 景點地址
+     * @param spotStatus 景點狀態
+     * @return 符合條件的景點列表
+     */
+    List<SpotVO> findBySpotLocContainingAndSpotStatus(String spotLoc, byte spotStatus);
+    
+    /**
      * 根據狀態查詢景點
      * @param spotStatus 景點狀態 (0=待審核, 1=上架, 2=退回)
      * @return 符合條件的景點列表
@@ -201,4 +209,28 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
            "AND s.spotId != :spotId " +
            "AND s.region = (SELECT s2.region FROM SpotVO s2 WHERE s2.spotId = :spotId)")
     List<SpotVO> findRelatedSpots(@Param("spotId") Integer spotId, @Param("limit") int limit);
+
+    @Query("SELECT s FROM SpotVO s WHERE " +
+           "s.spotStatus = 1 AND " +
+           "(:keyword IS NULL OR LOWER(s.spotName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(s.spotLoc) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(:region IS NULL OR :region = '' OR s.region = :region) AND " +
+           "(:rating IS NULL OR (s.googleRating IS NOT NULL AND s.googleRating >= :rating)) " +
+           "ORDER BY " +
+           "CASE " +
+           "    WHEN :sortBy = 'rating' AND :sortDirection = 'desc' THEN s.googleRating " +
+           "    WHEN :sortBy = 'rating' AND :sortDirection = 'asc' THEN -s.googleRating " +
+           "    ELSE NULL " +
+           "END DESC NULLS LAST, " +
+           "CASE " +
+           "    WHEN :sortBy = 'date' AND :sortDirection = 'desc' THEN s.spotCreateAt " +
+           "    WHEN :sortBy = 'date' AND :sortDirection = 'asc' THEN s.spotCreateAt " +
+           "    ELSE NULL " +
+           "END DESC NULLS LAST")
+    List<SpotVO> findBySearchCriteria(
+            @Param("keyword") String keyword,
+            @Param("region") String region,
+            @Param("rating") Double rating,
+            @Param("sortBy") String sortBy,
+            @Param("sortDirection") String sortDirection);
 } 

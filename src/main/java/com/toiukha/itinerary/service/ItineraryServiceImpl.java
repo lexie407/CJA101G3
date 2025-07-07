@@ -312,4 +312,16 @@ public class ItineraryServiceImpl implements ItineraryService {
     public List<ItineraryVO> getItinerariesByPublicStatus(Integer isPublic) {
         return itineraryRepository.findByIsPublic(isPublic.byteValue());
     }
+
+    @Override
+    public void setCreatorDisplayNames(List<ItineraryVO> itineraryList, Integer currentMemId) {
+        if (itineraryList == null || itineraryList.isEmpty()) {
+            return;
+        }
+        
+        for (ItineraryVO itinerary : itineraryList) {
+            String displayName = itinerary.formatCreatorName(currentMemId);
+            itinerary.setCreatorDisplayName(displayName);
+        }
+    }
 } 

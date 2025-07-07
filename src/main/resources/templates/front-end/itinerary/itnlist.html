@@ -59,6 +59,23 @@
                                             <option value="1" th:selected="${param.isPublic == '1'}">公開</option>
                                         </select>
                                     </div>
+                                    <div class="itinerary-list-search-group">
+                                        <label for="creatorType" class="itinerary-list-search-label">
+                                            <span class="material-icons">person</span>
+                                            建立者類型
+                                        </label>
+                                        <select id="creatorType" name="creatorType" class="itinerary-list-search-select">
+                                            <option value="">全部</option>
+                                            <option value="2" th:selected="${param.creatorType == '2'}">
+                                                <span class="material-icons">verified</span>
+                                                官方推薦
+                                            </option>
+                                            <option value="1" th:selected="${param.creatorType == '1'}">
+                                                <span class="material-icons">group</span>
+                                                會員建立
+                                            </option>
+                                        </select>
+                                    </div>
                                     <div class="itinerary-list-search-actions">
                                         <button type="submit" class="itinerary-list-search-btn">
                                             <span class="material-icons" aria-hidden="true">search</span>
@@ -120,6 +137,15 @@
                                                 title="加入收藏">
                                             <span class="material-icons">favorite_border</span>
                                         </button>
+                                        
+                                        <div class="itinerary-list-card__badges">
+                                            <!-- 我的行程標籤 -->
+                                            <span th:if="${session.member != null && session.member.memId == itinerary.crtId}" 
+                                                  class="itinerary-list-card__badge itinerary-list-card__badge--mine">
+                                                <span class="material-icons">account_circle</span>
+                                                我的行程
+                                            </span>
+                                            
                                         <!-- 公開狀態標籤 -->
                                         <span th:if="${itinerary.isPublicItinerary()}" class="itinerary-list-card__status itinerary-list-card__status--public">
                                             <span class="material-icons">public</span>
@@ -129,6 +155,7 @@
                                             <span class="material-icons">lock</span>
                                             私人
                                         </span>
+                                        </div>
                                     </div>
                                     <div class="itinerary-list-card__content">
                                         <h3 class="itinerary-list-card__title" th:text="${itinerary.itnName}">行程名稱</h3>
@@ -138,8 +165,28 @@
                                         </p>
                                         <div class="itinerary-list-card__meta">
                                             <div class="itinerary-list-card__author">
+                                                <!-- 根據建立者類型顯示不同圖示 -->
+                                                <span th:if="${itinerary.creatorType == 2}" class="material-icons creator-official">verified</span>
+                                                <span th:if="${itinerary.creatorType == 1 && session.member != null && session.member.memId == itinerary.crtId}" class="material-icons creator-self">account_circle</span>
+                                                <span th:if="${itinerary.creatorType == 1 && (session.member == null || session.member.memId != itinerary.crtId)}" class="material-icons creator-member">person</span>
+                                                <span th:if="${itinerary.creatorType == null}" class="material-icons">help</span>
+                                                
+                                                <!-- 建立者名稱 -->
+                                                <span class="creator-name" th:text="${itinerary.getCreatorDisplayName()}">建立者</span>
+                                                
+                                                <!-- 建立者類型標籤 -->
+                                                <span th:if="${itinerary.creatorType == 2}" class="creator-badge creator-badge--official">
+                                                    <span class="material-icons">star</span>
+                                                    官方
+                                                </span>
+                                                <span th:if="${itinerary.creatorType == 1 && session.member != null && session.member.memId == itinerary.crtId}" class="creator-badge creator-badge--self">
                                                 <span class="material-icons">person</span>
-                                                <span th:text="${itinerary.getCreatorDisplayName()}">建立者</span>
+                                                    我的
+                                                </span>
+                                                <span th:if="${itinerary.creatorType == 1 && (session.member == null || session.member.memId != itinerary.crtId)}" class="creator-badge creator-badge--member">
+                                                    <span class="material-icons">group</span>
+                                                    會員
+                                                </span>
                                             </div>
                                             <div class="itinerary-list-card__date">
                                                 <span class="material-icons">schedule</span>
@@ -147,32 +194,26 @@
                                             </div>
                                         </div>
                                         <div class="itinerary-list-card__actions">
-                                            <a th:href="@{/itinerary/detail/{id}(id=${itinerary.itnId})}" class="itinerary-list-card__link">
+                                            <a th:href="@{/itinerary/detail/{id}(id=${itinerary.itnId}, from=list)}" class="itinerary-list-card__link">
                                                 <span class="material-icons" aria-hidden="true">visibility</span>
                                                 查看行程
                                             </a>
-                                            <!-- 只對自己的行程顯示編輯按鈕 -->
+                                            <!-- 複製行程按鈕 - 所有登入用戶都可以複製 -->
+                                            <button th:if="${session.member != null}" 
+                                                    th:data-itinerary-id="${itinerary.itnId}"
+                                                    class="itinerary-list-card__link copy-itinerary-btn" 
+                                                    onclick="copyItinerary(this)">
+                                                <span class="material-icons" aria-hidden="true">content_copy</span>
+                                                複製行程
+                                            </button>
+                                            <!-- 我的行程管理提示 -->
                                             <a th:if="${session.member != null && session.member.memId == itinerary.crtId}" 
-                                               th:href="@{/itinerary/edit/{id}(id=${itinerary.itnId})}" 
-                                               class="itinerary-list-card__link edit-itinerary-btn">
-                                                <span class="material-icons" aria-hidden="true">edit</span>
-                                                編輯行程
+                                               th:href="@{/itinerary/my}" 
+                                               class="itinerary-list-card__link manage-hint-btn" 
+                                               title="前往我的行程進行管理">
+                                                <span class="material-icons" aria-hidden="true">settings</span>
+                                                管理行程
                                             </a>
-                                            <!-- 只對自己的行程顯示狀態切換按鈕 -->
-                                            <button th:if="${session.member != null && session.member.memId == itinerary.crtId && itinerary.isPublicItinerary()}" 
-                                                    th:data-itinerary-id="${itinerary.itnId}"
-                                                    class="itinerary-list-card__link toggle-visibility-btn" 
-                                                    onclick="toggleVisibility(this, false)">
-                                                <span class="material-icons" aria-hidden="true">lock</span>
-                                                設為私人
-                                            </button>
-                                            <button th:if="${session.member != null && session.member.memId == itinerary.crtId && !itinerary.isPublicItinerary()}" 
-                                                    th:data-itinerary-id="${itinerary.itnId}"
-                                                    class="itinerary-list-card__link toggle-visibility-btn" 
-                                                    onclick="toggleVisibility(this, true)">
-                                                <span class="material-icons" aria-hidden="true">public</span>
-                                                設為公開
-                                            </button>
                                         </div>
                                     </div>
                                 </article>

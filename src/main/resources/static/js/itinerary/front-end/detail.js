@@ -87,14 +87,7 @@ function bindButtonEvents() {
         });
     }
     
-    // 建立揪團按鈕
-    const createActivityBtn = document.querySelector('#createActivityBtn');
-    if (createActivityBtn) {
-        createActivityBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            createActivity();
-        });
-    }
+    // 建立揪團按鈕已移除，現在只在「我的行程」頁面中提供
     
     // 景點按鈕
     document.addEventListener('click', function(e) {
@@ -566,7 +559,7 @@ function copyItinerary() {
  */
 function processCopyItinerary(customName) {
     // 發送複製請求
-    fetch(`/api/itinerary/${itineraryId}/copy`, {
+    fetch(`/itinerary/api/${itineraryId}/copy`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -613,41 +606,7 @@ function editItinerary() {
     window.location.href = `/itinerary/edit/${itineraryId}`;
 }
 
-/**
- * 建立揪團
- */
-function createActivity() {
-    if (!itineraryId) {
-        showToast('無法獲取行程ID', 'error');
-        return;
-    }
-    
-    // 確認是否已登入
-    fetch('/api/members/check-login')
-        .then(response => response.json())
-        .then(data => {
-            if (!data.isLoggedIn) {
-                // 未登入，顯示提示並導向登入頁
-                showLoginRequiredModal('activity');
-                return;
-            }
-            
-            // 已登入，顯示確認對話框
-            showConfirmModal(
-                '建立揪團',
-                '確定要以此行程建立揪團活動嗎？系統會自動複製此行程作為揪團活動的行程。',
-                '確定建立',
-                () => {
-                    // 導向到建立揪團頁面，並帶上行程ID
-                    window.location.href = `/groupactivity/create?itnId=${itineraryId}`;
-                }
-            );
-        })
-        .catch(error => {
-            console.error('檢查登入狀態失敗:', error);
-            showToast('網路錯誤，請稍後再試', 'error');
-    });
-}
+// 建立揪團功能已移至「我的行程」頁面
 
 /**
  * 分享行程

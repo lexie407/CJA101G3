@@ -296,4 +296,11 @@ public interface ItineraryService {
      */
     @Transactional
     void updateSpotsForItinerary(Integer itnId, List<Integer> spotIds);
+
+    /**
+     * 為行程列表設置建立者顯示名稱
+     * @param itineraryList 行程列表
+     * @param currentMemId 當前登入會員ID
+     */
+    void setCreatorDisplayNames(List<ItineraryVO> itineraryList, Integer currentMemId);
 } 

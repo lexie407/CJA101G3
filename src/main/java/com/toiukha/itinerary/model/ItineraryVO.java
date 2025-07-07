@@ -185,6 +185,37 @@ public class ItineraryVO implements Serializable {
         return "會員"; // Default
     }
 
+    /**
+     * 格式化建立者顯示名稱
+     * @param currentMemId 當前登入會員ID，用於判斷是否為「我的行程」
+     * @return 格式化後的建立者名稱
+     */
+    public String formatCreatorName(Integer currentMemId) {
+        if (creatorType == null) {
+            return "未知";
+        }
+        
+        if (creatorType == 2) {
+            // 官方/管理員建立的行程
+            return "官方推薦";
+        } else if (creatorType == 1) {
+            // 會員建立的行程
+            if (currentMemId != null && currentMemId.equals(this.crtId)) {
+                return "我的行程";
+            } else {
+                // 顯示會員 + ID後四位
+                String idStr = String.valueOf(this.crtId);
+                if (idStr.length() >= 4) {
+                    return "會員 " + idStr.substring(idStr.length() - 4);
+                } else {
+                    return "會員 " + String.format("%04d", this.crtId);
+                }
+            }
+        }
+        
+        return "未知";
+    }
+
     public void setCreatorDisplayName(String creatorDisplayName) {
         this.creatorDisplayName = creatorDisplayName;
     }

@@ -87,6 +87,13 @@ function bindFavoriteButtons() {
             const button = e.target.closest('.itinerary-list-card__favorite');
             toggleFavorite(button);
         }
+        
+        // 綁定複製按鈕事件
+        if (e.target.closest('.copy-itinerary-btn')) {
+            e.preventDefault();
+            const button = e.target.closest('.copy-itinerary-btn');
+            copyItinerary(button);
+        }
     });
 }
 
@@ -510,11 +517,79 @@ function toggleVisibility(button, makePublic) {
 
 
 
+/**
+ * 複製行程
+ */
+function copyItinerary(button) {
+    const itineraryId = button.dataset.itineraryId;
+    if (!itineraryId) {
+        console.error('行程 ID 不存在');
+        return;
+    }
+    
+    // 顯示確認對話框
+    if (!confirm('確定要複製這個行程嗎？複製後的行程會保存到您的「我的行程」中。')) {
+        return;
+    }
+    
+    button.disabled = true;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<span class="material-icons">hourglass_empty</span>複製中...';
+    
+    // 呼叫複製API
+    fetch(`/itinerary/api/${itineraryId}/copy`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.status === 401) {
+            // 未登入，顯示登入對話框
+            showLoginDialog(button, originalHTML);
+            throw new Error('請先登入');
+        }
+        if (!response.ok) {
+            throw new Error('伺服器回應錯誤');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast('行程複製成功！', 'success');
+            
+            // 詢問用戶是否要前往編輯新行程
+            setTimeout(() => {
+                if (confirm('行程複製成功！是否要前往編輯新行程？')) {
+                    window.location.href = `/itinerary/edit/${data.newItineraryId}`;
+                } else {
+                    // 前往我的行程列表
+                    window.location.href = '/itinerary/my';
+                }
+            }, 1000);
+        } else {
+            showToast(data.message || '複製失敗', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('複製行程失敗:', error);
+        if (error.message !== '請先登入') {
+            showToast('網路錯誤，請稍後再試', 'error');
+        }
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+    });
+}
+
 // 全域函數，供 HTML 直接呼叫
 window.loadMoreItineraries = loadMoreItineraries;
 window.resetSearchForm = resetSearchForm;
 window.toggleVisibility = toggleVisibility;
 window.toggleFavorite = toggleFavorite; 
+window.copyItinerary = copyItinerary; 
 
 // 監聽收藏狀態變更事件
 window.addEventListener('storage', function(e) {

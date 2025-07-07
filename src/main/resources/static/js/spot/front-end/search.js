@@ -25,6 +25,7 @@
         initAccessibility();
         initSearchHistory();
         initToastSystem();
+        initAlertClosing();
         
         // 頁面載入完成後的效果
         document.addEventListener('DOMContentLoaded', function() {
@@ -42,20 +43,30 @@
     function initSearchFunctionality() {
         const searchForm = document.querySelector('.spot-search-form');
         const searchInput = document.querySelector('.spot-search-box__input');
+        const regionSelect = document.getElementById('region');
+        const ratingSelect = document.getElementById('rating');
+        const sortBySelect = document.getElementById('sortBy');
+        const sortDirectionSelect = document.getElementById('sortDirection');
         
         if (searchForm && searchInput) {
             // 防止空白搜尋
             searchForm.addEventListener('submit', function(e) {
+                // 允許只選擇地區而沒有關鍵字的搜尋
                 const keyword = searchInput.value.trim();
-                if (!keyword) {
+                const region = regionSelect ? regionSelect.value : '';
+                const rating = ratingSelect ? ratingSelect.value : '';
+                
+                if (!keyword && !region && !rating) {
                     e.preventDefault();
-                    showToast('請輸入搜尋關鍵字', 'warning');
+                    showToast('請輸入搜尋關鍵字或選擇篩選條件', 'warning');
                     searchInput.focus();
                     return;
                 }
                 
                 // 儲存搜尋歷史
-                saveSearchHistory(keyword);
+                if (keyword) {
+                    saveSearchHistory(keyword);
+                }
                 showToast('正在搜尋...', 'info');
             });
 
@@ -76,18 +87,70 @@
                 }
             });
         }
+
+        // 監聽所有篩選器的變更事件
+        if (searchForm) {
+            // 地區選擇變更
+            if (regionSelect) {
+                regionSelect.addEventListener('change', function() {
+                    console.log('地區變更:', this.value);
+                    searchForm.submit();
+                });
+            }
+            
+            // 評分篩選變更
+            if (ratingSelect) {
+                ratingSelect.addEventListener('change', function() {
+                    console.log('評分篩選變更:', this.value);
+                    searchForm.submit();
+                });
+            }
+            
+            // 排序方式變更
+            if (sortBySelect) {
+                sortBySelect.addEventListener('change', function() {
+                    console.log('排序方式變更:', this.value);
+                    searchForm.submit();
+                });
+            }
+            
+            // 排序方向變更
+            if (sortDirectionSelect) {
+                sortDirectionSelect.addEventListener('change', function() {
+                    console.log('排序方向變更:', this.value);
+                    searchForm.submit();
+                });
+            }
+        }
     }
 
     /**
      * 進階搜尋功能
      */
     function initAdvancedSearch() {
-        const toggleBtn = document.querySelector('.spot-search-advanced-toggle');
-        const advancedPanel = document.querySelector('.spot-search-advanced');
+        const toggleBtn = document.querySelector('.spot-search-advanced-toggle-btn');
+        const advancedPanel = document.getElementById('advancedSearch');
         
         if (toggleBtn && advancedPanel) {
             toggleBtn.addEventListener('click', function() {
                 toggleAdvancedSearch();
+            });
+        }
+        
+        // 為重置按鈕添加事件處理
+        const resetBtn = document.querySelector('.spot-search-reset-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                resetSearchForm();
+            });
+        }
+        
+        // 防止進階搜尋面板內的點擊觸發表單提交
+        if (advancedPanel) {
+            advancedPanel.addEventListener('click', function(e) {
+                e.stopPropagation();
             });
         }
     }
@@ -95,19 +158,36 @@
     /**
      * 切換進階搜尋面板
      */
-    window.toggleAdvancedSearch = function() {
-        const toggleBtn = document.querySelector('.spot-search-advanced-toggle');
-        const advancedPanel = document.querySelector('.spot-search-advanced');
-        const toggleText = document.querySelector('.spot-search-advanced-toggle__text');
+    window.toggleAdvancedSearch = function(event) {
+        const toggleBtn = document.querySelector('.spot-search-advanced-toggle-btn');
+        const advancedPanel = document.getElementById('advancedSearch');
         
         if (!toggleBtn || !advancedPanel) return;
         
         isAdvancedSearchVisible = !isAdvancedSearchVisible;
         
         if (isAdvancedSearchVisible) {
-            advancedPanel.classList.add('active');
+            advancedPanel.style.display = 'block';
             toggleBtn.classList.add('active');
-            if (toggleText) toggleText.textContent = '收起進階搜尋';
+            toggleBtn.setAttribute('aria-expanded', 'true');
+            toggleBtn.title = '收起進階搜尋';
+            
+            // 添加動畫效果
+            if (!prefersReducedMotion) {
+                advancedPanel.style.opacity = '0';
+                advancedPanel.style.transform = 'translateY(-10px)';
+                advancedPanel.style.transition = 'none'; // 先移除transition
+                
+                // 使用requestAnimationFrame確保樣式已應用
+                requestAnimationFrame(() => {
+                    advancedPanel.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    advancedPanel.style.opacity = '1';
+                    advancedPanel.style.transform = 'translateY(0)';
+                });
+            } else {
+                advancedPanel.style.opacity = '1';
+                advancedPanel.style.transform = 'translateY(0)';
+            }
             
             // 聚焦第一個選擇框
             const firstSelect = advancedPanel.querySelector('select');
@@ -115,19 +195,35 @@
                 setTimeout(() => firstSelect.focus(), 100);
             }
         } else {
-            advancedPanel.classList.remove('active');
+            if (!prefersReducedMotion) {
+                advancedPanel.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                advancedPanel.style.opacity = '0';
+                advancedPanel.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    if (advancedPanel.style.opacity === '0') { // 確保沒有被重新打開
+                        advancedPanel.style.display = 'none';
+                    }
+                }, 300);
+            } else {
+                advancedPanel.style.display = 'none';
+            }
+            
             toggleBtn.classList.remove('active');
-            if (toggleText) toggleText.textContent = '進階搜尋';
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            toggleBtn.title = '展開進階搜尋';
         }
-        
-        // 無障礙屬性更新
-        toggleBtn.setAttribute('aria-expanded', isAdvancedSearchVisible);
     };
 
     /**
      * 重置搜尋表單
      */
-    window.resetSearchForm = function() {
+    window.resetSearchForm = function(event) {
+        // 阻止表單提交
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
         const form = document.querySelector('.spot-search-form');
         if (form) {
             // 重置所有表單欄位
@@ -383,7 +479,7 @@
             // Ctrl/Cmd + Enter: 查看所有景點
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 e.preventDefault();
-                window.location.href = '/spot/spotlist';
+                window.location.href = '/spot/list';
             }
             
             // Alt + A: 切換進階搜尋
@@ -541,29 +637,28 @@
     function showToast(message, type = 'info', duration = 3000) {
         const container = document.getElementById('toastContainer');
         if (!container) return;
-        
+        // 先移除現有的 toast
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
         const toast = document.createElement('div');
         toast.className = `spot-search-toast spot-search-toast--${type}`;
-        
         const icon = getToastIcon(type);
         toast.innerHTML = `
             <span class="material-icons">${icon}</span>
             <span>${message}</span>
         `;
-        
         container.appendChild(toast);
-        
         // 自動移除
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.style.opacity = '0';
                 toast.style.transform = 'translateX(100%)';
                 setTimeout(() => {
-                    container.removeChild(toast);
+                    if (toast.parentNode) container.removeChild(toast);
                 }, 300);
             }
         }, duration);
-        
         // 點擊關閉
         toast.addEventListener('click', () => {
             if (toast.parentNode) {
@@ -673,11 +768,16 @@
      * 關閉提示訊息
      */
     function initAlertClosing() {
+        console.log("初始化提示訊息關閉功能");
         const alerts = document.querySelectorAll('.spot-search-alert');
+        console.log("找到提示訊息數量：", alerts.length);
+        
         alerts.forEach(alert => {
             const closeBtn = alert.querySelector('.spot-search-alert__close');
             if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
+                console.log("找到關閉按鈕，添加事件監聽器");
+                closeBtn.addEventListener('click', function() {
+                    console.log("關閉按鈕被點擊");
                     alert.style.opacity = '0';
                     alert.style.transform = 'translateY(-20px)';
                     setTimeout(() => {
@@ -692,7 +792,12 @@
 
     // 初始化應用程式
     init();
-    initAlertClosing();
+
+    // 在DOM加載完成後初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM加載完成，初始化提示訊息關閉功能");
+        initAlertClosing();
+    });
 
     // 導出函數供全域使用
     window.SpotSearch = {

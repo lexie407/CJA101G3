@@ -427,7 +427,7 @@ public class ItineraryRestController {
      * 複製行程
      */
     @PostMapping("/{id}/copy")
-    public ResponseEntity<?> copyItinerary(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> requestBody, HttpSession session) {
+    public ResponseEntity<?> copyItinerary(@PathVariable Integer id, @RequestBody(required = false) Map<String, Object> requestBody, HttpSession session) {
         try {
             // 從 Session 獲取當前登入會員
             MembersVO member = (MembersVO) session.getAttribute("member");
@@ -443,7 +443,7 @@ public class ItineraryRestController {
             logger.info("會員 ID {} 嘗試複製行程 ID: {}", memId, id);
             
             // 檢查行程是否存在
-            if (!itineraryService.isItineraryExists(id.intValue())) {
+            if (!itineraryService.isItineraryExists(id)) {
                 logger.warn("嘗試複製不存在的行程 ID: {}", id);
                 return ResponseEntity.status(404).body(Map.of(
                     "success", false,
@@ -452,7 +452,7 @@ public class ItineraryRestController {
             }
             
             // 獲取原始行程
-            ItineraryVO originalItinerary = itineraryService.getItineraryWithSpots(id.intValue());
+            ItineraryVO originalItinerary = itineraryService.getItineraryWithSpots(id);
             
             // 獲取自定義名稱或使用默認名稱
             String newName;
@@ -482,6 +482,7 @@ public class ItineraryRestController {
             newItinerary.setIsPublic((byte) 0); // 預設為私人
             newItinerary.setItnStatus((byte) 1); // 正常狀態
             newItinerary.setCrtId(memId); // 設置為當前會員
+            newItinerary.setCreatorType((byte) 1); // 會員建立
             
             // 保存新行程
             ItineraryVO savedItinerary = itineraryService.addItinerary(newItinerary);
