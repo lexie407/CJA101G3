@@ -287,8 +287,12 @@ window.editAct = function (actId) {
   if (activityElement) {
     const recruitStatus = activityElement.getAttribute('data-recruit-status');
     if (recruitStatus === '4') {
-      alert(GroupActivityCore.ERROR_MESSAGES.FROZEN_ACT_NO_EDIT);
-      return;
+      // 檢查是否為管理員頁面（後台管理員可以編輯凍結活動）
+      const isAdminPage = window.location.pathname.includes('/act/admin/');
+      if (!isAdminPage) {
+        alert(GroupActivityCore.ERROR_MESSAGES.FROZEN_ACT_NO_EDIT);
+        return;
+      }
     }
   }
   

@@ -150,23 +150,26 @@
 
                   <!--管理員操作-->
                   <td>
-                    <!-- 正常狀態：可以編輯活動 -->
+                    <!-- 管理員可以編輯所有活動，包括凍結的活動 -->
                     <a
-                      th:if="${act.recruitStatus != 4}"
                       class="act-btn act-edit"
                       th:href="@{'/act/admin/editAct/' + ${act.actId}}"
-                      >編輯</a
+                      th:title="${act.recruitStatus == 4 ? '活動已被凍結，管理員仍可編輯' : '編輯活動'}"
+                      style="
+                        text-decoration: none; 
+                        display: inline-flex; 
+                        align-items: center; 
+                        justify-content: center; 
+                        width: 32px; 
+                        height: 32px; 
+                        color: #007bff;
+                        transition: all 0.2s ease;
+                      "
+                      onmouseover="this.style.color='#0056b3'; this.style.transform='scale(1.1)'"
+                      onmouseout="this.style.color='#007bff'; this.style.transform='scale(1)'"
                     >
-                    <!-- 活動被凍結時顯示禁止編輯按鈕 -->
-                    <button
-                      th:if="${act.recruitStatus == 4}"
-                      class="act-btn act-delete disabled"
-                      style="opacity:0.6;cursor:not-allowed;"
-                      title="活動已被凍結，無法編輯"
-                      disabled
-                    >
-                      ❌ 無法編輯
-                    </button>
+                      <i class="fas fa-edit" style="font-size: 14px;"></i>
+                    </a>
 <!--                    <form-->
 <!--                      th:action="@{'/act/admin/delete/' + ${act.actId}}"-->
 <!--                      method="post"-->

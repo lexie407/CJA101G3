@@ -156,6 +156,24 @@
       <main class="content-area-main act-area">
         <div class="header">
           <h1>編輯活動</h1>
+          <!-- 凍結狀態提示 -->
+          <div
+            th:if="${actVo.recruitStatus == 4}"
+            style="
+              background-color: #fff3cd;
+              border: 1px solid #ffeaa7;
+              color: #856404;
+              padding: 12px;
+              border-radius: 4px;
+              margin-bottom: 20px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            "
+          >
+            <span style="font-size: 18px;">⚠️</span>
+            <span><strong>注意：</strong>此活動目前處於凍結狀態。管理員可以編輯所有欄位，包括將狀態改為其他狀態來解除凍結。</span>
+          </div>
         </div>
 
         <div class="form-container">
