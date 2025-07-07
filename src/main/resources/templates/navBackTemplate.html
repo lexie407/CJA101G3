@@ -22,7 +22,7 @@
                 <p>後台</p>
             </div>
 	            <ul>
-	                <li th:classappend="${currentPage == 'accounts' ? 'active' : ''}"><a href="#"><span class="material-icons">manage_accounts</span>人員</a></li>
+	                <li th:classappend="${currentPage == 'accounts' ? 'active' : ''}"><a th:href="@{/members/selectPage}"><span class="material-icons">manage_accounts</span>人員</a></li>
 	                <li th:classappend="${currentPage == 'content' ? 'active' : ''}" class="has-submenu">
 	                	<a th:href="@{/admin/spot/list}"><span class="material-icons">folder</span>內容管理</a>
 <!-- 	                	<ul class="submenu"> 保留-->
