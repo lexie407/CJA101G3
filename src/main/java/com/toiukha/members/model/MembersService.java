@@ -161,12 +161,12 @@ public class MembersService {
 
 	// ───────── 新增：檢查是否鎖定 ─────────
 	public boolean isLocked(MembersVO member) {
-		if (member.getMemLogErrCount() < MAX_ERR) {
-			return false;
+		 Timestamp lastErr = member.getMemLogErrTime();    // ← 在這拿一次變數
+		    if (member.getMemLogErrCount() < MAX_ERR || lastErr == null) {
+		        return false;
+		    }
+		    return System.currentTimeMillis() - lastErr.getTime() < LOCK_DURATION_MS;
 		}
-		long lastErr = member.getMemLogErrTime().getTime();
-		return System.currentTimeMillis() - lastErr < LOCK_DURATION_MS;
-	}
 
 	// ───────── 新增：記錄錯誤並更新時間 ─────────
 	@Transactional
@@ -208,6 +208,10 @@ public class MembersService {
 	}
 
 	public int minutesLeftToUnlock(MembersVO member) {
+		// 新增：若從未有錯誤時間，直接回 0（尚未鎖定）
+		if (member.getMemLogErrTime() == null) {
+		    return 0;
+		}
 		// 從「最後一次錯誤時間」到現在已經過了多少毫秒
 		long timeSinceLastErrorMs = System.currentTimeMillis() - member.getMemLogErrTime().getTime();
 		// 鎖定總毫秒數扣掉已過去的，剩下多少毫秒還在鎖定中
