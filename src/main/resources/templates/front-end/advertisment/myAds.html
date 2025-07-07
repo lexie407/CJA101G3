@@ -200,12 +200,7 @@
 		<div th:insert="~{/navTemplate :: navbar}"></div>
 		<div class="main-content">
 			<header class="secondary-nav">
-                <ul>
-<!-- 					放自己需要的內容 -->
-					<li>
-						<h2>我的廣告管理</h2>
-					</li>
-                </ul>
+                <div th:insert="~{/subnavItem_Store_back::subnav(${activeItem})}"></div>
             </header>
 			<main class="content-area-main">
 <!-- 					放自己需要的內容 -->

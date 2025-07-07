@@ -79,7 +79,7 @@
     <div th:insert="~{/navTemplate :: navbar}"></div>
     <div class="main-content">
         <header class="secondary-nav">
-            <ul><li><h2>修改廣告</h2></li></ul>
+            <div th:insert="~{/subnavItem_Store_back::subnav(${activeItem})}"></div>
         </header>
 
         <main class="content-area-main">

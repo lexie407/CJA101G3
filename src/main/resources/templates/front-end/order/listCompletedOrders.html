@@ -326,12 +326,12 @@
                             </div>
                             
                             <!-- 檢舉按鈕（新增，不影響原有結構） -->
-                            <div class="mt-2">
+                            <div class="mt-2" style="text-align: right;">
                                 <a th:href="@{/item-report/form-from-order(ordId=${orderItem.ordId}, itemId=${orderItem.itemId})}" 
                                    class="btn-material"
-                                   style="background: #f44336; text-decoration: none;"
+                                   style="background: #f44336; text-decoration: none; font-size: 0.85rem; padding: 2px 8px;"
                                    title="檢舉此商品">
-                                    🚩 檢舉商品
+                                    ⚠️ 檢舉商品
                                 </a>
                             </div>
                         </div>

@@ -35,6 +35,11 @@
                     <a th:href="@{/order/listCompletedOrders}"
                         th:classappend="${activeItem == 'orderList' ? 'active' : ''}">我的訂單</a>
                 </li>
+                <li>
+                    <!-- 商品收藏 -->
+                    <a th:href="@{/productfav/myFavorites}"
+                        th:classappend="${activeItem == 'myFavorites' ? 'active' : ''}">商品收藏</a>
+                </li>
             </ul>
 
         </header>
