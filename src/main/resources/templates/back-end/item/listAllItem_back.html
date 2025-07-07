@@ -21,6 +21,22 @@
                 </ul>
             </header>
             <main class="content-area-main">
+                <!-- Material Design 搜尋框 -->
+                <div class="mdc-search-bar">
+                    <span class="material-icons mdc-search-icon">search</span>
+                    <select id="searchType" class="mdc-search-select">
+                        <option value="name">商品名稱</option>
+                        <option value="id">商品ID</option>
+                    </select>
+                    <input type="text" id="itemSearchInput" placeholder="請輸入查詢內容" class="mdc-input mdc-search-input">
+                    <span class="status-label">狀態</span>
+                    <select id="statusFilter" class="mdc-search-select status-select">
+                        <option value="all">全部</option>
+                        <option value="0">未上架</option>
+                        <option value="1">上架</option>
+                        <option value="2">下架</option>
+                    </select>
+                </div>
                 <div class="mdc-horizontal-list">
                     <th:block th:each="itemVO : ${itemListData_store}">
                         <div class="mdc-horizontal-card">
@@ -197,11 +213,99 @@
                     .mdc-button--outlined:hover {
                         background: #e3f2fd;
                     }
+
+                    .mdc-search-bar {
+                        display: flex;
+                        align-items: center;
+                        background: #fff;
+                        border-radius: 24px;
+                        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+                        padding: 4px 16px;
+                        width: 520px;
+                        margin: 0 auto 24px auto;
+                        border: 1.5px solid #bdbdbd;
+                        transition: border 0.2s;
+                    }
+
+                    .mdc-search-bar:focus-within {
+                        border: 1.5px solid #1976d2;
+                    }
+
+                    .mdc-search-icon {
+                        color: #1976d2;
+                        font-size: 1.5rem;
+                        margin-right: 8px;
+                    }
+
+                    .mdc-search-input {
+                        border: none;
+                        outline: none;
+                        font-size: 1.08rem;
+                        background: transparent;
+                        width: 100%;
+                        padding: 8px 0;
+                    }
+
+                    .mdc-search-select {
+                        border: none;
+                        background: transparent;
+                        font-size: 1.08rem;
+                        color: #1976d2;
+                        margin-right: 8px;
+                        outline: none;
+                        padding: 4px 8px;
+                    }
+
+                    .status-label {
+                        display: inline-block;
+                        font-weight: 600;
+                        color: #1976d2;
+                        margin-left: 24px;
+                        margin-right: 2px;
+                        font-size: 1.05rem;
+                        line-height: 1.1;
+                        letter-spacing: 2px;
+                        text-align: center;
+                        min-width: 20px;
+                        vertical-align: middle;
+                    }
+
+                    .status-select {
+                        margin-left: 10px;
+                        min-width: 90px;
+                    }
                 </style>
                 <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
                 <script>
-                    $(document).ready(function () {
-                    });
+                    // 多欄位搜尋功能
+                    document.getElementById('itemSearchInput').addEventListener('input', filterCards);
+                    document.getElementById('searchType').addEventListener('change', filterCards);
+                    document.getElementById('statusFilter').addEventListener('change', filterCards);
+
+                    function filterCards() {
+                        const keyword = document.getElementById('itemSearchInput').value.trim().toLowerCase();
+                        const type = document.getElementById('searchType').value;
+                        const status = document.getElementById('statusFilter').value;
+                        document.querySelectorAll('.mdc-horizontal-card').forEach(function (card) {
+                            const name = card.querySelector('.mdc-horizontal-card__title').textContent.trim().toLowerCase();
+                            const id = card.querySelector('.mdc-horizontal-card__subtitle:nth-child(2) span').textContent.trim().toLowerCase();
+                            const statusText = card.querySelector('.mdc-horizontal-card__subtitle:nth-child(5) span').textContent.trim();
+                            let match = false;
+                            if (type === 'name') {
+                                match = name.includes(keyword);
+                            } else if (type === 'id') {
+                                match = id.includes(keyword);
+                            }
+                            // 狀態過濾
+                            let statusMatch = (status === 'all');
+                            if (!statusMatch) {
+                                if (status === '0') statusMatch = statusText === '未上架';
+                                if (status === '1') statusMatch = statusText === '上架';
+                                if (status === '2') statusMatch = statusText === '下架';
+                            }
+                            card.style.display = (match && statusMatch) ? '' : 'none';
+                        });
+                    }
                 </script>
             </main>
         </div>

@@ -175,23 +175,43 @@
                         if (sta && sta.value && end && end.value) {
                             const staDate = new Date(sta.value);
                             const endDate = new Date(end.value);
-                            if (staDate < now) {
-                                valid = false;
-                                msg += '促銷開始時間不能早於現在時間！\n';
-                            }
-                            if (endDate < now) {
-                                valid = false;
-                                msg += '促銷結束時間不能早於現在時間！\n';
-                            }
+
+                            // 檢查結束時間是否早於開始時間
                             if (endDate < staDate) {
                                 valid = false;
                                 msg += '結束時間不能早於開始時間！\n';
                             }
+
+                            // 檢查是否早於現在時間，如果是則跳出確認對話框
+                            let timeWarning = '';
+                            if (staDate < now) {
+                                timeWarning += '• 促銷開始時間早於現在時間\n';
+                            }
+                            if (endDate < now) {
+                                timeWarning += '• 促銷結束時間早於現在時間\n';
+                            }
+
+                            if (timeWarning) {
+                                const confirmTime = confirm('以下時間設定早於現在時間：\n' + timeWarning + '\n確定要設定嗎？');
+                                if (!confirmTime) {
+                                    valid = false;
+                                    msg += '已取消設定促銷時間！\n';
+                                }
+                            }
                         }
                         if (disc && disc.value) {
-                            if (parseInt(disc.value, 10) > parseInt(itemPrice, 10)) {
+                            if (parseInt(disc.value, 10) >= parseInt(itemPrice, 10)) {
                                 valid = false;
-                                msg += '促銷金額不能大於原本金額！';
+                                msg += '促銷金額不能等於或大於原本金額！';
+                            }
+
+                            // 檢查促銷價格是否低於500
+                            if (parseInt(disc.value, 10) < 500) {
+                                const confirmLowPrice = confirm('促銷價格低於500元，確定要設定嗎？');
+                                if (!confirmLowPrice) {
+                                    valid = false;
+                                    msg += '已取消設定低價促銷！';
+                                }
                             }
                         }
                         if (!valid) {

@@ -17,7 +17,7 @@
         <div class="main-content">
             <header class="secondary-nav">
                 <ul>
-                   <div th:insert="~{/subnavCoupon_Store_back::subnav(${activeItem})}"></div>
+                    <div th:insert="~{/subnavCoupon_Store_back::subnav(${activeItem})}"></div>
                 </ul>
             </header>
             <main class="content-area-main">
@@ -133,24 +133,36 @@
                         if (sta && sta.value && end && end.value) {
                             const staDate = new Date(sta.value);
                             const endDate = new Date(end.value);
+
+                            // 檢查結束時間是否早於開始時間
+                            if (endDate < staDate) {
+                                e.preventDefault();
+                                alert('結束時間不能早於開始時間！');
+                                return false;
+                            }
+
+                            // 檢查是否早於現在時間，如果是則跳出確認對話框
+                            let timeWarning = '';
                             if (staDate < now) {
-                                valid = false;
-                                msg += '優惠券開始時間不能早於現在時間！\n';
+                                timeWarning += '• 優惠券開始時間早於現在時間\n';
                             }
                             if (endDate < now) {
-                                valid = false;
-                                msg += '優惠券結束時間不能早於現在時間！\n';
+                                timeWarning += '• 優惠券結束時間早於現在時間\n';
                             }
-                            if (endDate < staDate) {
-                                valid = false;
-                                msg += '結束時間不能早於開始時間！\n';
+
+                            if (timeWarning) {
+                                const confirmTime = confirm('以下時間設定早於現在時間：\n' + timeWarning + '\n確定要設定嗎？');
+                                if (!confirmTime) {
+                                    valid = false;
+                                    msg += '已取消設定優惠券時間！\n';
+                                }
                             }
                         }
                         if (disc && disc.value) {
                             const discValue = parseInt(disc.value, 10);
-                            if (discValue < 1 || discValue > 99999) {
+                            if (discValue < 1 || discValue > 100) {
                                 valid = false;
-                                msg += '折扣金額必須介於1到99999之間！';
+                                msg += '折扣金額必須介於1到100之間！';
                             }
                         }
                         if (!valid) {
