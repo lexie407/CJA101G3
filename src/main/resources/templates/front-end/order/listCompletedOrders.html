@@ -296,7 +296,8 @@
                                             th:text="${orderItem.ordTotal}"></span></small>
                                     <strong class="text-primary">價格: $<span
                                             th:text="${orderItem.discPrice != null and orderItem.discPrice > 0 ? orderItem.discPrice : orderItem.oriPrice}"></span></strong>
-                                    <strong>小計: $<span th:text="${orderItem.itemSubtotal}"></span></strong>
+                                    <strong>小計: $<span class="js-item-subtotal"
+                                            th:text="${orderItem.itemSubtotal}"></span></strong>
                                 </div>
                             </div>
                             <!-- 評價區塊 -->
@@ -342,7 +343,7 @@
                             <div class="col-md-4 text-end">
                                 <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
                                     <div style="font-size: 0.95rem; color: #666;">
-                                        商品總金額: $<span th:text="${order.originalTotal}"></span>
+                                        商品總金額: $<span class="js-original-total" data-ordid="[[${order.ordId}]]"></span>
                                     </div>
                                     <div th:if="${order.couponDiscount != null and order.couponDiscount > 0}"
                                         style="font-size: 0.95rem; color: #d32f2f;">
@@ -401,6 +402,17 @@
                             btn.addEventListener('click', function () {
                                 openCommentModal(this.dataset.ordid, this.dataset.itemid, this.dataset.name);
                             });
+                        });
+
+                        // 商品總金額前端計算
+                        document.querySelectorAll('.order-card').forEach(function (card) {
+                            let sum = 0;
+                            card.querySelectorAll('.js-item-subtotal').forEach(function (span) {
+                                const val = parseInt(span.textContent.replace(/[^\d]/g, ''));
+                                if (!isNaN(val)) sum += val;
+                            });
+                            const totalSpan = card.querySelector('.js-original-total');
+                            if (totalSpan) totalSpan.textContent = sum;
                         });
                     });
                 </script>
