@@ -44,7 +44,7 @@
               <div class="act-detail-image-container">
                 <img
                   th:if="*{actImg != null && actImg.length > 0}"
-                  th:src="@{/api/act/image/{actId}(actId=*{actId})}"
+                  th:src="@{'/act/DBGifReader?actId=' + ${actId}}"
                   alt="活動圖片"
                   class="act-detail-image"
                 />

@@ -31,6 +31,7 @@ public class ActVO implements Serializable{
     @JsonIgnore
     @Column(name = "ACTIMG")
     @Lob
+    @Basic(fetch = FetchType.LAZY)  // 設定為 Lazy Loading，避免查詢時自動載入圖片
     private byte[] actImg;
 
     @Column(name = "ITNID", nullable = false)

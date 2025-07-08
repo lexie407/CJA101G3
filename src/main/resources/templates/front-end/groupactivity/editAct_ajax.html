@@ -483,7 +483,7 @@
                             >目前圖片：</label
                             >
                             <img
-                                    th:src="@{'/api/act/image/' + ${actVo.actId}}"
+                                    th:src="@{'/act/DBGifReader?actId=' + ${actVo.actId}}"
                                     alt="目前圖片"
                                     style="
                       max-width: 200px;
