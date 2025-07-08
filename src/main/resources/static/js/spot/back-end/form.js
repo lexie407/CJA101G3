@@ -638,35 +638,44 @@ function setupCharacterCounters() {
 function setupFormSubmission() {
     const form = document.getElementById('spotForm');
     if (!form) return;
-    
-    form.addEventListener('submit', function(e) {
+
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
-        console.log('表單提交驗證開始');
         
         if (!validateForm()) {
             return;
         }
+
+        // 建立 FormData 物件
+        const formData = new FormData(form);
         
-        // 顯示提交中狀態
-        const submitBtn = form.querySelector('#submitBtn');
-        const originalText = submitBtn.innerHTML;
-        
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="material-icons">hourglass_empty</i>處理中...';
-        submitBtn.style.cursor = 'not-allowed';
-        
-        // 添加提交動畫
-        submitBtn.style.transform = 'scale(0.98)';
-        
-        // 顯示提交中的Toast
-        showToast('正在提交景點資訊...', 'warning');
-        
-        // 提交表單
-        setTimeout(() => {
-            console.log('表單驗證通過，正在提交...');
-            this.submit();
-        }, 800);
+        // 添加多圖上傳
+        const imageFiles = document.querySelectorAll('#multiImageList input[type="file"]');
+        imageFiles.forEach((file, index) => {
+            if (file.files[0]) {
+                formData.append('multiImages', file.files[0]);
+            }
+        });
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast('成功', '景點資料已儲存');
+                // 重導向到列表頁面
+                window.location.href = '/admin/spot/spotlist';
+            } else {
+                showToast('錯誤', result.message || '儲存失敗，請檢查資料', 'error');
+            }
+        } catch (error) {
+            console.error('提交表單時發生錯誤:', error);
+            showToast('錯誤', '系統錯誤，請稍後再試', 'error');
+        }
     });
 }
 
@@ -1090,182 +1099,59 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ===== 多圖上傳區塊 =====
+// ===== 圖片上傳處理 =====
 function setupMultiImageUpload() {
-    const input = document.getElementById('multiImageInput');
-    const dropzone = document.getElementById('multiImageDropzone');
-    const selectBtn = document.getElementById('multiImageSelectBtn');
-    const list = document.getElementById('multiImageList');
-    // 新增剩餘可上傳提示
-    let helperText = dropzone.parentElement.querySelector('.helper-text');
-    let images = [];
-    let existImages = [];
-    const MAX_IMAGES = 8;
+    const MAX_IMAGES = 1;
     const MAX_SIZE = 2 * 1024 * 1024; // 2MB
     const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
-
-    // 編輯模式：載入已存在圖片
-    if (window.spotExistImages) {
-        existImages = window.spotExistImages.map(img => ({
-            ...img,
-            isServer: true
-        }));
-        renderList();
-    }
-
-    // 點擊選擇圖片
-    selectBtn.addEventListener('click', () => {
-        if (!selectBtn.disabled) input.click();
-    });
-    // 拖拉上傳
-    dropzone.addEventListener('dragover', e => {
-        if (isUploadFull()) return;
-        e.preventDefault(); dropzone.classList.add('dragover');
-    });
-    dropzone.addEventListener('dragleave', e => { e.preventDefault(); dropzone.classList.remove('dragover'); });
-    dropzone.addEventListener('drop', e => {
-        if (isUploadFull()) return;
-        e.preventDefault(); dropzone.classList.remove('dragover');
-        handleFiles(e.dataTransfer.files);
-    });
-    input.addEventListener('change', e => handleFiles(e.target.files));
-
-    // 判斷是否已達上限
-    function isUploadFull() {
-        return existImages.length + images.length >= MAX_IMAGES;
-    }
-
-    // 更新剩餘可上傳提示與按鈕狀態
-    function updateHelper() {
-        const remain = MAX_IMAGES - (existImages.length + images.length);
-        if (helperText) {
-            helperText.textContent = `可上傳多張圖片，每張可填寫描述，支援拖拉排序與刪除（剩餘${remain}張）`;
+    
+    const imageContainer = document.getElementById('imageContainer');
+    const imageInput = document.getElementById('imageInput');
+    
+    if (!imageInput || !imageContainer) return;
+    
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // 檢查檔案類型
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            showToast('錯誤', '僅允許上傳 JPG、PNG 格式圖片', 'error');
+            this.value = '';
+            return;
         }
-        selectBtn.disabled = remain <= 0;
-        dropzone.style.opacity = remain <= 0 ? 0.5 : 1;
-        dropzone.style.pointerEvents = remain <= 0 ? 'none' : 'auto';
-    }
-
-    function handleFiles(files) {
-        let totalCount = existImages.length + images.length;
-        for (let file of files) {
-            if (totalCount >= MAX_IMAGES) {
-                showToast('錯誤', `最多只能上傳${MAX_IMAGES}張圖片，請先刪除部分圖片再嘗試。`, 'error');
-                break;
-            }
-            if (!ALLOWED_TYPES.includes(file.type)) {
-                showToast('錯誤', '僅允許 JPG、PNG 格式圖片，請重新選擇。', 'error');
-                continue;
-            }
-            if (file.size > MAX_SIZE) {
-                showToast('錯誤', '單張圖片不可超過2MB，請壓縮後再上傳。', 'error');
-                continue;
-            }
-            const reader = new FileReader();
-            reader.onload = e => {
-                images.push({ file, url: e.target.result, desc: '' });
-                renderList();
-            };
-            reader.readAsDataURL(file);
-            totalCount++;
+        
+        // 檢查檔案大小
+        if (file.size > MAX_SIZE) {
+            showToast('錯誤', '單張圖片不可超過2MB', 'error');
+            this.value = '';
+            return;
         }
-        input.value = '';
-        updateHelper();
-    }
-
-    function renderList() {
-        list.innerHTML = '';
-        // 渲染已存在圖片
-        existImages.forEach((img, idx) => {
-            const item = document.createElement('div');
-            item.className = 'multi-image-item';
-            item.innerHTML = `
-                <img src="${img.imgPath}" class="multi-image-thumb">
-                <input type="text" class="multi-image-desc" placeholder="描述(選填)" value="${img.imgDesc || ''}" disabled>
-                <button type="button" class="multi-image-delete">刪除</button>
+        
+        // 清空現有預覽
+        imageContainer.innerHTML = '';
+        
+        // 建立預覽
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.createElement('div');
+            preview.className = 'image-preview';
+            preview.innerHTML = `
+                <img src="${e.target.result}" alt="預覽圖" style="max-width: 200px; max-height: 200px;">
+                <button type="button" class="btn btn-danger btn-sm mt-2">刪除</button>
             `;
-            // 刪除已存在圖片
-            item.querySelector('.multi-image-delete').onclick = () => {
-                if (confirm('確定要刪除此圖片？')) {
-                    fetch('/admin/spot/img/delete', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: `spotId=${img.spotId}&imgId=${img.imgId}`
-                    }).then(resp => resp.json()).then(data => {
-                        if (data.success) {
-                            existImages.splice(idx, 1); renderList(); updateHelper();
-                        } else {
-                            showToast('錯誤', data.message || '刪除失敗', 'error');
-                        }
-                    });
-                }
-            };
-            list.appendChild(item);
-        });
-        // 渲染新上傳圖片
-        images.forEach((img, idx) => {
-            const item = document.createElement('div');
-            item.className = 'multi-image-item';
-            item.draggable = true;
-            item.innerHTML = `
-                <img src="${img.url}" class="multi-image-thumb">
-                <input type="text" class="multi-image-desc" placeholder="描述(選填)" value="${img.desc || ''}">
-                <button type="button" class="multi-image-delete">刪除</button>
-            `;
-            // 刪除新上傳圖片
-            item.querySelector('.multi-image-delete').onclick = () => {
-                images.splice(idx, 1); renderList(); updateHelper();
-            };
-            // 編輯描述
-            item.querySelector('.multi-image-desc').oninput = e => {
-                images[idx].desc = e.target.value;
-            };
-            // 拖拉排序（僅本次有效）
-            item.ondragstart = e => { e.dataTransfer.setData('text/plain', idx); };
-            item.ondragover = e => e.preventDefault();
-            item.ondrop = e => {
-                e.preventDefault();
-                const from = +e.dataTransfer.getData('text/plain');
-                const to = idx;
-                if (from !== to) {
-                    const moved = images.splice(from, 1)[0];
-                    images.splice(to, 0, moved);
-                    renderList();
-                }
-            };
-            list.appendChild(item);
-        });
-        updateHelper();
-    }
-
-    // 表單送出時附加多圖資料
-    document.getElementById('spotForm').addEventListener('submit', function(e) {
-        if (images.length > 0) {
-            const formData = new FormData(this);
-            images.forEach((img, i) => {
-                formData.append('multiImages', img.file);
-                formData.append('multiImageDescs', img.desc);
+            
+            // 刪除按鈕事件
+            preview.querySelector('button').addEventListener('click', function() {
+                preview.remove();
+                imageInput.value = '';
             });
-            e.preventDefault();
-            fetch(this.action, {
-                method: this.method,
-                body: formData
-            }).then(resp => resp.json())
-              .then(data => {
-                if (data.success) {
-                  showToast('成功', '景點與圖片已儲存', 'info');
-                  setTimeout(() => location.reload(), 1200);
-                } else {
-                  showToast('錯誤', data.message || '儲存失敗', 'error');
-                }
-              }).catch(() => showToast('錯誤', '儲存失敗', 'error'));
-        }
+            
+            imageContainer.appendChild(preview);
+        };
+        reader.readAsDataURL(file);
     });
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    setupMultiImageUpload();
-});
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -1274,14 +1160,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化各項功能
     updateStatusSwitch();
     setupCharacterCounters();
-    setupRealTimeValidation(); // 添加即時驗證功能
+    setupRealTimeValidation();
     setupFormSubmission();
     setupInputEffects();
     setupKeyboardShortcuts();
     setupAutoSave();
     showBackendMessages();
-    setupAddressAutoComplete(); // 添加地址自動完成功能
-    setupSpotInfoChangeListener(); // 添加景點資訊變化監聽器
+    setupAddressAutoComplete();
+    setupSpotInfoChangeListener();
     
     // 初始化驗證摘要
     setTimeout(updateValidationSummary, 100);

@@ -49,6 +49,7 @@ public interface SpotService {
     
     // 驗證相關
     boolean existsBySpotName(String spotName);
+    boolean existsBySpotNameAndSpotLoc(String spotName, String spotLoc);
     boolean existsByGovtId(String govtId);
     boolean existsById(Integer id);
     

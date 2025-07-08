@@ -891,6 +891,10 @@ public class GovernmentDataService {
                                     .replaceAll("&nbsp;", " ")
                                     .replaceAll("\\s+", " ")
                                     .trim();
+            // 自動截斷超過 255 字元
+            if (description.length() > 255) {
+                description = description.substring(0, 255);
+            }
             spot.setSpotDesc(description);
         } else {
             spot.setSpotDesc("暫無描述");

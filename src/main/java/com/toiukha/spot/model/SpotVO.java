@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import jakarta.persistence.Transient;
 
 /**
  * 景點實體類
@@ -495,4 +496,9 @@ public class SpotVO implements Serializable {
     public String getSpotAddress() {
         return spotLoc != null ? spotLoc : "";
     }
+
+    @Transient
+    private java.util.List<com.toiukha.spot.model.SpotImgVO> spotImgList;
+    public java.util.List<com.toiukha.spot.model.SpotImgVO> getSpotImgList() { return spotImgList; }
+    public void setSpotImgList(java.util.List<com.toiukha.spot.model.SpotImgVO> spotImgList) { this.spotImgList = spotImgList; }
 } 

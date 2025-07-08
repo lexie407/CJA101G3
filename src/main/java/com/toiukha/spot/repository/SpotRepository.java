@@ -105,6 +105,7 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
      * @return true 如果名稱已存在
      */
     boolean existsBySpotName(String spotName);
+    boolean existsBySpotNameAndSpotLoc(String spotName, String spotLoc);
     
     /**
      * 根據政府資料ID檢查景點是否已存在

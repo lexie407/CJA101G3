@@ -136,7 +136,7 @@ function loadItineraryData() {
     if (!itineraryId) return;
     
     // 修正 API 路徑
-    fetch(`/itinerary/api/${itineraryId}`)
+    fetch(`/api/itinerary/${itineraryId}`)
         .then(response => {
             if (response.status === 404) {
                 throw new Error('找不到此行程');
@@ -433,7 +433,7 @@ function toggleFavorite() {
     if (bottomFavoriteBtn) bottomFavoriteBtn.disabled = true;
     
     // 呼叫收藏API
-    fetch(`/itinerary/api/${itineraryId}/favorite`, {
+    fetch(`/api/itinerary/${itineraryId}/favorite`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -517,7 +517,7 @@ function copyItinerary() {
     if (!itineraryId) return;
     
     // 先檢查登入狀態
-    fetch(`/itinerary/api/${itineraryId}/check-duplicate`, {
+    fetch(`/api/itinerary/${itineraryId}/check-duplicate`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -561,7 +561,7 @@ function copyItinerary() {
  */
 function processCopyItinerary(customName) {
     // 發送複製請求
-    fetch(`/itinerary/api/${itineraryId}/copy`, {
+    fetch(`/api/itinerary/${itineraryId}/copy`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

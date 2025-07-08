@@ -36,7 +36,7 @@ public class SpotDataInitController {
             
             // 過濾已存在的景點
             for (SpotVO spot : testSpots) {
-                if (!spotService.existsBySpotName(spot.getSpotName())) {
+                if (!spotService.existsBySpotNameAndSpotLoc(spot.getSpotName(), spot.getSpotLoc())) {
                     spotsToInsert.add(spot);
                 }
             }

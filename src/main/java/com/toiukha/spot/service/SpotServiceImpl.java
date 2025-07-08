@@ -286,6 +286,11 @@ public class SpotServiceImpl implements SpotService {
     }
 
     @Override
+    public boolean existsBySpotNameAndSpotLoc(String spotName, String spotLoc) {
+        return spotRepository.existsBySpotNameAndSpotLoc(spotName, spotLoc);
+    }
+
+    @Override
     public List<String> findExistingGovtIds(List<String> govtIds) {
         if (govtIds == null || govtIds.isEmpty()) {
             return new java.util.ArrayList<>();

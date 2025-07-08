@@ -78,10 +78,10 @@
                                     <i class="material-icons">close</i>
                                     <span>批次拒絕</span>
                                 </button>
-                                <button type="button" onclick="batchOperation('pending')" class="dropdown-item warning">
+                                <!-- <button type="button" onclick="batchOperation('pending')" class="dropdown-item warning">
                                     <i class="material-icons">schedule</i>
                                     <span>移至待審</span>
-                                </button>
+                                </button> -->
                             </div>
                         </div>
                     </div>
@@ -109,6 +109,7 @@
                                 <th>ID</th>
                                 <th>景點名稱</th>
                                 <th>地點</th>
+                                <th>景點圖片</th>
                                 <th>描述 / 退回原因</th>
                                 <th>建立時間</th>
                                 <th>狀態</th>
@@ -127,8 +128,21 @@
                                 <td th:text="${spot.spotId}"></td>
                                 <td th:text="${spot.spotName}"></td>
                                 <td th:text="${spot.spotLoc}"></td>
+                                <!-- 單一圖片欄位，只顯示一張縮圖，可點擊放大 -->
+                                <td style="text-align: center;">
+                                  <img th:if="${spot.firstPictureUrl != null and spot.firstPictureUrl != '/images/404.png'}"
+                                       th:src="${spot.firstPictureUrl}"
+                                       style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer;"
+                                       th:alt="${spot.spotName}"
+                                       onclick="showImgModal(this.src)" />
+                                  <div th:if="${spot.firstPictureUrl == null or spot.firstPictureUrl == '/images/404.png'}"
+                                       style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: #f0f0f0; border-radius: 4px;">
+                                    <i class="material-icons" style="color: #aaa;">image_not_supported</i>
+                                  </div>
+                                </td>
                                 <td>
-                                    <span th:text="${spot.spotDesc}" class="spot-desc"></span>
+                                    <span class="desc-text" th:if="${#strings.length(spot.spotDesc) <= 10}" th:text="${spot.spotDesc}"></span>
+                                    <span class="desc-text desc-preview" th:if="${#strings.length(spot.spotDesc) > 10}" th:text="${spot.spotDesc.substring(0, 10) + '...'}" th:attr="data-full-desc=${spot.spotDesc}" style="cursor:pointer;color:#1976d2;text-decoration:underline;"></span>
                                     <small th:if="${spot.spotAuditRemark != null}" th:text="'退回原因: ' + ${spot.spotAuditRemark}" style="color: var(--danger-color); display: block;"></small>
                                 </td>
                                 <td th:if="${spot.spotCreateAt != null}" th:text="${#temporals.format(spot.spotCreateAt, 'yyyy-MM-dd')}"></td>
@@ -183,6 +197,23 @@
                     <button class="btn-flat" onclick="closeModal()">取消</button>
                 </div>
             </div>
+        </div>
+        <!-- 詳細描述 Modal -->
+        <div id="descModal" class="modal">
+          <div class="modal-content">
+            <h5>詳細描述</h5>
+            <div class="desc-content"></div>
+            <div class="modal-footer">
+              <button class="btn-flat" onclick="closeDescModal()">關閉</button>
+            </div>
+          </div>
+        </div>
+        <!-- 圖片放大 Modal -->
+        <div id="imgModal" class="img-modal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.9);align-items:center;justify-content:center;">
+          <div style="position:relative;max-width:90vw;max-height:80vh;">
+            <img id="imgModalImg" src="" style="max-width:100%;max-height:80vh;object-fit:contain;display:block;margin:auto;"/>
+          </div>
+          <button type="button" onclick="closeImgModal()" style="position:absolute;top:20px;right:20px;background:none;border:none;color:white;font-size:2rem;cursor:pointer;padding:10px;z-index:10000;">&#10005;</button>
         </div>
             </main>
         </div>

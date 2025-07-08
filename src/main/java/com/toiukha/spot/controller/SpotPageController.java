@@ -573,7 +573,7 @@ public class SpotPageController {
         spotVO.setSpotStatus((byte) 0);
 
         // 檢查景點名稱是否重複
-        if (spotService.existsBySpotName(spotVO.getSpotName())) {
+        if (spotService.existsBySpotNameAndSpotLoc(spotVO.getSpotName(), spotVO.getSpotLoc())) {
             result.rejectValue("spotName", "error.spotVO", "景點名稱已存在，請使用其他名稱");
         }
 
@@ -589,7 +589,7 @@ public class SpotPageController {
 
         try {
             SpotVO savedSpot = spotService.addSpot(spotVO);
-            redirectAttr.addFlashAttribute("msg", "景點新增成功！景點ID: " + savedSpot.getSpotId() + "，等待管理員審核後上架。");
+            redirectAttr.addFlashAttribute("msg", "景點新增成功！等待管理員審核後上架。");
             return "redirect:/spot/list";
         } catch (Exception e) {
             model.addAttribute("errorMsgs", List.of("新增景點時發生錯誤：" + e.getMessage()));

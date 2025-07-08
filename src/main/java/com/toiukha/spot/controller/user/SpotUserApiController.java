@@ -26,6 +26,7 @@ import java.util.UUID;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.File;
+import java.util.Collections;
 
 /**
  * 景點前台 API 控制器
@@ -118,6 +119,9 @@ public class SpotUserApiController {
             if (!spot.isActive()) {
                 return ResponseEntity.ok(ApiResponse.error("景點尚未上架"));
             }
+            
+            // 處理圖片 URL
+            spotEnrichmentService.enrichSpotPictureUrlIfNeeded(Collections.singletonList(spot));
             
             return ResponseEntity.ok(ApiResponse.success("查詢成功", spot));
         } catch (Exception e) {
@@ -244,7 +248,7 @@ public class SpotUserApiController {
             }
             
             // 檢查名稱是否重複
-            if (spotService.existsBySpotName(spotDTO.getSpotName())) {
+            if (spotService.existsBySpotNameAndSpotLoc(spotDTO.getSpotName(), spotDTO.getSpotLoc())) {
                 return ResponseEntity.ok(ApiResponse.error("景點名稱已存在，請使用其他名稱"));
             }
             
@@ -274,7 +278,7 @@ public class SpotUserApiController {
             @RequestParam(value = "multiImageDescs", required = false) List<String> multiImageDescs,
             HttpSession session) {
         Map<String, Object> resp = new HashMap<>();
-        final int MAX_IMAGES = 8;
+        final int MAX_IMAGES = 1;
         final long MAX_SIZE = 2 * 1024 * 1024L;
         final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/jpg");
         try {
@@ -320,9 +324,9 @@ public class SpotUserApiController {
                 }
             }
             // 檢查名稱是否重複
-            if (spotService.existsBySpotName(spotDTO.getSpotName())) {
+            if (spotService.existsBySpotNameAndSpotLoc(spotDTO.getSpotName(), spotDTO.getSpotLoc())) {
                 resp.put("success", false);
-                resp.put("message", "景點名稱已存在，請使用其他名稱");
+                resp.put("message", "同名同地點的景點已存在，請使用其他名稱或地點");
                 return ResponseEntity.ok(resp);
             }
             // 轉換DTO為VO
@@ -368,21 +372,54 @@ public class SpotUserApiController {
         String name = req.get("name");
         String address = req.get("address");
         Map<String, Object> result = new HashMap<>();
+        
         try {
+            // 基本驗證
+            if (name == null || name.trim().isEmpty() || address == null || address.trim().isEmpty()) {
+                result.put("success", false);
+                result.put("error", "景點名稱和地址不能為空");
+                return result;
+            }
+
             // 先查詢 placeId
             var placeInfo = googlePlacesService.searchPlace(name, address, null, null);
+            
+            // 驗證搜尋結果
             if (placeInfo != null && placeInfo.getPlaceId() != null) {
                 var details = googlePlacesService.getPlaceDetails(placeInfo.getPlaceId());
+                
+                // 驗證電話格式
+                String phone = details != null ? details.getPhoneNumber() : null;
+                if (phone != null) {
+                    // 移除所有非數字字元
+                    phone = phone.replaceAll("[^0-9+]", "");
+                    // 如果不是合理的電話號碼長度，設為 null
+                    if (phone.length() < 8 || phone.length() > 15) {
+                        phone = null;
+                    }
+                }
+                
+                // 驗證網站格式
+                String website = details != null ? details.getWebsite() : null;
+                if (website != null && !website.matches("^https?://.*")) {
+                    if (website.matches("^[\\w-]+(\\.[\\w-]+)+.*")) {
+                        website = "http://" + website;
+                    } else {
+                        website = null;
+                    }
+                }
+                
                 result.put("success", true);
-                result.put("phoneNumber", details != null ? details.getPhoneNumber() : null);
-                result.put("website", details != null ? details.getWebsite() : null);
+                result.put("phoneNumber", phone);
+                result.put("website", website);
+                result.put("message", "已找到相符的地點資訊");
             } else {
                 result.put("success", false);
-                result.put("error", "查無 Google PlaceId");
+                result.put("error", "找不到完全符合的地點資訊");
             }
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", e.getMessage());
+            result.put("error", "查詢發生錯誤: " + e.getMessage());
         }
         return result;
     }

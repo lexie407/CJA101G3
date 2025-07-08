@@ -5,22 +5,109 @@ console.log('🔄 Review 頁面腳本開始載入...');
 document.addEventListener('DOMContentLoaded', function() {
     console.log('=== Review 頁面 DOMContentLoaded 開始 ===');
     
-    // 初始化勾選框功能
-    initializeCheckboxes();
+    // 顯示載入中提示
+    showLoadingIndicator();
     
-    // 初始化搜尋功能
-    initializeSearch();
-    
-    // 初始化 Toast 功能
-    initializeToast();
-    
-    // 初始化篩選功能（預設顯示待審核）
-    setTimeout(() => {
-        filterByStatus('0');
-    }, 100);
-    
-    console.log('=== Review 頁面 DOMContentLoaded 完成 ===');
+    try {
+        // 初始化勾選框功能
+        initializeCheckboxes();
+        
+        // 初始化搜尋功能
+        initializeSearch();
+        
+        // 初始化 Toast 功能
+        initializeToast();
+        
+        // 初始化表格顯示
+        initializeTable();
+        
+        // 初始化描述欄位點擊事件
+        initializeDescriptionHandlers();
+        
+        // 移除載入中提示
+        hideLoadingIndicator();
+        
+        console.log('=== Review 頁面 DOMContentLoaded 完成 ===');
+    } catch (error) {
+        console.error('初始化過程發生錯誤:', error);
+        showError('頁面初始化失敗：' + error.message);
+        hideLoadingIndicator();
+    }
 });
+
+// 初始化表格顯示
+function initializeTable() {
+    const table = document.querySelector('.admin-table');
+    if (!table) {
+        console.error('找不到表格元素');
+        return;
+    }
+
+    // 確保表格可見
+    table.style.display = '';
+    
+    // 檢查是否有資料
+    const tbody = table.querySelector('tbody');
+    if (!tbody || !tbody.children.length) {
+        console.log('表格無資料');
+        return;
+    }
+
+    // 預設顯示待審核項目
+    filterByStatus('0');
+    
+    console.log('表格初始化完成');
+}
+
+// 載入中提示
+function showLoadingIndicator() {
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'loadingIndicator';
+    loadingDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        text-align: center;
+    `;
+    loadingDiv.innerHTML = `
+        <div class="spinner" style="margin-bottom: 10px;">
+            <i class="material-icons" style="font-size: 36px; animation: spin 1s infinite linear;">refresh</i>
+        </div>
+        <div>載入中...</div>
+    `;
+    document.body.appendChild(loadingDiv);
+}
+
+function hideLoadingIndicator() {
+    const loadingDiv = document.getElementById('loadingIndicator');
+    if (loadingDiv) {
+        loadingDiv.remove();
+    }
+}
+
+// 顯示錯誤訊息
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #f44336;
+        color: white;
+        padding: 15px;
+        border-radius: 4px;
+        z-index: 1000;
+    `;
+    errorDiv.textContent = message;
+    document.body.appendChild(errorDiv);
+    setTimeout(() => errorDiv.remove(), 5000);
+}
 
 // 初始化勾選框功能
 function initializeCheckboxes() {
@@ -232,10 +319,10 @@ function batchOperation(operation) {
             operationText = '拒絕';
             endpoint = '/admin/spot/api/batch-reject';
             break;
-        case 'pending':
-            operationText = '移至待審';
-            endpoint = '/admin/spot/api/batch-pending';
-            break;
+        // case 'pending':
+        //     operationText = '移至待審';
+        //     endpoint = '/admin/spot/api/batch-pending';
+        //     break;
         default:
             showCustomToast('未知的操作類型', 'red');
             return;
@@ -575,3 +662,279 @@ window.toggleFilterDropdown = toggleFilterDropdown;
 window.closeFilterDropdown = closeFilterDropdown;
 window.filterByStatus = filterByStatus;
 window.showCustomToast = showCustomToast; 
+
+// 展開/收合描述
+function toggleDesc(btn) {
+    const preview = btn.parentNode.querySelector('.desc-preview');
+    const full = btn.parentNode.querySelector('.desc-full');
+    if (full.style.display === 'none') {
+        full.style.display = '';
+        preview.style.display = 'none';
+        btn.textContent = '收合';
+    } else {
+        full.style.display = 'none';
+        preview.style.display = '';
+        btn.textContent = '展開';
+    }
+}
+// 展開/收合退回原因
+function toggleReject(btn) {
+    const preview = btn.parentNode.querySelector('.reject-preview');
+    const full = btn.parentNode.querySelector('.reject-full');
+    if (full.style.display === 'none') {
+        full.style.display = '';
+        preview.style.display = 'none';
+        btn.textContent = '收合';
+    } else {
+        full.style.display = 'none';
+        preview.style.display = '';
+        btn.textContent = '展開';
+    }
+}
+// 圖片放大 Modal 功能
+function showImgModal(src) {
+    const modal = document.getElementById('imgModal');
+    const img = document.getElementById('imgModalImg');
+    if (img) img.src = src;
+    if (modal) modal.style.display = 'flex';
+}
+function closeImgModal() {
+    const modal = document.getElementById('imgModal');
+    if (modal) modal.style.display = 'none';
+}
+// 點擊 Modal 外部關閉
+window.addEventListener('click', function(e) {
+    const modal = document.getElementById('imgModal');
+    if (e.target === modal) {
+        closeImgModal();
+    }
+}); 
+
+// 圖片輪播功能
+let currentImgs = [];
+let currentIdx = 0;
+
+// 在頁面載入時初始化
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('初始化圖片輪播功能...');
+    
+    // 確保輪播 Modal 的導航按鈕顯示正確的箭頭符號
+    const prevBtn = document.querySelector('.carousel-nav-btn.prev-btn');
+    const nextBtn = document.querySelector('.carousel-nav-btn.next-btn');
+    const closeBtn = document.querySelector('#imgModal button[onclick="closeImgModal()"]');
+    
+    if (prevBtn) prevBtn.innerHTML = '&#9664;'; // 左箭頭
+    if (nextBtn) nextBtn.innerHTML = '&#9654;'; // 右箭頭
+    if (closeBtn) closeBtn.innerHTML = '&#10005;'; // 關閉符號
+});
+
+function openImgCarousel(imgElem) {
+    try {
+        console.log('開啟圖片輪播...');
+        const imgsData = imgElem.getAttribute('data-imgs');
+        
+        if (!imgsData) {
+            console.error('未找到圖片資料');
+            showCustomToast('無法載入圖片資料', 'red');
+            return;
+        }
+        
+        // 解析圖片資料
+        let imgList;
+        try {
+            imgList = JSON.parse(imgsData);
+            console.log('圖片列表:', imgList);
+        } catch (e) {
+            console.error('解析圖片資料失敗:', e);
+            console.error('原始資料:', imgsData);
+            // 嘗試修復常見的 JSON 格式問題
+            try {
+                const fixedData = imgsData.replace(/\\"/g, '"').replace(/"{/g, '{').replace(/}"/g, '}');
+                imgList = JSON.parse(fixedData);
+                console.log('修復後的圖片列表:', imgList);
+            } catch (e2) {
+                console.error('修復後仍解析失敗:', e2);
+                showCustomToast('圖片資料格式錯誤', 'red');
+                return;
+            }
+        }
+        
+        if (!Array.isArray(imgList) || imgList.length === 0) {
+            console.error('圖片資料格式無效');
+            showCustomToast('圖片資料無效', 'red');
+            return;
+        }
+        
+        // 取得所有圖片路徑
+        currentImgs = imgList.map(img => typeof img === 'object' && img.imgPath ? img.imgPath : img);
+        console.log('處理後的圖片路徑:', currentImgs);
+        
+        // 設定當前索引
+        currentIdx = parseInt(imgElem.getAttribute('data-idx') || '0');
+        if (isNaN(currentIdx) || currentIdx < 0 || currentIdx >= currentImgs.length) {
+            console.warn('圖片索引無效，重置為0');
+            currentIdx = 0;
+        }
+        
+        // 顯示當前圖片
+        showImgInModal(currentImgs[currentIdx]);
+        
+        // 顯示 Modal
+        const modal = document.getElementById('imgModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            
+            // 根據圖片數量顯示/隱藏導航按鈕
+            const prevBtn = modal.querySelector('.prev-btn');
+            const nextBtn = modal.querySelector('.next-btn');
+            
+            console.log('導航按鈕:', { prevBtn, nextBtn });
+            console.log('圖片數量:', currentImgs.length);
+            
+            if (prevBtn && nextBtn) {
+                const showNav = currentImgs.length > 1;
+                prevBtn.style.display = showNav ? 'block' : 'none';
+                nextBtn.style.display = showNav ? 'block' : 'none';
+                
+                console.log('設置導航按鈕顯示:', showNav);
+            }
+            
+            // 添加鍵盤事件監聽
+            document.addEventListener('keydown', handleKeyPress);
+        }
+    } catch (error) {
+        console.error('開啟圖片輪播時發生錯誤:', error);
+        console.error(error.stack);
+        showCustomToast('圖片顯示失敗', 'red');
+    }
+}
+
+function handleKeyPress(event) {
+    switch(event.key) {
+        case 'ArrowLeft':
+            prevImg();
+            break;
+        case 'ArrowRight':
+            nextImg();
+            break;
+        case 'Escape':
+            closeImgModal();
+            break;
+    }
+}
+
+function showImgInModal(src) {
+    console.log('顯示圖片:', src);
+    if (!src) {
+        console.error('圖片來源無效');
+        return;
+    }
+    
+    const img = document.getElementById('imgModalImg');
+    if (img) {
+        // 顯示載入中狀態
+        img.style.opacity = '0.5';
+        
+        // 設置新圖片
+        img.src = src;
+        
+        // 圖片載入完成後顯示
+        img.onload = () => {
+            img.style.opacity = '1';
+        };
+        
+        // 圖片載入失敗處理
+        img.onerror = () => {
+            console.error('圖片載入失敗:', src);
+            img.src = '/images/404.png';
+            showCustomToast('圖片載入失敗', 'orange');
+        };
+    }
+}
+
+function prevImg() {
+    console.log('顯示上一張圖片');
+    if (!currentImgs.length) return;
+    currentIdx = (currentIdx - 1 + currentImgs.length) % currentImgs.length;
+    showImgInModal(currentImgs[currentIdx]);
+}
+
+function nextImg() {
+    console.log('顯示下一張圖片');
+    if (!currentImgs.length) return;
+    currentIdx = (currentIdx + 1) % currentImgs.length;
+    showImgInModal(currentImgs[currentIdx]);
+}
+
+function closeImgModal() {
+    console.log('關閉圖片輪播');
+    const modal = document.getElementById('imgModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // 移除鍵盤事件監聽
+        document.removeEventListener('keydown', handleKeyPress);
+    }
+}
+
+// 初始化描述欄位點擊事件
+function initializeDescriptionHandlers() {
+    // 綁定描述文字點擊事件
+    document.querySelectorAll('.desc-text').forEach(desc => {
+        desc.addEventListener('click', function() {
+            const fullDesc = this.getAttribute('data-full-desc');
+            showDescModal(fullDesc);
+        });
+    });
+
+    // 綁定退回原因點擊事件
+    document.querySelectorAll('.reject-text').forEach(reject => {
+        reject.addEventListener('click', function() {
+            const fullReject = this.getAttribute('data-full-reject');
+            showDescModal(fullReject, '退回原因');
+        });
+    });
+}
+
+// 顯示描述 Modal
+function showDescModal(content, title = '詳細描述') {
+    const modal = document.getElementById('descModal');
+    const modalTitle = modal.querySelector('h5');
+    const modalContent = modal.querySelector('.desc-content');
+    
+    modalTitle.textContent = title;
+    modalContent.textContent = content;
+    
+    modal.classList.add('show');
+    
+    // 點擊 Modal 外部關閉
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeDescModal();
+        }
+    });
+}
+
+// 關閉描述 Modal
+function closeDescModal() {
+    const modal = document.getElementById('descModal');
+    modal.classList.remove('show');
+}
+
+// 綁定描述點擊事件
+function bindDescClick() {
+    document.querySelectorAll('.desc-preview').forEach(desc => {
+        desc.addEventListener('click', function() {
+            const fullDesc = this.getAttribute('data-full-desc');
+            showDescModal(fullDesc);
+        });
+    });
+}
+document.addEventListener('DOMContentLoaded', bindDescClick);
+
+// 點擊遮罩也可關閉
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('descModal');
+    if (event.target === modal) {
+        closeDescModal();
+    }
+}); 

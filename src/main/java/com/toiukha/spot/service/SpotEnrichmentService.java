@@ -2,6 +2,7 @@ package com.toiukha.spot.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toiukha.spot.model.SpotVO;
+import com.toiukha.spot.model.SpotImgVO;
 import com.toiukha.spot.service.GooglePlacesService.GooglePlaceInfo;
 import com.toiukha.spot.service.GooglePlacesService.GooglePlaceDetails;
 
@@ -38,6 +39,9 @@ public class SpotEnrichmentService {
     
     @Autowired
     private GovernmentDataService governmentDataService;
+    
+    @Autowired
+    private SpotImgService spotImgService;
     
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -592,15 +596,30 @@ public class SpotEnrichmentService {
 
     public void enrichSpotPictureUrlIfNeeded(List<SpotVO> spots) {
         for (SpotVO spot : spots) {
+            // 1. 先檢查 spotimg 表是否有圖片（使用者上傳圖優先）
+            List<SpotImgVO> spotImages = spotImgService.getImagesBySpotId(spot.getSpotId());
+            if (!spotImages.isEmpty()) {
+                spot.setFirstPictureUrl(spotImages.get(0).getImgPath());
+                continue; // 有上傳圖就直接用，不再補 Google 圖片
+            }
+            // 2. 沒有上傳圖，才自動補 Google 圖片
             String url = spot.getFirstPictureUrl();
-            // 判斷為空或為預設404圖時才補圖
-            if ((url == null || url.trim().isEmpty() || url.contains("404.png")) && spot.getGooglePlaceId() != null) {
-                // 取得 Google 圖片預覽
-                Map<String, Object> googleData = enrichSpotWithGoogleData(spot);
-                if (googleData != null && Boolean.TRUE.equals(googleData.get("success"))) {
-                    Map<String, Object> data = (Map<String, Object>) googleData.get("data");
-                    if (data != null && data.get("previewPhotoUrl") != null) {
-                        spot.setFirstPictureUrl(data.get("previewPhotoUrl").toString());
+            if (url == null || url.trim().isEmpty() || url.contains("404.png")) {
+                GooglePlaceDetails details = null;
+                if (spot.getGooglePlaceId() != null && !spot.getGooglePlaceId().isEmpty()) {
+                    details = googlePlacesService.getPlaceDetails(spot.getGooglePlaceId());
+                } else {
+                    Map<String, Object> placeInfo = getGooglePlaceInfo(spot.getSpotName(), spot.getSpotLoc());
+                    if (placeInfo != null && placeInfo.get("placeId") != null) {
+                        spot.setGooglePlaceId(placeInfo.get("placeId").toString());
+                        details = googlePlacesService.getPlaceDetails(spot.getGooglePlaceId());
+                    }
+                }
+                if (details != null && details.getPhotoReferences() != null && !details.getPhotoReferences().isEmpty()) {
+                    String photoRef = details.getPhotoReferences().get(0);
+                    String photoUrl = googlePlacesService.getPhotoUrl(photoRef, 800);
+                    if (photoUrl != null && !photoUrl.isEmpty()) {
+                        spot.setFirstPictureUrl(photoUrl);
                     }
                 }
             }

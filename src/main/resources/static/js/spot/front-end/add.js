@@ -22,6 +22,7 @@
      * 主要模組物件
      */
     const SpotAdd = {
+        images: [],
         // 配置選項
         config: {
             animationDuration: prefersReducedMotion ? 0 : 300,
@@ -59,6 +60,13 @@
             this.setupCharacterCounters();
             this.setupAccessibility();
             this.initializeTooltips();
+            // 新增：圖片 input change 觸發驗證
+            const imageInput = document.getElementById('multiImageInput');
+            if (imageInput) {
+                imageInput.addEventListener('change', () => {
+                    this.updateFormValidation();
+                });
+            }
             console.log('新增景點頁面已初始化');
         },
 
@@ -200,6 +208,12 @@
         handleFormSubmit(e) {
             e.preventDefault();
 
+            // === 圖片必填驗證（改用 this.images） ===
+            if (!this.images || this.images.length === 0) {
+                this.showToast('請至少上傳一張圖片', 'error');
+                return;
+            }
+
             if (this.state.isSubmitting) {
                 return;
             }
@@ -227,10 +241,42 @@
             // 顯示提交中的 toast
             this.showToast('正在提交景點資訊...', 'info');
 
-            // 提交表單
-            setTimeout(() => {
-                this.elements.form.submit();
-            }, 500);
+            // 收集表單資料
+            const formData = new FormData(this.elements.form);
+            
+            // 添加圖片檔案
+            this.images.forEach((file, index) => {
+                formData.append('multiImages', file);
+                // 如果有圖片描述，也一併加入
+                const desc = document.querySelector(`#image-${index} .image-desc`)?.value || '';
+                formData.append('multiImageDescs', desc);
+            });
+
+            // 使用 fetch 提交
+            fetch('/api/spot/public/submit-form', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.showToast('景點新增成功！即將跳轉...', 'success');
+                    // 成功後跳轉到首頁或列表頁
+                    setTimeout(() => {
+                        window.location.href = '/front-end/spot/list.html';
+                    }, 1500);
+                } else {
+                    this.showToast(data.message || '景點新增失敗', 'error');
+                    this.state.isSubmitting = false;
+                    this.updateSubmitButton(false);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.showToast('系統錯誤，請稍後再試', 'error');
+                this.state.isSubmitting = false;
+                this.updateSubmitButton(false);
+            });
         },
 
         /**
@@ -376,8 +422,9 @@
                 const field = this.elements[fieldName];
                 return !field || !field.value.trim();
             });
-
-            this.state.isFormValid = !hasErrors && !hasEmptyFields;
+            // 圖片必填驗證（改用 this.images）
+            const hasImage = this.images && this.images.length > 0;
+            this.state.isFormValid = !hasErrors && !hasEmptyFields && hasImage;
             this.updateSubmitButton();
         },
 
@@ -654,10 +701,13 @@
     const selectBtn = document.getElementById('multiImageSelectBtn');
     const list = document.getElementById('multiImageList');
     let helperText = dropzone?.parentElement.querySelector('.helper-text');
-    let images = [];
+    // let images = [];
     const MAX_IMAGES = 8;
     const MAX_SIZE = 2 * 1024 * 1024; // 2MB
     const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
+
+    // 初始化 SpotAdd.images
+    SpotAdd.images = [];
 
     if (!input || !dropzone || !selectBtn || !list) return;
 
@@ -677,10 +727,10 @@
     input.addEventListener('change', e => handleFiles(e.target.files));
 
     function isUploadFull() {
-        return images.length >= MAX_IMAGES;
+        return SpotAdd.images.length >= MAX_IMAGES;
     }
     function updateHelper() {
-        const remain = MAX_IMAGES - images.length;
+        const remain = MAX_IMAGES - SpotAdd.images.length;
         if (helperText) {
             helperText.textContent = `可上傳多張圖片，每張可填寫描述，支援拖拉排序與刪除（剩餘${remain}張）`;
         }
@@ -689,7 +739,7 @@
         dropzone.style.pointerEvents = remain <= 0 ? 'none' : 'auto';
     }
     function handleFiles(files) {
-        let totalCount = images.length;
+        let totalCount = SpotAdd.images.length;
         for (let file of files) {
             if (totalCount >= MAX_IMAGES) {
                 SpotAdd.showToast(`最多只能上傳${MAX_IMAGES}張圖片，請先刪除部分圖片再嘗試。`, 'error');
@@ -705,18 +755,20 @@
             }
             const reader = new FileReader();
             reader.onload = e => {
-                images.push({ file, url: e.target.result, desc: '' });
+                SpotAdd.images.push({ file, url: e.target.result, desc: '' });
                 renderList();
+                SpotAdd.updateFormValidation(); // 新增後驗證
             };
             reader.readAsDataURL(file);
             totalCount++;
         }
         input.value = '';
         updateHelper();
+        SpotAdd.updateFormValidation(); // 處理完也驗證
     }
     function renderList() {
         list.innerHTML = '';
-        images.forEach((img, idx) => {
+        SpotAdd.images.forEach((img, idx) => {
             const item = document.createElement('div');
             item.className = 'multi-image-item';
             item.draggable = true;
@@ -726,10 +778,13 @@
                 <button type="button" class="multi-image-delete">刪除</button>
             `;
             item.querySelector('.multi-image-delete').onclick = () => {
-                images.splice(idx, 1); renderList(); updateHelper();
+                SpotAdd.images.splice(idx, 1);
+                renderList();
+                updateHelper();
+                SpotAdd.updateFormValidation(); // 刪除後驗證
             };
             item.querySelector('.multi-image-desc').oninput = e => {
-                images[idx].desc = e.target.value;
+                SpotAdd.images[idx].desc = e.target.value;
             };
             item.ondragstart = e => { e.dataTransfer.setData('text/plain', idx); };
             item.ondragover = e => e.preventDefault();
@@ -738,44 +793,45 @@
                 const from = +e.dataTransfer.getData('text/plain');
                 const to = idx;
                 if (from !== to) {
-                    const moved = images.splice(from, 1)[0];
-                    images.splice(to, 0, moved);
+                    const moved = SpotAdd.images.splice(from, 1)[0];
+                    SpotAdd.images.splice(to, 0, moved);
                     renderList();
+                    SpotAdd.updateFormValidation(); // 排序後驗證
                 }
             };
             list.appendChild(item);
         });
         updateHelper();
+        SpotAdd.updateFormValidation(); // 渲染完也驗證
     }
     // 表單送出時附加多圖資料
     const form = document.getElementById('spotAddForm');
     if (form) {
         form.addEventListener('submit', function(e) {
-            if (images.length === 0) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            // 收集多圖
+            if (!SpotAdd.images || SpotAdd.images.length === 0) {
                 SpotAdd.showToast('請至少上傳一張圖片', 'error');
-                e.preventDefault();
                 return;
             }
-            if (images.length > 0) {
-                const formData = new FormData(form);
-                images.forEach((img, i) => {
-                    formData.append('multiImages', img.file);
-                    formData.append('multiImageDescs', img.desc);
-                });
-                e.preventDefault();
-                fetch(form.action, {
-                    method: form.method,
-                    body: formData
-                }).then(resp => resp.json())
-                  .then(data => {
-                    if (data.success) {
-                      SpotAdd.showToast('景點與圖片已送出，待審核', 'success');
-                      setTimeout(() => location.href = '/spot/list', 1200);
-                    } else {
-                      SpotAdd.showToast(data.message || '儲存失敗', 'error');
-                    }
-                  }).catch(() => SpotAdd.showToast('儲存失敗', 'error'));
+            for (let i = 0; i < SpotAdd.images.length; i++) {
+                formData.append('multiImages', SpotAdd.images[i].file);
             }
+            fetch('/api/spot/public/submit-form', {
+                method: 'POST',
+                body: formData
+            })
+            .then(resp => resp.json())
+            .then(data => {
+                if (data.success) {
+                    SpotAdd.showToast('景點與圖片已送出，待審核', 'success');
+                    setTimeout(() => location.href = '/spot/list', 1200);
+                } else {
+                    SpotAdd.showToast(data.message || '儲存失敗', 'error');
+                }
+            })
+            .catch(() => SpotAdd.showToast('儲存失敗', 'error'));
         });
     }
 
@@ -800,14 +856,15 @@
     }
 
     function setupSpotInfoChangeListener() {
+        // 僅保留清空欄位功能，不自動帶入
         const spotNameInput = document.getElementById('spotName');
         const spotLocInput = document.getElementById('spotLoc');
         if (!spotNameInput || !spotLocInput) return;
         let lastSpotName = spotNameInput.value;
         let lastSpotLoc = spotLocInput.value;
         function clearAutoFilledFields() {
-            const telInput = document.getElementById('tel');
-            const websiteInput = document.getElementById('website');
+            const telInput = document.getElementById('spotTel');
+            const websiteInput = document.getElementById('spotWeb');
             if (telInput) {
                 telInput.value = '';
                 telInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -845,35 +902,14 @@
             if (region) {
                 regionSelect.value = region;
                 regionSelect.dispatchEvent(new Event('change', { bubbles: true }));
-                fetchGooglePlaceDataFront(true);
+                //fetchGooglePlaceDataFront(true); // 註解掉自動帶入
             }
         });
     }
 
-    async function fetchGooglePlaceDataFront(silent = false, forceUpdate = false) {
-        const spotName = document.getElementById('spotName').value.trim();
-        const spotLoc = document.getElementById('spotLoc').value.trim();
-        if (!spotName || !spotLoc) return;
-        try {
-            const response = await fetch('/api/spot/public/google-place-info', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: spotName, address: spotLoc })
-            });
-            if (!response.ok) return;
-            const data = await response.json();
-            const telInput = document.getElementById('tel');
-            const websiteInput = document.getElementById('website');
-            if (data.phoneNumber && (forceUpdate || !telInput.value)) {
-                telInput.value = data.phoneNumber;
-                telInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            if (data.website && (forceUpdate || !websiteInput.value)) {
-                websiteInput.value = data.website;
-                websiteInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        } catch (e) { /* 可加提示 */ }
-    }
+    // async function fetchGooglePlaceDataFront(silent = false, forceUpdate = false) {
+    //     // 此功能前台停用
+    // }
 
     document.addEventListener('DOMContentLoaded', function() {
         SpotAdd.init();
@@ -884,3 +920,79 @@
     window.SpotAdd = SpotAdd;
 
 })(); 
+
+// 單圖預覽功能
+(function() {
+    const input = document.getElementById('spotImageInput');
+    const preview = document.getElementById('spotImagePreview');
+    if (!input || !preview) return;
+    input.addEventListener('change', function() {
+        preview.innerHTML = '';
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            if (!file.type.startsWith('image/')) {
+                preview.innerHTML = '<span style="color:#f44336;">僅支援圖片檔案</span>';
+                input.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" style="max-width:120px;max-height:120px;border-radius:10px;border:1.5px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,0.10);background:#fff;display:block;" alt="預覽圖"/>`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+})(); 
+
+// === 強化自動帶入地區功能 ===
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        var spotLocInput = document.getElementById('spotLoc');
+        var regionSelect = document.getElementById('region');
+        if (!spotLocInput || !regionSelect) return;
+        spotLocInput.addEventListener('blur', function() {
+            var address = this.value.trim();
+            if (!address) return;
+            var regions = [
+                '台北市', '臺北市', '新北市', '桃園市', '台中市', '臺中市', '台南市', '臺南市', '高雄市',
+                '基隆市', '新竹市', '嘉義市', '新竹縣', '苗栗縣', '彰化縣', '南投縣', '雲林縣',
+                '嘉義縣', '屏東縣', '宜蘭縣', '花蓮縣', '台東縣', '臺東縣', '澎湖縣', '金門縣', '連江縣'
+            ];
+            var found = null;
+            for (var i = 0; i < regions.length; i++) {
+                if (address.includes(regions[i])) {
+                    found = regions[i];
+                    break;
+                }
+            }
+            if (found) {
+                // 正規化
+                if (found === '臺北市') found = '台北市';
+                if (found === '臺中市') found = '台中市';
+                if (found === '臺南市') found = '台南市';
+                if (found === '臺東縣') found = '台東縣';
+                regionSelect.value = found;
+                regionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+                // 若無法自動判斷，清空選擇
+                regionSelect.value = '';
+            }
+        });
+    });
+})();
+
+// === 圖片必填驗證 ===
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('spotAddForm');
+        var imgInput = document.getElementById('spotImageInput');
+        if (!form || !imgInput) return;
+        form.addEventListener('submit', function(e) {
+            if (!imgInput.value) {
+                e.preventDefault();
+                alert('請上傳一張景點圖片');
+                imgInput.focus();
+            }
+        });
+    });
+})();

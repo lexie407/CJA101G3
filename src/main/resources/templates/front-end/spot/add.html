@@ -259,20 +259,14 @@
                                                     <div class="spot-add-help-text">請輸入100~500字，讓其他旅人更了解這個景點</div>
                                                     <div class="spot-add-error-text" id="spotDescError"></div>
                                                 </div>
-                                                <!-- 多圖上傳區塊（完全複製後台） -->
-                                                <div class="form-group form-group-full" style="margin-top: 2.5rem;">
-                                                    <label class="form-label">景點多圖上傳</label>
-                                                    <div id="multiImageUpload" class="multi-image-upload">
-                                                        <input id="multiImageInput" type="file" accept="image/*" multiple style="display:none;">
-                                                        <div class="multi-image-dropzone" id="multiImageDropzone">
-                                                            <span>拖曳圖片到此，或 <button type="button" id="multiImageSelectBtn" class="btn btn-sm btn-secondary">選擇圖片</button></span>
-                                                        </div>
-                                                        <div class="multi-image-list" id="multiImageList">
-                                                            <!-- 動態顯示已上傳圖片、描述、刪除按鈕 -->
-                                                        </div>
-                                                        <div class="helper-text">可上傳多張圖片，每張可填寫描述，支援拖拉排序與刪除</div>
-                                                    </div>
+                                                <!-- 圖片上傳區塊 -->
+                                                <div class="form-group">
+                                                    <label for="imageInput">景點圖片 <span class="text-danger">*</span></label>
+                                                    <div class="helper-text text-muted mb-2">請上傳1張圖片，支援 JPG、PNG 格式，單張不超過2MB</div>
+                                                    <input type="file" id="imageInput" class="form-control" accept="image/jpeg,image/png,image/jpg">
+                                                    <div id="imageContainer" class="mt-3 d-flex flex-wrap gap-3"></div>
                                                 </div>
+                                                <!-- 圖片上傳區塊結束 -->
                                             </div>
 
                                             <!-- 提交須知 -->
