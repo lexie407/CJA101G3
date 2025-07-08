@@ -17,7 +17,7 @@
         <div class="main-content">
             <header class="secondary-nav">
                 <ul>
-                    <!--                     <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='productlist')}"></div> -->
+                    <div id="subnav" th:replace="~{subnavStoreBack :: secNavResources}"></div>
                 </ul>
             </header>
             <main class="content-area-main">
@@ -36,15 +36,17 @@
                         <option value="0">未上架</option>
                         <option value="1">上架</option>
                         <option value="2">下架</option>
+                        <option value="3">停售</option>
                     </select>
                 </div>
 
                 <div class="mdc-horizontal-list">
                     <th:block th:each="itemVO : ${itemListData_admin}">
-                        <div class="mdc-horizontal-card"
+                        <div class="mdc-horizontal-card" th:classappend="${itemVO.itemStatus == 3} ? ' stopped-card'"
                             th:attr="data-name=${itemVO.itemName},data-id=${itemVO.itemId}">
                             <div class="mdc-horizontal-card__media">
                                 <img th:src="@{/item/DBGifReader} + '?itemId=' + ${itemVO.itemId}" alt="商品圖片">
+                                <span th:if="${itemVO.itemStatus == 3}" class="stop-badge">停售</span>
                             </div>
                             <div class="mdc-horizontal-card__content">
                                 <h3 class="mdc-horizontal-card__title" th:text="${itemVO.itemName}"></h3>
@@ -59,6 +61,7 @@
                                         <span th:case="0">未上架</span>
                                         <span th:case="1">上架</span>
                                         <span th:case="2">下架</span>
+                                        <span th:case="3">停售</span>
                                         <span th:case="*">未知</span>
                                     </span>
                                 </div>
@@ -275,6 +278,27 @@
                         margin-left: 10px;
                         min-width: 90px;
                     }
+
+                    .stop-badge {
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                        background: #f44336;
+                        color: #fff;
+                        font-weight: bold;
+                        padding: 4px 14px;
+                        border-radius: 16px;
+                        font-size: 1.08rem;
+                        z-index: 2;
+                        box-shadow: 0 2px 8px #f4433622;
+                        letter-spacing: 2px;
+                    }
+
+                    .stopped-card {
+                        border: 2.5px solid #f44336;
+                        background: #fff5f5;
+                        position: relative;
+                    }
                 </style>
 
                 <script>
@@ -306,6 +330,7 @@
                                 if (status === '0') statusMatch = statusText === '未上架';
                                 if (status === '1') statusMatch = statusText === '上架';
                                 if (status === '2') statusMatch = statusText === '下架';
+                                if (status === '3') statusMatch = statusText === '停售';
                             }
                             card.style.display = (match && statusMatch) ? '' : 'none';
                         });

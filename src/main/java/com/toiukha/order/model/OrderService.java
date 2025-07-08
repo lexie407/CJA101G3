@@ -12,6 +12,10 @@ import com.toiukha.item.model.ItemService;
 import com.toiukha.item.model.ItemVO;
 import com.toiukha.orderitems.model.OrderItemsService;
 import com.toiukha.orderitems.model.OrderItemsVO;
+import com.toiukha.paymentlog.model.PaymentLogService;
+import com.toiukha.paymentlog.model.PaymentLogVO;
+import com.toiukha.coupon.model.CouponService;
+import com.toiukha.coupon.model.CouponVO;
 
 @Service("orderService")
 public class OrderService {
@@ -27,6 +31,12 @@ public class OrderService {
 	
 	@Autowired
 	private ItemService itemService;
+	
+	@Autowired
+	private PaymentLogService paymentLogService;
+	
+	@Autowired
+	private CouponService couponService;
 	
 	public void addOrder(OrderVO orderVO) {
 		repository.save(orderVO);
@@ -79,7 +89,20 @@ public class OrderService {
 			})
 			.collect(Collectors.toList());
 		
-		return new OrderWithItemsDTO(order, orderItemDetails);
+		OrderWithItemsDTO dto = new OrderWithItemsDTO(order, orderItemDetails);
+		
+		// 查詢付款紀錄
+		PaymentLogVO paymentLog = paymentLogService.getByOrdId(ordId);
+		Integer couponDiscount = 0;
+		if (paymentLog != null && paymentLog.getCouId() != null && paymentLog.getCouId() != 0) {
+			CouponVO coupon = couponService.getOneCoupon(paymentLog.getCouId());
+			if (coupon != null && coupon.getDiscValue() != null) {
+				couponDiscount = coupon.getDiscValue();
+			}
+		}
+		dto.calculateTotals(couponDiscount);
+		
+		return dto;
 	}
 	
 	// 獲取會員所有已完成訂單及其項目，依訂單時間新到舊排序
