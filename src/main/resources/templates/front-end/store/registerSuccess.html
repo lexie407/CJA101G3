@@ -1,47 +1,73 @@
 <!DOCTYPE html>
 <html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>註冊成功通知|島遊kha</title>
-  <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
-  <style>
-    body.light { margin:0; padding:0; }
-    /* 側欄保持原來流式 */
-    nav { position: fixed; top:0; left:0; width:240px; height:100vh; }
-    /* 卡片固定在側欄右邊主區中央 */
-    .fixed-center {
-      position: fixed;
-      top: 50%;
-      left: calc(240px + (100vw - 240px) / 2);
-      transform: translate(-50%, -50%);
-      width: 100%;
-      max-width: 600px;
-      padding: 20px;
-      background: var(--md-sys-color-surface-container-low);
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .headline { font-size:1.8rem; font-weight:500; margin-bottom:16px; }
-    .message { font-size:1rem; margin-bottom:24px; color:var(--md-sys-color-on-surface-variant); }
-    .btn {
-      display:inline-block; padding:10px 20px; border-radius:20px;
-      background-color:var(--md-sys-color-primary);
-      color:var(--md-sys-color-on-primary);
-      text-decoration:none; font-weight:500;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>註冊成功通知|島遊kha</title>
+<th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+<style>
+body.light {
+	margin: 0;
+	padding: 0;
+}
+/* 側欄保持原來流式 */
+nav {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 240px;
+	height: 100vh;
+}
+/* 卡片固定在側欄右邊主區中央 */
+.fixed-center {
+	position: fixed;
+	top: 50%;
+	left: calc(240px + ( 100vw - 240px)/2);
+	transform: translate(-50%, -50%);
+	width: 100%;
+	max-width: 600px;
+	padding: 20px;
+	background: var(--md-sys-color-surface-container-low);
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	text-align: center;
+}
+
+.headline {
+	font-size: 1.8rem;
+	font-weight: 500;
+	margin-bottom: 16px;
+}
+
+.message {
+	font-size: 1rem;
+	margin-bottom: 24px;
+	color: var(--md-sys-color-on-surface-variant);
+}
+
+.btn {
+	display: inline-block;
+	padding: 10px 20px;
+	border-radius: 20px;
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+	text-decoration: none;
+	font-weight: 500;
+}
+</style>
 </head>
 <body class="light">
-  <!-- 側欄 -->
-  <div th:insert="~{/navTemplate :: navbar}"></div>
+	<!-- 側欄 -->
+	<div th:insert="~{/navTemplate :: navbar}"></div>
 
-  <!-- 卡片 -->
-  <div class="fixed-center">
-    <h2 class="headline">註冊成功通知</h2>
-    <p class="message">您的註冊已成功提交！管理員將會審核您的帳號，請耐心等待審核結果。</p>
-    <a th:href="@{/}" class="btn">返回首頁</a>
-  </div>
+	<!-- 卡片 -->
+	<div class="fixed-center">
+		<h2 class="headline">註冊成功通知</h2>
+		<p class="message">您的註冊已成功提交！管理員將會審核您的帳號，請耐心等待審核結果。</p>
+		<a th:href="@{/}" class="btn">返回首頁</a>
+	</div>
+	<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+	<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+	<script src="../js/notification/websocket.js"></script>
 </body>
 </html>
