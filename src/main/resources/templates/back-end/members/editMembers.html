@@ -269,16 +269,17 @@
 						</div>
 
 						<!-- memAvatarFrame -->
-<!-- 						<div class="form-group"> -->
-<!-- 							<label>頭像框</label>  -->
-							<input type="file" name="memAvatarFrameFile" accept="image/*" id="memAvatarFrame" style="display: none;"/>
-<!-- 							<div class="avatar-frame-preview"> -->
-<!-- 								<img class="preview-img" id="avatarFramePreview" -->
-<!-- 									th:src="@{/members/DBGifReader(memId=${membersVO.memId},type='memAvatarFrame')}" -->
-<!-- 									data-original="@{/members/DBGifReader(memId=${membersVO.memId},type='memAvatarFrame')}" -->
-<!-- 									alt="頭像框預覽" /> <span class="avatar-placeholder">尚未上傳圖片</span> -->
-<!-- 							</div> -->
-<!-- 						</div> -->
+						<!-- 						<div class="form-group"> -->
+						<!-- 							<label>頭像框</label>  -->
+						<input type="file" name="memAvatarFrameFile" accept="image/*"
+							id="memAvatarFrame" style="display: none;" />
+						<!-- 							<div class="avatar-frame-preview"> -->
+						<!-- 								<img class="preview-img" id="avatarFramePreview" -->
+						<!-- 									th:src="@{/members/DBGifReader(memId=${membersVO.memId},type='memAvatarFrame')}" -->
+						<!-- 									data-original="@{/members/DBGifReader(memId=${membersVO.memId},type='memAvatarFrame')}" -->
+						<!-- 									alt="頭像框預覽" /> <span class="avatar-placeholder">尚未上傳圖片</span> -->
+						<!-- 							</div> -->
+						<!-- 						</div> -->
 
 						<!-- memLogErrCount -->
 						<div class="form-group">
@@ -290,7 +291,8 @@
 						<div class="form-group">
 							<label>錯誤時間</label> <input type="text"
 								th:value="${#dates.format(membersVO.memLogErrTime,'yyyy-MM-dd HH:mm:ss')}"
-								readonly class="readonly-field" />
+								readonly class="readonly-field" /> <input type="hidden"
+								th:field="*{memLogErrTime}" />
 						</div>
 
 						<!-- memGroupAuth -->
@@ -324,8 +326,8 @@
 						</div>
 
 						<div class="form-actions">
-<!-- 							<button type="button" onclick="history.back()" -->
-<!-- 								class="material-button md-secondary-button">取消</button> -->
+							<!-- 							<button type="button" onclick="history.back()" -->
+							<!-- 								class="material-button md-secondary-button">取消</button> -->
 							<button type="submit" class="material-button md-primary-button">儲存</button>
 						</div>
 					</form>
