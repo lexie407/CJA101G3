@@ -131,7 +131,7 @@
         
         .item-image-container {
             width: 100%;
-            height: 240px;
+            height: 300px;
             overflow: hidden;
             border-radius: 16px 16px 0 0;
         }
@@ -229,37 +229,7 @@
             color: var(--md-sys-color-on-surface);
         }
         
-        .view-item-button {
-            width: 100%;
-            margin-top: 12px;
-            padding: 12px 20px;
-            background-color: var(--md-sys-color-surface-container-high);
-            color: var(--md-sys-color-primary);
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            text-align: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: block;
-            border: 1.5px solid var(--md-sys-color-outline-variant);
-            cursor: pointer;
-            box-shadow: none;
-            box-sizing: border-box;
-        }
-        
-        .view-item-button:hover {
-            background-color: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
-            border-color: var(--md-sys-color-primary);
-            transform: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            text-decoration: none;
-        }
-        
-        .view-item-button:active {
-            transform: scale(0.98);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
-        }
+
         
         .no-items-message {
             text-align: center;
@@ -390,8 +360,7 @@
             outline-offset: 2px;
         }
         
-        .back-button:focus,
-        .view-item-button:focus {
+        .back-button:focus {
             outline: 2px solid var(--md-sys-color-primary);
             outline-offset: 2px;
         }
@@ -474,10 +443,7 @@
                                     現貨供應
                                 </div>
                                 
-                                <!-- 查看商品按鈕 -->
-                                <a th:href="@{/item/listAllItem}" class="view-item-button">
-                                    查看商品詳情
-                                </a>
+
                             </div>
                         </div>
                     </div>

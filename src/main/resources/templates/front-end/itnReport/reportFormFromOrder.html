@@ -48,103 +48,82 @@
         .page-header {
             background: linear-gradient(135deg, var(--secondary-color) 0%, #ff7043 100%) !important;
             color: white !important;
-            padding: 20px 24px !important;
-            border-radius: 12px !important;
-            margin-bottom: 12px !important;
-            box-shadow: 0 4px 16px rgba(255, 87, 34, 0.24) !important;
-            position: relative !important;
-            overflow: hidden !important;
+            padding: 12px 16px !important;
+            border-radius: 8px !important;
+            margin-bottom: 8px !important;
+            box-shadow: 0 2px 8px rgba(255, 87, 34, 0.24) !important;
         }
 
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: float 6s ease-in-out infinite;
-        }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
 
         .page-title {
-            font-size: 28px !important;
+            font-size: 20px !important;
             font-weight: 600 !important;
             margin: 0 !important;
             display: flex !important;
             align-items: center !important;
-            gap: 12px !important;
+            gap: 8px !important;
         }
 
-        /* 測試標記 - 如果看到紅色邊框表示樣式已生效 */
-        .page-header {
-            border: 2px solid red !important;
-        }
+
 
         .page-subtitle {
-            font-size: 16px;
+            font-size: 14px;
             opacity: 0.9;
-            margin: 8px 0 0 0;
+            margin: 4px 0 0 0;
             line-height: 1.3;
         }
 
         /* 訂單資訊卡片 */
         .order-info {
             background: var(--surface-color) !important;
-            border-radius: 12px !important;
-            padding: 16px !important;
-            margin-bottom: 12px !important;
-            box-shadow: 0 4px 12px var(--shadow) !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            margin-bottom: 8px !important;
+            box-shadow: 0 2px 8px var(--shadow) !important;
             border: 1px solid var(--outline) !important;
         }
 
         .order-info h4 {
-            margin: 0 0 16px 0;
+            margin: 0 0 10px 0;
             color: var(--primary-color);
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--outline);
+            gap: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--outline);
         }
 
         .order-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 12px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .order-detail-item {
             background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
             border: 1px solid var(--outline);
             transition: all 0.3s ease;
         }
         
         .order-detail-item:hover {
             background: #e9ecef;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .detail-label {
-            font-size: 14px;
+            font-size: 12px;
             color: var(--on-surface-variant);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             font-weight: 500;
         }
 
         .detail-value {
-            font-size: 17px;
+            font-size: 14px;
             color: var(--on-surface);
             font-weight: 600;
         }
@@ -152,80 +131,77 @@
         .item-preview {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             background: #f8f9fa;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 8px;
+            border-radius: 6px;
             border: 1px solid var(--outline);
-            margin-top: 12px;
+            margin-top: 8px;
             transition: all 0.3s ease;
         }
         
         .item-preview:hover {
             background: #e9ecef;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         }
 
         .item-image {
-            width: 70px;
-            height: 70px;
-            border-radius: 8px;
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
             object-fit: cover;
             border: 2px solid var(--outline);
             transition: all 0.3s ease;
         }
         
         .item-image:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: scale(1.02);
         }
 
         .item-details h5 {
-            margin: 0 0 8px 0;
-            font-size: 16px;
+            margin: 0 0 6px 0;
+            font-size: 14px;
             color: var(--on-surface);
             font-weight: 600;
         }
 
         .item-details p {
-            margin: 4px 0;
+            margin: 2px 0;
             color: var(--on-surface-variant);
-            font-size: 14px;
+            font-size: 12px;
             line-height: 1.3;
         }
 
         /* 表單卡片 */
         .form-card {
             background: var(--surface-color) !important;
-            border-radius: 12px !important;
-            padding: 20px !important;
-            box-shadow: 0 4px 12px var(--shadow) !important;
-            margin-bottom: 12px !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            box-shadow: 0 2px 8px var(--shadow) !important;
+            margin-bottom: 8px !important;
         }
 
         .form-title {
-            font-size: 18px !important;
+            font-size: 16px !important;
             font-weight: 600 !important;
             color: var(--on-surface) !important;
-            margin-bottom: 16px !important;
+            margin-bottom: 10px !important;
             display: flex !important;
             align-items: center !important;
-            gap: 8px !important;
-            padding-bottom: 8px !important;
-            border-bottom: 2px solid var(--outline) !important;
+            gap: 6px !important;
+            padding-bottom: 6px !important;
+            border-bottom: 1px solid var(--outline) !important;
         }
 
         .form-group {
-            margin-bottom: 16px !important;
+            margin-bottom: 10px !important;
         }
 
         .form-label {
             display: block;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 500;
             color: var(--on-surface);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .required {
@@ -234,10 +210,10 @@
 
         .form-control {
             width: 100%;
-            padding: 16px;
+            padding: 10px;
             border: 2px solid var(--outline);
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 14px;
             background: var(--surface-color);
             color: var(--on-surface);
             transition: all 0.3s ease;
@@ -256,15 +232,15 @@
 
         .form-control.textarea {
             resize: vertical;
-            min-height: 80px;
+            min-height: 60px;
             font-family: inherit;
             line-height: 1.4;
         }
 
         .form-help {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--on-surface-variant);
-            margin-top: 4px;
+            margin-top: 2px;
             line-height: 1.3;
         }
 
@@ -272,25 +248,24 @@
         .reason-options {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
 
         .reason-option {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 12px;
+            gap: 8px;
+            padding: 8px;
             background: #f8f9fa;
             border: 2px solid var(--outline);
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .reason-option:hover {
             background: #e9ecef;
-            border-color: var(--secondary-color);
         }
 
         .reason-option.selected {
@@ -306,7 +281,7 @@
         .reason-option label {
             margin: 0;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 500;
             color: var(--on-surface);
         }
@@ -320,19 +295,17 @@
 
         .file-upload-area {
             border: 2px dashed var(--outline);
-            border-radius: 10px;
-            padding: 16px;
+            border-radius: 6px;
+            padding: 12px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             background: #fafafa;
-            position: relative;
-            min-height: 80px;
+            min-height: 60px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
         }
 
         .file-upload-area:hover {
@@ -355,15 +328,15 @@
         }
 
         .upload-icon {
-            font-size: 36px;
+            font-size: 24px;
             color: var(--secondary-color);
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .upload-text {
-            font-size: 14px;
+            font-size: 12px;
             color: var(--on-surface);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             font-weight: 500;
             word-wrap: break-word;
             overflow-wrap: break-word;
@@ -372,38 +345,22 @@
 
         /* 按鈕設計 */
         .btn {
-            padding: 12px 24px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 20px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
-            min-height: 44px;
+            min-height: 32px;
         }
 
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
 
-        .btn:hover::before {
-            transform: translateX(0);
-        }
 
         .btn-primary {
             background: linear-gradient(45deg, var(--secondary-color), #ff7043);
@@ -414,8 +371,6 @@
 
         .btn-primary:hover {
             background: linear-gradient(45deg, var(--secondary-dark), var(--secondary-color));
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(255, 87, 34, 0.3);
         }
 
         .btn-secondary {
@@ -427,13 +382,11 @@
 
         .btn-secondary:hover {
             background: #eeeeee;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .btn-group {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             margin-top: 0;
         }
 
@@ -441,19 +394,15 @@
 
         /* 警告訊息 */
         .alert {
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 24px;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            animation: slideIn 0.3s ease;
+            gap: 8px;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+
 
         .alert-error {
             background: #ffebee;
@@ -490,43 +439,43 @@
             }
             
             .page-header {
-                padding: 16px 12px;
-                margin-bottom: 10px;
+                padding: 10px 12px;
+                margin-bottom: 8px;
             }
             
             .form-card, .order-info {
-                padding: 16px;
+                padding: 10px;
             }
             
             .btn {
-                padding: 12px 20px;
-                min-height: 40px;
-                font-size: 13px;
+                padding: 8px 16px;
+                min-height: 30px;
+                font-size: 12px;
             }
             
             .order-details {
                 grid-template-columns: 1fr;
-                gap: 8px;
+                gap: 6px;
             }
             
             .item-preview {
                 flex-direction: column;
                 text-align: center;
-                gap: 8px;
-                padding: 10px;
+                gap: 6px;
+                padding: 8px;
             }
             
             .reason-options {
                 grid-template-columns: 1fr;
-                gap: 6px;
+                gap: 4px;
             }
             
             .reason-option {
-                padding: 10px;
+                padding: 6px;
             }
             
             .btn-group {
-                gap: 10px;
+                gap: 6px;
                 flex-direction: column;
             }
             
@@ -537,16 +486,16 @@
             }
             
             .file-upload-area {
-                padding: 12px;
-                min-height: 70px;
+                padding: 8px;
+                min-height: 50px;
             }
             
             .upload-icon {
-                font-size: 28px;
+                font-size: 20px;
             }
             
             .upload-text {
-                font-size: 13px;
+                font-size: 11px;
             }
         }
 
@@ -631,8 +580,10 @@
                     </div>
                     
                     <div class="item-preview">
-                        <img th:src="@{'/item/DBGifReader/' + ${item.itemId}}" 
-                             alt="商品圖片" class="item-image">
+                        <img th:src="@{'/item/DBGifReader?itemId=' + ${item.itemId}}" 
+                             th:alt="${item.itemName}" 
+                             class="item-image"
+                             onerror="this.src='/DB_photos1/1.jpg'">
                         <div class="item-details">
                             <h5 th:text="${item.itemName}">商品名稱</h5>
                             <p>商品編號：<span th:text="${item.itemId}">商品編號</span></p>
@@ -716,7 +667,7 @@
                                     <i class="material-icons">send</i>
                                     提交檢舉
                                 </button>
-                                <a th:href="@{/item-report/my-orders}" class="btn btn-secondary">
+                                <a th:href="@{/order/listCompletedOrders}" class="btn btn-secondary">
                                     <i class="material-icons">arrow_back</i>
                                     返回我的訂單
                                 </a>

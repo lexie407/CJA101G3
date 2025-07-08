@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -281,6 +282,53 @@ public class ProductFavController {
         }
     }
     
+    /**
+     * 批量檢查收藏狀態
+     * @param memId 會員ID
+     * @param itemIds 商品ID列表（逗號分隔）
+     * @param session HTTP Session
+     * @return 收藏狀態Map
+     */
+    @PostMapping("/check_favorites_batch")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> checkFavoritesBatch(
+            @RequestParam("memId") String memId,
+            @RequestParam("itemIds") String itemIds,
+            HttpSession session) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // 驗證會員身份
+            if (!validateMemberId(memId, session)) {
+                response.put("error", "not_logged_in");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // 解析商品ID列表
+            String[] itemIdArray = itemIds.split(",");
+            Integer memIdInt = Integer.valueOf(memId);
+            
+            // 檢查每個商品的收藏狀態
+            for (String itemIdStr : itemIdArray) {
+                try {
+                    Integer itemId = Integer.valueOf(itemIdStr.trim());
+                    boolean isFavorited = productFavService.isFavorite(memIdInt, itemId);
+                    response.put(itemId.toString(), isFavorited);
+                } catch (NumberFormatException e) {
+                    // 跳過無效的商品ID
+                    continue;
+                }
+            }
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("error", "system_error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
     /**
      * 獲取會員收藏統計資訊
      * @param session HTTP Session
