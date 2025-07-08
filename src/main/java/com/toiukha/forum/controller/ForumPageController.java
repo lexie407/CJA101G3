@@ -4,6 +4,7 @@ import com.toiukha.forum.article.dto.ArticleDTO;
 import com.toiukha.forum.article.entity.Article;
 import com.toiukha.forum.article.model.ArticlePicturesService;
 import com.toiukha.forum.article.model.ArticleService;
+import com.toiukha.forum.article.model.ArticleStatus;
 import com.toiukha.forum.util.Debug;
 import com.toiukha.members.model.MembersVO;
 import jakarta.servlet.http.HttpSession;
@@ -12,8 +13,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +63,7 @@ public class ForumPageController {
     // 新增文章的處理與重導向
     @PostMapping("/article/insert")
     public String insertArticle(@ModelAttribute Article art, Model model, HttpSession session) {
+
         model.addAttribute("currentPage", "forum");
         MembersVO member = (MembersVO) session.getAttribute("member");
         if (member == null) {
@@ -68,6 +74,20 @@ public class ForumPageController {
             Debug.log("文章資料為空，無法新增文章");
             return "redirect:/forum/article/edit";
         }
+
+        // ======= 手動驗證區塊 =======
+        List<String> errors = new ArrayList<>();
+        if (art.getArtCat() == null) errors.add("請選擇分類");
+        if (art.getArtSta() == null) errors.add("請選擇狀態");
+        if (art.getArtTitle() == null || art.getArtTitle().trim().isEmpty()) errors.add("標題不可空白");
+        if (art.getArtCon() == null || art.getArtCon().trim().isEmpty()) errors.add("內容不可空白");
+
+        if (!errors.isEmpty()) {
+            model.addAttribute("errors", errors);
+            model.addAttribute("articleForm", art); // 回傳原本輸入的內容
+            return "front-end/forum/add-article";
+        }
+
         Debug.log("文章標題：" + art.getArtTitle(),
                 "文章分類：" + art.getArtCat(),
                 "文章上架狀態：" + art.getArtSta(),
@@ -114,7 +134,7 @@ public class ForumPageController {
         return "front-end/forum/edit-article";
     }
 
-    // 使用標題關鍵字搜尋文章
+    // 使用標題關鍵字搜尋文章，因為會查到上下架資料所以另開API
     @GetMapping("searchByTitle")
     public String searchByTitle(
 //            @NotBlank(message = "文章標題: 請勿空白")
@@ -140,6 +160,43 @@ public class ForumPageController {
         model.addAttribute("keyword", title);
         return "front-end/forum/search_Page";
     }
+
+    // 使用標題關鍵字搜尋文章，因為會查到上下架資料所以另開API
+    @GetMapping("search")
+    public String search(
+            @RequestParam(value = "keyword", required = false) String title,
+            @RequestParam(value = "id", required = false) Integer id,
+            Model model) {
+        model.addAttribute("currentPage", "forum");
+
+        if ((title == null || title.isBlank()) && id == null) {
+            model.addAttribute("errorMessage", "請輸入關鍵字或文章 ID！");
+            model.addAttribute("articleList", List.of());
+            return "front-end/forum/search_Page";
+        }
+
+        List<ArticleDTO> results = new ArrayList<>();
+
+        // 如果有提供文章 ID，則查詢單篇文章
+        if (id != null) {
+            ArticleDTO articleDTO = articleService.getDTOById(id);
+            if (articleDTO != null && articleDTO.getArtSta() == ArticleStatus.PUBLISHED.getValue()) {
+                results.add(articleDTO);
+            }
+        } else {
+            // 如果沒有提供文章 ID，則根據標題關鍵字搜尋
+            results = articleService.searchDTO(title,ARTICLE_CREATINE.name(), DESC.name(),ArticleStatus.PUBLISHED);
+        }
+
+        if (results.isEmpty()) {
+            model.addAttribute("errorMessage", "沒有相符結果");
+        }
+
+        model.addAttribute("articleList", results);
+        model.addAttribute("keyword", title);
+        return "front-end/forum/search_Page";
+    }
+
 
     // 會員專屬文章與問題查詢（從 session 取得會員編號）
     @GetMapping("/members/articles")

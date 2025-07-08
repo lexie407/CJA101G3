@@ -9,15 +9,15 @@ import com.toiukha.forum.article.model.ArticleServiceImpl;
 import com.toiukha.forum.article.model.ArticleStatus;
 import com.toiukha.forum.util.Debug;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import com.toiukha.like.model.LikeService;
 import com.toiukha.like.model.LikeVO;
 import com.toiukha.forum.article.entity.Article;
@@ -49,13 +49,27 @@ public class ArticleController {
         this.apService = apService;
     }
 
-// 取得單篇文章 DTO
+// 取得單篇文章 DTO，文章上下架都會撈到
     @GetMapping("/article/{artId:\\d+}")
     public ArticleDTO getArticleDTO(@PathVariable Integer artId) {
         Debug.log();
         return articleService.getDTOById(artId);
     }
 
+    // 取得單篇文章 DTO，而且只允許訪問已上架的文章
+    @GetMapping("/api/article/{artId}")
+    public ResponseEntity<ArticleDTO> getArticleDTOWithPublished(@PathVariable Integer artId) {
+        Debug.log(artId);
+        ArticleDTO dto = articleService.getDTOById(artId);
+        if (dto == null) {
+            Debug.log("文章不存在");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }else if (dto.getArtSta() != ArticleStatus.PUBLISHED.getValue()) {
+            Debug.log("文章已下架");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); //回傳 403 Forbidden禁止訪問
+        }
+        return ResponseEntity.ok(dto);
+    }
 
 // 取得全部文章 DTO(自訂排序)
     @GetMapping("/articles")
@@ -316,7 +330,12 @@ public class ArticleController {
             response.put("message", "文章更新成功");
             return ResponseEntity.ok(response);
             
-        } catch (Exception e) {
+        } catch (NoSuchElementException ne){
+            response.put("success", false);
+            response.put("message", "找不到文章: " + ne.getMessage());
+            System.err.println("找不到文章: " + ne.getMessage());
+        }
+        catch (Exception e) {
             response.put("success", false);
             response.put("message", "更新文章時發生錯誤: " + e.getMessage());
             System.err.println("更新文章時發生錯誤: " + e.getMessage());

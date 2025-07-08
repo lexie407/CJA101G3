@@ -45,6 +45,36 @@
                     </p>
                 </div>
 
+                <!-- Questions Section -->
+                <div class="section-card">
+                    <h2>
+                        <span class="emoji">❓</span>
+                        我發表的問題
+                    </h2>
+                    <ul class="item-list" th:if="${not #lists.isEmpty(questions)}">
+                        <li th:each="question : ${questions}" class="ripple"
+                            th:attr="data-artid=${question.artId}"
+                            style="cursor:pointer; position: relative;">
+                            <div class="item-title" th:text="${question.artTitle}">問題標題範例</div>
+                            <span>
+                                <span class="material-icons" style="font-size: 14px;">schedule</span>
+                                <span th:text="${#dates.format(question.artCreTime, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</span>
+                            </span>
+                            <div class="item-actions">
+                                <button class="edit-btn" th:attr="data-artid=${question.artId}" title="編輯問題">
+                                    <span class="material-icons">edit</span>
+                                </button>
+                                <button class="delete-btn" th:attr="data-artid=${question.artId}" title="刪除問題">
+                                    <span class="material-icons">delete</span>
+                                </button>
+                            </div>
+                        </li>
+                    </ul>
+                    <h2 th:if="${#lists.isEmpty(questions)}" style="text-align: center; color: #95a5a6; font-style: italic; margin-top: 20px;">
+                        還沒發表過
+                    </h2>
+                </div>
+
                 <!-- Articles Section -->
                 <div class="section-card">
                     <h2>
@@ -75,35 +105,7 @@
                     </h2>
                 </div>
 
-                <!-- Questions Section -->
-                <div class="section-card">
-                    <h2>
-                        <span class="emoji">❓</span>
-                        我發表的問題
-                    </h2>
-                    <ul class="item-list" th:if="${not #lists.isEmpty(questions)}">
-                        <li th:each="question : ${questions}" class="ripple"
-                            th:attr="data-artid=${question.artId}"
-                            style="cursor:pointer; position: relative;">
-                            <div class="item-title" th:text="${question.artTitle}">問題標題範例</div>
-                            <span>
-                                <span class="material-icons" style="font-size: 14px;">schedule</span>
-                                <span th:text="${#dates.format(question.artCreTime, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</span>
-                            </span>
-                            <div class="item-actions">
-                                <button class="edit-btn" th:attr="data-artid=${question.artId}" title="編輯問題">
-                                    <span class="material-icons">edit</span>
-                                </button>
-                                <button class="delete-btn" th:attr="data-artid=${question.artId}" title="刪除問題">
-                                    <span class="material-icons">delete</span>
-                                </button>
-                            </div>
-                        </li>
-                    </ul>
-                    <h2 th:if="${#lists.isEmpty(questions)}" style="text-align: center; color: #95a5a6; font-style: italic; margin-top: 20px;">
-                        還沒發表過
-                    </h2>
-                </div>
+
             </div>
 
         </main>
@@ -112,11 +114,27 @@
 
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>
 <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-<script src="../js/notification/websocket.js"></script>
+<script src="../../js/notification/websocket.js"></script>
 <!--<script th:src="@{/js/forum/frontEnd/search_Page.js}" ></script>-->
 <script>
-    // 點擊 li 跳轉到單篇文章頁面
+    function checkMemberId() {
+        fetch("/api/session/currentMember")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    return;
+                } else {
+                    alert("請先登入");
+                    window.location.href = "/members/login";
+                }
+            });
+    }
+
+    checkMemberId();
+
     document.addEventListener('DOMContentLoaded', function () {
+
+        // 點擊 li 跳轉到單篇文章頁面
         document.querySelectorAll('.item-list li[data-artid]').forEach(function (li) {
             li.addEventListener('click', function (e) {
                 // 如果點擊的是按鈕，不執行跳轉

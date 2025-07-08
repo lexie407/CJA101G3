@@ -6,7 +6,10 @@
     <title>文章 | 前台 | 島遊kha</title>
 	    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" th:href="@{/vendors/quillEditor/quill.snow.css}">
 	<link rel="stylesheet" th:href="@{/css/forum/subnav.css}">
+	<link rel="stylesheet" th:href="@{/css/forum/category.css}">
+
 	<!-- 留言用 -->
 <!--		<link rel="stylesheet" th:href=@{/css/comments/comments.css}>-->
 		<!-- Materialize CSS -->
@@ -33,8 +36,9 @@
 
     .article-category {
         font-size: 14px;
-        background-color: var(--md-sys-color-primary-container);
-        color: var(--md-sys-color-on-primary-container);
+		/* 由category.css更改背景色跟文字顏色 */
+        /*background-color: var(--md-sys-color-primary-container);*/
+        /*color: var(--md-sys-color-on-primary-container);*/
         padding: 4px 10px;
         border-radius: 16px;
     }
@@ -251,6 +255,14 @@
     .share-menu-item.line-share .material-icons {
         color: #00b900;
     }
+
+	.article-content.ql-editor {
+		padding: 0;
+		min-height: auto;
+		line-height: normal;
+		white-space: pre-line;
+	}
+
 </style>
 
 
@@ -333,7 +345,7 @@
         $('#articleDetail').html(`
       <div class="article-card">
         <div class="article-header">
-          <span class="article-category">${artCat}</span>
+          <span class="article-category category-${article.artCat}">${artCat}</span>
           <h2 class="article-title">${article.artTitle}</h2>
         </div>
 
@@ -348,7 +360,7 @@
           </div>
         </div>
 
-        <div class="article-content">
+        <div class="article-content ql-editor">
           ${article.artCon}
         </div>
 
@@ -376,10 +388,6 @@
                         <div class="share-menu-item native-share">
                             <span class="material-icons">share</span>
                             分享到...
-                        </div>
-                        <div class="share-menu-item facebook-share">
-                            <span class="material-icons">facebook</span>
-                            Facebook
                         </div>
                         <div class="share-menu-item line-share">
                             <span class="material-icons">chat</span>
@@ -451,8 +459,12 @@
 		// 綁定檢舉按鈕事件
 		$('#articleDetail .report-btn').off('click').on('click', async function () {
 			const userId = await getCurrentUserId();
+
 			if (!userId) {
-				alert('請先登入才能檢舉文章');
+				const goLogin = confirm('請先登入才能檢舉文章喔\n是否前往登入頁面？');
+				if (goLogin) {
+					window.location.href = '/members/login?redirect=' + encodeURIComponent(location.href);
+				}
 				return;
 			}
 
@@ -505,7 +517,7 @@
         console.log('分享選單數量:', $('#articleDetail .share-menu').length);
     }
 
-    // 全域變數儲存當前用戶ID
+    // 儲存當前用戶ID
     let articleCurrentUserId = null;
 
     // 取得當前用戶ID
@@ -538,11 +550,15 @@
         try {
             // 取得當前用戶ID
             const userId = await getCurrentUserId();
-            
-            if (!userId) {
-                alert('請先登入才能按讚');
-                return;
-            }
+
+
+			if (!userId) {
+				const goLogin = confirm('請先登入才能按讚喔\n是否前往登入頁面？');
+				if (goLogin) {
+					window.location.href = '/members/login?redirect=' + encodeURIComponent(location.href);
+				}
+				return;
+			}
 
             const formData = new FormData();
             formData.append('docId', artId);
@@ -590,7 +606,7 @@
     async function checkArticleLikeStatus(artId) {
         try {
             const userId = await getCurrentUserId();
-            
+
             if (!userId) {
                 return; // 未登入用戶不檢查按讚狀態
             }
@@ -631,13 +647,16 @@
         try {
             // 取得當前用戶ID
             const userId = await getCurrentUserId();
-            
-            if (!userId) {
-                alert('請先登入才能收藏');
-                return;
-            }
 
-            const formData = new FormData();
+			if (!userId) {
+				const goLogin = confirm('請先登入才能收藏喔\n是否前往登入頁面？');
+				if (goLogin) {
+					window.location.href = '/members/login?redirect=' + encodeURIComponent(location.href);
+				}
+				return;
+			}
+
+			const formData = new FormData();
             formData.append('artId', artId);
             formData.append('memId', userId);
 
@@ -757,11 +776,11 @@
     }
 
     // 分享到 Facebook
-    async function shareToFacebook(artId) {
-        const url = getArticleUrl(artId);
-        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-        window.open(facebookUrl, '_blank', 'width=600,height=400');
-    }
+    // async function shareToFacebook(artId) {
+    //     const url = getArticleUrl(artId);
+    //     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    //     window.open(facebookUrl, '_blank', 'width=600,height=400');
+    // }
 
     // 分享到 Line
     async function shareToLine(artId) {
@@ -783,9 +802,9 @@
         });
 
         // Facebook 分享
-        $('#articleDetail .facebook-share').off('click').on('click', function() {
-            shareToFacebook(artId);
-        });
+        // $('#articleDetail .facebook-share').off('click').on('click', function() {
+        //     shareToFacebook(artId);
+        // });
 
         // Line 分享
         $('#articleDetail .line-share').off('click').on('click', function() {
@@ -853,21 +872,26 @@
         }
         // console.log(`${contextPath}/article/${artId}`);
 
-        fetch(`/article/${artId}`)
-            .then(response => {
-                if (!response.ok) {
-                    console.error(`Fetch error: ${response.status} ${response.statusText}`);
-                    throw new Error('網路錯誤或文章不存在');
-                }
-                return response.json();
-            })
-            .then(article => {
-                renderArticle(article);
-            })
-            .catch(error => {
-                console.error('載入文章失敗:', error);
-                $('#articleDetail').html('載入文章失敗，請稍後再試。');
-            });
+		fetch(`/api/article/${artId}`)
+				.then(response => {
+					if (!response.ok) {
+						if (response.status === 403) {
+							throw new Error('這篇文章已下架，無法檢視。');
+						} else if (response.status === 404) {
+							throw new Error('找不到這篇文章，可能已被刪除或不存在。');
+						} else {
+							throw new Error('發生未知錯誤，請稍後再試。');
+						}
+					}
+					return response.json();
+				})
+				.then(article => {
+					renderArticle(article);
+				})
+				.catch(error => {
+					console.error('載入文章失敗:', error);
+					$('#articleDetail').html(`<p class="error-msg">${error.message}</p>`);
+				});
     });
 </script>
 </body>

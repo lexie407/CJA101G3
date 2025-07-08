@@ -12,6 +12,20 @@ public class ArticleDTO {
     private String artCon;         // 文章內容
     private Timestamp artCreTime;  // 文章建立時間
 
+    // 取得文章內容的預覽文字，去除圖片和 HTML 標籤
+    // Spring 會用 Jackson 轉成 JSON的 artPreview 欄位
+    public String getArtPreview() {
+        if (artCon == null) return "";
+        String plainText = artCon
+                .replaceAll("<img[^>]*>", "")     // 移除圖片
+                .replaceAll("<[^>]*>", "")        // 移除其他 HTML 標籤
+                .replaceAll("&nbsp;", " ")        // HTML 特殊空白
+                .replaceAll("\\s+", " ")          // 清除多空白
+                .trim();
+        return plainText.length() > 50 ? plainText.substring(0, 50) + "..." : plainText;
+    }
+
+
     // 無參數建構子（給Thymeleaf 或其他框用）
     public ArticleDTO() {
     }

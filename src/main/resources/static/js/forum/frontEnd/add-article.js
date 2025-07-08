@@ -75,8 +75,9 @@ document.addEventListener('DOMContentLoaded', function (){
         // 狀態固定為1
         document.getElementById('artSta').value = "1";
 
-        document.getElementById('title').value = title;
+        // document.getElementById('title').value = title;
         document.getElementById('artCon').value = finalHTML;
+        console.log(finalHTML);
 
         // 送出表單
         e.target.submit();

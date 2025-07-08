@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文章管理 | 後台 | 島遊kha</title>
-    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/navBackTemplate :: headResources}"></th:block>
     <!--後台CSS-->
     <link rel="stylesheet" th:href="@{/css/back_light.css}">
     <link rel="stylesheet" th:href="@{/css/back_style.css}">
     <!--次導覽列CSS-->
 <!--    <link rel="stylesheet" th:href="@{/css/subnav.css}">-->
+    <link rel="stylesheet" th:href="@{/css/forum/BackEnd-select_page.css}">
+
 
     <style>
         .errorblock {
@@ -31,6 +33,7 @@
         }
 
 
+
     </style>
 </head>
 <body class="light">
@@ -39,128 +42,200 @@
     <div th:insert="~{/navBackTemplate :: navbar}"></div>
 
     <div class="main-content">
-        <!--前台:頂部次導覽-->
-        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>
-        <!--main 以下為頁面主要內容 -->
+<!--      次導覽列  -->
+                <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>
+<!--        <div th:insert="~{back-end/forum/subnavForum :: subnav('select')}"></div>-->
+
         <main class="content-area-main">
             <h4><span>資料查詢:</span></h4>
-            <!-- 錯誤表列 -->
-            <div class="errorblock" th:if="${errorMessage}"  th:utext="${errorMessage}">${errorMessage}</div><br>
-            <div class="a">
-                <ul>
-                    <li><h5><a th:href="@{/forum/admin/listAllArticle}">List</a> all Articles. <br><br></h5></li>
 
-                    <li>
-                        <form method="post" th:action="@{/forum/admin/getOne_For_Display}">
-                            輸入文章編號:
-                            <input type="text" name="artId" th:value="${param.artId}" >
-                            <input type="submit" value="送出"> (請輸入數字)
-                        </form><br>
-                    </li>
+            <div class="errorblock" th:if="${errorMessage}" th:utext="${errorMessage}">${errorMessage}</div>
+            <br>
 
-                    <li>
-                        <form method="post" th:action="@{/forum/admin/searchByAuthorId}">
-                            輸入會員編號:
-                            <input type="text" name="artHol" th:value="${param.artHol}" >
-                            <input type="submit" value="送出"> (請輸入數字)
-                        </form><br>
-                    </li>
+            <div class="search-sections">
 
-                    <li>
-                        <form method="post" th:action="@{/forum/admin/searchByCategory}" >
-                            <label for="artCat">選擇文章分類：</label>
-                            <select name="artCat" id="artCat">
+                <!-- 查看全部文章 -->
+                <div class="search-card full-width-banner">
+                    <div class="search-card-header" style="justify-content: center;">
+                        <span class="material-icons">list</span>
+                        <h2 class="search-card-title">查看全部文章</h2>
+                    </div>
+                    <a class="submit-btn" th:href="@{/forum/admin/listAllArticle}"
+                       style="font-size: 18px; padding: 16px 32px; border-radius: 28px;">
+                        文章列表
+                    </a>
+                </div>
+
+
+                <!-- 單一文章查詢 -->
+                <div class="search-card ">
+                    <div class="search-card-header">
+                        <span class="material-icons">search</span>
+                        <h2 class="search-card-title">單一文章查詢</h2>
+                    </div>
+                    <form method="post" th:action="@{/forum/admin/getOne_For_Display}">
+                        <div class="form-group">
+                            <label class="form-label">文章編號</label>
+                            <input type="text" name="artId" class="form-input" th:value="${param.artId}" placeholder="請輸入文章編號">
+                        </div>
+                        <button type="submit" class="submit-btn">
+                            <span class="material-icons">search</span> 查詢
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 作者查詢 -->
+                <div class="search-card">
+                    <div class="search-card-header">
+                        <span class="material-icons">person</span>
+                        <h2 class="search-card-title">作者查詢</h2>
+                    </div>
+                    <form method="post" th:action="@{/forum/admin/searchByAuthorId}">
+                        <div class="form-group">
+                            <label class="form-label">會員編號</label>
+                            <input type="text" name="artHol" class="form-input" th:value="${param.artHol}" placeholder="請輸入會員編號">
+                        </div>
+                        <button type="submit" class="submit-btn">
+                            <span class="material-icons">search</span> 查詢
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 分類查詢 -->
+                <div class="search-card">
+                    <div class="search-card-header">
+                        <span class="material-icons">category</span>
+                        <h2 class="search-card-title">分類查詢</h2>
+                    </div>
+                    <form method="post" th:action="@{/forum/admin/searchByCategory}">
+                        <div class="form-group">
+                            <label class="form-label" for="artCat">文章分類</label>
+                            <select name="artCat" id="artCat" class="form-select">
                                 <option value="1">文章</option>
                                 <option value="2">發問中</option>
                                 <option value="3">已解決</option>
                             </select>
-                            <input type="submit" value="查詢">
-                        </form><br>
-                    </li>
+                        </div>
+                        <button type="submit" class="submit-btn">
+                            <span class="material-icons">search</span> 查詢
+                        </button>
+                    </form>
+                </div>
 
-                    <li>
-                        <form method="post" th:action="@{/forum/admin/searchByStatus}" >
-                            <label for="artSta">選擇文章上下架狀態：</label>
-                            <select name="artSta" id="artSta">
+                <!-- 狀態查詢 -->
+                <div class="search-card">
+                    <div class="search-card-header">
+                        <span class="material-icons">visibility</span>
+                        <h2 class="search-card-title">狀態查詢</h2>
+                    </div>
+                    <form method="post" th:action="@{/forum/admin/searchByStatus}">
+                        <div class="form-group">
+                            <label class="form-label" for="artSta">上下架狀態</label>
+                            <select name="artSta" id="artSta" class="form-select">
                                 <option value="1">上架</option>
                                 <option value="2">下架</option>
                             </select>
-                            <input type="submit" value="查詢">
-                        </form><br>
-                    </li>
+                        </div>
+                        <button type="submit" class="submit-btn">
+                            <span class="material-icons">search</span> 查詢
+                        </button>
+                    </form>
+                </div>
 
-                    <li>
-                        <form method="post" th:action="@{/forum/admin/searchByTitle}">
-                            輸入文章標題關鍵字:
-                            <input type="text" name="keyword" th:value="${param.keyword}">
-                            <input type="submit" value="搜尋">
-                        </form><br>
-                    </li>
+                <!-- 標題關鍵字查詢 -->
+                <div class="search-card full-width-banner">
+                    <div class="search-card-header">
+                        <span class="material-icons">title</span>
+                        <h2 class="search-card-title">標題搜尋</h2>
+                    </div>
+                    <form method="post" th:action="@{/forum/admin/searchByTitle}">
+                        <div class="form-group">
+                            <label class="form-label">文章標題關鍵字</label>
+                            <input type="text" name="keyword" class="form-input" th:value="${param.keyword}" placeholder="請輸入關鍵字">
+                        </div>
+                        <button type="submit" class="submit-btn">
+                            <span class="material-icons">search</span> 搜尋
+                        </button>
+                    </form>
+                </div>
 
-                    <!-- 複合查詢 -->
-                    <li>
-                        <form method="post" th:action="@{/forum/admin/searchAdvanced}" th:object="${articleSearchCriteria}">
-                            複合查詢:<br>
-                            <label>輸入會員編號:</label>
-                            <input type="number" th:field="*{artHol}" />
-                            <span style="color: var(--md-sys-color-on-error-container)" th:if="${#fields.hasErrors('artHol')}" th:errors="*{artHol}" class="error" id="artHol.errors"></span>
+                <!-- 進階複合查詢 -->
+                <div class="search-card advanced-search">
+                    <div class="advanced-search-header">
+                        <span class="material-icons">tune</span>
+                        <h2 class="advanced-search-title">進階複合查詢</h2>
+                    </div>
+                    <form method="post" th:action="@{/forum/admin/searchAdvanced}" th:object="${articleSearchCriteria}">
+                        <div class="advanced-form-grid">
 
+                            <div class="form-group">
+                                <label class="form-label">會員編號</label>
+                                <input type="number" th:field="*{artHol}" class="form-input" />
+                                <span th:if="${#fields.hasErrors('artHol')}" th:errors="*{artHol}" class="error-message">
+                                <span class="material-icons">error</span>
+                                請輸入有效的會員編號
+                            </span>
+                            </div>
 
-                            <label>輸入文章標題:</label>
-                            <input type="text"  th:field="*{artTitle}"><br>
+                            <div class="form-group">
+                                <label class="form-label">文章標題</label>
+                                <input type="text" th:field="*{artTitle}" class="form-input">
+                            </div>
 
-<!--                            <label>選擇文章分類：</label>-->
-                            <select th:field="*{artCategory}" >
-                                <option value="">選擇文章分類</option>
-                                <option value="1">文章</option>
-                                <option value="2">發問中</option>
-                                <option value="3">已解決</option>
-                            </select>
-                            <span style="color: var(--md-sys-color-on-error-container)" th:if="${#fields.hasErrors('artCategory')}" th:errors="*{artCategory}" class="error" id="artCategory.errors"></span>
+                            <div class="form-group">
+                                <label class="form-label">文章分類</label>
+                                <select th:field="*{artCategory}" class="form-select">
+                                    <option value="">選擇文章分類</option>
+                                    <option value="1">文章</option>
+                                    <option value="2">發問中</option>
+                                    <option value="3">已解決</option>
+                                </select>
+                                <span th:if="${#fields.hasErrors('artCategory')}" th:errors="*{artCategory}" class="error-message">
+                                <span class="material-icons">error</span>
+                            </span>
+                            </div>
 
+                            <div class="form-group">
+                                <label class="form-label">上下架狀態</label>
+                                <select th:field="*{artStatus}" class="form-select">
+                                    <option value="">選擇上下架狀態</option>
+                                    <option value="1">上架</option>
+                                    <option value="2">下架</option>
+                                </select>
+                                <span th:if="${#fields.hasErrors('artStatus')}" th:errors="*{artStatus}" class="error-message">
+                                <span class="material-icons">error</span>
+                            </span>
+                            </div>
 
-                            <!--                            <label for="artStatus">選擇文章上下架狀態：</label>-->
-                            <select th:field="*{artStatus}" >
-                                <option value="">選擇文章上下架狀態</option>
-                                <option value="1">上架</option>
-                                <option value="2">下架</option>
-                            </select>
-                            <span style="color: var(--md-sys-color-on-error-container)" th:if="${#fields.hasErrors('artStatus')}" th:errors="*{artStatus}" class="error" id="artStatus.errors"></span>
+                            <div class="form-group">
+                                <label class="form-label">起始日期</label>
+                                <input type="date" th:field="*{startDate}" class="form-input" />
+                                <span th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}" class="error-message">
+                                <span class="material-icons">error</span>
+                            </span>
+                            </div>
 
+                            <div class="form-group">
+                                <label class="form-label">結束日期</label>
+                                <input type="date" th:field="*{endDate}" class="form-input" />
+                                <span th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}" class="error-message">
+                                <span class="material-icons">error</span>
+                            </span>
+                            </div>
+                        </div>
 
-                            <!--                            選擇部門:-->
-<!--                            <select th:field="*{deptVO.deptno}">-->
-<!--                                <option value="">-->
-<!--                                <option th:each="deptVO : ${deptListData}" th:value="${deptVO.deptno}" th:text="${deptVO.dname}" />-->
-<!--                            </select><br>-->
+                        <div style="margin-top: 24px;">
+                            <button type="submit" class="submit-btn">
+                                <span class="material-icons">search</span> 開始查詢
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-                            起始日期:
-                            <input th:field="*{startDate}" type="date" />
-                            <span style="color: var(--md-sys-color-on-error-container)" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}" class="error" id="startDate.errors"></span>
-
-
-                            結束日期:
-                            <input th:field="*{endDate}" type="date" />
-                            <span style="color: var(--md-sys-color-on-error-container)" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}" class="error" id="endDate.errors"></span>
-
-                            <input type="submit" value="送出">
-
-                        </form>
-                    </li>
-
-
-                </ul>
-
-                <!--                    //TODO: 後臺管理員會新增文章嗎？-->
-                <!--                    <h4><span>文章管理</span></h4>-->
-                <!--                    <ul>-->
-                <!--                        <li><h5><a href='addAct'>Add</a> a new Article.</h5></li>-->
-                <!--                    </ul>-->
             </div>
-
-
         </main>
     </div>
+
 </div>
 
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>

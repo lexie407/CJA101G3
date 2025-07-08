@@ -119,7 +119,7 @@
     <div id="articleLightBox" class="article-lightbox">
         <button id="closeLightboxBtn" class="close-button">&times;</button>
         <h3 th:text="${article.artTitle}"></h3>
-        <p th:text="${article.artCon}"></p>
+        <p th:utext="${article.artCon}"></p>
     </div>
 
     <style>

@@ -1,0 +1,279 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', 'Noto Sans TC', sans-serif;
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--md-sys-color-outline-variant);
+}
+
+.page-header .material-icons {
+    font-size: 32px;
+    color: var(--md-sys-color-primary);
+    margin-right: 16px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.search-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.search-card {
+    background-color: var(--md-sys-color-surface-container-lowest);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px var(--md-sys-color-shadow);
+    transition: box-shadow 0.3s ease;
+}
+
+.search-card:hover {
+    box-shadow: 0 4px 16px var(--md-sys-color-shadow);
+}
+
+.search-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-card-header .material-icons {
+    font-size: 24px;
+    color: var(--md-sys-color-primary);
+    margin-right: 12px;
+}
+
+.search-card-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 8px;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface);
+    background-color: var(--md-sys-color-surface-container-high);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px var(--md-sys-color-primary-container);
+}
+
+.form-select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%234A99C2" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 24px;
+    cursor: pointer;
+}
+
+.submit-btn {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--md-sys-color-shadow);
+}
+
+.submit-btn:hover {
+    background-color: rgb(25, 135, 170);
+    box-shadow: 0 4px 16px var(--md-sys-color-shadow);
+    transform: translateY(-2px);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px var(--md-sys-color-shadow);
+}
+
+.submit-btn .material-icons {
+    font-size: 20px;
+}
+
+.full-width-banner{
+    grid-column: 1 / -1;
+}
+
+.full-width-banner a {
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+
+    justify-content: center;   /* ⬅ 水平置中 */
+    align-items: center;       /* ⬅ 垂直置中 */
+}
+
+.advanced-search {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--md-sys-color-surface-container-lowest) 0%, var(--md-sys-color-surface-container-low) 100%);
+    border: 2px solid var(--md-sys-color-outline-variant);
+}
+
+.advanced-search-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.advanced-search-header .material-icons {
+    font-size: 28px;
+    color: var(--md-sys-color-secondary);
+    margin-right: 12px;
+}
+
+.advanced-search-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.advanced-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.error-message {
+    color: var(--md-sys-color-error);
+    font-size: 12px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.error-message .material-icons {
+    font-size: 16px;
+}
+
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.quick-action-btn {
+    background-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.quick-action-btn:hover {
+    background-color: rgb(245, 165, 55);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--md-sys-color-shadow);
+}
+
+.quick-action-btn .material-icons {
+    font-size: 18px;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+.search-sections {
+        grid-template-columns: 1fr;
+    }
+
+.advanced-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+.container {
+        padding: 16px;
+    }
+}
+
+/* 載入動畫 */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading .submit-btn {
+    background-color: var(--md-sys-color-outline);
+}
+
+/* 成功提示 */
+.success-message {
+    background-color: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--md-sys-color-on-surface);
+}
+
+.success-message .material-icons {
+    color: var(--md-sys-color-primary);
+}

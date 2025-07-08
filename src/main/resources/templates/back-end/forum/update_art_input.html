@@ -177,9 +177,11 @@
     <div th:insert="~{/navBackTemplate :: navbar}"></div>
 
     <div class="main-content">
-        <!--頂部次導覽-->
-        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>
+        <!--頂部次導覽 -->
         <!--main 以下為頁面主要內容 -->
+        <div id="subnav" th:replace="~{subnavContentBack :: subnav(activeItem='articlelist')}"></div>
+<!--        <div th:insert="~{back-end/forum/subnavForum :: subnav('all')}"></div>-->
+
         <main class="content-area-main">
             <div style="margin-bottom: 1rem;">
                 <button type="button" class="material-button" onclick="history.back()" style="display: flex; align-items: center;">
@@ -241,6 +243,13 @@
                     </div>
                 </div>
 
+                <!-- 發送通知欄位 -->
+                <div class="form-group">
+                    <label for="notifyMsg">發送通知</label>
+                    <textarea id="notifyMsg" rows="3" placeholder="輸入要發送的通知內容"></textarea>
+                    <span style="color:#888;font-size:13px;">填寫後將通知會員。</span>
+                </div>
+
                 <div class="form-actions">
                     <button type="button" class="material-button" onclick="history.back()">取消</button>
                     <button type="submit" class="material-button secondary-btn">送出</button>
@@ -264,7 +273,8 @@
         </main>
     </div>
 </div>
-
+<!--圖片上傳邏輯-->
+<script th:src="@{/js/forum/handleQuillImages.js}"></script>
 <script>
     // 隱藏錯誤訊息用
     function hideContent(d) {
@@ -272,9 +282,58 @@
     }
 
     // 表單送出時，把 Quill 的 HTML 內容填到隱藏的 textarea
-    document.querySelector('form').addEventListener('submit', function (e) {
-        const html = quill.root.innerHTML;
-        document.querySelector('#artCon').value = html;
+    document.querySelector('form').addEventListener('submit',function (e) {
+        e.preventDefault(); // 阻止表單的默認提交行為
+
+        handleQuillImages(quill)
+            .then(async function (html) {
+                // 填入編輯器內容
+                document.querySelector('#artCon').value = html;
+
+                // 取得通知欄位與會員 ID
+                const notifyMsg = document.getElementById("notifyMsg").value.trim();
+                const memberId = document.getElementById("artHol").value;
+
+                // 如果有填寫通知，就發送
+                if (notifyMsg !== "") {
+                    try {
+                        const response = await fetch("/forum/admin/sendNotification", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: new URLSearchParams({
+                                message: notifyMsg,
+                                memberId: memberId
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error("通知發送失敗！");
+                        }
+
+                        console.log("通知已發送");
+                    } catch (err) {
+                        console.error("通知失敗：", err);
+                        alert("發送通知時發生錯誤，請稍後再試。");
+                        return; // 發送通知失敗就不送出表單
+                    }
+                }
+
+                // 所有處理完成後才提交表單
+                e.target.submit();
+            })
+            .catch(function (error) {
+                console.error('圖片上傳失敗:', error);
+                alert('處理圖片失敗，請稍後再試。');
+            });
+
+
+        //把quill的值存到html
+        // const html = quill.root.innerHTML;
+        // console.log(html);
+        //
+        // document.querySelector('#artCon').value = html;
     });
 
     // 避免第一次載入時 Quill 是空的

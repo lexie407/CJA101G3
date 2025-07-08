@@ -156,7 +156,7 @@ public class ArticleServiceImpl implements ArticleService {
     public Article updateBasic(Integer artId, Byte artCat, Byte artSta, String artTitle, String artCon) {
         Article artVO = articleRepository.findById(artId).orElse(null);
         if (artVO == null) {
-            artVO = new Article(); // FIXME: 這裡應該拋出一個例外，表示找不到文章
+            throw new NoSuchElementException("找不到 ID 為 " + artId + " 的文章");
         }
         artVO.setArtId(artId);
         artVO.setArtCat(artCat);
@@ -256,7 +256,19 @@ public class ArticleServiceImpl implements ArticleService {
         return sortArticles(articleDTOs, sortBy, sortDirection);
     }
 
+    // 在不影響舊有邏輯下新增artSta 過濾
+    @Override
+    public List<ArticleDTO> searchDTO(String keyword, String sortBy, String sortDirection, ArticleStatus artStatus) {
+        // 先取得所有符合關鍵字的文章DTO列表
+        List<ArticleDTO> articleDTOs = searchDTO(keyword, sortBy, sortDirection);
+        articleDTOs = articleDTOs.stream()
+                // 根據 artStatus 過濾文章狀態，若 artStatus 為 null，則不過濾(全通過)
+                .filter(dto -> artStatus == null || artStatus.getValue().equals(dto.getArtSta()))
+                // 將結果轉換為List
+                .toList();
 
+        return articleDTOs;
+    }
 
     public ArticleDTO getDTOById(Integer id) {
         return articleRepository.getDTOById(id);
