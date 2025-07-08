@@ -23,7 +23,7 @@ public class NotificationScheduler {
 
 	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-	@Scheduled(fixedRate = 600000) // 每 10 分執行一次
+	@Scheduled(fixedRate = 5000) // 每 5 秒行一次
 	public void checkAndSendNotifications() {
 		System.out.println("NotificationScheduler 正在運行... 當前時間: " + LocalDateTime.now().format(formatter));
 
