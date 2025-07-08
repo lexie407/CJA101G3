@@ -203,38 +203,20 @@ public class ActServiceImpl implements ActService {
     // ---未使用---     return actPage.map(ActCardDTO::fromVO);
     // ---未使用--- }
 
-    // 1. maxCap, pageable
+    //分頁查詢已公開活動
     @Override
     public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName,
                                            Integer hostId, LocalDateTime actStart,
                                            Integer maxCap, Pageable pageable) {
-        return searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, null, null, pageable);
-    }
-    // 2. maxCap, currentUserId, pageable
-    @Override
-    public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName,
-                                           Integer hostId, LocalDateTime actStart,
-                                           Integer maxCap, Integer currentUserId,
-                                           Pageable pageable) {
-        return searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, null, currentUserId, pageable);
-    }
-    // 3. maxCapMin, maxCapMax, currentUserId, pageable
-    public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName,
-                                           Integer hostId, LocalDateTime actStart,
-                                           Integer maxCapMin, Integer maxCapMax, Integer currentUserId,
-                                           Pageable pageable) {
-        // 參數清洗
+        //參數清洗
         Byte cleanedRecruitStatus = (recruitStatus != null && recruitStatus >= 0 && recruitStatus <= 5) ? recruitStatus : null;
         String cleanedActName = (actName != null && !actName.trim().isEmpty()) ? actName.trim() : null;
         Integer cleanedHostId = (hostId != null && hostId > 0) ? hostId : null;
         LocalDateTime cleanedActStart = actStart;
-        Integer cleanedMaxCapMin = (maxCapMin != null && maxCapMin > 0) ? maxCapMin : null;
-        Integer cleanedMaxCapMax = (maxCapMax != null && maxCapMax > 0) ? maxCapMax : null;
+        Integer cleanedMaxCap = (maxCap != null && maxCap > 0) ? maxCap : null;
         Byte isPublic = (byte) 1;
-        // 用 buildSpecWithRange 查詢
-        Specification<ActVO> spec = ActSpecification.buildSpecWithRange(
-            cleanedRecruitStatus, cleanedActName, cleanedHostId, isPublic,
-            cleanedActStart, null, cleanedMaxCapMin, cleanedMaxCapMax
+        Specification<ActVO> spec = ActSpecification.buildSpec(
+            cleanedRecruitStatus, cleanedActName, cleanedHostId, isPublic, cleanedActStart, cleanedMaxCap
         );
         Pageable sortedPageable = org.springframework.data.domain.PageRequest.of(
             pageable.getPageNumber(),
@@ -245,7 +227,7 @@ public class ActServiceImpl implements ActService {
             )
         );
         Page<ActVO> actPage = actRepo.findAll(spec, sortedPageable);
-        Page<ActCardDTO> result = actPage.map(actVO -> {
+        return actPage.map(actVO -> {
             ActCardDTO dto = ActCardDTO.fromVO(actVO);
             if (actVO.getItnId() != null) {
                 ItineraryVO itinerary = getItineraryById(actVO.getItnId());
@@ -256,7 +238,15 @@ public class ActServiceImpl implements ActService {
             }
             return dto;
         });
-        // 設定參與狀態
+    }
+
+    @Override
+    public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName,
+                                           Integer hostId, LocalDateTime actStart,
+                                           Integer maxCap, Integer currentUserId,
+                                           Pageable pageable) {
+        Page<ActCardDTO> result = searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, pageable);
+        // 如果有當前用戶，查詢參與狀態
         if (currentUserId != null) {
             List<Integer> joinedActIds = partRepo.findActIdsByMemId(currentUserId);
             result.getContent().forEach(dto -> {
@@ -506,7 +496,7 @@ public class ActServiceImpl implements ActService {
         }
         // 沒有標籤，回傳所有公開活動
         else {
-            return searchPublicActs(null, null, null, null, null, null, null, null);
+            return searchPublicActs(null, null, null, null, null, pageable);
         }
 
         if (actIds.isEmpty()) {
