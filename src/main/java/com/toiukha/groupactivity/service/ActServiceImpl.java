@@ -227,7 +227,7 @@ public class ActServiceImpl implements ActService {
             pageable.getPageSize(),
             org.springframework.data.domain.Sort.by(
                 org.springframework.data.domain.Sort.Order.asc("recruitStatus"),
-                org.springframework.data.domain.Sort.Order.desc("actStart")
+                org.springframework.data.domain.Sort.Order.desc("actId")
             )
         );
         Page<ActVO> actPage = actRepo.findAll(spec, sortedPageable);

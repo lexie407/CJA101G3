@@ -347,7 +347,7 @@
                         <div class="form-control-plaintext" id="itineraryName" style="background: #f8f9fa; color: #495057; font-size:large;">
                             <span th:text="${actVo.itnName}"></span>
                         </div>
-                        <label for="itineraryName">行程名稱（僅供顯示）</label>
+                        <label for="itineraryName">行程名稱（不可修改）</label>
                     </div>
                     <input type="hidden" id="itnId" name="itnId" th:value="${actVo.itnId}"/>
                     <hr/>
@@ -1147,12 +1147,13 @@
     }
 
     // ====== 行程下拉選單動態載入 ======
+    //在揪團模組另外建立API顯示資訊
     // (function loadItinerarySelect() {
     //     if (!currentMemberId) {
     //         console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
     //         return;
     //     }
-    //     fetch(`/itinerary/creator/${currentMemberId}`)
+    //     fetch(`/api/act/itinerary/creator/${currentMemberId}`)
     //         .then(res => res.json())
     //         .then(list => {
     //             const select = document.getElementById('itinerarySelect');
@@ -1183,43 +1184,6 @@
     //             }
     //         });
     // })();
-    // 改用假API
-    (function loadItinerarySelect() {
-        if (!currentMemberId) {
-            console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
-            return;
-        }
-        fetch(`/api/act/itinerary/creator/${currentMemberId}`)
-            .then(res => res.json())
-            .then(list => {
-                const select = document.getElementById('itinerarySelect');
-                if (!select) return;
-                select.innerHTML = '<option value="">請選擇行程</option>';
-                if (Array.isArray(list) && list.length > 0) {
-                    list.forEach(itn => {
-                        const option = document.createElement('option');
-                        option.value = itn.itnId;
-                        option.textContent = `${itn.itnName}（${itn.itnDesc || '無描述'}）`;
-                        if (itnId && itn.itnId == itnId) {
-                            option.selected = true;
-                        }
-                        select.appendChild(option);
-                    });
-                } else {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = '（查無可用行程，請先建立行程）';
-                    select.appendChild(option);
-                }
-            })
-            .catch(err => {
-                console.error('[行程下拉] 載入行程清單失敗:', err);
-                const select = document.getElementById('itinerarySelect');
-                if (select) {
-                    select.innerHTML = '<option value="">（行程載入失敗）</option>';
-                }
-            });
-    })();
 </script>
 </body>
 </html>
