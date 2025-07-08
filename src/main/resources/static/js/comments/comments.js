@@ -49,28 +49,25 @@ function initComments(shadowRoot) {
 	// 新增變數來儲存文章類別和擁有者 ID
 	let ARTICLE_CATEGORY = null;
 	let ARTICLE_OWNER_ID = null;
+	let art = null; // 用於儲存文章物件
 
 	// 新增函式來獲取文章詳細資訊
 	async function fetchArticleDetails() {
 		try {
-			const response = await fetch(`/article/${artId}`);
+			// 統一從一個 API 獲取文章資料，確保資料一致性
+			const response = await fetch(`/commentsAPI/getArt/${artId}`);
 			if (!response.ok) {
 				throw new Error(`無法獲取文章資料: ${response.status} ${response.statusText}`);
 			}
-			const article = await response.json();
-			ARTICLE_CATEGORY = article.artCat; // 假設 artCat 是文章類別的數字代碼
-
-			const response2 = await fetch(`/commentsAPI/getArt/${artId}`);
-			if (!response2.ok) {
-				throw new Error(`無法獲取文章資料: ${response.status} ${response.statusText}`);
-			}
-			
-			art = await response2.json();
-			ARTICLE_OWNER_ID = art.artHol; 
+			art = await response.json();
+			ARTICLE_CATEGORY = art.artCat;
+			ARTICLE_OWNER_ID = art.artHol;
 
 		} catch (error) {
 			console.error('載入文章詳情失敗:', error);
 			showStatusMessage('載入文章詳情失敗，部分功能可能受限。', 'error');
+			// 即使失敗，也建立一個空物件，避免後續檢查 art 時出錯
+			art = {};
 		}
 	}
 
@@ -78,6 +75,12 @@ function initComments(shadowRoot) {
 	commentForm.addEventListener('submit', async (event) => {
 		event.preventDefault(); // 防止表單傳統提交
 		statusMessage.style.display = 'none'; // 隱藏舊的狀態訊息
+
+		// 在提交前再次檢查文章狀態
+		if (art && art.artStat === 2) {
+			showStatusMessage('文章已下架，無法新增留言。', 'error');
+			return;
+		}
 
 		//判斷是否有登入
 		if (!document.getElementById("currentUserNav")) {
@@ -476,10 +479,25 @@ function initComments(shadowRoot) {
 			if (response.ok) {
 				const updatedLikeCount = await response.json();
 				likeCountSpan.textContent = updatedLikeCount; // 更新按讚數
-				if (updatedLikeCount > 0) {
-					likeButton.classList.add('liked');
-				} else {
-					likeButton.classList.remove('liked');
+
+				// 為了確保狀態正確，重新獲取一次按讚狀態
+				const statusResponse = await fetch('/likeAPI/getCommLike', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: new URLSearchParams({
+						artId: artId,
+						commId: commentId,
+						memId: CURRENT_USER_ID
+					})
+				});
+				if (statusResponse.ok) {
+					const likedText = await statusResponse.text();
+					const liked = likedText.trim() === 'true';
+					if (liked) {
+						likeButton.classList.add('liked');
+					} else {
+						likeButton.classList.remove('liked');
+					}
 				}
 			} else {
 				const errorText = await response.text();
@@ -649,7 +667,7 @@ function initComments(shadowRoot) {
 				exitEditMode(); // 發生錯誤時也恢復原狀
 			}
 		});
-	} // <-- 這裡缺少一個大括號，導致 "Unexpected end of input" 錯誤
+	}
 
 
 	// --- 事件監聽器：輸入時自動調整留言框高度 ---
@@ -695,6 +713,14 @@ function initComments(shadowRoot) {
 				await fetchArticleDetails();
 			}
 
+			// 如果文章已下架 (狀態 2)，則不顯示留言區
+			if (art.artSta == 2) {
+				commentForm.style.display = 'none';
+				commentsList.innerHTML = ''; // 清空可能已存在的留言
+				showStatusMessage('文章已下架，無法查看或新增留言。', 'info');
+				return; // 中斷後續載入流程
+			}
+
 			const formData = new FormData();
 			formData.append('commArt', artId);
 			const response = await fetch('/commentsAPI/getComments', {
@@ -730,7 +756,7 @@ function initComments(shadowRoot) {
 	});
 
 	resizeObserver.observe(commentForm);
-} // This is the missing brace for initComments function
+}
 
 // --- 主程式進入點：直接呼叫 initComments ---
 const commentsBlockContainer = document.getElementById("commentsBlock");
