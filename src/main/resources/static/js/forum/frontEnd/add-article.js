@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function (){
     // 表單送出
     document.getElementById('articleForm').addEventListener('submit', async function (e) {
         e.preventDefault(); // 一律先攔截
+        const button = document.getElementById('submitBtn');
+        button.disabled = true;
+
 
         // ----------- 圖片處理區塊 -----------
         const temp = document.createElement('div');
