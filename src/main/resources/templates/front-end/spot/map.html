@@ -9,6 +9,8 @@
     <th:block th:replace="~{navTemplate :: headResources}"></th:block>
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Material Design 3 變數 -->
+    <link rel="stylesheet" th:href="@{/css/spot/front-end/map-variables.css}">
     <!-- 地圖頁面樣式 -->
     <link rel="stylesheet" th:href="@{/css/spot/front-end/map.css}">
 </head>
@@ -36,7 +38,7 @@
                                         </a>
                                     </li>
                                     <li class="spot-map-breadcrumb__item">
-                                        <a th:href="@{/spot/spotlist}" class="spot-map-breadcrumb__link">
+                                        <a th:href="@{/spot/list}" class="spot-map-breadcrumb__link">
                                             <span class="material-icons">list</span>
                                             景點列表
                                         </a>
@@ -217,7 +219,7 @@
     <!-- WebSocket 通知 -->
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-    <script th:src="@{/js/notification/websocket.js}"></script>
+    <!-- <script th:src="@{/js/notification/websocket.js}"></script> -->
     
     <!-- Google Maps API 將由 JavaScript 動態載入 -->
     

@@ -114,7 +114,6 @@
                                         <option value="popular">按熱門度</option>
                                         <option value="rating">按評分</option>
                                         <option value="newest">按最新</option>
-                                        <option value="distance">按距離</option>
                                     </select>
                                 </div>
                             </div>
@@ -135,15 +134,7 @@
                                                 <option value="3.5">3.5+ 普通</option>
                                             </select>
                                         </div>
-                                        <div class="spot-index-filter-group">
-                                            <label class="spot-index-filter-label">距離範圍</label>
-                                            <select class="spot-index-filter-select" aria-label="選擇距離範圍" data-filter-type="distance">
-                                                <option value="">不限距離</option>
-                                                <option value="5">5km 內</option>
-                                                <option value="10">10km 內</option>
-                                                <option value="30">30km 內</option>
-                                            </select>
-                                        </div>
+
                                         <div class="spot-index-filter-group">
                                             <label class="spot-index-filter-label">門票類型</label>
                                             <select class="spot-index-filter-select" aria-label="選擇門票類型" data-filter-type="ticket">
@@ -198,8 +189,7 @@
                         </div> -->
                         
                         <div th:if="${spotList != null and !spotList.isEmpty()}" class="spot-index-popular__grid">
-                            <div th:each="spot, iterStat : ${spotList}" 
-                                 th:if="${iterStat.index < 8}" 
+                            <div th:each="spot : ${spotList}" 
                                  class="spot-index-spot-card"
                                  th:data-spot-id="${spot.spotId}">
                                 <div class="spot-index-spot-card__image">
@@ -212,8 +202,7 @@
                                         <span class="material-icons" th:text="${favoriteStatusMap != null && favoriteStatusMap.containsKey(spot.spotId) && favoriteStatusMap.get(spot.spotId) ? 'favorite' : 'favorite_border'}">favorite_border</span>
                                     </button>
                                     <!-- 分類標籤 -->
-                                    <span class="spot-index-spot-card__category-badge" 
-                                          th:text="${iterStat.index == 0 ? '熱門' : (iterStat.index == 1 ? '推薦' : '美景')}">熱門</span>
+                                    <!-- <span class="spot-index-spot-card__category-badge" th:text="${iterStat.index == 0 ? '熱門' : (iterStat.index == 1 ? '推薦' : '美景')}">熱門</span> -->
                                     <!-- 預設圖示 -->
                                     <span class="spot-index-spot-card__icon material-icons">home</span>
                                     <!-- 如果有圖片的話 -->
@@ -234,7 +223,8 @@
                                         <h4 class="spot-index-spot-card__name" th:text="${spot.spotName}">景點名稱</h4>
                                         <div class="spot-index-spot-card__rating">
                                             <span class="material-icons">star</span>
-                                            <span th:text="${iterStat.index == 0 ? '4.8' : (iterStat.index == 1 ? '4.6' : (iterStat.index == 2 ? '4.7' : (iterStat.index == 3 ? '4.3' : (iterStat.index == 4 ? '4.5' : '4.9'))))}">4.7</span>
+                                            <!-- <span th:text="${iterStat.index == 0 ? '4.8' : (iterStat.index == 1 ? '4.6' : (iterStat.index == 2 ? '4.7' : (iterStat.index == 3 ? '4.3' : (iterStat.index == 4 ? '4.5' : '4.9'))))}">4.7</span> -->
+                                            <span>4.7</span>
                                         </div>
                                     </div>
                                     <p class="spot-index-spot-card__location">
@@ -261,8 +251,8 @@
                         <!-- 統計資訊與查看更多按鈕 -->
                         <div th:if="${spotList != null and !spotList.isEmpty()}" class="spot-index-stats">
                             <div class="spot-index-stats__content">
-                                <p class="spot-index-stats__text">已顯示 8 個景點，還有 124 個等你探索</p>
-                                <a th:href="@{/spot/spotlist}" class="spot-index-view-all-btn">
+                                <!-- <p class="spot-index-stats__text">已顯示 8 個景點，還有 124 個等你探索</p> -->
+                                <a th:href="@{/spot/list}" class="spot-index-view-all-btn">
                                     查看更多景點
                                     <span class="material-icons">arrow_forward</span>
                                 </a>
@@ -293,6 +283,8 @@
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script src="/js/notification/websocket.js"></script>
+    <!-- 景點收藏功能 -->
+    <script th:src="@{/js/spot/favorites.js}"></script>
     <!-- 景點模組通用腳本 -->
     <script th:src="@{/js/spot/front-end/spot-common.js}"></script>
     <!-- 景點首頁腳本 -->

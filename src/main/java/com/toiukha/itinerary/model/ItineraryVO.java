@@ -58,6 +58,9 @@ public class ItineraryVO implements Serializable {
     @Transient  // 標記為非持久化屬性
     private Boolean isFavorited;  // 是否已收藏（非資料庫欄位）
 
+    @Transient
+    private String creatorDisplayName;
+
     // 關聯到行程景點
     @OneToMany(mappedBy = "itinerary", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
@@ -172,6 +175,51 @@ public class ItineraryVO implements Serializable {
         this.itnSpots = itnSpots;
     }
 
+    public String getCreatorDisplayName() {
+        if (this.creatorDisplayName != null) {
+            return this.creatorDisplayName;
+        }
+        if (creatorType != null && creatorType == 2) {
+            return "官方推薦";
+        }
+        return "會員"; // Default
+    }
+
+    /**
+     * 格式化建立者顯示名稱
+     * @param currentMemId 當前登入會員ID，用於判斷是否為「我的行程」
+     * @return 格式化後的建立者名稱
+     */
+    public String formatCreatorName(Integer currentMemId) {
+        if (creatorType == null) {
+            return "未知";
+        }
+        
+        if (creatorType == 2) {
+            // 官方/管理員建立的行程
+            return "官方推薦";
+        } else if (creatorType == 1) {
+            // 會員建立的行程
+            if (currentMemId != null && currentMemId.equals(this.crtId)) {
+                return "我的行程";
+            } else {
+                // 顯示會員 + ID後四位
+                String idStr = String.valueOf(this.crtId);
+                if (idStr.length() >= 4) {
+                    return "會員 " + idStr.substring(idStr.length() - 4);
+                } else {
+                    return "會員 " + String.format("%04d", this.crtId);
+                }
+            }
+        }
+        
+        return "未知";
+    }
+
+    public void setCreatorDisplayName(String creatorDisplayName) {
+        this.creatorDisplayName = creatorDisplayName;
+    }
+
     // ========== 業務方法 ==========
 
     /**
@@ -218,6 +266,25 @@ public class ItineraryVO implements Serializable {
      */
     public boolean hasSpots() {
         return itnSpots != null && !itnSpots.isEmpty();
+    }
+
+    /**
+     * 檢查行程是否由管理員建立
+     * @return true 如果行程由管理員建立
+     */
+    public boolean isCreatedByAdmin() {
+        return creatorType != null && creatorType == 2;
+    }
+
+    /**
+     * 取得建立者類型文字描述
+     * @return 建立者類型文字
+     */
+    public String getCreatorTypeText() {
+        if (creatorType == null) {
+            return "未知";
+        }
+        return creatorType == 2 ? "管理員" : "會員";
     }
 
     // ========== toString ==========

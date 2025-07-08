@@ -77,23 +77,14 @@ function confirmDelete(spotName) {
 // 圖片錯誤處理函數（從HTML中的onerror移過來）
 function handleImageError(img) {
     console.log('圖片載入失敗:', img.src);
-    img.classList.add('hidden');
-    const placeholder = img.parentNode.querySelector('.spot-image-placeholder');
-    if (placeholder) {
-        placeholder.classList.remove('spot-image-placeholder-none');
-        placeholder.classList.add('spot-image-placeholder-flex');
-    }
+    img.onerror = null;
+    img.src = '/images/404.png';
 }
 
 // 圖片載入成功處理
 function handleImageLoad(img) {
     console.log('圖片載入成功:', img.src);
     img.classList.remove('hidden');
-    const placeholder = img.parentNode.querySelector('.spot-image-placeholder');
-    if (placeholder) {
-        placeholder.classList.remove('spot-image-placeholder-flex');
-        placeholder.classList.add('spot-image-placeholder-none');
-    }
 }
 
 // 暴露到全域供HTML使用
@@ -824,10 +815,7 @@ function createTableRow(spot) {
         <td><span class="spot-id">#${spotId}</span></td>
         <td>
             <div class="spot-info">
-                ${hasImage ? 
-                    `<img src="${firstPictureUrl}" alt="${spotName}" class="spot-image" onload="handleImageLoad(this)" onerror="handleImageError(this)">` : ''
-                }
-                <div class="spot-image-placeholder ${hasImage ? 'spot-image-placeholder-none' : 'spot-image-placeholder-flex'}">🏞️</div>
+                <img src="${firstPictureUrl || '/images/404.png'}" alt="${spotName}" class="spot-image" onload="handleImageLoad(this)" onerror="handleImageError(this)">
                 <div class="spot-text-info">
                     <div class="spot-name">${spotName}</div>
                     <div class="spot-desc" title="${spotDesc}">${truncateText(spotDesc, 50)}</div>
@@ -1285,9 +1273,10 @@ function updatePaginationButtons() {
             pageItem.className = 'page-item' + (i === currentPage ? ' active' : '');
             
             const pageButton = document.createElement('button');
+            pageButton.type = 'button';  // 確保已設置
             pageButton.className = 'page-link';
-            pageButton.textContent = i + 1;
-            pageButton.onclick = () => goToPage(i);
+            pageButton.textContent = (i + 1).toString();
+            pageButton.addEventListener('click', () => goToPage(i));
             
             pageItem.appendChild(pageButton);
             pageNumbers.appendChild(pageItem);
@@ -1601,14 +1590,22 @@ function initializeApiImport() {
     const cityButtons = document.querySelectorAll('.city-btn');
     const resultArea = document.getElementById('importResult');
 
+    // 標記是否已完成匯入
+    let importCompleted = false;
+
     // 打開模態視窗
     openBtn.addEventListener('click', () => {
         modal.style.display = 'block';
+        importCompleted = false; // 重置匯入狀態
     });
 
     // 關閉模態視窗
     closeBtn.addEventListener('click', () => {
         modal.style.display = 'none';
+        // 如果匯入已完成，關閉時重新整理頁面
+        if (importCompleted) {
+            window.location.reload();
+        }
     });
 
     // 修改點擊模態視窗外部關閉的邏輯
@@ -1628,6 +1625,10 @@ function initializeApiImport() {
         // 只有當滑鼠按下和釋放都在模態視窗外時才關閉
         if (e.target === modal && !mouseDownInModal) {
             modal.style.display = 'none';
+            // 如果匯入已完成，關閉時重新整理頁面
+            if (importCompleted) {
+                window.location.reload();
+            }
         }
         mouseDownInModal = false;
     });
@@ -1638,6 +1639,12 @@ function initializeApiImport() {
         if (count < 10 || count > 200) {
             alert('請輸入10-200之間的數字');
             return;
+        }
+        
+        // 提醒用戶優化後的效能
+        if (count > 100) {
+            const proceed = confirm(`您選擇匯入 ${count} 筆資料。\n\n優化後的系統預計處理時間約 ${Math.ceil(count/50)} 分鐘。\n是否繼續？`);
+            if (!proceed) return;
         }
 
         try {
@@ -1651,10 +1658,10 @@ function initializeApiImport() {
             const result = await response.json();
             showResult(result);
             
-            // 重新載入頁面以顯示新匯入的資料
-            setTimeout(() => {
-                window.location.reload();
-            }, 3000);
+            // 標記匯入已完成
+            if (result.success) {
+                importCompleted = true;
+            }
         } catch (error) {
             console.error('匯入失敗:', error);
             showResult({
@@ -1690,10 +1697,10 @@ function initializeApiImport() {
                 const result = await response.json();
                 showResult(result);
                 
-                // 重新載入頁面以顯示新匯入的資料
-                setTimeout(() => {
-                    window.location.reload();
-                }, 3000);
+                // 標記匯入已完成
+                if (result.success) {
+                    importCompleted = true;
+                }
             } catch (error) {
                 console.error('匯入失敗:', error);
                 showResult({
@@ -1730,7 +1737,7 @@ function showResult(result) {
                     <li>⏭️ 重複跳過: ${data.skippedCount || 0} 筆</li>
                     <li>❌ 匯入失敗: ${data.errorCount || 0} 筆</li>
                 </ul>
-                <p class="success-note">頁面將在 3 秒後自動重新載入</p>
+                <p class="success-note">匯入完成，關閉視窗後將自動更新資料</p>
             </div>
         `;
         

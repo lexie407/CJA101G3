@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+
 
 import com.toiukha.spot.model.SpotVO;
 import com.toiukha.spot.service.SpotService;
@@ -132,7 +137,7 @@ public class SpotPageController {
      * @param model 模型物件
      * @return 列表頁模板
      */
-    @GetMapping("/spotlist")
+    @GetMapping("/list")
     public String spotList(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "region", required = false) String region,
@@ -142,27 +147,35 @@ public class SpotPageController {
         boolean hasFilter = false;
         
         try {
-            // 如果有搜尋條件，執行篩選搜尋
-            if ((keyword != null && !keyword.trim().isEmpty()) || 
+            // 根據不同的搜尋條件組合執行查詢
+            if ((keyword != null && !keyword.trim().isEmpty()) && 
                 (region != null && !region.trim().isEmpty())) {
-                
-                spotList = spotService.searchSpotsWithFilters(keyword, region);
+                // 同時有關鍵字和地區
+                spotList = spotService.searchSpotsWithFilters(keyword.trim(), region.trim());
                 hasFilter = true;
-                
-                // 記錄搜尋日誌
-                System.out.println("景點列表搜尋 - 關鍵字: " + keyword + ", 地區: " + region + 
-                                 ", 結果數量: " + spotList.size());
+            } else if (keyword != null && !keyword.trim().isEmpty()) {
+                // 只有關鍵字
+                spotList = spotService.searchPublicSpots(keyword.trim());
+                hasFilter = true;
+            } else if (region != null && !region.trim().isEmpty() && !region.equals("所有地區")) {
+                // 只有地區，且不是"所有地區"
+                spotList = spotService.getSpotsByRegion(region.trim());
+                hasFilter = true;
             } else {
-                // 沒有搜尋條件，顯示所有活躍景點
+                // 沒有任何搜尋條件，顯示所有活躍景點
                 spotList = spotService.getActiveSpots();
-                System.out.println("景點列表 - 顯示所有景點，共 " + spotList.size() + " 個");
             }
             
+            // 添加到模型
             model.addAttribute("spotList", spotList);
             model.addAttribute("hasFilter", hasFilter);
             model.addAttribute("searchKeyword", keyword);
             model.addAttribute("selectedRegion", region);
             model.addAttribute("currentPage", "list");
+            
+            // 添加地區列表供下拉選單使用
+            List<String> regions = Arrays.asList("北部", "中部", "南部", "東部", "離島");
+            model.addAttribute("regions", regions);
             
             // 如果有篩選但沒有結果，添加提示訊息
             if (hasFilter && spotList.isEmpty()) {
@@ -208,53 +221,141 @@ public class SpotPageController {
     /**
      * 景點搜尋頁面
      * @param keyword 搜尋關鍵字 (可選)
+     * @param region 地區篩選 (可選)
+     * @param rating 最低評分 (可選)
+     * @param sortBy 排序方式 (可選)
+     * @param sortDirection 排序方向 (可選)
      * @param model 模型物件
      * @return 搜尋頁模板
      */
     @GetMapping("/search")
-    public String spotSearch(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
-        model.addAttribute("currentPage", "home");
+    public String spotSearch(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "region", required = false) String region,
+            @RequestParam(value = "rating", required = false) Double rating,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "rating") String sortBy,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection,
+            Model model) {
         
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            // 有搜尋關鍵字，執行搜尋
-            List<SpotVO> searchResults = spotService.searchSpots(keyword.trim());
-            model.addAttribute("spotList", searchResults);
-            model.addAttribute("searchKeyword", keyword.trim());
-            model.addAttribute("hasSearched", true);
-            
-            // 記錄搜尋日誌
-            System.out.println("搜尋關鍵字: " + keyword.trim() + ", 找到 " + searchResults.size() + " 個結果");
-        } else {
-            // 沒有搜尋關鍵字，顯示所有景點
+        try {
+            // 獲取所有可用地區
             List<SpotVO> allSpots = spotService.getActiveSpots();
-            model.addAttribute("spotList", allSpots);
-            model.addAttribute("hasSearched", false);
+            List<String> availableRegions = allSpots.stream()
+                .map(SpotVO::getRegion)
+                .filter(r -> r != null && !r.trim().isEmpty())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
             
-            // 記錄日誌
-            System.out.println("顯示所有景點，共 " + allSpots.size() + " 個");
-        }
-        
-        return "front-end/spot/search";
-    }
-
-    /**
-     * 處理景點搜尋請求
-     * @param keyword 搜尋關鍵字
-     * @param model 模型物件
-     * @return 搜尋結果頁模板
-     */
-    @PostMapping("/search")
-    public String performSearch(@RequestParam("keyword") String keyword, Model model) {
-        model.addAttribute("currentPage", "home");
-        
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            List<SpotVO> searchResults = spotService.searchSpots(keyword.trim());
-            model.addAttribute("spotList", searchResults);
-            model.addAttribute("searchKeyword", keyword.trim());
-            model.addAttribute("hasSearched", true);
-        } else {
+            // 如果有搜尋條件，使用搜尋邏輯
+            List<SpotVO> spots;
+            if ((keyword != null && !keyword.trim().isEmpty()) ||
+                (region != null && !region.trim().isEmpty()) ||
+                rating != null) {
+                
+                // 處理評分篩選
+                if (rating != null) {
+                    System.out.println("正在篩選評分 >= " + rating + " 的景點");
+                }
+                
+                spots = spotService.findBySearchCriteria(
+                    keyword != null ? keyword.trim() : null,
+                    region != null ? region.trim() : null,
+                    rating,
+                    sortBy,
+                    sortDirection
+                );
+            } else {
+                // 沒有搜尋條件時，顯示所有活躍景點
+                spots = allSpots;
+                
+                // 手動排序
+                if ("rating".equals(sortBy)) {
+                    Comparator<SpotVO> comparator = Comparator.comparing(
+                        SpotVO::getGoogleRating, 
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                    );
+                    if ("desc".equals(sortDirection)) {
+                        comparator = comparator.reversed();
+                    }
+                    spots.sort(comparator);
+                } else if ("name".equals(sortBy)) {
+                    Comparator<SpotVO> comparator = Comparator.comparing(
+                        SpotVO::getSpotName, 
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                    );
+                    if ("desc".equals(sortDirection)) {
+                        comparator = comparator.reversed();
+                    }
+                    spots.sort(comparator);
+                } else if ("date".equals(sortBy)) {
+                    Comparator<SpotVO> comparator = Comparator.comparing(
+                        SpotVO::getSpotCreateAt, 
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                    );
+                    if ("desc".equals(sortDirection)) {
+                        comparator = comparator.reversed();
+                    }
+                    spots.sort(comparator);
+                }
+            }
+            
+            // 檢查是否有搜尋條件
+            boolean hasSearchConditions = (keyword != null && !keyword.trim().isEmpty()) ||
+                                        (region != null && !region.trim().isEmpty()) ||
+                                        rating != null;
+            
+            // 添加到模型
+            model.addAttribute("spotList", spots);
+            model.addAttribute("searchKeyword", keyword);
+            model.addAttribute("selectedRegion", region);
+            model.addAttribute("selectedRating", rating);
+            model.addAttribute("selectedSortBy", sortBy);
+            model.addAttribute("selectedSortDirection", sortDirection);
+            model.addAttribute("availableRegions", availableRegions);
+            model.addAttribute("hasSearched", true); // 永遠顯示景點列表
+            model.addAttribute("currentPage", "search");
+            
+            // 如果有搜尋條件，添加結果提示
+            if (hasSearchConditions) {
+                StringBuilder conditionMsg = new StringBuilder();
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                    conditionMsg.append("關鍵字「").append(keyword.trim()).append("」");
+                }
+                if (region != null && !region.trim().isEmpty()) {
+                    if (conditionMsg.length() > 0) conditionMsg.append("、");
+                    conditionMsg.append("地區「").append(region.trim()).append("」");
+                }
+                if (rating != null) {
+                    if (conditionMsg.length() > 0) conditionMsg.append("、");
+                    conditionMsg.append("評分 ").append(rating).append(" 星以上");
+                }
+                
+                if (spots.isEmpty()) {
+                    if (rating != null) {
+                        // 檢查是否有任何景點有評分資料
+                        long spotsWithRating = allSpots.stream()
+                            .filter(spot -> spot.getGoogleRating() != null && spot.getGoogleRating() > 0)
+                            .count();
+                        if (spotsWithRating == 0) {
+                            model.addAttribute("msg", "目前景點資料庫中尚無評分資訊，請選擇其他篩選條件或聯繫客服取得更多協助");
+                        } else {
+                            model.addAttribute("msg", "找不到符合" + conditionMsg + "的景點");
+                        }
+                    } else {
+                        model.addAttribute("msg", "找不到符合" + conditionMsg + "的景點");
+                    }
+                } else {
+                    model.addAttribute("msg", String.format("找到 %d 個符合%s的景點", spots.size(), conditionMsg));
+                }
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("errorMessage", "搜尋景點時發生錯誤: " + e.getMessage());
             model.addAttribute("spotList", new ArrayList<>());
-            model.addAttribute("hasSearched", false);
+            model.addAttribute("availableRegions", new ArrayList<>());
+            model.addAttribute("currentPage", "search");
         }
         
         return "front-end/spot/search";
@@ -489,7 +590,7 @@ public class SpotPageController {
         try {
             SpotVO savedSpot = spotService.addSpot(spotVO);
             redirectAttr.addFlashAttribute("msg", "景點新增成功！景點ID: " + savedSpot.getSpotId() + "，等待管理員審核後上架。");
-            return "redirect:/spot/spotlist";
+            return "redirect:/spot/list";
         } catch (Exception e) {
             model.addAttribute("errorMsgs", List.of("新增景點時發生錯誤：" + e.getMessage()));
             model.addAttribute("currentPage", "home");
@@ -571,5 +672,103 @@ public class SpotPageController {
      */
     private Integer getCurrentUserId(HttpSession session) {
         return getMemIdFromSession(session);
+    }
+
+    /**
+     * 測試方法：查看所有地區資料
+     * @return JSON格式的地區列表
+     */
+    @GetMapping("/test/regions")
+    @ResponseBody
+    public Map<String, Object> testRegions() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            List<SpotVO> allSpots = spotService.getActiveSpots();
+            List<String> regions = allSpots.stream()
+                .map(SpotVO::getRegion)
+                .filter(region -> region != null)
+                .distinct()
+                .collect(Collectors.toList());
+            
+            result.put("totalSpots", allSpots.size());
+            result.put("uniqueRegions", regions);
+            result.put("spotDetails", allSpots.stream()
+                .map(spot -> {
+                    Map<String, Object> spotInfo = new HashMap<>();
+                    spotInfo.put("id", spot.getSpotId());
+                    spotInfo.put("name", spot.getSpotName());
+                    spotInfo.put("region", spot.getRegion());
+                    spotInfo.put("address", spot.getSpotLoc());
+                    return spotInfo;
+                })
+                .collect(Collectors.toList()));
+                
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 測試方法：測試評分篩選
+     * @param rating 評分條件
+     * @return JSON格式的結果
+     */
+    @GetMapping("/test/rating")
+    @ResponseBody
+    public Map<String, Object> testRating(@RequestParam(value = "rating", required = false) Double rating) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            List<SpotVO> spots = spotService.findBySearchCriteria(null, null, rating, "rating");
+            result.put("searchRating", rating);
+            result.put("foundSpots", spots.size());
+            result.put("spotDetails", spots.stream()
+                .map(spot -> {
+                    Map<String, Object> spotInfo = new HashMap<>();
+                    spotInfo.put("id", spot.getSpotId());
+                    spotInfo.put("name", spot.getSpotName());
+                    spotInfo.put("rating", spot.getGoogleRating());
+                    spotInfo.put("region", spot.getRegion());
+                    return spotInfo;
+                })
+                .collect(Collectors.toList()));
+                
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 測試方法：為景點添加模擬評分資料
+     * @return JSON格式的結果
+     */
+    @GetMapping("/test/add-ratings")
+    @ResponseBody
+    public Map<String, Object> addTestRatings() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // 獲取前10個景點並添加模擬評分
+            List<SpotVO> spots = spotService.getActiveSpots();
+            int updated = 0;
+            
+            for (int i = 0; i < Math.min(spots.size(), 10); i++) {
+                SpotVO spot = spots.get(i);
+                // 為景點添加隨機評分（3.0-5.0之間）
+                double rating = 3.0 + (Math.random() * 2.0);
+                spot.setGoogleRating(rating);
+                spot.setGoogleTotalRatings((int)(Math.random() * 500) + 50);
+                spotService.updateSpot(spot);
+                updated++;
+            }
+            
+            result.put("success", true);
+            result.put("message", "成功為 " + updated + " 個景點添加模擬評分");
+            result.put("updatedCount", updated);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        }
+        return result;
     }
 } 

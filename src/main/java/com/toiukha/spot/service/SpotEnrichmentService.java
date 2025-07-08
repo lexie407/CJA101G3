@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -280,6 +282,278 @@ public class SpotEnrichmentService {
     }
 
     /**
+     * 使用 Google Places API 擴充景點資訊
+     * @param spot 景點
+     * @return 擴充後的景點
+     */
+    public Map<String, Object> enrichSpotWithGoogleData(SpotVO spot) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", false);
+        
+        if (spot == null) {
+            logger.warn("嘗試擴充空的景點資訊");
+            result.put("error", "景點資訊為空");
+            return result;
+        }
+        
+        try {
+            // 檢查 API Key 是否有效
+            if (!googlePlacesService.isApiKeyValid()) {
+                logger.error("Google Places API Key 無效，無法擴充景點資訊");
+                result.put("error", "Google Places API Key 無效");
+                return result;
+            }
+            
+            // 取得 Google Place 資訊
+            GooglePlaceInfo placeInfo = getGooglePlaceInfo(spot);
+            
+            if (placeInfo == null) {
+                logger.warn("無法從 Google Places API 取得景點資訊：{}", spot.getSpotName());
+                result.put("error", "無法從 Google Places API 取得景點資訊");
+                return result;
+            }
+            
+            // 取得詳細資訊
+            GooglePlaceDetails details = getGooglePlaceDetails(placeInfo.getPlaceId());
+            
+            // 組合結果
+            Map<String, Object> data = new HashMap<>();
+            data.put("placeId", placeInfo.getPlaceId());
+            data.put("name", placeInfo.getName());
+            data.put("formattedAddress", placeInfo.getFormattedAddress());
+            
+            // 評分相關
+            if (placeInfo.getRating() != null) {
+                data.put("rating", placeInfo.getRating());
+                data.put("userRatingsTotal", placeInfo.getUserRatingsTotal());
+            }
+            
+            // 詳細資訊
+            if (details != null) {
+                data.put("phoneNumber", details.getPhoneNumber());
+                data.put("website", details.getWebsite());
+                data.put("openingHours", details.getOpeningHours());
+                
+                // 照片
+                if (details.getPhotoReferences() != null && !details.getPhotoReferences().isEmpty()) {
+                    data.put("photoReferences", details.getPhotoReferences());
+                    
+                    // 取得第一張照片的 URL 作為預覽
+                    String firstPhotoRef = details.getPhotoReferences().get(0);
+                    String photoUrl = googlePlacesService.getPhotoUrl(firstPhotoRef, 400);
+                    data.put("previewPhotoUrl", photoUrl);
+                }
+            }
+            
+            result.put("success", true);
+            result.put("data", data);
+            
+            logger.info("成功從 Google Places API 擴充景點資訊：{}", spot.getSpotName());
+            
+        } catch (Exception e) {
+            logger.error("擴充景點資訊時發生錯誤：{}", e.getMessage());
+            result.put("error", "擴充景點資訊時發生錯誤：" + e.getMessage());
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 取得 Google Place 資訊
+     * @param spot 景點
+     * @return Google Place 資訊
+     */
+    private GooglePlaceInfo getGooglePlaceInfo(SpotVO spot) {
+        try {
+            String spotName = spot.getSpotName();
+            String address = spot.getSpotLoc();
+            Double lat = spot.getSpotLat();
+            Double lng = spot.getSpotLng();
+            
+            logger.debug("嘗試取得景點資訊，景點名稱：{}，地址：{}", spotName, address);
+            
+            // 使用 Google Places API 搜尋景點
+            GooglePlaceInfo placeInfo = googlePlacesService.searchPlace(spotName, address, lat, lng);
+            
+            if (placeInfo != null) {
+                logger.info("成功取得景點資訊：{}", placeInfo.getName());
+            } else {
+                logger.warn("無法取得景點資訊：{}", spotName);
+            }
+            
+            return placeInfo;
+            
+        } catch (Exception e) {
+            logger.error("取得 Google Place 資訊時發生錯誤：{}", e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * 取得 Google Place 詳細資訊
+     * @param placeId Google Place ID
+     * @return Google Place 詳細資訊
+     */
+    private GooglePlaceDetails getGooglePlaceDetails(String placeId) {
+        try {
+            if (placeId == null || placeId.trim().isEmpty()) {
+                logger.warn("Place ID 為空，無法取得詳細資訊");
+                return null;
+            }
+            
+            logger.debug("嘗試取得景點詳細資訊，Place ID：{}", placeId);
+            
+            // 使用 Google Places API 取得詳細資訊
+            GooglePlaceDetails details = googlePlacesService.getPlaceDetails(placeId);
+            
+            if (details != null) {
+                logger.info("成功取得景點詳細資訊，Place ID：{}", placeId);
+                
+                // 記錄取得的資訊
+                logger.debug("電話：{}", details.getPhoneNumber());
+                logger.debug("網站：{}", details.getWebsite());
+                logger.debug("照片數量：{}", 
+                    details.getPhotoReferences() != null ? details.getPhotoReferences().size() : 0);
+            } else {
+                logger.warn("無法取得景點詳細資訊，Place ID：{}", placeId);
+            }
+            
+            return details;
+            
+        } catch (Exception e) {
+            logger.error("取得 Google Place 詳細資訊時發生錯誤：{}", e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * 檢查 Google Places API 是否可用
+     * @return 如果 API 可用則返回 true，否則返回 false
+     */
+    public boolean isGooglePlacesApiAvailable() {
+        return googlePlacesService.isApiKeyValid();
+    }
+
+    /**
+     * 根據景點名稱和地址獲取Google Places資訊
+     * @param name 景點名稱
+     * @param address 景點地址
+     * @return Google Places資訊
+     */
+    public Map<String, Object> getGooglePlaceInfo(String name, String address) {
+        logger.info("獲取景點 '{}' 的Google Places資訊，地址: '{}'", name, address);
+        Map<String, Object> result = new HashMap<>();
+        
+        // 檢查API Key是否設置
+        try {
+            boolean apiKeyValid = googlePlacesService.isApiKeyValid();
+            if (!apiKeyValid) {
+                logger.error("Google API Key 無效或未設置");
+                result.put("error", "Google API Key 無效或未設置");
+                result.put("rating", null);
+                result.put("website", "");
+                result.put("phoneNumber", "");
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("檢查API Key時發生錯誤", e);
+        }
+        
+        try {
+            // 使用現有的GooglePlacesService搜尋景點
+            GooglePlaceInfo placeInfo = googlePlacesService.searchPlace(
+                name, address, null, null
+            );
+            
+            if (placeInfo != null && placeInfo.getPlaceId() != null) {
+                // 基本資訊
+                logger.info("成功找到景點: {}, Place ID: {}", placeInfo.getName(), placeInfo.getPlaceId());
+                result.put("placeId", placeInfo.getPlaceId());
+                result.put("name", placeInfo.getName());
+                result.put("rating", placeInfo.getRating()); // 即使為null也包含
+                result.put("userRatingsTotal", placeInfo.getUserRatingsTotal());
+                result.put("formattedAddress", placeInfo.getFormattedAddress());
+                
+                // 獲取詳細資訊
+                logger.info("正在獲取景點詳細資訊...");
+                GooglePlaceDetails details = googlePlacesService.getPlaceDetails(placeInfo.getPlaceId());
+                if (details != null) {
+                    // 即使為null或空字串也包含這些欄位
+                    String website = details.getWebsite() != null ? details.getWebsite() : "";
+                    String phone = details.getPhoneNumber() != null ? details.getPhoneNumber() : "";
+                    
+                    result.put("website", website);
+                    result.put("phoneNumber", phone);
+                    
+                    logger.info("景點詳情 - 網站: {}, 電話: {}", 
+                               website.isEmpty() ? "無" : website, 
+                               phone.isEmpty() ? "無" : phone);
+                    
+                    // 處理營業時間
+                    if (details.getOpeningHours() != null && !details.getOpeningHours().isEmpty()) {
+                        result.put("openingHours", details.getOpeningHours());
+                        logger.debug("獲取到營業時間: {} 項", details.getOpeningHours().size());
+                    } else {
+                        result.put("openingHours", new ArrayList<String>());
+                        logger.debug("無營業時間資訊");
+                    }
+                    
+                    // 處理照片URL
+                    if (details.getPhotoReferences() != null && !details.getPhotoReferences().isEmpty()) {
+                        List<String> photoUrls = new ArrayList<>();
+                        for (String photoRef : details.getPhotoReferences()) {
+                            String photoUrl = googlePlacesService.getPhotoUrl(photoRef, 800);
+                            if (photoUrl != null) {
+                                photoUrls.add(photoUrl);
+                            }
+                            // 最多返回5張照片
+                            if (photoUrls.size() >= 5) {
+                                break;
+                            }
+                        }
+                        result.put("photoUrls", photoUrls);
+                        logger.debug("獲取到照片: {} 張", photoUrls.size());
+                    } else {
+                        result.put("photoUrls", new ArrayList<String>());
+                        logger.debug("無照片資訊");
+                    }
+                } else {
+                    // 如果沒有獲取到詳細資訊，也添加空值
+                    logger.warn("找到景點但未能獲取詳細資訊: {}", placeInfo.getName());
+                    result.put("website", "");
+                    result.put("phoneNumber", "");
+                    result.put("openingHours", new ArrayList<String>());
+                    result.put("photoUrls", new ArrayList<String>());
+                }
+                
+                logger.info("成功獲取景點 '{}' 的Google Places資訊: {}", name, result);
+            } else {
+                logger.warn("未找到景點 '{}' 的Google Places資訊", name);
+                result.put("message", "未找到景點的Google Places資訊");
+                // 添加空值，確保前端能夠處理
+                result.put("rating", null);
+                result.put("website", "");
+                result.put("phoneNumber", "");
+                
+                // 嘗試直接使用Google搜索URL，作為建議
+                String googleSearchUrl = "https://www.google.com/search?q=" + 
+                                       java.net.URLEncoder.encode(name + " " + address, "UTF-8");
+                result.put("googleSearchUrl", googleSearchUrl);
+                logger.info("提供Google搜索URL作為替代: {}", googleSearchUrl);
+            }
+        } catch (Exception e) {
+            logger.error("獲取Google Places資訊時發生錯誤: {}", e.getMessage(), e);
+            result.put("error", e.getMessage());
+            // 添加空值，確保前端能夠處理
+            result.put("rating", null);
+            result.put("website", "");
+            result.put("phoneNumber", "");
+        }
+        
+        return result;
+    }
+
+    /**
      * 豐富化結果統計類別
      */
     public static class EnrichmentResult {
@@ -313,6 +587,23 @@ public class SpotEnrichmentService {
         public String toString() {
             return String.format("EnrichmentResult{success=%s, processed=%d, enriched=%d, error=%d, importResult=%s}", 
                                success, processedCount, enrichedCount, errorCount, importResult);
+        }
+    }
+
+    public void enrichSpotPictureUrlIfNeeded(List<SpotVO> spots) {
+        for (SpotVO spot : spots) {
+            String url = spot.getFirstPictureUrl();
+            // 判斷為空或為預設404圖時才補圖
+            if ((url == null || url.trim().isEmpty() || url.contains("404.png")) && spot.getGooglePlaceId() != null) {
+                // 取得 Google 圖片預覽
+                Map<String, Object> googleData = enrichSpotWithGoogleData(spot);
+                if (googleData != null && Boolean.TRUE.equals(googleData.get("success"))) {
+                    Map<String, Object> data = (Map<String, Object>) googleData.get("data");
+                    if (data != null && data.get("previewPhotoUrl") != null) {
+                        spot.setFirstPictureUrl(data.get("previewPhotoUrl").toString());
+                    }
+                }
+            }
         }
     }
 } 

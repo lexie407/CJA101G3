@@ -30,6 +30,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 import jakarta.validation.Valid;
 import jakarta.validation.ConstraintViolation;
@@ -41,6 +47,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.HashMap;
 import org.springframework.http.HttpStatus;
+import java.util.ArrayList;
+import com.toiukha.spot.model.SpotImgVO;
+import com.toiukha.spot.service.SpotImgService;
 
 /**
  * 景點管理後端總控制器
@@ -63,6 +72,12 @@ public class SpotAdminController {
 
     @Autowired
     private SpotService spotService;
+
+    @Autowired
+    private com.toiukha.spot.service.SpotServiceImpl spotServiceImpl;
+
+    @Autowired
+    private SpotImgService spotImgService;
 
     // 移除未使用的administrantService欄位
 
@@ -136,10 +151,10 @@ public class SpotAdminController {
 
         // 景點列表顯示已審核的景點（上架1和退回2），過濾掉待審核的景點（狀態0）
         Page<SpotVO> spotPage = spotService.searchReviewedSpotsForAdmin(keyword, status, region, pageable);
-        
         // 為了前端JavaScript分頁，也查詢所有符合條件的資料（不分頁）
         List<SpotVO> allSpots = spotService.searchAllReviewedSpotsForAdmin(keyword, status, region, sortObj);
-        logger.info("從 Service 獲取的 allSpots 總筆數: {}", allSpots.size());
+        // 新增：自動補 Google 圖片
+        spotEnrichmentService.enrichSpotPictureUrlIfNeeded(allSpots);
         
         // 如果沒有篩選條件，直接查詢所有已審核資料作為備用
         if (allSpots.size() <= 10 && keyword == null && status == null && region == null) {
@@ -285,31 +300,89 @@ public class SpotAdminController {
      * @return 重導向到景點列表頁面
      */
     @PostMapping("/add")
-    public String processAdd(@Valid @ModelAttribute SpotVO spotVO,
+    @ResponseBody
+    public Map<String, Object> processAdd(@Valid @ModelAttribute SpotVO spotVO,
                            BindingResult result,
-                           RedirectAttributes redirectAttr) {
+                           RedirectAttributes redirectAttr,
+                           @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+                           @RequestParam(value = "multiImages", required = false) List<MultipartFile> multiImages,
+                           @RequestParam(value = "multiImageDescs", required = false) List<String> multiImageDescs) {
+        Map<String, Object> resp = new HashMap<>();
+        final int MAX_IMAGES = 8;
+        final long MAX_SIZE = 2 * 1024 * 1024L;
+        final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/jpg");
         try {
-            // 檢查驗證錯誤
             if (result.hasErrors()) {
-                String errorMessage = formatValidationErrors(result);
-                redirectAttr.addFlashAttribute("errorMessage", errorMessage);
-                return "redirect:/admin/spot/add";
+                resp.put("success", false);
+                resp.put("message", formatValidationErrors(result));
+                return resp;
             }
-            
-            // 設定預設值
-            spotVO.setCrtId(1); // 假設管理員ID為1，實際應從session取得
-            // 管理員新增的景點直接設為上架狀態
-            spotVO.setSpotStatus((byte) 1);  // 1 = 上架
-            
+            // 驗證總數量（含舊圖）
+            int existCount = 0;
+            if (spotVO.getSpotId() != null) {
+                existCount = spotImgService.getImagesBySpotId(spotVO.getSpotId()).size();
+            }
+            int newCount = (multiImages != null ? multiImages.size() : 0);
+            if (existCount + newCount > MAX_IMAGES) {
+                resp.put("success", false);
+                resp.put("message", "最多只能上傳" + MAX_IMAGES + "張圖片");
+                return resp;
+            }
+            // 驗證每張圖片
+            if (multiImages != null) {
+                for (MultipartFile mf : multiImages) {
+                    if (mf == null || mf.isEmpty()) continue;
+                    if (!ALLOWED_TYPES.contains(mf.getContentType())) {
+                        resp.put("success", false);
+                        resp.put("message", "僅允許 JPG、PNG 格式圖片");
+                        return resp;
+                    }
+                    if (mf.getSize() > MAX_SIZE) {
+                        resp.put("success", false);
+                        resp.put("message", "單張圖片不可超過2MB");
+                        return resp;
+                    }
+                }
+            }
+            // 儲存單圖
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+                String uploadDir = "src/main/resources/static/images/spot/";
+                File dir = new File(uploadDir);
+                if (!dir.exists()) dir.mkdirs();
+                File dest = new File(uploadDir + fileName);
+                Files.copy(imageFile.getInputStream(), Paths.get(dest.toURI()));
+                spotVO.setFirstPictureUrl("/images/spot/" + fileName);
+            }
+            spotVO.setCrtId(1);
+            spotVO.setSpotStatus((byte) 1);
             spotService.addSpot(spotVO);
-            
-            // 新增成功後跳轉到景點列表頁面
-            redirectAttr.addFlashAttribute("successMessage", "景點新增成功！已直接上架。");
-            return "redirect:/admin/spot/spotlist";
+            // 儲存多圖
+            if (multiImages != null && !multiImages.isEmpty()) {
+                for (int i = 0; i < multiImages.size(); i++) {
+                    MultipartFile mf = multiImages.get(i);
+                    if (mf == null || mf.isEmpty()) continue;
+                    String fileName = UUID.randomUUID() + "_" + mf.getOriginalFilename();
+                    String uploadDir = "src/main/resources/static/images/spot/";
+                    File dir = new File(uploadDir);
+                    if (!dir.exists()) dir.mkdirs();
+                    File dest = new File(uploadDir + fileName);
+                    Files.copy(mf.getInputStream(), Paths.get(dest.toURI()));
+                    SpotImgVO img = new SpotImgVO();
+                    img.setSpotId(spotVO.getSpotId());
+                    img.setImgPath("/images/spot/" + fileName);
+                    if (multiImageDescs != null && i < multiImageDescs.size())
+                        img.setImgDesc(multiImageDescs.get(i));
+                    img.setImgTime(java.time.LocalDateTime.now());
+                    spotImgService.saveImage(img);
+                }
+            }
+            resp.put("success", true);
+            return resp;
         } catch (Exception e) {
-            String errorMessage = formatExceptionMessage(e);
-            redirectAttr.addFlashAttribute("errorMessage", errorMessage);
-            return "redirect:/admin/spot/add";
+            resp.put("success", false);
+            resp.put("message", formatExceptionMessage(e));
+            return resp;
         }
     }
 
@@ -328,6 +401,8 @@ public class SpotAdminController {
         model.addAttribute("spotVO", spot);
         model.addAttribute("isEdit", true);
         model.addAttribute("currentPage", "spotManagement");
+        // 查詢多圖
+        model.addAttribute("spotImgList", spotImgService.getImagesBySpotId(spotId));
         return "back-end/spot/form";
     }
 
@@ -340,41 +415,96 @@ public class SpotAdminController {
      * @return 重導向到列表頁
      */
     @PostMapping("/edit/{spotId}")
-    public String processEdit(@PathVariable Integer spotId, @ModelAttribute SpotVO spotVO,
+    @ResponseBody
+    public Map<String, Object> processEdit(@PathVariable Integer spotId, @ModelAttribute SpotVO spotVO,
                             @RequestParam(value = "spotStatusEnabled", required = false) String spotStatusEnabled,
-                            RedirectAttributes redirectAttr) {
+                            RedirectAttributes redirectAttr,
+                            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+                            @RequestParam(value = "multiImages", required = false) List<MultipartFile> multiImages,
+                            @RequestParam(value = "multiImageDescs", required = false) List<String> multiImageDescs) {
+        Map<String, Object> resp = new HashMap<>();
+        final int MAX_IMAGES = 8;
+        final long MAX_SIZE = 2 * 1024 * 1024L;
+        final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/jpg");
         try {
-            // 先獲取原始景點資料
             SpotVO originalSpot = spotService.getSpotById(spotId);
             if (originalSpot == null) {
-                redirectAttr.addFlashAttribute("errorMessage", "景點不存在");
-                return "redirect:/admin/spot/spotlist";
+                resp.put("success", false);
+                resp.put("message", "景點不存在");
+                return resp;
             }
-            
-            // 設定必要欄位
             spotVO.setSpotId(spotId);
-            spotVO.setCrtId(originalSpot.getCrtId()); // 保留原始建立者ID
-            spotVO.setSpotCreateAt(originalSpot.getSpotCreateAt()); // 保留原始建立時間
-            
-            // 處理狀態開關 - 編輯時只能在上架(1)和下架(3)之間切換
-            // 如果原始狀態是待審核(0)或退回(2)，不允許編輯狀態
+            spotVO.setCrtId(originalSpot.getCrtId());
+            spotVO.setSpotCreateAt(originalSpot.getSpotCreateAt());
             if (originalSpot.getSpotStatus() == 0) {
-                // 待審核狀態的景點不能編輯狀態，保持原狀態
                 spotVO.setSpotStatus((byte) 0);
             } else if (originalSpot.getSpotStatus() == 2) {
-                // 退回狀態的景點不能編輯狀態，保持原狀態
                 spotVO.setSpotStatus((byte) 2);
             } else {
-                // 只有上架(1)和下架(3)狀態的景點可以切換
                 spotVO.setSpotStatus((byte) (spotStatusEnabled != null ? 1 : 3));
             }
-            
+            // 驗證總數量（含舊圖）
+            int existCount = spotImgService.getImagesBySpotId(spotId).size();
+            int newCount = (multiImages != null ? multiImages.size() : 0);
+            if (existCount + newCount > MAX_IMAGES) {
+                resp.put("success", false);
+                resp.put("message", "最多只能上傳" + MAX_IMAGES + "張圖片");
+                return resp;
+            }
+            // 驗證每張圖片
+            if (multiImages != null) {
+                for (MultipartFile mf : multiImages) {
+                    if (mf == null || mf.isEmpty()) continue;
+                    if (!ALLOWED_TYPES.contains(mf.getContentType())) {
+                        resp.put("success", false);
+                        resp.put("message", "僅允許 JPG、PNG 格式圖片");
+                        return resp;
+                    }
+                    if (mf.getSize() > MAX_SIZE) {
+                        resp.put("success", false);
+                        resp.put("message", "單張圖片不可超過2MB");
+                        return resp;
+                    }
+                }
+            }
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+                String uploadDir = "src/main/resources/static/images/spot/";
+                File dir = new File(uploadDir);
+                if (!dir.exists()) dir.mkdirs();
+                File dest = new File(uploadDir + fileName);
+                Files.copy(imageFile.getInputStream(), Paths.get(dest.toURI()));
+                spotVO.setFirstPictureUrl("/images/spot/" + fileName);
+            } else {
+                spotVO.setFirstPictureUrl(originalSpot.getFirstPictureUrl());
+            }
             spotService.updateSpot(spotVO);
-            redirectAttr.addFlashAttribute("successMessage", "景點更新成功！");
+            if (multiImages != null && !multiImages.isEmpty()) {
+                for (int i = 0; i < multiImages.size(); i++) {
+                    MultipartFile mf = multiImages.get(i);
+                    if (mf == null || mf.isEmpty()) continue;
+                    String fileName = UUID.randomUUID() + "_" + mf.getOriginalFilename();
+                    String uploadDir = "src/main/resources/static/images/spot/";
+                    File dir = new File(uploadDir);
+                    if (!dir.exists()) dir.mkdirs();
+                    File dest = new File(uploadDir + fileName);
+                    Files.copy(mf.getInputStream(), Paths.get(dest.toURI()));
+                    SpotImgVO img = new SpotImgVO();
+                    img.setSpotId(spotVO.getSpotId());
+                    img.setImgPath("/images/spot/" + fileName);
+                    if (multiImageDescs != null && i < multiImageDescs.size())
+                        img.setImgDesc(multiImageDescs.get(i));
+                    img.setImgTime(java.time.LocalDateTime.now());
+                    spotImgService.saveImage(img);
+                }
+            }
+            resp.put("success", true);
+            return resp;
         } catch (Exception e) {
-            redirectAttr.addFlashAttribute("errorMessage", "更新失敗：" + e.getMessage());
+            resp.put("success", false);
+            resp.put("message", "更新失敗：" + e.getMessage());
+            return resp;
         }
-        return "redirect:/admin/spot/spotlist";
     }
 
     /**
@@ -477,6 +607,9 @@ public class SpotAdminController {
         if (spot == null) {
             return "redirect:/admin/spot/spotlist";
         }
+        // 新增：自動補 Google 圖片
+        spotEnrichmentService.enrichSpotPictureUrlIfNeeded(java.util.Collections.singletonList(spot));
+        System.out.println("firstPictureUrl: " + spot.getFirstPictureUrl());
         model.addAttribute("spot", spot);
         model.addAttribute("currentPage", "spotManagement");
         return "back-end/spot/detail";
@@ -1007,6 +1140,163 @@ public class SpotAdminController {
         }
     }
 
+    /**
+     * 從 Google Places API 取得景點資訊 (POST方法)
+     * 用於表單頁面的評分獲取功能
+     */
+    @PostMapping("/api/google-place-info")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> postGooglePlaceInfo(@RequestBody Map<String, String> request) {
+        String name = request.get("name");
+        String address = request.get("address");
+        
+        logger.info("接收到POST請求獲取Google Places資訊，景點名稱：{}，地址：{}", name, address);
+        
+        // 檢查參數
+        if ((name == null || name.trim().isEmpty()) && 
+            (address == null || address.trim().isEmpty())) {
+            
+            logger.warn("請求缺少必要參數：景點名稱或地址");
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "請提供景點名稱或地址");
+            
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        try {
+            // 使用擴充服務取得 Google Places 資訊
+            Map<String, Object> result = spotEnrichmentService.getGooglePlaceInfo(name, address);
+            result.put("success", true);
+            
+            logger.info("Google Places API 請求結果：成功");
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            logger.error("處理 Google Places API 請求時發生錯誤：{}", e.getMessage());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "處理請求時發生錯誤：" + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 從 Google Places API 取得景點資訊
+     * @param spotName 景點名稱
+     * @param address 地址
+     * @param latitude 緯度（可選）
+     * @param longitude 經度（可選）
+     * @return 景點資訊
+     */
+    @GetMapping("/api/google-places")
+    public ResponseEntity<Map<String, Object>> getGooglePlacesInfo(
+            @RequestParam(required = false) String spotName,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude) {
+        
+        logger.info("接收到 Google Places API 請求，景點名稱：{}，地址：{}", spotName, address);
+        
+        // 檢查參數
+        if ((spotName == null || spotName.trim().isEmpty()) && 
+            (address == null || address.trim().isEmpty())) {
+            
+            logger.warn("請求缺少必要參數：景點名稱或地址");
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "請提供景點名稱或地址");
+            
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        try {
+            // 創建臨時景點對象
+            SpotVO tempSpot = new SpotVO();
+            tempSpot.setSpotName(spotName);
+            tempSpot.setSpotLoc(address);
+            
+            if (latitude != null && longitude != null) {
+                tempSpot.setSpotLat(latitude);
+                tempSpot.setSpotLng(longitude);
+            }
+            
+            // 使用擴充服務取得 Google Places 資訊
+            Map<String, Object> result = spotEnrichmentService.enrichSpotWithGoogleData(tempSpot);
+            
+            logger.info("Google Places API 請求結果：{}", result.get("success"));
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            logger.error("處理 Google Places API 請求時發生錯誤：{}", e.getMessage());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "處理請求時發生錯誤：" + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 搜尋 Google Places 景點
+     * 用於API匯入頁面的搜尋功能
+     */
+    @GetMapping("/api/google-places-search")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> searchGooglePlaces(
+            @RequestParam String keyword,
+            @RequestParam(required = false) String district) {
+        
+        logger.info("接收到Google Places搜尋請求，關鍵字：{}，地區：{}", keyword, district);
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // 使用擴充服務取得 Google Places 資訊
+            Map<String, Object> result = spotEnrichmentService.getGooglePlaceInfo(keyword, district);
+            
+            // 包裝成列表形式返回，因為前端期望的是列表
+            List<Map<String, Object>> dataList = new ArrayList<>();
+            
+            // 如果找到了結果，將其添加到列表中
+            if (result.get("placeId") != null) {
+                dataList.add(result);
+            }
+            
+            response.put("success", true);
+            response.put("data", dataList);
+            
+            logger.info("Google Places搜尋成功，找到 {} 筆結果", dataList.size());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Google Places搜尋失敗：{}", e.getMessage());
+            
+            response.put("success", false);
+            response.put("error", "搜尋失敗：" + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 管理員專用：自動補全所有沒有 Google Place ID 的景點，並存回 MySQL
+     * POST /admin/spot/api/enrich-placeid
+     */
+    @PostMapping("/api/enrich-placeid")
+    @ResponseBody
+    public ResponseEntity<ApiResponse<String>> enrichAllSpotsWithGooglePlaceId() {
+        int updated = spotServiceImpl.enrichAllSpotsWithGooglePlaceId();
+        return ResponseEntity.ok(ApiResponse.success("成功補全 Place ID 的景點數：" + updated));
+    }
+
     // ===================================================================================
     // 私有輔助方法 (Private Helper Methods)
     // ===================================================================================
@@ -1088,5 +1378,19 @@ public class SpotAdminController {
             logger.warn("解析驗證錯誤訊息失敗: {}", parseError.getMessage());
             return "新增失敗：資料驗證錯誤";
         }
+    }
+
+    @PostMapping("/img/delete")
+    @ResponseBody
+    public Map<String, Object> deleteSpotImg(@RequestParam Integer spotId, @RequestParam Integer imgId) {
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            spotImgService.deleteImage(spotId, imgId);
+            resp.put("success", true);
+        } catch (Exception e) {
+            resp.put("success", false);
+            resp.put("message", e.getMessage());
+        }
+        return resp;
     }
 } 

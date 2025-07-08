@@ -6,16 +6,26 @@ import com.toiukha.spot.service.SpotService;
 import com.toiukha.spot.dto.SpotSearchRequest;
 import com.toiukha.spot.dto.SpotDTO;
 import com.toiukha.spot.dto.SpotMapper;
+import com.toiukha.spot.service.SpotEnrichmentService;
+import com.toiukha.spot.model.SpotImgVO;
+import com.toiukha.spot.service.SpotImgService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.File;
 
 /**
  * 景點前台 API 控制器
@@ -35,17 +45,54 @@ public class SpotUserApiController {
     @Autowired
     private SpotMapper spotMapper;
 
+    @Autowired
+    private SpotEnrichmentService spotEnrichmentService;
+
+    @Autowired
+    private SpotImgService spotImgService;
+
+    @Autowired
+    private com.toiukha.spot.service.GooglePlacesService googlePlacesService;
+
+    private static final Logger log = LoggerFactory.getLogger(SpotUserApiController.class);
+
     // ========== 1. 前台景點查詢API ==========
 
     /**
      * 取得所有上架景點 (前台用)
-     * 只返回狀態為上架(status=1)的景點
-     * @return API回應包含上架景點列表
+     * 支援地區與數量限制
      */
     @GetMapping("/list")
-    public ResponseEntity<ApiResponse<List<SpotVO>>> getActiveSpots() {
+    public ResponseEntity<ApiResponse<List<SpotVO>>> getActiveSpots(
+            @RequestParam(value = "region", required = false) String region,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "keyword", required = false) String keyword) {
         try {
-            List<SpotVO> activeSpots = spotService.getActiveSpots();
+            List<SpotVO> activeSpots;
+            if (region != null && !region.isEmpty() && !region.equals("全部地區")) {
+                List<String> cities = switch(region) {
+                    case "北台灣" -> List.of("台北市", "新北市", "基隆市", "桃園市", "新竹市", "新竹縣", "宜蘭縣");
+                    case "中台灣" -> List.of("台中市", "彰化縣", "南投縣", "雲林縣", "苗栗縣");
+                    case "南台灣" -> List.of("高雄市", "台南市", "嘉義市", "嘉義縣", "屏東縣", "澎湖縣");
+                    case "東台灣" -> List.of("花蓮縣", "台東縣");
+                    default -> List.of(region);
+                };
+                if (keyword != null && !keyword.isEmpty()) {
+                    activeSpots = spotService.searchPublicSpotsByCities(keyword, cities);
+                } else {
+                    activeSpots = spotService.getSpotsByCities(cities);
+                }
+            } else {
+                if (keyword != null && !keyword.isEmpty()) {
+                    activeSpots = spotService.searchPublicSpots(keyword);
+                } else {
+                    activeSpots = spotService.getActiveSpots();
+                }
+            }
+            spotEnrichmentService.enrichSpotPictureUrlIfNeeded(activeSpots);
+            if (limit != null && limit > 0 && activeSpots.size() > limit) {
+                activeSpots = activeSpots.subList(0, limit);
+            }
             return ResponseEntity.ok(ApiResponse.success("查詢成功", activeSpots));
         } catch (Exception e) {
             return ResponseEntity.ok(ApiResponse.error("查詢失敗: " + e.getMessage()));
@@ -87,18 +134,21 @@ public class SpotUserApiController {
      * @return API回應包含搜尋結果
      */
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<SpotVO>>> searchSpots(@RequestParam String keyword) {
+    public ResponseEntity<?> searchSpots(@RequestParam String keyword) {
         try {
-            if (keyword == null || keyword.trim().isEmpty()) {
-                return ResponseEntity.ok(ApiResponse.error("搜尋關鍵字不能為空"));
-            }
-            
-            // 使用現有的搜尋方法，但只返回上架景點
-            List<SpotVO> searchResults = spotService.searchSpots(keyword.trim());
-            
-            return ResponseEntity.ok(ApiResponse.success("搜尋完成，找到 " + searchResults.size() + " 個結果", searchResults));
+            List<SpotVO> spots = spotService.searchPublicSpots(keyword);
+            spotEnrichmentService.enrichSpotPictureUrlIfNeeded(spots);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "data", spots
+            ));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error("搜尋失敗: " + e.getMessage()));
+            log.error("前台搜尋景點時發生錯誤", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                        "success", false,
+                        "message", "搜尋景點失敗"
+                    ));
         }
     }
 
@@ -117,7 +167,8 @@ public class SpotUserApiController {
             }
             
             // 使用現有的搜尋方法，但只返回上架景點
-            List<SpotVO> searchResults = spotService.searchSpots(searchRequest.getKeyword().trim());
+            List<SpotVO> searchResults = spotService.searchPublicSpots(searchRequest.getKeyword().trim());
+            spotEnrichmentService.enrichSpotPictureUrlIfNeeded(searchResults);
             
             return ResponseEntity.ok(ApiResponse.success("搜尋完成", searchResults));
         } catch (Exception e) {
@@ -163,6 +214,7 @@ public class SpotUserApiController {
             List<SpotVO> mapSpots = activeSpots.stream()
                 .filter(spot -> spot.hasValidCoordinates())
                 .toList();
+            spotEnrichmentService.enrichSpotPictureUrlIfNeeded(mapSpots);
             
             return ResponseEntity.ok(ApiResponse.success("地圖資料查詢成功", mapSpots));
         } catch (Exception e) {
@@ -210,6 +262,129 @@ public class SpotUserApiController {
         } catch (Exception e) {
             return ResponseEntity.ok(ApiResponse.error("景點新增失敗: " + e.getMessage()));
         }
+    }
+
+    /**
+     * 用戶新增景點 (表單+多圖)
+     */
+    @PostMapping("/submit-form")
+    public ResponseEntity<Map<String, Object>> submitSpotForm(
+            @Valid SpotDTO spotDTO,
+            @RequestParam(value = "multiImages", required = false) List<MultipartFile> multiImages,
+            @RequestParam(value = "multiImageDescs", required = false) List<String> multiImageDescs,
+            HttpSession session) {
+        Map<String, Object> resp = new HashMap<>();
+        final int MAX_IMAGES = 8;
+        final long MAX_SIZE = 2 * 1024 * 1024L;
+        final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/jpg");
+        try {
+            // 檢查會員是否已登入
+            Integer currentUserId = getCurrentUserId(session);
+            if (currentUserId == null) {
+                resp.put("success", false);
+                resp.put("message", "請先登入");
+                return ResponseEntity.status(401).body(resp);
+            }
+            // 驗證多圖
+            int validImageCount = 0;
+            if (multiImages != null) {
+                for (MultipartFile mf : multiImages) {
+                    if (mf != null && !mf.isEmpty()) validImageCount++;
+                }
+            }
+            // 無論 multiImages 為 null、空 list 或內容全為空檔案都禁止送出
+            if (multiImages == null || multiImages.isEmpty() || validImageCount == 0) {
+                resp.put("success", false);
+                resp.put("message", "請至少上傳1張圖片");
+                return ResponseEntity.ok(resp);
+            }
+            int newCount = multiImages.size();
+            if (newCount > MAX_IMAGES) {
+                resp.put("success", false);
+                resp.put("message", "最多只能上傳" + MAX_IMAGES + "張圖片");
+                return ResponseEntity.ok(resp);
+            }
+            if (multiImages != null) {
+                for (MultipartFile mf : multiImages) {
+                    if (mf == null || mf.isEmpty()) continue;
+                    if (!ALLOWED_TYPES.contains(mf.getContentType())) {
+                        resp.put("success", false);
+                        resp.put("message", "僅允許 JPG、PNG 格式圖片");
+                        return ResponseEntity.ok(resp);
+                    }
+                    if (mf.getSize() > MAX_SIZE) {
+                        resp.put("success", false);
+                        resp.put("message", "單張圖片不可超過2MB");
+                        return ResponseEntity.ok(resp);
+                    }
+                }
+            }
+            // 檢查名稱是否重複
+            if (spotService.existsBySpotName(spotDTO.getSpotName())) {
+                resp.put("success", false);
+                resp.put("message", "景點名稱已存在，請使用其他名稱");
+                return ResponseEntity.ok(resp);
+            }
+            // 轉換DTO為VO
+            SpotVO spotVO = spotMapper.toVO(spotDTO);
+            spotVO.setCrtId(currentUserId);
+            spotVO.setSpotStatus((byte) 0); // 待審核
+            SpotVO savedSpot = spotService.addSpot(spotVO);
+            // 儲存多圖
+            if (multiImages != null && !multiImages.isEmpty()) {
+                for (int i = 0; i < multiImages.size(); i++) {
+                    MultipartFile mf = multiImages.get(i);
+                    if (mf == null || mf.isEmpty()) continue;
+                    String fileName = UUID.randomUUID() + "_" + mf.getOriginalFilename();
+                    String uploadDir = "src/main/resources/static/images/spot/";
+                    File dir = new File(uploadDir);
+                    if (!dir.exists()) dir.mkdirs();
+                    File dest = new File(uploadDir + fileName);
+                    Files.copy(mf.getInputStream(), Paths.get(dest.toURI()));
+                    SpotImgVO img = new SpotImgVO();
+                    img.setSpotId(savedSpot.getSpotId());
+                    img.setImgPath("/images/spot/" + fileName);
+                    if (multiImageDescs != null && i < multiImageDescs.size())
+                        img.setImgDesc(multiImageDescs.get(i));
+                    img.setImgTime(java.time.LocalDateTime.now());
+                    spotImgService.saveImage(img);
+                }
+            }
+            resp.put("success", true);
+            return ResponseEntity.ok(resp);
+        } catch (Exception e) {
+            resp.put("success", false);
+            resp.put("message", "景點新增失敗: " + e.getMessage());
+            return ResponseEntity.ok(resp);
+        }
+    }
+
+    /**
+     * 前台 Google Place Info 查詢 API
+     * 提供自動帶入地區、電話、網站功能
+     */
+    @PostMapping("/google-place-info")
+    public Map<String, Object> getGooglePlaceInfo(@RequestBody Map<String, String> req) {
+        String name = req.get("name");
+        String address = req.get("address");
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // 先查詢 placeId
+            var placeInfo = googlePlacesService.searchPlace(name, address, null, null);
+            if (placeInfo != null && placeInfo.getPlaceId() != null) {
+                var details = googlePlacesService.getPlaceDetails(placeInfo.getPlaceId());
+                result.put("success", true);
+                result.put("phoneNumber", details != null ? details.getPhoneNumber() : null);
+                result.put("website", details != null ? details.getWebsite() : null);
+            } else {
+                result.put("success", false);
+                result.put("error", "查無 Google PlaceId");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        }
+        return result;
     }
 
     // ========== 私有輔助方法 ==========

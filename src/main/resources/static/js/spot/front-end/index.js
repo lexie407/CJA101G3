@@ -32,6 +32,7 @@
         initCategoryButtons();
         initRegionButtons();
         initSortFunctionality();
+        initSearchBox(); // 新增：首頁搜尋功能
         
         // 初始化收藏功能
         initFavoriteButtons();
@@ -63,14 +64,10 @@
         // 移除可能存在的重複事件監聽器
         document.removeEventListener('loginDialogCancelled', handleLoginDialogCancelled);
         
+        // 不再需要綁定點擊事件，因為 SpotFavorites 模組會處理
+        // 只需確保按鈕不處於載入狀態
         const favoriteButtons = document.querySelectorAll('.spot-index-spot-card__favorite');
         favoriteButtons.forEach(button => {
-            // 移除可能存在的重複事件監聽器
-            button.removeEventListener('click', handleFavoriteButtonClick);
-            // 添加新的事件監聽器
-            button.addEventListener('click', handleFavoriteButtonClick);
-            
-            // 確保按鈕不處於載入狀態
             if (window.SpotCommon && window.SpotCommon.ensureButtonNormalState) {
                 window.SpotCommon.ensureButtonNormalState(button);
             }
@@ -81,42 +78,6 @@
         
         // 監聽登入對話框取消事件
         document.addEventListener('loginDialogCancelled', handleLoginDialogCancelled);
-        
-        // 添加全局錯誤處理，確保按鈕狀態正常
-        window.addEventListener('error', function(event) {
-            console.error('捕獲到全局錯誤，檢查並修復按鈕狀態', event);
-            
-            // 檢查所有收藏按鈕
-            document.querySelectorAll('.spot-index-spot-card__favorite').forEach(button => {
-                if (window.SpotCommon && window.SpotCommon.ensureButtonNormalState) {
-                    window.SpotCommon.ensureButtonNormalState(button);
-                }
-            });
-        });
-        
-        // 5秒後檢查一次所有按鈕狀態，修復可能的問題
-        setTimeout(function() {
-            document.querySelectorAll('.spot-index-spot-card__favorite').forEach(button => {
-                if (window.SpotCommon && window.SpotCommon.ensureButtonNormalState) {
-                    window.SpotCommon.ensureButtonNormalState(button);
-                }
-            });
-        }, 5000);
-    }
-    
-    /**
-     * 處理收藏按鈕點擊事件
-     */
-    function handleFavoriteButtonClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const spotId = this.getAttribute('data-spot-id');
-        if (spotId) {
-            toggleFavorite(spotId, this);
-        }
-        
-        return false;
     }
     
     /**
@@ -182,211 +143,13 @@
                     const isFavorited = statusMap[spotId];
                     if (isFavorited !== undefined) {
                         const button = document.querySelector(`.spot-index-spot-card__favorite[data-spot-id="${spotId}"]`);
-                        if (button) {
-                            updateFavoriteButtonState(button, isFavorited);
+                        if (button && window.SpotFavorites) {
+                            window.SpotFavorites.updateFavoriteButtonState(button, isFavorited);
                         }
                     }
                 });
             })
             .catch(error => console.error('檢查收藏狀態失敗:', error));
-    }
-    
-    /**
-     * 切換收藏狀態
-     */
-    function toggleFavorite(spotId, button) {
-        // 保存原始HTML，以便在取消登入時恢復
-        const originalHTML = button.innerHTML;
-        
-        if (window.SpotCommon) {
-            // 將originalHTML傳遞給SpotCommon
-            window.SpotCommon.toggleFavorite(spotId, button, originalHTML);
-        } else {
-            // 備用實現，如果SpotCommon不可用
-            fallbackToggleFavorite(spotId, button);
-        }
-    }
-    
-    /**
-     * 備用的切換收藏功能
-     */
-    function fallbackToggleFavorite(spotId, button) {
-        if (!spotId || !button) return;
-        
-        // 顯示載入狀態
-        const originalHTML = button.innerHTML;
-        button.innerHTML = '<span class="material-icons loading-spinner">sync</span>';
-        button.disabled = true;
-        
-        fetch(`/api/spot/favorites/${spotId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 401) {
-                    // 未登入處理
-                    showLoginDialog(button, originalHTML);
-                    throw new Error('請先登入');
-                }
-                throw new Error('操作失敗');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // 更新按鈕狀態
-                updateFavoriteButtonState(button, data.isFavorited);
-                
-                // 顯示提示訊息
-                showToast(data.isFavorited ? '已加入收藏' : '已取消收藏', data.isFavorited ? 'success' : 'info');
-                
-                // 通知其他頁面
-                localStorage.setItem('spotFavoriteChange', JSON.stringify({
-                    spotId: spotId,
-                    isFavorited: data.isFavorited,
-                    timestamp: new Date().getTime()
-                }));
-            } else {
-                showToast(data.message || '操作失敗', 'error');
-                // 恢復按鈕狀態
-                button.innerHTML = originalHTML;
-                button.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error('收藏操作失敗:', error);
-            
-            if (error.message !== '請先登入') {
-                showToast('操作失敗，請稍後再試', 'error');
-                // 恢復按鈕狀態
-                button.innerHTML = originalHTML;
-                button.disabled = false;
-            }
-        });
-    }
-    
-    /**
-     * 更新收藏按鈕狀態
-     */
-    function updateFavoriteButtonState(button, isFavorited) {
-        if (!button) return;
-        
-        if (isFavorited) {
-            button.innerHTML = '<span class="material-icons">favorite</span>';
-            button.classList.add('favorited');
-            button.title = '取消收藏';
-        } else {
-            button.innerHTML = '<span class="material-icons">favorite_border</span>';
-            button.classList.remove('favorited');
-            button.title = '加入收藏';
-        }
-        
-        button.disabled = false;
-    }
-    
-    /**
-     * 顯示登入對話框
-     */
-    function showLoginDialog(button, originalHTML) {
-        // 檢查是否已經有登入對話框
-        const existingDialog = document.querySelector('.login-dialog');
-        if (existingDialog) {
-            existingDialog.remove();
-        }
-        
-        if (window.SpotCommon && typeof window.SpotCommon.showLoginDialog === 'function') {
-            window.SpotCommon.showLoginDialog(button, originalHTML);
-        } else {
-            // 備用實現
-            const dialog = document.createElement('div');
-            dialog.className = 'login-dialog';
-            dialog.id = 'spotLoginDialog';
-            dialog.innerHTML = `
-                <div class="login-dialog__content">
-                    <div class="login-dialog__header">
-                        <h3 class="login-dialog__title">請先登入</h3>
-                        <button class="login-dialog__close" aria-label="關閉">
-                            <span class="material-icons">close</span>
-                        </button>
-                    </div>
-                    <div class="login-dialog__body">
-                        <p>您需要先登入才能收藏景點。</p>
-                        <p>是否前往登入頁面？</p>
-                    </div>
-                    <div class="login-dialog__footer">
-                        <button class="login-dialog__button login-dialog__button--secondary" data-action="cancel">稍後再說</button>
-                        <button class="login-dialog__button login-dialog__button--primary" data-action="login">前往登入</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(dialog);
-            
-            // 確保DOM更新後再添加動畫效果
-            requestAnimationFrame(() => {
-                dialog.classList.add('login-dialog--show');
-            });
-            
-            const closeButton = dialog.querySelector('.login-dialog__close');
-            const cancelButton = dialog.querySelector('[data-action="cancel"]');
-            const loginButton = dialog.querySelector('[data-action="login"]');
-            const dialogContent = dialog.querySelector('.login-dialog__content');
-            
-            // 點擊背景關閉對話框
-            dialog.addEventListener('click', function(e) {
-                if (e.target === dialog) {
-                    closeDialog();
-                }
-            });
-            
-            // 防止點擊內容區域時關閉對話框
-            dialogContent.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-            
-            function closeDialog() {
-                // 防止重複關閉
-                if (!dialog.classList.contains('login-dialog--show')) return;
-                
-                dialog.classList.remove('login-dialog--show');
-                setTimeout(() => {
-                    // 確保對話框仍然存在於DOM中
-                    if (document.body.contains(dialog)) {
-                        dialog.remove();
-                    }
-                }, 300);
-                
-                // 恢復按鈕狀態
-                if (button) {
-                    button.innerHTML = originalHTML;
-                    button.disabled = false;
-                    
-                    // 觸發自定義事件，通知其他組件登入對話框已取消
-                    const event = new CustomEvent('loginDialogCancelled', {
-                        detail: {
-                            button: button,
-                            originalHTML: originalHTML
-                        }
-                    });
-                    document.dispatchEvent(event);
-                    console.log('觸發loginDialogCancelled事件', button);
-                }
-            }
-            
-            // 使用一次性事件監聽器，防止重複綁定
-            closeButton.addEventListener('click', closeDialog, { once: true });
-            cancelButton.addEventListener('click', closeDialog, { once: true });
-            
-            loginButton.addEventListener('click', () => {
-                // 保存當前頁面URL到localStorage，以便登入後重定向回來
-                localStorage.setItem('loginRedirectUrl', window.location.href);
-                // 跳轉到登入頁面，並帶上redirect參數
-                window.location.href = '/members/login?redirect=' + encodeURIComponent(window.location.href);
-            }, { once: true });
-        }
     }
     
     /**
@@ -486,33 +249,26 @@
     }
 
     /**
-     * 根據地址推測地區
+     * 根據地址推測地區（依據用戶提供的縣市對應表）
      */
     function getRegionFromLocation(location) {
-        // 北台灣（支援繁體和簡體字）
-        if (location.includes('台北') || location.includes('臺北') || 
-            location.includes('新北') || location.includes('桃園') || 
-            location.includes('新竹') || location.includes('基隆') || 
-            location.includes('宜蘭')) {
+        // 北台灣
+        if (/台北市|新北市|基隆市|桃園市|新竹市|新竹縣|宜蘭縣/.test(location)) {
             return '北台灣';
-        } 
+        }
         // 中台灣
-        else if (location.includes('台中') || location.includes('臺中') || 
-                 location.includes('彰化') || location.includes('南投') || 
-                 location.includes('雲林') || location.includes('苗栗')) {
+        if (/台中市|彰化縣|南投縣|雲林縣|苗栗縣/.test(location)) {
             return '中台灣';
-        } 
+        }
         // 南台灣
-        else if (location.includes('台南') || location.includes('臺南') || 
-                 location.includes('高雄') || location.includes('屏東') || 
-                 location.includes('嘉義')) {
+        if (/高雄市|台南市|嘉義市|嘉義縣|屏東縣|澎湖縣/.test(location)) {
             return '南台灣';
-        } 
+        }
         // 東台灣
-        else if (location.includes('花蓮') || location.includes('台東') || location.includes('臺東')) {
+        if (/花蓮縣|台東縣/.test(location)) {
             return '東台灣';
         }
-        return '南台灣'; // 預設改為南台灣，因為目前所有景點都在南台灣
+        return '其他';
     }
 
     /**
@@ -600,39 +356,96 @@
         });
     }
 
-    /**
-     * 初始化地區按鈕
-     */
+    // 新增：地區切換時 AJAX 後端撈資料
+    function fetchSpotsByRegion(region) {
+        let url = '/api/spot/public/list';
+        if (region && region !== '全部地區') {
+            url += '?region=' + encodeURIComponent(region) + '&limit=6';
+        } else {
+            url += '?limit=6';
+        }
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success && Array.isArray(data.data)) {
+                    renderSpots(data.data);
+                } else {
+                    renderSpots([]);
+                }
+            })
+            .catch(() => renderSpots([]));
+    }
+    function renderSpots(spotArr) {
+        const grid = document.querySelector('.spot-index-popular__grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        if (!spotArr || spotArr.length === 0) {
+            showEmptyState();
+            return;
+        } else {
+            hideEmptyState && hideEmptyState();
+        }
+        spotArr.forEach(spot => {
+            // 這裡建議用模板字串或複製現有卡片結構
+            const card = document.createElement('div');
+            card.className = 'spot-index-spot-card';
+            card.innerHTML = `
+                <div class="spot-index-spot-card__image">
+                    <img src="${spot.firstPictureUrl || '/images/spot/default.jpg'}" alt="${spot.spotName}" class="spot-index-spot-card__img" loading="lazy">
+                </div>
+                <div class="spot-index-spot-card__content">
+                    <h3 class="spot-index-spot-card__name">${spot.spotName}</h3>
+                    <p class="spot-index-spot-card__location"><span class="material-icons">place</span>${spot.spotLoc || ''}</p>
+                    <p class="spot-index-spot-card__desc">${spot.spotDesc ? (spot.spotDesc.length > 60 ? spot.spotDesc.substring(0, 60) + '...' : spot.spotDesc) : '暫無描述'}</p>
+                    <a href="/spot/user/detail/${spot.spotId}" class="spot-index-spot-card__link">查看詳情</a>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+    // 切換地區時更新網址參數
+    function updateRegionUrl(region) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('region', region);
+        history.replaceState({}, '', `${location.pathname}?${params}`);
+    }
+    // 攔截地區按鈕點擊
     function initRegionButtons() {
         const regionButtons = document.querySelectorAll('.spot-index-region-item');
         regionButtons.forEach(button => {
             button.addEventListener('click', function(e) {
-                e.preventDefault(); // 防止預設行為
-                e.stopPropagation(); // 防止事件冒泡
-                
-                // 移除其他按鈕的active狀態
+                e.preventDefault();
+                e.stopPropagation();
                 regionButtons.forEach(btn => btn.classList.remove('active'));
-                // 添加當前按鈕的active狀態
                 this.classList.add('active');
-                
-                // 獲取按鈕文字，排除圖示元素
+                // 取得地區文字
                 const textNodes = Array.from(this.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
                 const region = textNodes.map(node => node.textContent.trim()).join('').trim();
-                console.log('按鈕文字:', region);
-                
-                if (region === '全部地區') {
-                    // 移除地區篩選
-                    removeFilter('region');
-                } else {
-                    // 添加地區篩選
-                    addFilter('region', region, region);
-                }
-                applyFiltersInstantly();
-                
-                return false; // 確保不會有任何導航行為
+                // AJAX 撈資料
+                fetchSpotsByRegion(region);
+                // 更新網址
+                updateRegionUrl(region);
+                return false;
             });
         });
     }
+    // 頁面初始載入時根據 URL 參數自動載入對應地區
+    document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const region = params.get('region') || '全部地區';
+        // 設定對應按鈕 active
+        const regionButtons = document.querySelectorAll('.spot-index-region-item');
+        regionButtons.forEach(btn => {
+            const textNodes = Array.from(btn.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+            const btnRegion = textNodes.map(node => node.textContent.trim()).join('').trim();
+            if (btnRegion === region) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        fetchSpotsByRegion(region);
+    });
 
     /**
      * 初始化排序功能
@@ -693,10 +506,7 @@
                     filteredSpots = filteredSpots.filter(spot => spot.rating >= minRating);
                     break;
                     
-                case 'distance':
-                    // 這裡可以根據實際需求實作距離篩選
-                    // 目前先保留所有景點
-                    break;
+
                     
                 case 'ticket':
                     filteredSpots = filteredSpots.filter(spot => spot.ticketType === filter.value);
@@ -753,10 +563,7 @@
                 // 按最新排序
                 filteredSpots.sort((a, b) => b.id - a.id);
                 break;
-            case 'distance':
-                // 按距離排序（這裡隨機排序作為示例）
-                filteredSpots.sort(() => Math.random() - 0.5);
-                break;
+
         }
     }
 
@@ -764,40 +571,42 @@
      * 更新景點顯示
      */
     function updateSpotDisplay() {
-        const spotGrid = document.querySelector('.spot-index-popular__grid');
-        if (!spotGrid) return;
-        
-        // 隱藏所有景點卡片
-        allSpots.forEach(spot => {
-            if (spot.element) {
-                spot.element.style.display = 'none';
+        const grid = document.querySelector('.spot-index-popular__grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        const input = document.getElementById('searchInput');
+        const keyword = input && input.value.trim();
+        let spotsToShow = filteredSpots;
+        // 判斷是否有搜尋
+        if (!keyword) {
+            // 檢查目前有無地區篩選
+            const activeRegionBtn = document.querySelector('.spot-index-region-item.active');
+            let region = '';
+            if (activeRegionBtn) {
+                // 取得按鈕文字（排除 icon）
+                const textNodes = Array.from(activeRegionBtn.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+                region = textNodes.map(node => node.textContent.trim()).join('').trim();
             }
-        });
-        
-        // 顯示篩選後的景點
-        if (filteredSpots.length > 0) {
-            filteredSpots.forEach((spot, index) => {
-                if (spot.element && index < 8) { // 只顯示前8個
-                    spot.element.style.display = 'block';
-                    // 添加淡入動畫
-                    if (!prefersReducedMotion) {
-                        spot.element.style.opacity = '0';
-                        spot.element.style.transform = 'translateY(20px)';
-                        setTimeout(() => {
-                            spot.element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                            spot.element.style.opacity = '1';
-                            spot.element.style.transform = 'translateY(0)';
-                        }, index * 100);
-                    }
-                }
-            });
-            hideEmptyState();
-    } else {
+            if (region && region !== '全部地區') {
+                // 只顯示該地區前6筆
+                spotsToShow = filteredSpots.filter(spot => spot.region === region).slice(0, 6);
+            } else {
+                // 全部地區只顯示前6筆
+                spotsToShow = filteredSpots.slice(0, 6);
+            }
+        }
+        if (spotsToShow.length === 0) {
             showEmptyState();
+            return;
+        } else {
+            hideEmptyState && hideEmptyState();
+        }
+        spotsToShow.forEach(spot => {
+            if (spot.element) grid.appendChild(spot.element);
+        });
     }
-}
 
-/**
+    /**
      * 更新統計資訊顯示
      */
     function updateStatsDisplay() {
@@ -809,13 +618,13 @@
             
             if (filteredSpots.length === 0) {
                 statsElement.textContent = '沒有符合條件的景點';
-    } else {
+            } else {
                 statsElement.textContent = `已顯示 ${displayCount} 個景點，還有 ${remainingCount} 個等你探索`;
             }
+        }
     }
-}
 
-/**
+    /**
      * 顯示空狀態
      */
     function showEmptyState() {
@@ -832,7 +641,7 @@
                 filterEmptyState.innerHTML = `
                     <div class="spot-index-empty__icon">
                         <span class="material-icons">search_off</span>
-            </div>
+                    </div>
                     <h3 class="spot-index-empty__title">沒有符合條件的景點</h3>
                     <p class="spot-index-empty__desc">請嘗試調整篩選條件，或者重置所有篩選</p>
                     <button class="spot-index-btn spot-index-btn--primary" onclick="resetAllFilters()">
@@ -911,7 +720,6 @@
     function getFilterTypeLabel(filterType) {
         const labels = {
             'rating': '評分',
-            'distance': '距離',
             'ticket': '門票',
             'type': '類型',
             'category': '分類',
@@ -1009,6 +817,38 @@
         
         showToast('已重置所有篩選條件', 'success');
     };
+
+    // === 新增：首頁搜尋功能 ===
+    function initSearchBox() {
+        const input = document.getElementById('searchInput');
+        const btn = document.querySelector('.spot-index-search-btn');
+        if (!input || !btn) return;
+        // 按下 Enter 搜尋
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                doSearch();
+            }
+        });
+        // 點擊按鈕搜尋
+        btn.addEventListener('click', doSearch);
+    }
+    function doSearch() {
+        const input = document.getElementById('searchInput');
+        if (!input) return;
+        const keyword = input.value.trim();
+        if (!keyword) {
+            filteredSpots = [...allSpots];
+        } else {
+            filteredSpots = allSpots.filter(spot =>
+                spot.name.includes(keyword) ||
+                spot.location.includes(keyword) ||
+                spot.description.includes(keyword)
+            );
+        }
+        updateSpotDisplay();
+        updateStatsDisplay && updateStatsDisplay();
+    }
+    // === end ===
 
     /**
      * 初始化滾動動畫

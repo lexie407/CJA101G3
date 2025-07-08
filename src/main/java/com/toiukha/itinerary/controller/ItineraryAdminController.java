@@ -4,6 +4,8 @@ import com.toiukha.itinerary.model.ItineraryVO;
 import com.toiukha.itinerary.service.ItineraryService;
 import com.toiukha.administrant.model.AdministrantService;
 import com.toiukha.administrant.model.AdministrantVO;
+import com.toiukha.spot.model.SpotVO;
+import com.toiukha.spot.service.SpotService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 行程後台管理控制器
@@ -40,6 +43,9 @@ public class ItineraryAdminController {
 
     @Autowired
     private AdministrantService administrantService;
+
+    @Autowired
+    private SpotService spotService;
 
     /**
      * 行程列表頁面 - 新路由映射 (itnlist)
@@ -242,12 +248,25 @@ public class ItineraryAdminController {
     @GetMapping("/edit/{itnId}")
     public String showEditForm(@PathVariable Integer itnId, Model model) {
         try {
-            ItineraryVO itinerary = itineraryService.getItineraryById(itnId);
+            ItineraryVO itinerary = itineraryService.getItineraryWithSpots(itnId);
             if (itinerary == null) {
                 model.addAttribute("errorMessage", "找不到指定的行程");
                 return "redirect:/admin/itinerary/itnlist";
             }
+            
+            // 獲取所有景點列表
+            List<SpotVO> allSpots = spotService.getAllSpots();
+
+            // 獲取當前行程已選景點的ID列表
+            List<Integer> selectedSpotIds = itinerary.getItnSpots().stream()
+                                                     .map(itnSpot -> itnSpot.getSpot().getSpotId())
+                                                     .collect(Collectors.toList());
+
             model.addAttribute("itinerary", itinerary);
+            model.addAttribute("allSpots", allSpots);
+
+            model.addAttribute("selectedSpotIds", selectedSpotIds);
+            
             return "back-end/itinerary/edit";
         } catch (Exception e) {
             logger.error("載入行程編輯頁面時發生錯誤", e);
@@ -261,20 +280,32 @@ public class ItineraryAdminController {
      */
     @PostMapping("/edit/{itnId}")
     public String processEdit(@PathVariable Integer itnId,
-                            @Valid @ModelAttribute ItineraryVO itinerary,
-                            BindingResult result,
+                            @RequestParam String itnName,
+                            @RequestParam String itnDesc,
+                            @RequestParam(required = false) String isPublic,
+                            @RequestParam(required = false) List<Integer> spotIds,
                             RedirectAttributes redirectAttr) {
-        
-        if (result.hasErrors()) {
-            redirectAttr.addFlashAttribute("errorMessage", "資料驗證失敗：" + formatValidationErrors(result));
-            return "redirect:/admin/itinerary/edit/" + itnId;
-        }
-        
+
         try {
-            itinerary.setItnId(itnId);
+            ItineraryVO itinerary = itineraryService.getItineraryById(itnId);
+            if (itinerary == null) {
+                redirectAttr.addFlashAttribute("errorMessage", "找不到要更新的行程");
+                return "redirect:/admin/itinerary/itnlist";
+            }
+
+            itinerary.setItnName(itnName);
+            itinerary.setItnDesc(itnDesc);
+            itinerary.setIsPublic(isPublic != null ? (byte) 1 : (byte) 0);
+            
+            // 更新行程基本資訊
             itineraryService.updateItinerary(itinerary);
+
+            // 更新行程景點
+            logger.info("更新行程景點 - 行程ID: {}, 景點IDs: {}", itnId, spotIds);
+            itineraryService.updateSpotsForItinerary(itnId, spotIds);
+            
             redirectAttr.addFlashAttribute("successMessage", "行程更新成功！");
-            return "redirect:/admin/itinerary/itnlist";
+            return "redirect:/admin/itinerary/detail/" + itnId;
             
         } catch (Exception e) {
             logger.error("更新行程時發生錯誤", e);
@@ -295,6 +326,28 @@ public class ItineraryAdminController {
                 model.addAttribute("errorMessage", "找不到指定的行程");
                 return "redirect:/admin/itinerary/itnlist";
             }
+            
+            // 調試日誌：檢查資料庫中的實際數據
+            logger.info("=== 行程詳情調試資訊 ===");
+            logger.info("行程ID: {}", itinerary.getItnId());
+            logger.info("行程名稱: {}", itinerary.getItnName());
+            logger.info("建立者ID: {}", itinerary.getCrtId());
+            logger.info("CreatorType: {}", itinerary.getCreatorType());
+            logger.info("是否為管理員建立: {}", itinerary.isCreatedByAdmin());
+            logger.info("景點數量: {}", itinerary.getSpotCount());
+            logger.info("是否有景點: {}", itinerary.hasSpots());
+            if (itinerary.getItnSpots() != null) {
+                logger.info("景點列表: {}", itinerary.getItnSpots().size());
+                for (int i = 0; i < itinerary.getItnSpots().size(); i++) {
+                    var itnSpot = itinerary.getItnSpots().get(i);
+                    logger.info("  景點 {}: ID={}, 名稱={}", 
+                        i + 1, 
+                        itnSpot.getSpot() != null ? itnSpot.getSpot().getSpotId() : "null",
+                        itnSpot.getSpot() != null ? itnSpot.getSpot().getSpotName() : "null");
+                }
+            }
+            logger.info("========================");
+            
             model.addAttribute("itinerary", itinerary);
             return "back-end/itinerary/detail";
         } catch (Exception e) {
@@ -470,6 +523,58 @@ public class ItineraryAdminController {
     // ===================================================================================
     // 輔助方法
     // ===================================================================================
+
+    /**
+     * 臨時方法：修正所有行程的creatorType欄位
+     * 訪問路徑：/admin/itinerary/fix-creator-type
+     */
+    @GetMapping("/fix-creator-type")
+    public String fixCreatorType(RedirectAttributes redirectAttr) {
+        try {
+            // 獲取所有行程
+            List<ItineraryVO> allItineraries = itineraryService.getAllItineraries();
+            int updatedCount = 0;
+            
+            logger.info("開始修正 creatorType 欄位，總共 {} 個行程", allItineraries.size());
+            
+            for (ItineraryVO itinerary : allItineraries) {
+                Integer crtId = itinerary.getCrtId();
+                Byte currentCreatorType = itinerary.getCreatorType();
+                
+                logger.info("行程ID: {}, 建立者ID: {}, 當前CreatorType: {}", 
+                    itinerary.getItnId(), crtId, currentCreatorType);
+                
+                // 判斷建立者類型的邏輯
+                // 假設管理員ID範圍是 1-100，會員ID範圍是 1000+
+                Byte correctCreatorType;
+                if (crtId != null && crtId <= 100) {
+                    correctCreatorType = (byte) 2; // 管理員
+                } else {
+                    correctCreatorType = (byte) 1; // 會員
+                }
+                
+                // 如果需要更新
+                if (currentCreatorType == null || !currentCreatorType.equals(correctCreatorType)) {
+                    itinerary.setCreatorType(correctCreatorType);
+                    itineraryService.updateItinerary(itinerary);
+                    updatedCount++;
+                    
+                    logger.info("已更新行程ID: {}, 建立者ID: {}, CreatorType: {} -> {}", 
+                        itinerary.getItnId(), crtId, currentCreatorType, correctCreatorType);
+                }
+            }
+            
+            logger.info("修正完成，共更新 {} 個行程", updatedCount);
+            redirectAttr.addFlashAttribute("successMessage", 
+                "CreatorType 修正完成！共更新 " + updatedCount + " 個行程");
+            
+        } catch (Exception e) {
+            logger.error("修正 CreatorType 時發生錯誤", e);
+            redirectAttr.addFlashAttribute("errorMessage", "修正失敗：" + e.getMessage());
+        }
+        
+        return "redirect:/admin/itinerary/itnlist";
+    }
 
     /**
      * 格式化驗證錯誤訊息

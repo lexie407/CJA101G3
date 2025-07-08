@@ -3,7 +3,7 @@ package com.toiukha.spot.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-
+import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
  * @author CJA101G3 景點模組開發
  * @version 1.0
  */
+@Data
 @Entity
 @Table(name = "spot")
 public class SpotVO implements Serializable {
@@ -27,11 +28,8 @@ public class SpotVO implements Serializable {
 
     @NotEmpty(message = "景點名稱不能為空")
     @Size(min = 2, max = 100, message = "景點名稱長度必須在2-100之間")
-    @Column(name = "SPOTNAME")
+    @Column(name = "SPOTNAME", nullable = false)
     private String spotName;
-
-    @Column(name = "SPOTDESC", columnDefinition = "TEXT")
-    private String spotDesc;
 
     @Column(name = "SPOTLOC")
     private String spotLoc;
@@ -42,11 +40,20 @@ public class SpotVO implements Serializable {
     @Column(name = "SPOTLNG")
     private Double spotLng;
 
-    @Transient
-    private byte[] spotPic;
+    @Column(name = "SPOTDESC", length = 500)
+    private String spotDesc;
+
+    @Column(name = "SPOTREGION")
+    private String region;
+
+    @Column(name = "SPOTGOVID")
+    private String govtId;
 
     @Column(name = "SPOTSTATUS")
     private Byte spotStatus;
+
+    @Column(name = "SPOTAUDITREMARK")
+    private String spotAuditRemark;
 
     @Column(name = "SPOTCREATEDAT")
     private LocalDateTime spotCreateAt;
@@ -54,23 +61,6 @@ public class SpotVO implements Serializable {
     @Column(name = "SPOTUPDATEDAT")
     private LocalDateTime spotUpdatedAt;
 
-    @Column(name = "CRTID")
-    private Integer crtId;
-
-    @Column(name = "SPOTGOVID")
-    private String govtId;
-
-    @Column(name = "SPOTREGION")
-    private String region;
-
-    @Transient
-    private String firstPictureUrl;
-
-    // 審核備註
-    @Column(name = "SPOTAUDITREMARK")
-    private String spotAuditRemark;
-
-    // 對應資料庫欄位的屬性
     @Column(name = "SPOTZONE")
     private String zone;
     
@@ -101,7 +91,6 @@ public class SpotVO implements Serializable {
     @Column(name = "SPOTPARKINFO")
     private String parkingInfo;
 
-    // Google Places相關欄位
     @Column(name = "SPOTGPLACEID")
     private String googlePlaceId;
     
@@ -112,10 +101,57 @@ public class SpotVO implements Serializable {
     private Integer googleTotalRatings;
     
     @Column(name = "SPOTPICURLS")
-    private String pictureUrls;
+    private String firstPictureUrl;
 
-    // 預設建構子
-    public SpotVO() {
+    @Column(name = "CRTID")
+    private Integer crtId;
+
+    @Column(name = "CREATOR_TYPE")
+    private Byte creatorType;
+
+    @Column(name = "SPOTVIEWCNT")
+    private Integer spotViewCount;
+
+    @Column(name = "SPOTFAVCNT")
+    private Integer spotFavoriteCount;
+
+    @Column(name = "SPOTCAT")
+    private String spotCategory;
+
+    @Column(name = "SPOTSUBCAT")
+    private String spotSubCategory;
+
+    @Column(name = "SPOTLASTSYNC")
+    private LocalDateTime spotLastSync;
+
+    // 移除的舊欄位對應
+    @Transient
+    private String pictureUrls; // 對應到 firstPictureUrl
+    
+    @Transient
+    private String rejectReason; // 這個欄位在新結構中已移除
+    
+    @Transient
+    private String rejectRemark; // 這個欄位在新結構中已移除
+
+    @PrePersist
+    protected void onCreate() {
+        spotCreateAt = LocalDateTime.now();
+        spotUpdatedAt = LocalDateTime.now();
+        if (spotViewCount == null) {
+            spotViewCount = 0;
+        }
+        if (spotFavoriteCount == null) {
+            spotFavoriteCount = 0;
+        }
+        if (creatorType == null) {
+            creatorType = (byte) 1; // 預設為會員建立
+        }
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        spotUpdatedAt = LocalDateTime.now();
     }
 
     // Getter 和 Setter 方法
@@ -133,14 +169,6 @@ public class SpotVO implements Serializable {
 
     public void setSpotName(String spotName) {
         this.spotName = spotName;
-    }
-
-    public String getSpotDesc() {
-        return spotDesc;
-    }
-
-    public void setSpotDesc(String spotDesc) {
-        this.spotDesc = spotDesc;
     }
 
     public String getSpotLoc() {
@@ -167,12 +195,28 @@ public class SpotVO implements Serializable {
         this.spotLng = spotLng;
     }
 
-    public byte[] getSpotPic() {
-        return spotPic;
+    public String getSpotDesc() {
+        return spotDesc;
     }
 
-    public void setSpotPic(byte[] spotPic) {
-        this.spotPic = spotPic;
+    public void setSpotDesc(String spotDesc) {
+        this.spotDesc = spotDesc;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public String getGovtId() {
+        return govtId;
+    }
+
+    public void setGovtId(String govtId) {
+        this.govtId = govtId;
     }
 
     public Byte getSpotStatus() {
@@ -181,6 +225,14 @@ public class SpotVO implements Serializable {
 
     public void setSpotStatus(Byte spotStatus) {
         this.spotStatus = spotStatus;
+    }
+
+    public String getSpotAuditRemark() {
+        return spotAuditRemark;
+    }
+
+    public void setSpotAuditRemark(String spotAuditRemark) {
+        this.spotAuditRemark = spotAuditRemark;
     }
 
     public LocalDateTime getSpotCreateAt() {
@@ -197,46 +249,6 @@ public class SpotVO implements Serializable {
 
     public void setSpotUpdatedAt(LocalDateTime spotUpdatedAt) {
         this.spotUpdatedAt = spotUpdatedAt;
-    }
-
-    public Integer getCrtId() {
-        return crtId;
-    }
-
-    public void setCrtId(Integer crtId) {
-        this.crtId = crtId;
-    }
-
-    public String getGovtId() {
-        return govtId;
-    }
-
-    public void setGovtId(String govtId) {
-        this.govtId = govtId;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegion(String region) {
-        this.region = region;
-    }
-
-    public String getFirstPictureUrl() {
-        return firstPictureUrl;
-    }
-
-    public void setFirstPictureUrl(String firstPictureUrl) {
-        this.firstPictureUrl = firstPictureUrl;
-    }
-
-    public String getSpotAuditRemark() {
-        return spotAuditRemark;
-    }
-
-    public void setSpotAuditRemark(String spotAuditRemark) {
-        this.spotAuditRemark = spotAuditRemark;
     }
 
     public String getZone() {
@@ -343,60 +355,122 @@ public class SpotVO implements Serializable {
         this.googleTotalRatings = googleTotalRatings;
     }
 
+    public String getFirstPictureUrl() {
+        return firstPictureUrl;
+    }
+
+    public void setFirstPictureUrl(String firstPictureUrl) {
+        this.firstPictureUrl = firstPictureUrl;
+    }
+
+    public Integer getCrtId() {
+        return crtId;
+    }
+
+    public void setCrtId(Integer crtId) {
+        this.crtId = crtId;
+    }
+
+    public Byte getCreatorType() {
+        return creatorType;
+    }
+
+    public void setCreatorType(Byte creatorType) {
+        this.creatorType = creatorType;
+    }
+
+    public Integer getSpotViewCount() {
+        return spotViewCount;
+    }
+
+    public void setSpotViewCount(Integer spotViewCount) {
+        this.spotViewCount = spotViewCount;
+    }
+
+    public Integer getSpotFavoriteCount() {
+        return spotFavoriteCount;
+    }
+
+    public void setSpotFavoriteCount(Integer spotFavoriteCount) {
+        this.spotFavoriteCount = spotFavoriteCount;
+    }
+
+    public String getSpotCategory() {
+        return spotCategory;
+    }
+
+    public void setSpotCategory(String spotCategory) {
+        this.spotCategory = spotCategory;
+    }
+
+    public String getSpotSubCategory() {
+        return spotSubCategory;
+    }
+
+    public void setSpotSubCategory(String spotSubCategory) {
+        this.spotSubCategory = spotSubCategory;
+    }
+
+    public LocalDateTime getSpotLastSync() {
+        return spotLastSync;
+    }
+
+    public void setSpotLastSync(LocalDateTime spotLastSync) {
+        this.spotLastSync = spotLastSync;
+    }
+
+    // 向後相容的方法
     public String getPictureUrls() {
-        return pictureUrls;
+        return firstPictureUrl;
     }
 
     public void setPictureUrls(String pictureUrls) {
-        this.pictureUrls = pictureUrls;
+        this.firstPictureUrl = pictureUrls;
     }
-    
-    /**
-     * 檢查是否有有效的座標資訊
-     * @return true 如果有完整的經緯度資訊
-     */
+
+    public String getRejectReason() {
+        return null; // 新結構中已移除此欄位
+    }
+
+    public void setRejectReason(String rejectReason) {
+        // 新結構中已移除此欄位，不做任何操作
+    }
+
+    public String getRejectRemark() {
+        return null; // 新結構中已移除此欄位
+    }
+
+    public void setRejectRemark(String rejectRemark) {
+        // 新結構中已移除此欄位，不做任何操作
+    }
+
+    // 業務邏輯方法
     public boolean hasValidCoordinates() {
         return spotLat != null && spotLng != null 
-            && spotLat >= -90 && spotLat <= 90
+            && spotLat >= -90 && spotLat <= 90 
             && spotLng >= -180 && spotLng <= 180;
     }
 
-    /**
-     * 取得狀態文字描述
-     * @return 狀態文字描述
-     */
     public String getStatusText() {
-        switch (this.spotStatus) {
+        if (spotStatus == null) return "未知";
+        switch (spotStatus) {
             case 0: return "待審核";
             case 1: return "上架";
-            case 2: return "退回";
-            case 3: return "下架";
-            default: return "未知狀態";
+            case 2: return "下架";
+            default: return "未知";
         }
     }
 
-    /**
-     * 判斷是否來自政府資料
-     * @return true 如果來自政府資料
-     */
     public boolean isFromGovernmentData() {
-        return this.govtId != null && !this.govtId.isEmpty();
+        return govtId != null && !govtId.trim().isEmpty();
     }
 
-    /**
-     * 判斷是否有 Google 評分
-     * @return true 如果有 Google 評分
-     */
     public boolean hasGoogleRating() {
-        return this.googleRating != null && this.googleRating > 0;
+        return googleRating != null && googleRating > 0;
     }
 
-    /**
-     * 判斷是否為上架狀態
-     * @return true 如果為上架狀態
-     */
     public boolean isActive() {
-        return this.spotStatus == 1;
+        return spotStatus != null && spotStatus == 1;
     }
 
     @Override
@@ -404,8 +478,21 @@ public class SpotVO implements Serializable {
         return "SpotVO{" +
                 "spotId=" + spotId +
                 ", spotName='" + spotName + '\'' +
+                ", spotLoc='" + spotLoc + '\'' +
                 ", spotStatus=" + spotStatus +
                 ", region='" + region + '\'' +
                 '}';
+    }
+
+    public Double getSpotRating() {
+        return googleRating != null ? googleRating : 0.0;
+    }
+
+    public String getSpotRegion() {
+        return region != null ? region : "未分類";
+    }
+
+    public String getSpotAddress() {
+        return spotLoc != null ? spotLoc : "";
     }
 } 

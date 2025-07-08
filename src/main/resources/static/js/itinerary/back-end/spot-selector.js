@@ -1,357 +1,412 @@
 /**
  * 景點選擇器 - 用於後台行程建立時選擇景點
  */
-document.addEventListener('DOMContentLoaded', function() {
-    // 初始化變數
-    const spotSearchInput = document.getElementById('spotSearchInput');
-    const spotSearchBtn = document.getElementById('spotSearchBtn');
+document.addEventListener('DOMContentLoaded', () => {
+    const spotSelectorContainer = document.querySelector('.spot-selector-section');
+    if (!spotSelectorContainer) {
+        console.log('Spot selector not found on this page.');
+        return;
+    }
+
+    // DOM Elements
+    const searchInput = document.getElementById('spotSearchInput');
     const spotPoolList = document.getElementById('spotPoolList');
-    const spotSelectedList = document.getElementById('spotSelectedList');
-    const spotPoolCount = document.getElementById('spotPoolCount');
-    const spotSelectedCount = document.getElementById('spotSelectedCount');
-    const selectedSpotsContainer = document.getElementById('selectedSpotsContainer');
+    const selectedList = document.getElementById('spotSelectedList');
+    const selectedCountSpan = document.getElementById('spotSelectedCount');
+    const validationMessage = document.querySelector('.spot-validation-message');
     const itineraryForm = document.getElementById('itineraryForm');
+    const initialSpotsDiv = document.getElementById('initial-selected-spots');
     
-    // 存儲已選擇的景點
+    // State
+    let availableSpots = [];
     let selectedSpots = [];
-    
-    // 綁定搜尋按鈕點擊事件
-    spotSearchBtn.addEventListener('click', searchSpots);
-    
-    // 綁定搜尋輸入框的回車事件
-    spotSearchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            searchSpots();
+    let searchTimeout;
+    const MAX_SPOTS = 10;
+
+    const api = {
+        fetchByIds: (ids) => fetch(`/api/spot/public/list-by-ids?spotIds=${ids.join(',')}`).then(res => res.json()),
+        fetchAllPublic: () => fetch('/api/spot/public/list').then(res => res.json()),
+        searchPublic: (keyword) => fetch(`/api/spot/public/search?keyword=${encodeURIComponent(keyword)}`).then(res => res.json()),
+    };
+
+    const render = {
+        spotCard: (spot, isSelected) => {
+            const card = document.createElement('div');
+            card.className = 'spot-card';
+            card.dataset.spotId = spot.spotId;
+            card.innerHTML = `
+                <div class="spot-card-content">
+                    <div class="spot-card-icon">
+                        <i class="material-icons">place</i>
+                    </div>
+                    <div class="spot-card-info">
+                        <div class="spot-card-name">${spot.spotName}</div>
+                        <div class="spot-card-location">${spot.spotLoc || '位置資訊未提供'}</div>
+                    </div>
+                    <button type="button" class="spot-card-action" data-action="${isSelected ? 'remove' : 'add'}">
+                        <i class="material-icons">${isSelected ? 'remove' : 'add'}</i>
+                    </button>
+                </div>
+            `;
+            
+            const actionBtn = card.querySelector('.spot-card-action');
+            actionBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (actionBtn.dataset.action === 'add') {
+                    controller.selectSpot(spot);
+                } else {
+                    controller.deselectSpot(spot.spotId);
+                }
+            });
+            
+            return card;
+        },
+        selectedCard: (spot, index) => {
+            const card = document.createElement('div');
+            card.className = 'spot-card';
+            card.dataset.spotId = spot.spotId;
+            card.innerHTML = `
+                <div class="spot-card-content">
+                    <div class="spot-card-number">${index + 1}</div>
+                    <div class="spot-card-icon">
+                        <i class="material-icons">place</i>
+                    </div>
+                    <div class="spot-card-info">
+                        <div class="spot-card-name">${spot.spotName}</div>
+                        <div class="spot-card-location">${spot.spotLoc || '位置資訊未提供'}</div>
+                    </div>
+                    <button type="button" class="spot-card-action" data-action="remove">
+                        <i class="material-icons">close</i>
+                    </button>
+                </div>
+            `;
+            
+            const removeBtn = card.querySelector('.spot-card-action');
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                controller.deselectSpot(spot.spotId);
+            });
+            
+            return card;
+        },
+        updateAll: () => {
+            // Clear empty messages
+            const poolEmpty = spotPoolList.querySelector('.spot-empty');
+            const selectedEmpty = selectedList.querySelector('.spot-empty');
+            
+            // Filter out selected spots from available spots for display
+            const unselectedSpots = availableSpots.filter(spot => 
+                !selectedSpots.some(s => s.spotId === spot.spotId)
+            );
+            
+            // Render available spots (only unselected ones)
+            spotPoolList.innerHTML = '';
+            if (unselectedSpots.length === 0) {
+                if (availableSpots.length === 0) {
+                    spotPoolList.innerHTML = `
+                        <div class="spot-empty">
+                            <div class="material-icons spot-empty-icon">search</div>
+                            <div class="spot-empty-text">請搜尋景點以顯示結果</div>
+                        </div>
+                    `;
+                } else {
+                    spotPoolList.innerHTML = `
+                        <div class="spot-empty">
+                            <div class="material-icons spot-empty-icon">check_circle</div>
+                            <div class="spot-empty-text">所有景點都已選擇</div>
+                            <div class="spot-empty-hint">可以搜尋更多景點或移除已選景點</div>
+                        </div>
+                    `;
+                }
+            } else {
+                unselectedSpots.forEach(spot => {
+                    const card = render.spotCard(spot, false);
+                    spotPoolList.appendChild(card);
+                });
+            }
+            
+            // Update pool count (show unselected spots count)
+            document.getElementById('spotPoolCount').textContent = unselectedSpots.length;
+            
+            // Render selected spots
+            selectedList.innerHTML = '';
+        if (selectedSpots.length === 0) {
+                selectedList.innerHTML = `
+                    <div class="spot-empty">
+                <div class="material-icons spot-empty-icon">playlist_add</div>
+                <div class="spot-empty-text">尚未選擇任何景點</div>
+                <div class="spot-empty-hint">點擊左側景點的加號按鈕添加</div>
+                    </div>
+            `;
+        } else {
+            selectedSpots.forEach((spot, index) => {
+                    const card = render.selectedCard(spot, index);
+                    selectedList.appendChild(card);
+                });
+            }
+            
+            // Update selected count
+            selectedCountSpan.textContent = selectedSpots.length;
+            
+            // Validate
+            controller.validate();
+        },
+        filterAvailable: () => {
+            const query = searchInput.value.toLowerCase();
+            document.querySelectorAll('#spotPoolList .spot-card').forEach(card => {
+                const name = card.querySelector('.spot-card-name').textContent.toLowerCase();
+                const location = card.querySelector('.spot-card-location').textContent.toLowerCase();
+                const matches = name.includes(query) || location.includes(query);
+                card.style.display = matches ? '' : 'none';
+            });
+        },
+        searchSpots: async (keyword) => {
+            if (!keyword.trim()) {
+                try {
+                    const response = await api.fetchAllPublic();
+                    console.log("載入所有景點 API 回應:", response);
+                    
+                    // 處理不同的API回應格式
+                    let spots = [];
+                    if (response.success && response.data) {
+                        spots = response.data;
+                    } else if (Array.isArray(response)) {
+                        spots = response;
+                    } else if (response.data && Array.isArray(response.data)) {
+                        spots = response.data;
+                    }
+                    
+                    if (spots.length > 0) {
+                        availableSpots = spots;
+                        render.updateAll();
+                    }
+                } catch (error) {
+                    console.error('Error fetching all public spots:', error);
+                }
+                return;
+            }
+        
+            try {
+                const response = await api.searchPublic(keyword);
+                console.log("搜尋 API 回應:", response);
+                
+                // 處理不同的API回應格式
+                let spots = [];
+                if (response.success && response.data) {
+                    spots = response.data;
+                } else if (Array.isArray(response)) {
+                    spots = response;
+                } else if (response.data && Array.isArray(response.data)) {
+                    spots = response.data;
+                }
+                
+                if (spots.length >= 0) { // 允許空結果
+                    availableSpots = spots;
+                    render.updateAll();
+                } else {
+                    spotPoolList.innerHTML = `
+                        <div class="spot-empty">
+                            <div class="material-icons spot-empty-icon">error</div>
+                            <div class="spot-empty-text">搜尋失敗：${response.message || '請稍後再試'}</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('搜尋錯誤:', error);
+                spotPoolList.innerHTML = `
+                    <div class="spot-empty">
+                        <div class="material-icons spot-empty-icon">error</div>
+                        <div class="spot-empty-text">載入失敗，請檢查網路連線</div>
+                    </div>
+                `;
+            }
+        }
+    };
+
+    const controller = {
+        selectSpot: (spot) => {
+            if (selectedSpots.length >= MAX_SPOTS) {
+                alert(`最多只能選擇 ${MAX_SPOTS} 個景點`);
+            return;
+        }
+            if (!selectedSpots.some(s => s.spotId === spot.spotId)) {
+        selectedSpots.push(spot);
+                render.updateAll();
+            }
+        },
+        deselectSpot: (spotId) => {
+            selectedSpots = selectedSpots.filter(s => s.spotId !== spotId);
+            render.updateAll();
+        },
+        validate: () => {
+            if (selectedSpots.length > MAX_SPOTS) {
+                if (validationMessage) {
+                    validationMessage.textContent = `超過 ${MAX_SPOTS} 個景點上限！`;
+                    validationMessage.style.display = 'block';
+                }
+                return false;
+            }
+            if (validationMessage) {
+                validationMessage.style.display = 'none';
+            }
+            return true;
+        },
+        prepareForSubmit: (event) => {
+            console.log("表單提交前準備景點數據...");
+            console.log("已選景點數量:", selectedSpots.length);
+            
+            // Use the dedicated container for hidden inputs
+            const container = document.getElementById('selectedSpotsContainer');
+            if (container) {
+                // Clear existing hidden inputs
+                container.innerHTML = '';
+                
+                // Add current selected spots as hidden inputs
+                selectedSpots.forEach(spot => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'spotIds';
+                    input.value = spot.spotId;
+                    container.appendChild(input);
+                    console.log("添加景點ID:", spot.spotId, spot.spotName);
+                });
+                
+                console.log("景點數據準備完成，表單中的景點數量:", container.querySelectorAll('input[name="spotIds"]').length);
+        } else {
+                // Fallback to old method if container not found
+                itineraryForm.querySelectorAll('input[name="spotIds"]').forEach(input => input.remove());
+                
+                selectedSpots.forEach(spot => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'spotIds';
+                    input.value = spot.spotId;
+                    itineraryForm.appendChild(input);
+                    console.log("添加景點ID (舊方法):", spot.spotId, spot.spotName);
+                });
+                
+                console.log("景點數據準備完成 (舊方法)，表單中的景點數量:", itineraryForm.querySelectorAll('input[name="spotIds"]').length);
+            }
+        }
+    };
+
+    const init = async () => {
+        console.log("🚀 景點選擇器初始化開始...");
+        
+        // 載入初始景點數據
+        try {
+            // 載入所有公開景點作為可選池
+            const response = await api.fetchAllPublic();
+            console.log("API 回應:", response);
+            
+            // 處理不同的API回應格式
+            let spots = [];
+            if (response.success && response.data) {
+                spots = response.data;
+            } else if (Array.isArray(response)) {
+                spots = response;
+            } else if (response.data && Array.isArray(response.data)) {
+                spots = response.data;
+            }
+            
+            if (spots.length > 0) {
+                availableSpots = spots;
+                console.log("✅ 已載入", availableSpots.length, "個可選景點");
+                
+                // 如果是編輯頁面，載入已選景點
+                if (initialSpotsDiv && initialSpotsDiv.dataset.spotIds) {
+                    const initialIds = initialSpotsDiv.dataset.spotIds.split(',').map(id => parseInt(id, 10));
+                    if (initialIds.length > 0) {
+                        console.log("📝 編輯頁面：發現已選景點IDs:", initialIds);
+                        
+                        // 從可選池中找出已選景點
+                        initialIds.forEach(id => {
+                            const spot = availableSpots.find(s => s.spotId === id);
+                            if (spot) {
+                                selectedSpots.push(spot);
+                                console.log("✅ 已添加已選景點:", spot.spotName);
+                            } else {
+                                console.warn("⚠️ 找不到景點ID:", id);
+                            }
+                        });
+                    }
+                }
+                
+                // 立即渲染所有景點
+                render.updateAll();
+                console.log("🎉 景點選擇器初始化完成");
+        } else {
+                console.error("❌ 無法載入景點數據，API回應:", response);
+                spotPoolList.innerHTML = `
+                    <div class="spot-empty">
+                        <div class="material-icons spot-empty-icon">error</div>
+                        <div class="spot-empty-text">無法載入景點數據</div>
+                        <div class="spot-empty-hint">請檢查網路連線或聯絡管理員</div>
+                        <button type="button" onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">重新載入</button>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('❌ 初始化景點選擇器時發生錯誤:', error);
+            spotPoolList.innerHTML = `
+                <div class="spot-empty">
+                    <div class="material-icons spot-empty-icon">error</div>
+                    <div class="spot-empty-text">載入失敗</div>
+                    <div class="spot-empty-hint">請重新整理頁面或聯絡管理員</div>
+                    <button type="button" onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">重新載入</button>
+                </div>
+            `;
+        }
+    };
+
+    // Event Listeners
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            render.filterAvailable();
+        }, 300);
+    });
+
+    document.getElementById('spotSearchBtn').addEventListener('click', () => {
+        const keyword = searchInput.value.trim();
+        if (keyword) {
+            render.searchSpots(keyword);
+        } else {
+            // 如果沒有關鍵字，載入所有景點
+            render.searchSpots('');
         }
     });
     
-    // 初始加載一些景點（預設顯示上架狀態的景點）
-    loadInitialSpots();
-    
-    // 綁定表單提交事件，確保將選擇的景點ID添加到表單中
-    if (itineraryForm) {
-        itineraryForm.addEventListener('submit', function(e) {
-            // 清空之前的隱藏輸入
-            selectedSpotsContainer.innerHTML = '';
-            
-            // 如果有選擇景點，則添加到表單中
-            if (selectedSpots.length > 0) {
-                selectedSpots.forEach((spot, index) => {
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = `spotIds[${index}]`;
-                    hiddenInput.value = spot.spotId;
-                    selectedSpotsContainer.appendChild(hiddenInput);
-                });
-            }
-        });
-    }
-    
-    /**
-     * 初始加載一些景點
-     */
-    function loadInitialSpots() {
-        // 顯示加載中
-        spotPoolList.innerHTML = '<div class="spot-empty"><div class="material-icons spot-empty-icon">hourglass_empty</div><div class="spot-empty-text">載入中...</div></div>';
-        
-        // 發送AJAX請求獲取上架狀態的景點
-        fetch('/api/spot-selector/active?limit=10')
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    renderSpotPool(data);
-                } else {
-                    spotPoolList.innerHTML = '<div class="spot-empty"><div class="material-icons spot-empty-icon">info</div><div class="spot-empty-text">沒有找到上架的景點</div></div>';
-                }
-            })
-            .catch(error => {
-                console.error('載入景點失敗:', error);
-                spotPoolList.innerHTML = '<div class="spot-empty"><div class="material-icons spot-empty-icon">error</div><div class="spot-empty-text">載入景點失敗，請重試</div></div>';
-            });
-    }
-    
-    /**
-     * 搜尋景點
-     */
-    function searchSpots() {
-        const searchTerm = spotSearchInput.value.trim();
-        
-        if (!searchTerm) {
-            // 如果搜尋詞為空，則加載初始景點
-            loadInitialSpots();
-            return;
-        }
-        
-        // 顯示加載中
-        spotPoolList.innerHTML = '<div class="spot-empty"><div class="material-icons spot-empty-icon">hourglass_empty</div><div class="spot-empty-text">搜尋中...</div></div>';
-        
-        // 發送AJAX請求搜尋景點
-        fetch(`/api/spot-selector/search?keyword=${encodeURIComponent(searchTerm)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    renderSpotPool(data);
-                } else {
-                    spotPoolList.innerHTML = '<div class="spot-empty"><div class="material-icons spot-empty-icon">search_off</div><div class="spot-empty-text">沒有找到符合的景點</div></div>';
-                }
-            })
-            .catch(error => {
-                console.error('搜尋景點失敗:', error);
-                spotPoolList.innerHTML = '<div class="spot-empty"><div class="material-icons spot-empty-icon">error</div><div class="spot-empty-text">搜尋失敗，請重試</div></div>';
-            });
-    }
-    
-    /**
-     * 渲染景點池
-     */
-    function renderSpotPool(spots) {
-        // 過濾掉已選擇的景點
-        const filteredSpots = spots.filter(spot => !selectedSpots.some(selected => selected.spotId === spot.spotId));
-        
-        // 更新計數
-        spotPoolCount.textContent = filteredSpots.length;
-        
-        // 如果沒有景點，顯示空狀態
-        if (filteredSpots.length === 0) {
-            spotPoolList.innerHTML = '<div class="spot-empty"><div class="material-icons spot-empty-icon">search_off</div><div class="spot-empty-text">沒有找到符合的景點</div></div>';
-            return;
-        }
-        
-        // 清空列表
-        spotPoolList.innerHTML = '';
-        
-        // 渲染景點卡片
-        filteredSpots.forEach(spot => {
-            const spotCard = createSpotCard(spot, false);
-            spotPoolList.appendChild(spotCard);
-        });
-    }
-    
-    /**
-     * 渲染已選擇的景點列表
-     */
-    function renderSelectedSpots() {
-        // 更新計數
-        spotSelectedCount.textContent = selectedSpots.length;
-        
-        // 如果沒有選擇景點，顯示空狀態
-        if (selectedSpots.length === 0) {
-            spotSelectedList.innerHTML = '<div class="spot-empty"><div class="material-icons spot-empty-icon">playlist_add</div><div class="spot-empty-text">尚未選擇任何景點</div></div>';
-            return;
-        }
-        
-        // 清空列表
-        spotSelectedList.innerHTML = '';
-        
-        // 渲染已選擇的景點卡片
-        selectedSpots.forEach((spot, index) => {
-            const spotCard = createSpotCard(spot, true, index + 1);
-            spotSelectedList.appendChild(spotCard);
-        });
-        
-        // 初始化拖拽排序
-        initDragAndDrop();
-    }
-    
-    /**
-     * 創建景點卡片
-     */
-    function createSpotCard(spot, isSelected, number = null) {
-        const spotCard = document.createElement('div');
-        spotCard.className = 'spot-card';
-        spotCard.dataset.spotId = spot.spotId;
-        
-        const cardContent = document.createElement('div');
-        cardContent.className = 'spot-card-content';
-        
-        // 如果是已選擇的景點，添加序號和拖拽手柄
-        if (isSelected) {
-            // 添加序號
-            const spotNumber = document.createElement('span');
-            spotNumber.className = 'spot-card-number';
-            spotNumber.textContent = number;
-            cardContent.appendChild(spotNumber);
-            
-            // 添加拖拽手柄
-            const dragHandle = document.createElement('span');
-            dragHandle.className = 'material-icons spot-drag-handle';
-            dragHandle.textContent = 'drag_indicator';
-            cardContent.appendChild(dragHandle);
-        }
-        
-        // 景點圖標
-        const spotIcon = document.createElement('div');
-        spotIcon.className = 'spot-card-icon';
-        const icon = document.createElement('span');
-        icon.className = 'material-icons';
-        icon.textContent = 'place';
-        spotIcon.appendChild(icon);
-        cardContent.appendChild(spotIcon);
-        
-        // 景點信息
-        const spotInfo = document.createElement('div');
-        spotInfo.className = 'spot-card-info';
-        
-        const spotName = document.createElement('div');
-        spotName.className = 'spot-card-name';
-        spotName.textContent = spot.spotName;
-        spotInfo.appendChild(spotName);
-        
-        const spotLocation = document.createElement('div');
-        spotLocation.className = 'spot-card-location';
-        spotLocation.textContent = spot.spotLoc || '無地址信息';
-        spotInfo.appendChild(spotLocation);
-        
-        cardContent.appendChild(spotInfo);
-        
-        // 操作按鈕
-        const actionBtn = document.createElement('button');
-        actionBtn.type = 'button';
-        actionBtn.className = 'material-icons spot-card-action';
-        
-        if (isSelected) {
-            // 移除按鈕
-            actionBtn.textContent = 'remove_circle';
-            actionBtn.title = '移除景點';
-            actionBtn.onclick = function() {
-                removeSpot(spot);
-            };
-        } else {
-            // 添加按鈕
-            actionBtn.textContent = 'add_circle';
-            actionBtn.title = '添加景點';
-            actionBtn.onclick = function() {
-                addSpot(spot);
-            };
-        }
-        
-        cardContent.appendChild(actionBtn);
-        spotCard.appendChild(cardContent);
-        
-        return spotCard;
-    }
-    
-    /**
-     * 添加景點到已選列表
-     */
-    function addSpot(spot) {
-        // 檢查是否已經選擇
-        if (selectedSpots.some(selected => selected.spotId === spot.spotId)) {
-            return;
-        }
-        
-        // 添加到已選列表
-        selectedSpots.push(spot);
-        
-        // 重新渲染已選列表
-        renderSelectedSpots();
-        
-        // 從景點池中移除該景點
-        const spotCards = spotPoolList.querySelectorAll('.spot-card');
-        spotCards.forEach(card => {
-            if (parseInt(card.dataset.spotId) === spot.spotId) {
-                card.remove();
-            }
-        });
-        
-        // 更新計數
-        spotPoolCount.textContent = parseInt(spotPoolCount.textContent) - 1;
-    }
-    
-    /**
-     * 從已選列表中移除景點
-     */
-    function removeSpot(spot) {
-        // 從已選列表中移除
-        selectedSpots = selectedSpots.filter(selected => selected.spotId !== spot.spotId);
-        
-        // 重新渲染已選列表
-        renderSelectedSpots();
-        
-        // 如果當前搜尋結果中有該景點，則添加回景點池
-        const searchTerm = spotSearchInput.value.trim();
-        if (searchTerm) {
-            // 如果有搜尋詞，重新搜尋
-            searchSpots();
-        } else {
-            // 否則重新加載初始景點
-            loadInitialSpots();
-        }
-    }
-    
-    /**
-     * 初始化拖拽排序功能
-     */
-    function initDragAndDrop() {
-        const spotCards = spotSelectedList.querySelectorAll('.spot-card');
-        
-        spotCards.forEach(card => {
-            card.setAttribute('draggable', true);
-            
-            card.addEventListener('dragstart', function() {
-                this.classList.add('dragging');
-            });
-            
-            card.addEventListener('dragend', function() {
-                this.classList.remove('dragging');
-                
-                // 更新選擇的景點順序
-                updateSpotOrder();
-            });
-        });
-        
-        spotSelectedList.addEventListener('dragover', function(e) {
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
             e.preventDefault();
-            const draggingCard = document.querySelector('.dragging');
-            if (!draggingCard) return;
-            
-            const afterElement = getDragAfterElement(this, e.clientY);
-            if (afterElement) {
-                this.insertBefore(draggingCard, afterElement);
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                render.searchSpots(keyword);
             } else {
-                this.appendChild(draggingCard);
+                render.searchSpots('');
             }
+        }
+    });
+
+    // 表單提交前處理景點數據
+    if (itineraryForm) {
+        itineraryForm.addEventListener('submit', function(event) {
+            // 阻止表單默認提交
+            event.preventDefault();
+            
+            // 準備景點數據
+            controller.prepareForSubmit();
+            
+            // 檢查是否有選擇景點
+            const spotInputs = document.querySelectorAll('input[name="spotIds"]');
+            console.log("表單提交時的景點數量:", spotInputs.length);
+            
+            // 繼續提交表單
+            this.submit();
         });
     }
-    
-    /**
-     * 獲取拖拽後的位置
-     */
-    function getDragAfterElement(container, y) {
-        const cards = [...container.querySelectorAll('.spot-card:not(.dragging)')];
-        
-        return cards.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
-    
-    /**
-     * 更新景點順序
-     */
-    function updateSpotOrder() {
-        const spotCards = spotSelectedList.querySelectorAll('.spot-card');
-        const newOrder = [];
-        
-        spotCards.forEach(card => {
-            const spotId = parseInt(card.dataset.spotId);
-            const spot = selectedSpots.find(s => s.spotId === spotId);
-            if (spot) {
-                newOrder.push(spot);
-            }
-        });
-        
-        // 更新選擇的景點順序
-        selectedSpots = newOrder;
-        
-        // 重新渲染以更新序號
-        renderSelectedSpots();
-    }
+
+    // Start
+    init();
 }); 

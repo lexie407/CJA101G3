@@ -72,11 +72,27 @@
                                         <span class="material-icons">search</span>
                                         搜尋
                                     </button>
+                                    <!-- 進階搜尋切換按鈕移到搜尋框內 -->
+                                    <button type="button" class="spot-search-advanced-toggle-btn">
+                                        <span class="material-icons">tune</span>
+                                    </button>
                                 </div>
                                 
                                 <!-- 進階搜尋選項 -->
-                                <div class="spot-search-advanced" id="advancedSearch">
-                                    <div class="spot-search-advanced__row">
+                                <div class="spot-search-advanced" id="advancedSearch" style="display: none;">
+                                    <div class="spot-search-advanced__header">
+                                        <h3 class="spot-search-advanced__title">
+                                            <span class="material-icons">tune</span>
+                                            進階搜尋
+                                        </h3>
+                                        <!-- 重置按鈕移到右上角 -->
+                                        <button type="button" class="spot-search-control-btn spot-search-reset-btn">
+                                            <span class="material-icons">refresh</span>
+                                            <span>重置</span>
+                                        </button>
+                                    </div>
+                                    <div class="spot-search-advanced__content">
+                                        <!-- 地區選擇 -->
                                         <div class="spot-search-advanced__group">
                                             <label for="region" class="spot-search-advanced__label">
                                                 <span class="material-icons">place</span>
@@ -84,46 +100,70 @@
                                             </label>
                                             <select id="region" name="region" class="spot-search-advanced__select">
                                                 <option value="">所有地區</option>
-                                                <option value="北部" th:selected="${param.region == '北部'}">北部</option>
-                                                <option value="中部" th:selected="${param.region == '中部'}">中部</option>
-                                                <option value="南部" th:selected="${param.region == '南部'}">南部</option>
-                                                <option value="東部" th:selected="${param.region == '東部'}">東部</option>
-                                                <option value="外島" th:selected="${param.region == '外島'}">外島</option>
+                                                <!-- 顯示資料庫中實際的地區 -->
+                                                <option th:each="region : ${availableRegions}" 
+                                                        th:value="${region}" 
+                                                        th:text="${region}"
+                                                        th:selected="${selectedRegion == region}">
+                                                    地區名稱
+                                                </option>
+                                                <!-- 如果沒有可用地區，則顯示預設選項 -->
+                                                <th:block th:if="${availableRegions == null or availableRegions.isEmpty()}">
+                                                    <option value="北部" th:selected="${selectedRegion == '北部'}">北部</option>
+                                                    <option value="中部" th:selected="${selectedRegion == '中部'}">中部</option>
+                                                    <option value="南部" th:selected="${selectedRegion == '南部'}">南部</option>
+                                                    <option value="東部" th:selected="${selectedRegion == '東部'}">東部</option>
+                                                    <option value="離島" th:selected="${selectedRegion == '離島'}">離島</option>
+                                                </th:block>
                                             </select>
                                         </div>
+                                        
+                                        <!-- 評分篩選 -->
                                         <div class="spot-search-advanced__group">
-                                            <label for="category" class="spot-search-advanced__label">
-                                                <span class="material-icons">category</span>
-                                                類型
+                                            <label for="rating" class="spot-search-advanced__label">
+                                                <span class="material-icons">star</span>
+                                                最低評分
                                             </label>
-                                            <select id="category" name="category" class="spot-search-advanced__select">
-                                                <option value="">所有類型</option>
-                                                <option value="自然景觀">自然景觀</option>
-                                                <option value="文化古蹟">文化古蹟</option>
-                                                <option value="休閒娛樂">休閒娛樂</option>
-                                                <option value="美食購物">美食購物</option>
-                                                <option value="溫泉度假">溫泉度假</option>
+                                            <select id="rating" name="rating" class="spot-search-advanced__select">
+                                                <option value="">不限</option>
+                                                <option value="4" th:selected="${selectedRating != null and selectedRating == 4}">4星以上</option>
+                                                <option value="3" th:selected="${selectedRating != null and selectedRating == 3}">3星以上</option>
+                                                <option value="2" th:selected="${selectedRating != null and selectedRating == 2}">2星以上</option>
+                                                <option value="1" th:selected="${selectedRating != null and selectedRating == 1}">1星以上</option>
                                             </select>
                                         </div>
-                                        <div class="spot-search-advanced__actions">
-                                            <button type="button" class="spot-search-reset-btn" onclick="resetSearchForm()">
-                                                <span class="material-icons">refresh</span>
-                                                重置
-                                            </button>
+                                        
+                                        <!-- 排序方式 -->
+                                        <div class="spot-search-advanced__group">
+                                            <label for="sortBy" class="spot-search-advanced__label">
+                                                <span class="material-icons">sort</span>
+                                                排序方式
+                                            </label>
+                                            <select id="sortBy" name="sortBy" class="spot-search-advanced__select">
+                                                <option value="rating" th:selected="${selectedSortBy == 'rating'}">按評分</option>
+                                                <option value="date" th:selected="${selectedSortBy == 'date'}">按時間</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- 排序方向 -->
+                                        <div class="spot-search-advanced__group">
+                                            <label for="sortDirection" class="spot-search-advanced__label">
+                                                <span class="material-icons">swap_vert</span>
+                                                排序方向
+                                            </label>
+                                            <select id="sortDirection" name="sortDirection" class="spot-search-advanced__select">
+                                                <option value="desc" th:selected="${selectedSortDirection == null or selectedSortDirection == 'desc'}">由高到低</option>
+                                                <option value="asc" th:selected="${selectedSortDirection == 'asc'}">由低到高</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- 進階搜尋切換按鈕 -->
-                                <button type="button" class="spot-search-advanced-toggle" onclick="toggleAdvancedSearch()">
-                                    <span class="material-icons">tune</span>
-                                    <span class="spot-search-advanced-toggle__text">進階搜尋</span>
-                                    <span class="material-icons spot-search-advanced-toggle__arrow">expand_more</span>
-                                </button>
                             </form>
                         </div>
 
                         <!-- 熱門搜尋標籤 -->
+                        <!-- 移除原本的熱門搜尋區塊，改為動態建議 -->
+                        <!--
                         <div th:if="${(hasSearched == null or !hasSearched)}" class="spot-search-popular">
                             <h3 class="spot-search-popular__title">
                                 <span class="material-icons">local_fire_department</span>
@@ -140,38 +180,8 @@
                                 <button class="spot-search-tag" onclick="searchKeyword('花蓮')">花蓮</button>
                             </div>
                         </div>
-
-                        <!-- 快速連結 -->
-                        <div th:if="${(hasSearched == null or !hasSearched)}" class="spot-search-quick-links">
-                            <h3 class="spot-search-quick-links__title">
-                                <span class="material-icons">explore</span>
-                                快速探索
-                            </h3>
-                            <div class="spot-search-quick-grid">
-                                <a th:href="@{/spot/spotlist}" class="spot-search-quick-card">
-                                    <span class="material-icons">list</span>
-                                    <span class="spot-search-quick-card__title">所有景點</span>
-                                    <span class="spot-search-quick-card__desc">瀏覽全部景點</span>
-                                </a>
-                                <a th:href="@{/spot/map}" class="spot-search-quick-card">
-                                    <span class="material-icons">map</span>
-                                    <span class="spot-search-quick-card__title">地圖瀏覽</span>
-                                    <span class="spot-search-quick-card__desc">在地圖上探索</span>
-                                </a>
-                                <a th:href="@{/spot/favorites}" class="spot-search-quick-card">
-                                    <span class="material-icons">favorite</span>
-                                    <span class="spot-search-quick-card__title">我的收藏</span>
-                                    <span class="spot-search-quick-card__desc">查看收藏景點</span>
-                                </a>
-                                <a th:href="@{/spot/add}" class="spot-search-quick-card">
-                                    <span class="material-icons">add_location</span>
-                                    <span class="spot-search-quick-card__title">新增景點</span>
-                                    <span class="spot-search-quick-card__desc">分享新發現</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                        -->
+                        <div id="spot-search-suggest" class="spot-search-suggest" style="display:none;"></div>
 
                 <!-- 搜尋結果區域 -->
                 <section th:if="${hasSearched != null and hasSearched}" class="spot-search-results">
@@ -180,21 +190,29 @@
                         <div class="spot-search-results-header">
                             <h2 class="spot-search-results-title">
                                 <span class="material-icons">search</span>
-                                搜尋結果：「<span th:text="${searchKeyword}">關鍵字</span>」
+                                搜尋結果
+                                <span th:if="${searchKeyword != null and !searchKeyword.isEmpty()}">：「<span th:text="${searchKeyword}">關鍵字</span>」</span>
                             </h2>
-                            <div class="spot-search-results-meta">
-                                <span class="spot-search-results-count">
-                                    找到 <strong th:text="${spotList != null ? spotList.size() : 0}">0</strong> 個結果
+                            <!-- 顯示篩選條件 -->
+                            <div class="spot-search-results-meta" th:if="${selectedRegion != null and !selectedRegion.isEmpty() or selectedRating != null}">
+                                <span class="material-icons">filter_list</span>
+                                <span>篩選條件：</span>
+                                <span th:if="${selectedRegion != null and !selectedRegion.isEmpty()}" class="filter-tag">
+                                    地區：<span th:text="${selectedRegion}">地區</span>
                                 </span>
-                                <div class="spot-search-results-actions">
-                                    <button class="spot-search-view-toggle active" data-view="grid" title="網格檢視">
-                                        <span class="material-icons">grid_view</span>
-                                    </button>
-                                    <button class="spot-search-view-toggle" data-view="list" title="列表檢視">
-                                        <span class="material-icons">view_list</span>
-                                    </button>
-                                </div>
                             </div>
+                        </div>
+                        <!-- Google 地圖查無資料提示區塊移到這裡 -->
+                        <div th:if="${searchKeyword != null and #lists.isEmpty(searchResults)}" class="spot-search-no-result">
+                            <p>
+                                <span class="material-icons" aria-hidden="true">check_circle</span>
+                                找不到符合關鍵字「<span th:text="${searchKeyword}"></span>」的景點
+                            </p>
+                            <a th:href="'https://www.google.com/maps/search/' + ${#strings.replace(searchKeyword, ' ', '+')}"
+                               class="google-maps-search-btn" target="_blank" rel="noopener">
+                                <span class="material-icons">map</span>
+                                在 Google 地圖搜尋
+                            </a>
                         </div>
 
                         <!-- 搜尋結果列表 -->
@@ -225,9 +243,13 @@
                                     <div class="spot-search-card__content">
                                         <div class="spot-search-card__header">
                                             <h3 class="spot-search-card__title" th:text="${spot.spotName}">景點名稱</h3>
-                                            <div class="spot-search-card__rating">
+                                            <div class="spot-search-card__rating" th:if="${spot.googleRating != null and spot.googleRating > 0}">
                                                 <span class="material-icons">star</span>
-                                                <span th:text="${4.5 + (iterStat.index % 5) * 0.1}">4.5</span>
+                                                <span th:text="${#numbers.formatDecimal(spot.googleRating, 1, 1)}">4.5</span>
+                                            </div>
+                                            <div class="spot-search-card__rating" th:if="${spot.googleRating == null or spot.googleRating <= 0}">
+                                                <span class="material-icons">star_border</span>
+                                                <span>暫無評分</span>
                                             </div>
                                         </div>
                                         <p class="spot-search-card__location">
@@ -285,7 +307,7 @@
                                         <span class="material-icons">refresh</span>
                                         重新搜尋
                                     </button>
-                                    <a th:href="@{/spot/spotlist}" class="spot-search-empty__btn spot-search-empty__btn--secondary">
+                                    <a th:href="@{/spot/list}" class="spot-search-empty__btn spot-search-empty__btn--secondary">
                                         <span class="material-icons">list</span>
                                         瀏覽所有景點
                                     </a>
@@ -295,40 +317,7 @@
                     </div>
                 </section>
 
-                <!-- 搜尋建議（當沒有搜尋時） -->
-                <section th:if="${hasSearched == null or !hasSearched}" class="spot-search-suggestions">
-                    <div class="container">
-                        <h3 class="spot-search-suggestions__title">
-                            <span class="material-icons">lightbulb</span>
-                            搜尋提示
-                        </h3>
-                        <div class="spot-search-tips-grid">
-                            <div class="spot-search-tip">
-                                <span class="material-icons">search</span>
-                                <h4>關鍵字搜尋</h4>
-                                <p>輸入景點名稱、地址或特色關鍵字</p>
-                            </div>
-                            <div class="spot-search-tip">
-                                <span class="material-icons">tune</span>
-                                <h4>進階篩選</h4>
-                                <p>使用地區和類型篩選找到更精確的結果</p>
-                            </div>
-                            <div class="spot-search-tip">
-                                <span class="material-icons">favorite</span>
-                                <h4>收藏功能</h4>
-                                <p>收藏喜歡的景點，方便日後查看</p>
-                            </div>
-                            <div class="spot-search-tip">
-                                <span class="material-icons">share</span>
-                                <h4>分享景點</h4>
-                                <p>將發現的美景分享給朋友</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </div>
-    </div>
+                
 
     <!-- Toast 通知 -->
     <div id="toastContainer" class="spot-search-toast-container" aria-live="polite"></div>

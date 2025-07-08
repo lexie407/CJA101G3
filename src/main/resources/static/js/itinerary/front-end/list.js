@@ -7,6 +7,7 @@
 let currentPage = 1;
 let currentSize = 10;
 let isLoading = false;
+let isCopying = false;
 
 // DOM 載入完成後初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -86,6 +87,13 @@ function bindFavoriteButtons() {
             e.preventDefault();
             const button = e.target.closest('.itinerary-list-card__favorite');
             toggleFavorite(button);
+        }
+        
+        // 綁定複製按鈕事件
+        if (e.target.closest('.copy-itinerary-btn')) {
+            e.preventDefault();
+            const button = e.target.closest('.copy-itinerary-btn');
+            copyItinerary(button);
         }
     });
 }
@@ -508,62 +516,77 @@ function toggleVisibility(button, makePublic) {
     });
 }
 
-// 顯示提示訊息
-function showToast(message, type = 'success') {
-    // 檢查是否已存在toast元素，如果有則移除
-    const existingToast = document.querySelector('.itinerary-toast');
-    if (existingToast) {
-        existingToast.remove();
+/**
+ * 複製行程
+ */
+function copyItinerary(button) {
+    if (isCopying) return;
+    isCopying = true;
+    const itineraryId = button.dataset.itineraryId;
+    if (!itineraryId) {
+        console.error('行程 ID 不存在');
+        isCopying = false;
+        return;
     }
-    
-    // 創建toast元素
-    const toast = document.createElement('div');
-    toast.className = `itinerary-toast itinerary-toast--${type}`;
-    toast.innerHTML = `
-        <span class="material-icons">${type === 'success' ? 'check_circle' : 'error'}</span>
-        <span>${message}</span>
-    `;
-    
-    // 添加到頁面
-    document.body.appendChild(toast);
-    
-    // 添加CSS樣式
-    toast.style.position = 'fixed';
-    toast.style.bottom = '20px';
-    toast.style.right = '20px';
-    toast.style.backgroundColor = type === 'success' ? '#4CAF50' : '#F44336';
-    toast.style.color = 'white';
-    toast.style.padding = '12px 20px';
-    toast.style.borderRadius = '4px';
-    toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-    toast.style.display = 'flex';
-    toast.style.alignItems = 'center';
-    toast.style.zIndex = '9999';
-    toast.style.opacity = '0';
-    toast.style.transition = 'opacity 0.3s ease-in-out';
-    
-    // 設置圖標樣式
-    const icon = toast.querySelector('.material-icons');
-    icon.style.marginRight = '8px';
-    
-    // 顯示toast
-    setTimeout(() => {
-        toast.style.opacity = '1';
-    }, 10);
-    
-    // 3秒後隱藏toast
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-            toast.remove();
-        }, 300);
-    }, 3000);
+    // 顯示確認對話框
+    if (!confirm('確定要複製這個行程嗎？複製後的行程會保存到您的「我的行程」中。')) {
+        isCopying = false;
+        return;
+    }
+    button.disabled = true;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<span class="material-icons">hourglass_empty</span>複製中...';
+    // 呼叫複製API
+    fetch(`/itinerary/api/${itineraryId}/copy`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.status === 401) {
+            showLoginDialog(button, originalHTML);
+            throw new Error('請先登入');
+        }
+        if (!response.ok) {
+            throw new Error('伺服器回應錯誤');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast('行程複製成功！', 'success');
+            setTimeout(() => {
+                if (confirm('行程複製成功！是否要前往編輯新行程？')) {
+                    window.location.href = `/itinerary/edit/${data.newItineraryId}`;
+                } else {
+                    window.location.href = '/itinerary/my';
+                }
+            }, 1000);
+        } else {
+            showToast(data.message || '複製失敗', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('複製行程失敗:', error);
+        if (error.message !== '請先登入') {
+            showToast('網路錯誤，請稍後再試', 'error');
+        }
+    })
+    .finally(() => {
+        isCopying = false;
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+    });
 }
 
 // 全域函數，供 HTML 直接呼叫
 window.loadMoreItineraries = loadMoreItineraries;
 window.resetSearchForm = resetSearchForm;
-window.toggleVisibility = toggleVisibility; 
+window.toggleVisibility = toggleVisibility;
+window.toggleFavorite = toggleFavorite; 
+window.copyItinerary = copyItinerary; 
 
 // 監聽收藏狀態變更事件
 window.addEventListener('storage', function(e) {

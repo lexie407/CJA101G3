@@ -115,50 +115,6 @@
                     </div>
                 </section>
 
-                <!-- 統計區域 -->
-                <section class="stats-section">
-                    <div class="stats-container">
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <span class="material-icons">map</span>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-number" th:text="${totalCount}">0</div>
-                                    <div class="stat-label">總行程數</div>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon public">
-                                    <span class="material-icons">public</span>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-number" th:text="${publicCount}">0</div>
-                                    <div class="stat-label">公開行程</div>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon private">
-                                    <span class="material-icons">lock</span>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-number" th:text="${privateCount}">0</div>
-                                    <div class="stat-label">私人行程</div>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon spots">
-                                    <span class="material-icons">place</span>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-number" id="totalSpots">-</div>
-                                    <div class="stat-label">總景點數</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
                 <!-- 行程列表 -->
                 <section class="itinerary-list-section">
                     <div class="list-container">
@@ -224,23 +180,31 @@
                                     </div>
                                 </div>
                                 <div class="card-footer">
-                                    <a th:href="@{/itinerary/detail/{id}(id=${itinerary.itnId})}" class="itn-capsule-btn">
+                                    <a th:href="@{/itinerary/detail/{id}(id=${itinerary.itnId}, from=my)}" class="itn-capsule-btn">
                                         <span class="material-icons">visibility</span>
                                         查看行程
                                     </a>
+                                    <button class="itn-capsule-btn create-activity-btn"
+                                            id="CreateActByItnId"
+                                            th:data-id="${itinerary.itnId}"
+                                            th:data-name="${itinerary.itnName}"
+                                            onclick="createActivity(this.getAttribute('data-id'), this.getAttribute('data-name'))">
+                                        <span class="material-icons">group_add</span>
+                                        建立揪團
+                                    </button>
                                     <button th:if="${itinerary.isPublicItinerary()}" 
+                                            type="button"
                                             class="itn-capsule-outline-btn toggle-public-btn"
                                             th:data-id="${itinerary.itnId}"
-                                            th:data-public="true"
-                                            onclick="togglePublicStatus(this.getAttribute('data-id'), true, this)">
+                                            th:data-public="true">
                                         <span class="material-icons">lock</span>
                                         設為私人
                                     </button>
                                     <button th:unless="${itinerary.isPublicItinerary()}" 
+                                            type="button"
                                             class="itn-capsule-outline-btn toggle-public-btn"
                                             th:data-id="${itinerary.itnId}"
-                                            th:data-public="false"
-                                            onclick="togglePublicStatus(this.getAttribute('data-id'), false, this)">
+                                            th:data-public="false">
                                         <span class="material-icons">public</span>
                                         設為公開
                                     </button>

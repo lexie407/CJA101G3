@@ -110,9 +110,9 @@ public class ItineraryController {
     }
 
     // 根據建立者查詢行程
-    @GetMapping("/creator/{crtId}")
-    public List<ItineraryVO> getItinerariesByCreator(@PathVariable Integer crtId) {
-        return itineraryService.getItinerariesByCrtId(crtId);
+    @GetMapping("/creator/{memberId}")
+    public List<ItineraryVO> getItinerariesByCreator(@PathVariable Integer memberId) {
+        return itineraryService.getItinerariesByCrtId(memberId);
     }
 
     // 分頁查詢建立者的行程

@@ -612,4 +612,65 @@
     .container {
         padding: 0 1rem;
     }
+}
+
+/* 膠囊型 outline 按鈕 */
+.itn-capsule-outline-btn {
+    background: #fff;
+    color: var(--md-sys-color-primary);
+    border: 2px solid var(--md-sys-color-primary);
+    transition: all 0.2s;
+}
+.itn-capsule-outline-btn .material-icons {
+    color: var(--md-sys-color-primary);
+    transition: color 0.2s;
+}
+.itn-capsule-outline-btn:hover, .itn-capsule-outline-btn:focus {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+}
+.itn-capsule-outline-btn:hover .material-icons,
+.itn-capsule-outline-btn:focus .material-icons {
+    color: var(--md-sys-color-on-primary);
+}
+
+/* 主要膠囊型按鈕 */
+.itn-capsule-btn {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    transition: all 0.2s;
+}
+.itn-capsule-btn .material-icons {
+    color: var(--md-sys-color-on-primary);
+    transition: color 0.2s;
+}
+.itn-capsule-btn:hover, .itn-capsule-btn:focus {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+.itn-capsule-btn:hover .material-icons,
+.itn-capsule-btn:focus .material-icons {
+    color: var(--md-sys-color-on-primary-container);
+}
+
+/* 右上角 action-btn（編輯、刪除） */
+.action-btn {
+    background: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-primary);
+    border: none;
+    transition: all 0.2s;
+}
+.action-btn .material-icons {
+    color: var(--md-sys-color-primary);
+    transition: color 0.2s;
+}
+.action-btn:hover, .action-btn:focus {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+.action-btn:hover .material-icons,
+.action-btn:focus .material-icons {
+    color: var(--md-sys-color-on-primary);
 } 

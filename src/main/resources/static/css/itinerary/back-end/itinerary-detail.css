@@ -112,6 +112,37 @@
     padding: 24px;
 }
 
+/* 管理員標識樣式 */
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    padding: 4px 8px;
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    color: white;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    animation: adminBadgeGlow 2s ease-in-out infinite alternate;
+}
+
+.admin-badge .material-icons {
+    font-size: 14px;
+}
+
+@keyframes adminBadgeGlow {
+    0% {
+        box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    }
+    100% {
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.5);
+    }
+}
+
 /* ==========================================================================
    基本資訊區域
    ========================================================================== */

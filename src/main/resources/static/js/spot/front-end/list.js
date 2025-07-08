@@ -4,17 +4,70 @@
  * @description 提供景點列表頁的交互效果和用戶體驗增強
  */
 
+// 全域變數和函數
+let currentView = 'grid';
+let currentSort = 'name';
+let favorites = JSON.parse(localStorage.getItem('spotFavorites') || '[]');
+let bookmarks = JSON.parse(localStorage.getItem('spotBookmarks') || '[]');
+let currentSortOrder = 'asc'; // 預設升序
+
+// 將這些函數暴露到全局作用域
+window.handleFilter = function() {
+    const regionSelect = document.getElementById('regionFilter');
+    const selectedRegion = regionSelect.value;
+    
+    // 獲取當前的搜尋關鍵字
+    const searchKeyword = document.getElementById('searchKeyword').value;
+    
+    // 構建URL
+    let url = '/spot/user/list?';
+    const params = new URLSearchParams();
+    
+    if (selectedRegion) {
+        params.append('region', selectedRegion);
+    }
+    
+    if (searchKeyword) {
+        params.append('keyword', searchKeyword);
+    }
+    
+    // 重定向到新的URL
+    window.location.href = url + params.toString();
+};
+
+window.handleSearch = function(event) {
+    if (event.key === 'Enter') {
+        window.performSearch();
+    }
+};
+
+window.performSearch = function() {
+    const searchKeyword = document.getElementById('searchKeyword').value;
+    const regionSelect = document.getElementById('regionFilter');
+    const selectedRegion = regionSelect.value;
+    
+    // 構建URL
+    let url = '/spot/user/list?';
+    const params = new URLSearchParams();
+    
+    if (searchKeyword) {
+        params.append('keyword', searchKeyword);
+    }
+    
+    if (selectedRegion) {
+        params.append('region', selectedRegion);
+    }
+    
+    // 重定向到新的URL
+    window.location.href = url + params.toString();
+};
+
+// 主要初始化函數
 (function() {
     'use strict';
 
     // 檢查動畫偏好
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // 全域變數
-    let currentView = 'grid';
-    let currentSort = 'name';
-    let favorites = JSON.parse(localStorage.getItem('spotFavorites') || '[]');
-    let bookmarks = JSON.parse(localStorage.getItem('spotBookmarks') || '[]');
 
     /**
      * 初始化所有功能
@@ -218,97 +271,88 @@
     }
 
     /**
-     * 搜尋表單功能
+     * 初始化搜尋表單
      */
     function initSearchForm() {
-        const searchInput = document.getElementById('keyword');
-        const regionSelect = document.getElementById('region');
         const searchForm = document.querySelector('.spot-list-search-form');
+        const searchInput = document.querySelector('#keyword');
+        const regionSelect = document.querySelector('#region');
 
-        // 搜尋輸入框即時提示
-        if (searchInput) {
-            let searchTimeout;
-            searchInput.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    validateSearchInput(this.value);
-                }, 300);
-            });
-
-            // 搜尋建議功能
-            searchInput.addEventListener('focus', function() {
-                showSearchSuggestions();
-            });
-        }
-
-        // 地區選擇變更
-        if (regionSelect) {
-            regionSelect.addEventListener('change', function() {
-                updateRegionFilter(this.value);
-                // 自動提交表單進行篩選
-                if (this.value !== '') {
-                    showToast('正在篩選地區...', 'info');
-                    setTimeout(() => {
-                        searchForm.submit();
-                    }, 300);
-                }
-            });
-        }
-
-        // 表單提交
         if (searchForm) {
             searchForm.addEventListener('submit', function(e) {
-                const keyword = searchInput?.value.trim();
-                const region = regionSelect?.value;
-                
-                // 驗證搜尋條件
-                if (keyword && keyword.length < 2) {
-                    e.preventDefault();
-                    showToast('搜尋關鍵字至少需要2個字元', 'warning');
-                    return;
-                }
-                
-                // 如果沒有任何搜尋條件，提示用戶
+                const keyword = searchInput.value.trim();
+                const region = regionSelect.value;
+
+                // 如果關鍵字和地區都是空的，顯示提示
                 if (!keyword && !region) {
                     e.preventDefault();
                     showToast('請輸入搜尋關鍵字或選擇地區', 'warning');
                     return;
                 }
-                
-                showToast('正在搜尋景點...', 'info');
             });
+        }
+
+        // 重置按鈕功能
+        const resetBtn = document.querySelector('.spot-list-reset-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                if (searchInput) searchInput.value = '';
+                if (regionSelect) regionSelect.value = '';
+                showToast('已重置搜尋條件', 'info');
+            });
+        }
+    }
+
+    /**
+     * 顯示搜尋提示
+     * @param {string} message - 提示訊息
+     * @param {string} type - 提示類型 (searching/success/error/warning/info)
+     */
+    function showToast(message, type = 'info') {
+        // 移除舊的提示
+        const oldToast = document.querySelector('.spot-list-toast');
+        if (oldToast) {
+            oldToast.remove();
+        }
+
+        // 創建新的提示
+        const toast = document.createElement('div');
+        toast.className = `spot-list-toast spot-list-toast--${type}`;
+        
+        // 根據類型設置圖標
+        let icon = 'info';
+        switch (type) {
+            case 'searching':
+                icon = 'search';
+                break;
+            case 'success':
+                icon = 'check_circle';
+                break;
+            case 'error':
+                icon = 'error';
+                break;
+            case 'warning':
+                icon = 'warning';
+                break;
         }
         
-        // 搜尋按鈕點擊事件
-        const searchBtn = document.querySelector('.spot-list-search-btn');
-        if (searchBtn) {
-            searchBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const keyword = searchInput?.value.trim();
-                const region = regionSelect?.value;
-                
-                // 驗證搜尋條件
-                if (keyword && keyword.length < 2) {
-                    showToast('搜尋關鍵字至少需要2個字元', 'warning');
-                    searchInput?.focus();
-                    return;
-                }
-                
-                // 如果沒有任何搜尋條件，提示用戶
-                if (!keyword && !region) {
-                    showToast('請輸入搜尋關鍵字或選擇地區', 'warning');
-                    searchInput?.focus();
-                    return;
-                }
-                
-                // 提交表單
-                showToast('正在搜尋景點...', 'info');
-                if (searchForm) {
-                    searchForm.submit();
-                }
-            });
+        toast.innerHTML = `
+            <span class="material-icons">${icon}</span>
+            <span>${message}</span>
+        `;
+
+        // 添加到頁面
+        document.body.appendChild(toast);
+
+        // 自動隱藏（除了"正在搜尋"狀態）
+        if (type !== 'searching') {
+            setTimeout(() => {
+                toast.classList.add('spot-list-toast--hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
+
+        return toast;
     }
 
     /**
@@ -761,40 +805,49 @@
         const cards = Array.from(grid.querySelectorAll('.spot-list-item'));
         
         cards.sort((a, b) => {
-            const aCard = a.querySelector('.spot-list-card');
-            const bCard = b.querySelector('.spot-list-card');
+            let aValue, bValue;
             
-            switch (sortBy) {
+            switch(sortBy) {
                 case 'name':
-                    const aName = aCard.querySelector('.spot-list-card__title').textContent;
-                    const bName = bCard.querySelector('.spot-list-card__title').textContent;
-                    return aName.localeCompare(bName, 'zh-TW');
-                    
+                    aValue = a.querySelector('.spot-list-card__title').textContent;
+                    bValue = b.querySelector('.spot-list-card__title').textContent;
+                    break;
                 case 'date':
-                    const aDate = aCard.querySelector('.spot-list-card__date span:last-child').textContent;
-                    const bDate = bCard.querySelector('.spot-list-card__date span:last-child').textContent;
-                    return new Date(bDate) - new Date(aDate);
-                    
+                    aValue = a.querySelector('.spot-list-card__date span:last-child').textContent;
+                    bValue = b.querySelector('.spot-list-card__date span:last-child').textContent;
+                    break;
                 case 'location':
-                    const aLoc = aCard.querySelector('.spot-list-card__location span:last-child').textContent;
-                    const bLoc = bCard.querySelector('.spot-list-card__location span:last-child').textContent;
-                    return aLoc.localeCompare(bLoc, 'zh-TW');
-                    
-                case 'popular':
-                    const aRating = parseFloat(aCard.querySelector('.spot-list-card__rating span:last-child').textContent);
-                    const bRating = parseFloat(bCard.querySelector('.spot-list-card__rating span:last-child').textContent);
-                    return bRating - aRating;
-                    
+                    aValue = a.querySelector('.spot-list-card__location span:last-child').textContent;
+                    bValue = b.querySelector('.spot-list-card__location span:last-child').textContent;
+                    break;
+                case 'rating':
+                    // 獲取評分，如果沒有評分則預設為 0
+                    aValue = parseFloat(a.querySelector('.spot-list-card__rating span:last-child').textContent) || 0;
+                    bValue = parseFloat(b.querySelector('.spot-list-card__rating span:last-child').textContent) || 0;
+                    break;
                 default:
                     return 0;
             }
+            
+            // 根據排序方向進行比較
+            if (currentSortOrder === 'asc') {
+                if (typeof aValue === 'string') {
+                    return aValue.localeCompare(bValue, 'zh-TW');
+                }
+                return aValue - bValue;
+            } else {
+                if (typeof aValue === 'string') {
+                    return bValue.localeCompare(aValue, 'zh-TW');
+                }
+                return bValue - aValue;
+            }
         });
-
-        // 重新排列 DOM
-        cards.forEach(card => grid.appendChild(card));
+        
+        // 重新插入排序後的元素
+        cards.forEach(spot => grid.appendChild(spot));
         
         currentSort = sortBy;
-        showToast(`已按${getSortName(sortBy)}排序`, 'success');
+        showSortNotification(sortBy, currentSortOrder);
         
         // 重新觸發動畫
         if (!prefersReducedMotion) {
@@ -802,32 +855,16 @@
         }
     };
 
+    // 重置搜尋表單
     window.resetSearchForm = function() {
-        const form = document.querySelector('.spot-list-search-form');
-        const keywordInput = document.getElementById('keyword');
-        const regionSelect = document.getElementById('region');
+        // 清空關鍵字輸入
+        document.getElementById('keyword').value = '';
         
-        if (form) {
-            // 清除表單內容
-            form.reset();
-            
-            // 確保輸入框清空
-            if (keywordInput) {
-                keywordInput.value = '';
-                keywordInput.style.borderColor = 'var(--md-sys-color-outline-variant)';
-            }
-            
-            if (regionSelect) {
-                regionSelect.value = '';
-            }
-            
-            showToast('已重置搜尋條件', 'info');
-            
-            // 重新導向到無參數的列表頁面
-            setTimeout(() => {
-                window.location.href = '/spot/spotlist';
-            }, 500);
-        }
+        // 重置地區選擇為"所有地區"
+        document.getElementById('region').value = '';
+        
+        // 提交表單
+        document.querySelector('.spot-list-search-form').submit();
     };
 
     window.loadMoreSpots = function() {
@@ -836,12 +873,7 @@
             btn.innerHTML = '<span class="material-icons">hourglass_empty</span>載入中...';
             btn.disabled = true;
             
-            // 模擬載入
-            setTimeout(() => {
-                showToast('載入更多景點功能開發中', 'info');
-                btn.innerHTML = '<span class="material-icons">expand_more</span>載入更多景點';
-                btn.disabled = false;
-            }, 1000);
+            
         }
     };
 
@@ -851,7 +883,7 @@
             'name': '名稱',
             'date': '時間',
             'location': '地區',
-            'popular': '熱門度'
+            'rating': '評分'
         };
         return names[sortBy] || '預設';
     }
@@ -891,80 +923,6 @@
         }
     }
 
-    function showToast(message, type = 'info') {
-        // 創建 Toast 通知
-        const toast = document.createElement('div');
-        toast.className = `spot-list-toast spot-list-toast--${type}`;
-        toast.innerHTML = `
-            <span class="material-icons">${getToastIcon(type)}</span>
-            <span>${message}</span>
-        `;
-        
-        // 添加樣式
-        Object.assign(toast.style, {
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            background: getToastColor(type),
-            color: 'var(--md-sys-color-on-primary)',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            zIndex: '10000',
-            transform: 'translateX(100%)',
-            transition: 'transform 0.3s ease'
-        });
-        
-        document.body.appendChild(toast);
-        
-        // 動畫進入
-        setTimeout(() => {
-            toast.style.transform = 'translateX(0)';
-        }, 100);
-        
-        // 自動移除
-        setTimeout(() => {
-            toast.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                toast.remove();
-            }, 300);
-        }, 3000);
-    }
-
-    function getToastIcon(type) {
-        const icons = {
-            'success': 'check_circle',
-            'error': 'error',
-            'warning': 'warning',
-            'info': 'info'
-        };
-        return icons[type] || 'info';
-    }
-
-    function getToastColor(type) {
-        const colors = {
-            'success': 'var(--md-sys-color-primary)',
-            'error': 'var(--md-sys-color-error)',
-            'warning': 'var(--md-sys-color-secondary)',
-            'info': 'var(--md-sys-color-surface-container)'
-        };
-        return colors[type] || 'var(--md-sys-color-surface-container)';
-    }
-
-    // 初始化
-    init();
-    
-    /**
-     * 顯示登入提示對話框
-     * @param {string} title 對話框標題
-     * @param {string} message 對話框訊息
-     * @param {HTMLElement} buttonElement 觸發對話框的按鈕元素
-     * @param {string} originalIconText 按鈕原始圖示文字
-     * @param {boolean} isActive 按鈕是否為活動狀態
-     */
     function showLoginDialog(title, message, buttonElement, originalIconText, isActive) {
         // 檢查是否已存在對話框，避免重複顯示
         if (document.getElementById('login-dialog')) {
@@ -1149,4 +1107,128 @@
             }
         }, 300);
     }
+
+    // 當頁面載入完成時執行
+    document.addEventListener('DOMContentLoaded', function() {
+        // 排序相關變數
+        let currentSortOrder = 'asc'; // 預設升序
+        
+        // 切換排序方向
+        window.toggleSortOrder = function() {
+            const sortOrderBtn = document.getElementById('sortOrder');
+            currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+            
+            // 更新按鈕樣式
+            if (currentSortOrder === 'desc') {
+                sortOrderBtn.classList.add('desc');
+            } else {
+                sortOrderBtn.classList.remove('desc');
+            }
+            
+            // 重新排序
+            handleSort();
+        };
+        
+        // 處理排序
+        window.handleSort = function() {
+            const sortBy = document.getElementById('sortBy').value;
+            const spotGrid = document.getElementById('spotGrid');
+            const spots = Array.from(spotGrid.children);
+            
+            spots.sort((a, b) => {
+                let aValue, bValue;
+                
+                switch(sortBy) {
+                    case 'name':
+                        aValue = a.querySelector('.spot-list-card__title').textContent;
+                        bValue = b.querySelector('.spot-list-card__title').textContent;
+                        break;
+                    case 'date':
+                        aValue = a.querySelector('.spot-list-card__date span:last-child').textContent;
+                        bValue = b.querySelector('.spot-list-card__date span:last-child').textContent;
+                        break;
+                    case 'location':
+                        aValue = a.querySelector('.spot-list-card__location span:last-child').textContent;
+                        bValue = b.querySelector('.spot-list-card__location span:last-child').textContent;
+                        break;
+                    case 'rating':
+                        // 獲取評分，如果沒有評分則預設為 0
+                        aValue = parseFloat(a.querySelector('.spot-list-card__rating span:last-child').textContent) || 0;
+                        bValue = parseFloat(b.querySelector('.spot-list-card__rating span:last-child').textContent) || 0;
+                        break;
+                    default:
+                        return 0;
+                }
+                
+                // 根據排序方向進行比較
+                if (currentSortOrder === 'asc') {
+                    if (typeof aValue === 'string') {
+                        return aValue.localeCompare(bValue, 'zh-TW');
+                    }
+                    return aValue - bValue;
+                } else {
+                    if (typeof aValue === 'string') {
+                        return bValue.localeCompare(aValue, 'zh-TW');
+                    }
+                    return bValue - aValue;
+                }
+            });
+            
+            // 重新插入排序後的元素
+            spots.forEach(spot => spotGrid.appendChild(spot));
+            
+            // 顯示排序提示
+            showSortNotification(sortBy, currentSortOrder);
+        };
+        
+        // 顯示排序提示
+        function showSortNotification(sortBy, order) {
+            const sortTypeText = {
+                'name': '名稱',
+                'date': '時間',
+                'location': '地區',
+                'rating': '評分'
+            }[sortBy];
+            
+            const orderText = order === 'asc' ? '升序' : '降序';
+            
+            // 移除舊的提示（如果存在）
+            const oldNotification = document.querySelector('.spot-list-notification');
+            if (oldNotification) {
+                oldNotification.remove();
+            }
+            
+            // 創建提示元素
+            const notification = document.createElement('div');
+            notification.className = 'spot-list-notification';
+            notification.innerHTML = `
+                <span class="material-icons">sort</span>
+                <span>已按${sortTypeText}${orderText}排序</span>
+            `;
+            
+            // 添加到頁面
+            document.body.appendChild(notification);
+            
+            // 3秒後移除
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // 如果有搜尋結果提示訊息
+        const msg = document.querySelector('.spot-list-msg');
+        if (msg) {
+            // 3秒後自動隱藏提示訊息
+            setTimeout(() => {
+                msg.style.opacity = '0';
+                setTimeout(() => {
+                    msg.style.display = 'none';
+                }, 300);
+            }, 3000);
+        }
+    });
+
+    // 初始化
+    init();
 })(); 

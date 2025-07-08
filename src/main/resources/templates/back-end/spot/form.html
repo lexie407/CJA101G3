@@ -38,7 +38,7 @@
             <!-- 表單內容區域 -->
             <div class="content-container">
                 <form th:action="${isEdit != null and isEdit ? '/admin/spot/edit/' + spotVO.spotId : '/admin/spot/add'}"
-                      method="post" th:object="${spotVO}" id="spotForm" class="spot-form">
+                      method="post" th:object="${spotVO}" id="spotForm" class="spot-form" enctype="multipart/form-data">
 
 
 
@@ -64,6 +64,7 @@
                                            placeholder="請輸入景點名稱">
                                 </div>
                                 <div class="helper-text">請輸入景點的正式名稱，最多50個字元 <span class="char-count">(0/50)</span></div>
+                                <div class="error-message" id="spotNameError" style="display: none;"></div>
                             </div>
 
                             <div class="form-group">
@@ -77,6 +78,90 @@
                                            placeholder="請輸入完整地址">
                                 </div>
                                 <div class="helper-text">請輸入完整的景點地址，最多100個字元 <span class="char-count">(0/100)</span></div>
+                                <div class="error-message" id="spotLocError" style="display: none;"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="region" class="form-label">
+                                    地區
+                                </label>
+                                <div class="input-container">
+                                    <i class="material-icons input-icon">public</i>
+                                    <select id="region" class="form-control" th:field="*{region}">
+                                        <option value="">請選擇地區</option>
+                                        <option value="台北市">台北市</option>
+                                        <option value="新北市">新北市</option>
+                                        <option value="桃園市">桃園市</option>
+                                        <option value="台中市">台中市</option>
+                                        <option value="台南市">台南市</option>
+                                        <option value="高雄市">高雄市</option>
+                                        <option value="基隆市">基隆市</option>
+                                        <option value="新竹市">新竹市</option>
+                                        <option value="新竹縣">新竹縣</option>
+                                        <option value="苗栗縣">苗栗縣</option>
+                                        <option value="彰化縣">彰化縣</option>
+                                        <option value="南投縣">南投縣</option>
+                                        <option value="雲林縣">雲林縣</option>
+                                        <option value="嘉義市">嘉義市</option>
+                                        <option value="嘉義縣">嘉義縣</option>
+                                        <option value="屏東縣">屏東縣</option>
+                                        <option value="宜蘭縣">宜蘭縣</option>
+                                        <option value="花蓮縣">花蓮縣</option>
+                                        <option value="台東縣">台東縣</option>
+                                        <option value="澎湖縣">澎湖縣</option>
+                                        <option value="金門縣">金門縣</option>
+                                        <option value="連江縣">連江縣</option>
+                                    </select>
+                                </div>
+                                <div class="helper-text">選擇景點所在的縣市地區</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tel" class="form-label">
+                                    聯絡電話
+                                </label>
+                                <div class="input-container">
+                                    <i class="material-icons input-icon">phone</i>
+                                    <input id="tel" type="text" class="form-control" 
+                                           th:field="*{tel}" maxlength="20"
+                                           placeholder="例如：02-12345678">
+                                </div>
+                                <div class="helper-text">請輸入景點的聯絡電話，格式如：02-12345678</div>
+                                <div class="error-message" id="telError" style="display: none;"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="website" class="form-label">
+                                    官方網站
+                                </label>
+                                <div class="input-container">
+                                    <i class="material-icons input-icon">language</i>
+                                    <input id="website" type="url" class="form-control" 
+                                           th:field="*{website}" maxlength="255"
+                                           placeholder="例如：https://www.example.com">
+                                </div>
+                                <div class="helper-text">請輸入景點的官方網站URL，必須包含http://或https://</div>
+                                <div class="error-message" id="websiteError" style="display: none;"></div>
+                            </div>
+
+                            <!-- Google評分顯示區域 (唯讀) -->
+                            <div class="form-group">
+                                <label for="googleRating" class="form-label">
+                                    Google評分
+                                </label>
+                                <div class="input-container google-rating-container">
+                                    <i class="material-icons input-icon">star</i>
+                                    <input id="googleRating" type="text" class="form-control" 
+                                           th:field="*{googleRating}" readonly
+                                           placeholder="將自動從Google API獲取" style="padding-right: 110px;">
+                                    <button type="button" id="fetchGoogleRating" class="btn btn-sm btn-secondary fetch-rating-btn">
+                                        <i class="material-icons">refresh</i>
+                                        獲取評分
+                                    </button>
+                                </div>
+                                <div class="helper-text">系統將自動從Google Places API獲取評分數據</div>
+                                <!-- 隱藏欄位保存Google Place ID -->
+                                <input type="hidden" th:field="*{googlePlaceId}" id="googlePlaceId">
                             </div>
 
                             <div class="form-group form-group-full">
@@ -85,6 +170,22 @@
                                           th:field="*{spotDesc}" maxlength="500" rows="4"
                                           placeholder="簡單描述景點特色、歷史背景或遊覽重點..."></textarea>
                                 <div class="helper-text">簡單描述景點特色、歷史背景或遊覽重點，最多500個字元 <span class="char-count">(0/500)</span></div>
+                                <div class="error-message" id="spotDescError" style="display: none;"></div>
+                            </div>
+
+                            <!-- 新增：多圖上傳區塊 -->
+                            <div class="form-group form-group-full">
+                                <label class="form-label">景點多圖上傳</label>
+                                <div id="multiImageUpload" class="multi-image-upload">
+                                    <input id="multiImageInput" type="file" accept="image/*" multiple style="display:none;">
+                                    <div class="multi-image-dropzone" id="multiImageDropzone">
+                                        <span>拖曳圖片到此，或 <button type="button" id="multiImageSelectBtn" class="btn btn-sm btn-secondary">選擇圖片</button></span>
+                                    </div>
+                                    <div class="multi-image-list" id="multiImageList">
+                                        <!-- 動態顯示已上傳圖片、描述、刪除按鈕 -->
+                                    </div>
+                                    <div class="helper-text">可上傳多張圖片，每張可填寫描述，支援拖拉排序與刪除</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -148,6 +249,13 @@
         
         <!-- 表單頁面專用腳本 -->
         <script th:src="@{/js/spot/back-end/form.js}" defer></script>
+        <th:block th:if="${isEdit}">
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    window.spotExistImages = /*[[${#objects.toJson(spotImgList)}]]*/ [];
+    /*]]>*/
+</script>
+</th:block>
             </main>
         </div>
     </div>

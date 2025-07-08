@@ -7,7 +7,7 @@
     <header class="secondary-nav">
         <ul>
             <li><a th:href="@{/spot/}" th:classappend="${activeItem == 'home' ? 'active' : ''}">景點首頁</a></li>
-            <li><a th:href="@{/spot/spotlist}" th:classappend="${activeItem == 'list' ? 'active' : ''}">景點列表</a></li>
+            <li><a th:href="@{/spot/list}" th:classappend="${activeItem == 'list' ? 'active' : ''}">景點列表</a></li>
             <li><a th:href="@{/spot/search}" th:classappend="${activeItem == 'search' ? 'active' : ''}">搜尋景點</a></li>
             <li><a th:href="@{/spot/add}" th:classappend="${activeItem == 'add' ? 'active' : ''}">新增景點</a></li>
             <li><a th:href="@{/spot/map}" th:classappend="${activeItem == 'map' ? 'active' : ''}">地圖瀏覽</a></li>

@@ -74,8 +74,8 @@ function loadSpots() {
         `;
     }
     
-    // 從後端 API 獲取景點資料
-    fetch('/api/spots?limit=12&status=1')
+    // 從後端 API 獲取景點資料 - 修正API路徑
+    fetch('/api/spot/selector/public/list')
         .then(response => {
             if (!response.ok) {
                 console.log('API響應狀態碼:', response.status);
@@ -86,7 +86,15 @@ function loadSpots() {
             }
             return response.json();
         })
-        .then(data => {
+        .then(responseData => {
+            console.log('API響應數據:', responseData);
+            
+            // 檢查API響應格式
+            if (!responseData.success) {
+                throw new Error(responseData.message || '景點資料載入失敗');
+            }
+            
+            const data = responseData.data || [];
             console.log('成功載入景點數據:', data.length);
             
             // 如果沒有數據，顯示空狀態
@@ -111,39 +119,91 @@ function loadSpots() {
                 icon: getSpotIcon(spot.zone || '其他')
             }));
             
+            // 如果是編輯模式，載入已選景點
+            loadInitialSelectedSpots();
+            
             // 更新景點網格
             updateSpotsGrid(allSpots);
         })
         .catch(error => {
             console.error('載入景點資料失敗:', error);
             
-            // 嘗試測試API是否正常工作
-            fetch('/api/test/ping')
+            // 嘗試使用備用API
+            console.log('嘗試使用備用API...');
+            fetch('/api/spot/public/list')
                 .then(response => response.json())
-                .then(data => {
-                    console.log('API測試結果:', data);
-                    showToast('API服務正常，但景點數據載入失敗，請稍後重試', 'warning');
+                .then(responseData => {
+                    if (responseData.success) {
+                        const data = responseData.data || [];
+                        console.log('成功從備用API載入景點數據:', data.length);
+                        
+                        // 處理獲取的景點資料
+                        allSpots = data.map(spot => ({
+                            id: spot.spotId,
+                            name: spot.spotName,
+                            location: spot.spotLoc || '未知位置',
+                            rating: spot.googleRating || 4.0,
+                            icon: getSpotIcon(spot.zone || '其他')
+                        }));
+                        
+                        // 如果是編輯模式，載入已選景點
+                        loadInitialSelectedSpots();
+                        
+                        // 更新景點網格
+                        updateSpotsGrid(allSpots);
+                    } else {
+                        throw new Error('備用API也失敗');
+                    }
                 })
-                .catch(testError => {
-                    console.error('API測試失敗:', testError);
-                    showToast('API服務異常，請聯繫管理員', 'error');
+                .catch(backupError => {
+                    console.error('備用API也失敗:', backupError);
+                    
+                    // 顯示錯誤狀態
+                    if (grid) {
+                        grid.innerHTML = `
+                            <div class="itinerary-error-state">
+                                <span class="material-icons">error</span>
+                                <p>載入景點失敗</p>
+                                <p class="error-message">${error.message}</p>
+                                <button onclick="loadSpots()" class="itinerary-btn itinerary-btn--secondary">
+                                    <span class="material-icons">refresh</span>
+                                    重試
+                                </button>
+                            </div>
+                        `;
+                    }
                 });
-            
-            // 顯示錯誤狀態
-            if (grid) {
-                grid.innerHTML = `
-                    <div class="itinerary-error-state">
-                        <span class="material-icons">error</span>
-                        <p>載入景點失敗</p>
-                        <p class="error-message">${error.message}</p>
-                        <button onclick="loadSpots()" class="itinerary-btn itinerary-btn--secondary">
-                            <span class="material-icons">refresh</span>
-                            重試
-                        </button>
-                    </div>
-                `;
-            }
         });
+}
+
+/**
+ * 載入編輯模式下的已選景點
+ */
+function loadInitialSelectedSpots() {
+    const initialSpotsDiv = document.getElementById('initial-selected-spots');
+    
+    if (initialSpotsDiv && initialSpotsDiv.dataset.spotIds) {
+        const initialIds = initialSpotsDiv.dataset.spotIds.split(',').map(id => parseInt(id, 10));
+        
+        if (initialIds.length > 0) {
+            console.log('📝 編輯模式：發現已選景點IDs:', initialIds);
+            
+            // 從可選池中找出已選景點
+            initialIds.forEach(id => {
+                const spot = allSpots.find(s => s.id === id);
+                if (spot) {
+                    selectedSpots.push(spot);
+                    console.log('✅ 已添加已選景點:', spot.name);
+                } else {
+                    console.warn('⚠️ 找不到景點ID:', id);
+                }
+            });
+            
+            // 更新已選景點列表
+            updateSelectedSpotsList();
+            updateSelectedCount();
+        }
+    }
 }
 
 /**
@@ -316,43 +376,42 @@ function performSearch() {
 
 /**
  * 更新景點網格
+ * @param {Array} spots 景點數據數組
  */
 function updateSpotsGrid(spots) {
     const grid = document.querySelector('.itinerary-spots-grid');
     if (!grid) return;
     
-    grid.innerHTML = spots.map(spot => {
-        // 解析評分
-        const rating = parseFloat(spot.rating) || 0;
-        const ratingValue = Math.min(5, Math.max(0, rating)); // 確保評分在0-5之間
-        let starsHtml = '';
+    // 清空網格
+    grid.innerHTML = '';
+    
+    // 如果沒有景點，顯示空狀態
+    if (!spots || spots.length === 0) {
+        grid.innerHTML = `
+            <div class="itinerary-empty-state">
+                <span class="material-icons">info</span>
+                <p>沒有找到符合條件的景點</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // 生成景點卡片
+    spots.forEach(spot => {
+        // 檢查該景點是否已被選擇
+        const isSelected = selectedSpots.some(s => s.id === spot.id);
+        if (isSelected) return; // 如果已選擇，跳過不顯示
         
-        // 生成星級評分HTML
-        const fullStars = Math.floor(ratingValue);
-        const hasHalfStar = ratingValue % 1 >= 0.3 && ratingValue % 1 < 0.8;
-        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        // 創建景點卡片
+        const spotCard = document.createElement('div');
+        spotCard.className = 'itinerary-spot-card';
+        spotCard.dataset.spotId = spot.id;
         
-        // 添加實心星星
-        for (let i = 0; i < fullStars; i++) {
-            starsHtml += '<span class="material-icons">star</span>';
-        }
+        // 生成星級評分
+        const ratingStars = generateRatingStars(spot.rating);
         
-        // 添加半星（如果需要）
-        if (hasHalfStar) {
-            starsHtml += '<span class="material-icons">star_half</span>';
-        }
-        
-        // 添加空心星星
-        for (let i = 0; i < emptyStars; i++) {
-            starsHtml += '<span class="material-icons">star_outline</span>';
-        }
-        
-        // 處理名稱和地址中的特殊字符，避免JavaScript錯誤
-        const safeName = spot.name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-        const safeLocation = spot.location.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-        
-        return `
-        <div class="itinerary-spot-card" data-spot-id="${spot.id}">
+        // 設置卡片內容
+        spotCard.innerHTML = `
             <div class="itinerary-spot-card__image">
                 <span class="material-icons">${spot.icon}</span>
             </div>
@@ -363,106 +422,252 @@ function updateSpotsGrid(spots) {
                     ${spot.location}
                 </p>
                 <div class="itinerary-spot-card__rating">
-                    ${starsHtml}
-                    <span>${ratingValue.toFixed(1)}</span>
+                    ${ratingStars}
+                    <span>${spot.rating ? spot.rating.toFixed(1) : 'N/A'}</span>
                 </div>
             </div>
-            <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(${spot.id}, '${safeName}', '${safeLocation}')">
+            <button type="button" class="itinerary-spot-card__add">
                 <span class="material-icons">add</span>
             </button>
-        </div>
         `;
-    }).join('');
+        
+        // 添加點擊事件
+        const addButton = spotCard.querySelector('.itinerary-spot-card__add');
+        if (addButton) {
+            addButton.addEventListener('click', () => {
+                addSpotToItinerary(spot.id, spot.name, spot.location);
+            });
+        }
+        
+        // 添加到網格
+        grid.appendChild(spotCard);
+    });
+    
+    // 如果沒有可顯示的景點（全部都已選擇）
+    if (grid.children.length === 0) {
+        grid.innerHTML = `
+            <div class="itinerary-empty-state">
+                <span class="material-icons">check_circle</span>
+                <p>所有景點都已選擇</p>
+                <button onclick="loadSpots()" class="itinerary-btn itinerary-btn--secondary">
+                    <span class="material-icons">refresh</span>
+                    重新載入景點
+                </button>
+            </div>
+        `;
+    }
+}
+
+/**
+ * 生成星級評分顯示
+ * @param {number} rating 評分值
+ * @returns {string} 星級HTML
+ */
+function generateRatingStars(rating) {
+    if (!rating) return '<span class="material-icons">star_outline</span>'.repeat(5);
+    
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5 ? 1 : 0;
+    const emptyStars = 5 - fullStars - halfStar;
+    
+    let starsHTML = '';
+    
+    // 添加實心星星
+    for (let i = 0; i < fullStars; i++) {
+        starsHTML += '<span class="material-icons">star</span>';
+    }
+    
+    // 添加半星
+    if (halfStar) {
+        starsHTML += '<span class="material-icons">star_half</span>';
+    }
+    
+    // 添加空心星星
+    for (let i = 0; i < emptyStars; i++) {
+        starsHTML += '<span class="material-icons">star_outline</span>';
+    }
+    
+    return starsHTML;
 }
 
 /**
  * 添加景點到行程
+ * @param {number} spotId 景點ID
+ * @param {string} spotName 景點名稱
+ * @param {string} spotLocation 景點位置
  */
 function addSpotToItinerary(spotId, spotName, spotLocation) {
-    // 檢查是否已經選擇過
-    if (selectedSpots.find(spot => spot.id === spotId)) {
-        showToast('此景點已經在行程中！', 'warning');
+    console.log(`添加景點: ID=${spotId}, 名稱=${spotName}, 位置=${spotLocation}`);
+    
+    // 檢查是否已達到最大景點數量限制
+    const MAX_SPOTS = 10;
+    if (selectedSpots.length >= MAX_SPOTS) {
+        showToast(`最多只能選擇 ${MAX_SPOTS} 個景點`, 'warning');
         return;
     }
     
-    // 添加到已選列表
+    // 檢查是否已經添加過該景點
+    if (selectedSpots.some(spot => spot.id === spotId)) {
+        showToast(`景點「${spotName}」已經添加過了`, 'info');
+        return;
+    }
+    
+    // 獲取景點圖標
+    const spotData = allSpots.find(spot => spot.id === spotId);
+    const icon = spotData ? spotData.icon : 'place';
+    
+    // 添加到已選景點列表
     selectedSpots.push({
         id: spotId,
         name: spotName,
-        location: spotLocation
+        location: spotLocation,
+        icon: icon
     });
     
-    // 更新UI
+    // 更新已選景點顯示
     updateSelectedSpotsList();
+    
+    // 更新景點計數
     updateSelectedCount();
     
-    // 視覺反饋
-    const spotCard = document.querySelector(`[data-spot-id="${spotId}"]`);
-    if (spotCard) {
-        const addBtn = spotCard.querySelector('.itinerary-spot-card__add');
-        if (addBtn) {
-            addBtn.style.background = '#4caf50';
-            addBtn.style.borderColor = '#4caf50';
-            addBtn.style.color = 'white';
-            addBtn.querySelector('.material-icons').textContent = 'check';
-            
-            setTimeout(() => {
-                addBtn.style.background = '';
-                addBtn.style.borderColor = '';
-                addBtn.style.color = '';
-                addBtn.querySelector('.material-icons').textContent = 'add';
-            }, 1000);
-        }
-    }
+    // 更新景點網格，移除已選景點
+    updateSpotsGrid(allSpots);
     
-    showToast(`已添加 ${spotName}`, 'success');
+    // 顯示成功提示
+    showToast(`成功添加「${spotName}」到行程`, 'success');
+    
+    // 添加隱藏輸入欄位到表單
+    addSpotToForm(spotId);
+}
+
+/**
+ * 添加景點ID到表單
+ * @param {number} spotId 景點ID
+ */
+function addSpotToForm(spotId) {
+    const form = document.querySelector('.itinerary-add-form');
+    if (!form) return;
+    
+    // 檢查是否已存在該景點的輸入欄位
+    const existingInput = form.querySelector(`input[name="spotIds"][value="${spotId}"]`);
+    if (existingInput) return;
+    
+    // 創建隱藏輸入欄位
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'spotIds';
+    input.value = spotId;
+    
+    // 添加到表單
+    form.appendChild(input);
+    
+    console.log(`已添加景點ID ${spotId} 到表單`);
 }
 
 /**
  * 從行程中移除景點
+ * @param {number} spotId 景點ID
  */
 function removeSpotFromItinerary(spotId) {
-    const spot = selectedSpots.find(s => s.id === spotId);
-    if (!spot) return;
+    // 從已選列表中移除
+    selectedSpots = selectedSpots.filter(spot => spot.id !== spotId);
     
-    selectedSpots = selectedSpots.filter(s => s.id !== spotId);
+    // 更新已選景點顯示
     updateSelectedSpotsList();
+    
+    // 更新景點計數
     updateSelectedCount();
     
-    showToast(`已移除 ${spot.name}`, 'info');
+    // 更新景點網格，顯示被移除的景點
+    updateSpotsGrid(allSpots);
+    
+    // 從表單中移除該景點的輸入欄位
+    removeSpotFromForm(spotId);
+    
+    // 顯示提示
+    showToast('已從行程中移除景點', 'info');
 }
 
 /**
- * 更新已選景點列表
+ * 從表單中移除景點ID
+ * @param {number} spotId 景點ID
+ */
+function removeSpotFromForm(spotId) {
+    const form = document.querySelector('.itinerary-add-form');
+    if (!form) return;
+    
+    // 查找並移除該景點的輸入欄位
+    const input = form.querySelector(`input[name="spotIds"][value="${spotId}"]`);
+    if (input) {
+        input.remove();
+        console.log(`已從表單移除景點ID ${spotId}`);
+    }
+}
+
+/**
+ * 更新已選景點列表顯示
  */
 function updateSelectedSpotsList() {
-    const container = document.getElementById('selectedSpotsList');
+    const container = document.querySelector('.itinerary-selected-spots');
     if (!container) return;
     
+    // 清空容器
+    container.innerHTML = '';
+    
+    // 如果沒有已選景點，顯示提示
     if (selectedSpots.length === 0) {
         container.innerHTML = `
-            <div class="itinerary-empty-state">
+            <div class="itinerary-empty-selection">
                 <span class="material-icons">info</span>
                 <p>尚未選擇任何景點</p>
-                <small>從上方推薦景點中選擇，或使用搜尋功能尋找更多景點</small>
+                <p class="hint">從上方列表選擇景點添加到行程</p>
             </div>
         `;
         return;
     }
     
-    container.innerHTML = selectedSpots.map((spot, index) => `
-        <div class="itinerary-selected-item">
-            <div class="itinerary-selected-number">${index + 1}</div>
-            <div class="itinerary-selected-content">
-                <h4 class="itinerary-selected-name">${spot.name}</h4>
-                <p class="itinerary-selected-location">${spot.location}</p>
+    // 創建已選景點列表
+    const spotsList = document.createElement('div');
+    spotsList.className = 'itinerary-selected-spots-list';
+    
+    // 添加已選景點
+    selectedSpots.forEach((spot, index) => {
+        const spotItem = document.createElement('div');
+        spotItem.className = 'itinerary-selected-spot-item';
+        spotItem.dataset.spotId = spot.id;
+        
+        // 設置內容
+        spotItem.innerHTML = `
+            <div class="itinerary-selected-spot-item__order">${index + 1}</div>
+            <div class="itinerary-selected-spot-item__icon">
+                <span class="material-icons">${spot.icon || 'place'}</span>
             </div>
-            <button type="button" class="itinerary-selected-remove" onclick="removeSpotFromItinerary(${spot.id})" title="移除景點">
+            <div class="itinerary-selected-spot-item__content">
+                <h5 class="itinerary-selected-spot-item__name">${spot.name}</h5>
+                <p class="itinerary-selected-spot-item__location">
+                    <span class="material-icons">location_on</span>
+                    ${spot.location}
+                </p>
+            </div>
+            <button type="button" class="itinerary-selected-spot-item__remove">
                 <span class="material-icons">close</span>
             </button>
-            <input type="hidden" name="spotIds" value="${spot.id}">
-        </div>
-    `).join('');
+        `;
+        
+        // 添加移除按鈕事件
+        const removeBtn = spotItem.querySelector('.itinerary-selected-spot-item__remove');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                removeSpotFromItinerary(spot.id);
+            });
+        }
+        
+        // 添加到列表
+        spotsList.appendChild(spotItem);
+    });
+    
+    // 添加到容器
+    container.appendChild(spotsList);
 }
 
 /**
@@ -470,8 +675,16 @@ function updateSelectedSpotsList() {
  */
 function updateSelectedCount() {
     const countElement = document.getElementById('selectedCount');
-    if (countElement) {
-        countElement.textContent = `(${selectedSpots.length})`;
+    if (!countElement) return;
+    
+    // 更新數量
+    countElement.textContent = selectedSpots.length;
+    
+    // 更新樣式
+    if (selectedSpots.length > 0) {
+        countElement.classList.add('has-spots');
+    } else {
+        countElement.classList.remove('has-spots');
     }
 }
 
@@ -600,7 +813,7 @@ function validateDesc() {
     }
     
     if (desc.length < 10) {
-        showValidationError(descInput, '行程描述至少需要10個字元');
+        showValidationError(descInput, '行程描述至少需要5個字元');
         return false;
     }
     

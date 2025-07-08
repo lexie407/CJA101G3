@@ -151,119 +151,26 @@
                                             推薦景點
                                         </h3>
                                         <div class="itinerary-spots-grid">
-                                            <!-- 景點選項1 -->
-                                            <div class="itinerary-spot-card" data-spot-id="1">
-                                                <div class="itinerary-spot-card__image">
-                                                    <span class="material-icons">landscape</span>
-                                                </div>
-                                                <div class="itinerary-spot-card__content">
-                                                    <h4 class="itinerary-spot-card__name">台北101</h4>
-                                                    <p class="itinerary-spot-card__location">
-                                                        <span class="material-icons">location_on</span>
-                                                        台北市信義區
-                                                    </p>
-                                                    <div class="itinerary-spot-card__rating">
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star_half</span>
-                                                        <span>4.5</span>
-                                                    </div>
-                                                </div>
-                                                <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(1, '台北101', '台北市信義區')">
-                                                    <span class="material-icons">add</span>
-                                                </button>
-                                            </div>
-
-                                            <!-- 景點選項2 -->
-                                            <div class="itinerary-spot-card" data-spot-id="2">
-                                                <div class="itinerary-spot-card__image">
-                                                    <span class="material-icons">museum</span>
-                                                </div>
-                                                <div class="itinerary-spot-card__content">
-                                                    <h4 class="itinerary-spot-card__name">故宮博物院</h4>
-                                                    <p class="itinerary-spot-card__location">
-                                                        <span class="material-icons">location_on</span>
-                                                        台北市士林區
-                                                    </p>
-                                                    <div class="itinerary-spot-card__rating">
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star_half</span>
-                                                        <span>4.7</span>
-                                                    </div>
-                                                </div>
-                                                <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(2, '故宮博物院', '台北市士林區')">
-                                                    <span class="material-icons">add</span>
-                                                </button>
-                                            </div>
-
-                                            <!-- 景點選項3 -->
-                                            <div class="itinerary-spot-card" data-spot-id="3">
-                                                <div class="itinerary-spot-card__image">
-                                                    <span class="material-icons">water</span>
-                                                </div>
-                                                <div class="itinerary-spot-card__content">
-                                                    <h4 class="itinerary-spot-card__name">淡水老街</h4>
-                                                    <p class="itinerary-spot-card__location">
-                                                        <span class="material-icons">location_on</span>
-                                                        新北市淡水區
-                                                    </p>
-                                                    <div class="itinerary-spot-card__rating">
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star_outline</span>
-                                                        <span>4.3</span>
-                                                    </div>
-                                                </div>
-                                                <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(3, '淡水老街', '新北市淡水區')">
-                                                    <span class="material-icons">add</span>
-                                                </button>
-                                            </div>
-
-                                            <!-- 景點選項4 -->
-                                            <div class="itinerary-spot-card" data-spot-id="4">
-                                                <div class="itinerary-spot-card__image">
-                                                    <span class="material-icons">temple_buddhist</span>
-                                                </div>
-                                                <div class="itinerary-spot-card__content">
-                                                    <h4 class="itinerary-spot-card__name">龍山寺</h4>
-                                                    <p class="itinerary-spot-card__location">
-                                                        <span class="material-icons">location_on</span>
-                                                        台北市萬華區
-                                                    </p>
-                                                    <div class="itinerary-spot-card__rating">
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star</span>
-                                                        <span class="material-icons">star_outline</span>
-                                                        <span>4.4</span>
-                                                    </div>
-                                                </div>
-                                                <button type="button" class="itinerary-spot-card__add" onclick="addSpotToItinerary(4, '龍山寺', '台北市萬華區')">
-                                                    <span class="material-icons">add</span>
-                                                </button>
+                                            <!-- 景點選項將由 JavaScript 動態生成 -->
+                                            <div class="itinerary-loading">
+                                                <span class="material-icons">hourglass_empty</span>
+                                                <p>載入景點中...</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- 已選景點列表 -->
-                                    <div class="itinerary-selected-spots">
+                                    <div class="itinerary-selected-container">
                                         <h3 class="itinerary-section-subtitle">
-                                            <span class="material-icons">playlist_add_check</span>
-                                            已選景點 <span id="selectedCount" class="itinerary-count-badge">(0)</span>
+                                            <span class="material-icons">list</span>
+                                            已選景點 <span id="selectedCount" class="itinerary-selected-count">0</span>
                                         </h3>
-                                        <div id="selectedSpotsList" class="itinerary-selected-list">
-                                            <div class="itinerary-empty-state">
+                                        <div class="itinerary-selected-spots">
+                                            <!-- 已選景點將由 JavaScript 動態生成 -->
+                                            <div class="itinerary-empty-selection">
                                                 <span class="material-icons">info</span>
                                                 <p>尚未選擇任何景點</p>
-                                                <small>從上方推薦景點中選擇，或使用搜尋功能尋找更多景點</small>
+                                                <p class="hint">從上方列表選擇景點添加到行程</p>
                                             </div>
                                         </div>
                                     </div>
@@ -291,6 +198,9 @@
             </main>
         </div>
     </div>
+
+    <!-- Hidden container for initial selected spot IDs on edit page -->
+    <div id="initial-selected-spots" th:if="${selectedSpotIds}" th:data-spot-ids="${#strings.listJoin(selectedSpotIds, ',')}"></div>
 
     <!-- JavaScript -->
     <script th:src="@{/js/itinerary/front-end/add.js}"></script>

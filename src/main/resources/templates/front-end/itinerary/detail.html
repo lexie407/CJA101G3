@@ -33,13 +33,21 @@
                     </div>
                 </section>
 
-                <!-- 返回按鈕 -->
+                <!-- 返回按鈕（麵包屑區塊） -->
                 <section class="itinerary-detail-breadcrumb">
                     <div class="container">
-                        <a th:href="@{/itinerary/itnlist}" class="itinerary-breadcrumb-link">
-                                    <span class="material-icons">arrow_back</span>
-                                    返回行程列表
-                                </a>
+                        <a th:if="${param.from != null and param.from[0] == 'my'}"
+                           th:href="@{/itinerary/my}"
+                           class="itinerary-breadcrumb-link">
+                            <span class="material-icons">arrow_back</span>
+                            返回我的行程
+                        </a>
+                        <a th:unless="${param.from != null and param.from[0] == 'my'}"
+                           th:href="@{/itinerary/itnlist}"
+                           class="itinerary-breadcrumb-link">
+                            <span class="material-icons">arrow_back</span>
+                            返回行程列表
+                        </a>    
                     </div>
                 </section>
 
@@ -243,22 +251,26 @@
                                 複製行程
                             </button>
                             
-                            <!-- 編輯行程按鈕 - 只有行程創建者可以編輯 -->
-                            <button th:if="${itinerary != null && session.member != null && session.member.memId == itinerary.crtId}" 
+                            <!-- 編輯行程按鈕 - 只有在「我的行程」頁面進入且是行程創建者才可以編輯 -->
+                            <button th:if="${itinerary != null and session.member != null and session.member.memId == itinerary.crtId and param.from != null and param.from[0] == 'my'}" 
                                     class="itinerary-outline-btn" id="editBtn">
                                 <span class="material-icons">edit</span>
                                 編輯行程
                             </button>
                             
-                            <!-- 建立揪團按鈕 - 只有行程創建者可以建立揪團 -->
-                            <button th:if="${itinerary != null && session.member != null && session.member.memId == itinerary.crtId}" 
-                                    class="itinerary-outline-btn" id="createActivityBtn">
-                                <span class="material-icons">group_add</span>
-                                建立揪團
-                            </button>
+                            <!-- 建立揪團按鈕 - 只有在「我的行程」頁面且是自己的行程才顯示 -->
+                            <!-- 這個按鈕現在被移到「我的行程」頁面中，詳情頁面不再顯示建立揪團按鈕 -->
                             
                             <!-- 返回列表按鈕 - 所有人可見 -->
-                            <a th:href="@{/itinerary/itnlist}" class="itinerary-text-btn">
+                            <a th:if="${param.from != null and param.from[0] == 'my'}"
+                               th:href="@{/itinerary/my}"
+                               class="itinerary-text-btn">
+                                <span class="material-icons">arrow_back</span>
+                                返回我的行程
+                            </a>
+                            <a th:unless="${param.from != null and param.from[0] == 'my'}"
+                               th:href="@{/itinerary/itnlist}"
+                               class="itinerary-text-btn">
                                 <span class="material-icons">arrow_back</span>
                                 返回列表
                             </a>

@@ -215,37 +215,34 @@
 
 /* 4. 工具列區域 */
 .spot-list-toolbar {
-    padding: var(--section-spacing) 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--md-sys-color-surface);
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    padding: 0.75rem 0;
+    margin-top: 1rem;
+    transition: box-shadow var(--spot-transition);
+}
+
+.spot-list-toolbar.sticky {
+    box-shadow: var(--spot-shadow);
 }
 
 .spot-list-toolbar__content {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
+    padding: 1rem 1.5rem;
 }
 
 .spot-list-toolbar__left {
     flex: 1;
-}
-
-.spot-list-stats {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--md-sys-color-on-surface);
-    font-size: 0.95rem;
-}
-
-.spot-list-stats .material-icons {
-    color: var(--md-sys-color-primary);
-    font-size: 1.2rem;
-}
-
-.spot-list-stats__text strong {
-    color: var(--md-sys-color-primary);
-    font-weight: 700;
+    gap: 1rem;
+    margin-left: 1rem;
 }
 
 .spot-list-toolbar__right {
@@ -254,87 +251,95 @@
     gap: 1rem;
 }
 
-.spot-list-view-controls {
-    display: flex;
-    background: var(--md-sys-color-surface-container-low);
-    border-radius: 8px;
-    padding: 0.25rem;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.spot-list-view-btn {
-    padding: 0.5rem;
-    border: none;
-    background: transparent;
-    color: var(--md-sys-color-on-surface-variant);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all var(--spot-transition);
+.spot-list-filter-group {
     display: flex;
     align-items: center;
-    justify-content: center;
 }
 
-.spot-list-view-btn:hover {
-    background: var(--md-sys-color-surface-container);
-    color: var(--md-sys-color-on-surface);
-}
-
-.spot-list-view-btn.active {
-    background: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-    box-shadow: var(--spot-shadow);
-}
-
-.spot-list-sort-section {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.spot-list-sort-label {
-    font-size: 0.9rem;
-    color: var(--md-sys-color-on-surface);
-    white-space: nowrap;
-}
-
-.spot-list-sort-select {
-    padding: 0.5rem 0.75rem;
+.spot-list-filter-select {
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
     border: 2px solid var(--md-sys-color-outline-variant);
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--md-sys-color-surface);
     color: var(--md-sys-color-on-surface);
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    min-width: 120px;
     transition: all var(--spot-transition);
 }
 
-.spot-list-sort-select:focus {
-    outline: none;
+.spot-list-filter-select:hover {
     border-color: var(--md-sys-color-primary);
 }
 
-.spot-list-add-btn {
-    padding: 0.75rem 1.25rem;
-    background: var(--md-sys-color-secondary);
-    color: var(--md-sys-color-on-secondary);
-    text-decoration: none;
+.spot-list-filter-select:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.spot-list-search-compact {
+    flex: 1;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    background: var(--md-sys-color-surface);
     border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.9rem;
+    border: 2px solid var(--md-sys-color-outline-variant);
+    transition: all var(--spot-transition);
+}
+
+.spot-list-search-compact:focus-within {
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.spot-list-search-compact .spot-list-search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.95rem;
+}
+
+.spot-list-search-compact .spot-list-search-input:focus {
+    outline: none;
+}
+
+.spot-list-toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.spot-list-advanced-btn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.9rem;
+    text-decoration: none;
     transition: all var(--spot-transition);
-    box-shadow: var(--spot-shadow);
-    white-space: nowrap;
 }
 
-.spot-list-add-btn:hover {
-    background: color-mix(in srgb, var(--md-sys-color-secondary) 90%, black 10%);
-    transform: translateY(-2px);
-    box-shadow: var(--spot-shadow-hover);
-    text-decoration: none;
+.spot-list-advanced-btn:hover {
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-primary);
+    background: color-mix(in srgb, var(--md-sys-color-primary) 5%, transparent);
+}
+
+.spot-list-advanced-btn .material-icons {
+    font-size: 1.25rem;
 }
 
 /* 5. 主要內容區域 */
@@ -506,16 +511,18 @@
 .spot-list-card__rating {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    color: var(--md-sys-color-tertiary);
-    font-size: 0.9rem;
-    font-weight: 600;
-    white-space: nowrap;
+    gap: 5px;
+    margin-top: 5px;
+    color: #666;
 }
 
 .spot-list-card__rating .material-icons {
-    font-size: 1.1rem;
-    color: #FFB300;
+    color: #ffd700;
+    font-size: 18px;
+}
+
+.spot-list-card__rating span:last-child {
+    font-weight: bold;
 }
 
 .spot-list-card__location {
@@ -834,11 +841,17 @@
     
     .spot-list-toolbar__content {
         flex-direction: column;
-        align-items: stretch;
+        gap: 1rem;
     }
     
+    .spot-list-toolbar__left,
     .spot-list-toolbar__right {
+        width: 100%;
         justify-content: space-between;
+    }
+
+    .spot-list-search-compact {
+        max-width: none;
     }
 }
 
@@ -891,7 +904,8 @@
     }
     
     .spot-list-toolbar__right {
-        flex-direction: column;
+        flex-wrap: wrap;
+        justify-content: center;
         gap: 0.75rem;
     }
     
@@ -902,6 +916,19 @@
     .spot-list-quick-links__grid {
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 0.75rem;
+    }
+
+    .spot-list-toolbar__left {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .spot-list-filter-group {
+        min-width: 100%;
+    }
+
+    .spot-list-search-compact {
+        margin: 0;
     }
 }
 
@@ -1001,5 +1028,319 @@
     .spot-list-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
+    }
+}
+
+/* 搜尋提示樣式 */
+.spot-list-search-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+    font-weight: 500;
+    min-width: 200px;
+}
+
+.spot-list-search-toast .material-icons {
+    font-size: 1.25rem;
+}
+
+.spot-list-search-toast.searching {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.spot-list-search-toast.success {
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+}
+
+.spot-list-search-toast.error {
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.spot-list-search-toast.hide {
+    animation: slideOut 0.3s ease-in forwards;
+}
+
+/* Toast 提示樣式 */
+.spot-list-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+    font-weight: 500;
+    min-width: 200px;
+}
+
+.spot-list-toast .material-icons {
+    font-size: 1.25rem;
+}
+
+.spot-list-toast--info {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border-left: 4px solid var(--md-sys-color-primary);
+}
+
+.spot-list-toast--success {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-left: 4px solid var(--md-sys-color-primary);
+}
+
+.spot-list-toast--error {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    border-left: 4px solid var(--md-sys-color-error);
+}
+
+.spot-list-toast--warning {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-left: 4px solid var(--md-sys-color-secondary);
+}
+
+.spot-list-toast--searching {
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    border-left: 4px solid var(--md-sys-color-primary);
+}
+
+.spot-list-toast--hide {
+    animation: slideOut 0.3s ease-in forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* 提示訊息樣式 */
+.spot-list-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.spot-list-notification .material-icons {
+    font-size: 20px;
+    color: #4a90e2;
+}
+
+.spot-list-notification span:last-child {
+    color: #333;
+    font-size: 14px;
+}
+
+/* 統一按鈕樣式 */
+.spot-list-control-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.spot-list-control-btn:hover {
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-primary);
+    background: color-mix(in srgb, var(--md-sys-color-primary) 5%, transparent);
+}
+
+.spot-list-control-btn.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-list-control-btn .material-icons {
+    font-size: 1.25rem;
+}
+
+/* 檢視控制 */
+.spot-list-view-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.spot-list-view-btn {
+    padding: 0.5rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spot-list-view-btn:hover {
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-primary);
+    background: color-mix(in srgb, var(--md-sys-color-primary) 5%, transparent);
+}
+
+.spot-list-view-btn.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-list-view-btn .material-icons {
+    font-size: 1.25rem;
+}
+
+/* 排序控制 */
+.spot-list-sort-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spot-list-sort-select {
+    padding: 0.5rem 2rem 0.5rem 1rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.9rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    transition: all var(--spot-transition);
+    min-width: 120px;
+}
+
+.spot-list-sort-select:hover {
+    border-color: var(--md-sys-color-primary);
+}
+
+.spot-list-sort-select:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.spot-list-sort-order {
+    padding: 0.5rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    transition: all var(--spot-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spot-list-sort-order:hover {
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-primary);
+    background: color-mix(in srgb, var(--md-sys-color-primary) 5%, transparent);
+}
+
+.spot-list-sort-order .material-icons {
+    font-size: 1.25rem;
+    transition: transform 0.2s ease;
+}
+
+.spot-list-sort-order.desc .material-icons {
+    transform: rotate(180deg);
+}
+
+/* 進階搜尋按鈕 */
+.spot-list-advanced-btn {
+    composes: spot-list-control-btn;
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .spot-list-control-btn span:not(.material-icons) {
+        display: none;
+    }
+    
+    .spot-list-sort-select {
+        min-width: auto;
+        width: 100px;
     }
 } 

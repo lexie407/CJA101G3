@@ -128,6 +128,37 @@
     align-items: center;
 }
 
+/* Google評分容器 */
+.google-rating-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.google-rating-container .form-control {
+    width: 100%;
+}
+
+.fetch-rating-btn {
+    white-space: nowrap;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.fetch-rating-btn .material-icons {
+    font-size: 18px;
+    margin-right: 4px;
+}
+
 .input-icon {
     position: absolute;
     left: 12px;
@@ -167,6 +198,65 @@
 .form-control::placeholder {
     color: var(--md-sys-color-on-surface-variant);
     opacity: 0.7;
+}
+
+/* 錯誤狀態 */
+.form-control.error {
+    border-color: var(--md-sys-color-error);
+    background: rgba(186, 26, 26, 0.05);
+    box-shadow: 0 0 0 2px rgba(186, 26, 26, 0.1);
+}
+
+.form-control.error:focus {
+    border-color: var(--md-sys-color-error);
+    box-shadow: 0 0 0 2px rgba(186, 26, 26, 0.2);
+}
+
+.form-control.error + .input-icon,
+.form-control.error ~ .input-icon {
+    color: var(--md-sys-color-error);
+}
+
+/* 按鈕禁用狀態 */
+.btn-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* 錯誤提示樣式 */
+.error-message {
+    display: none;
+    color: var(--md-sys-color-error);
+    font-size: var(--font-size-sm);
+    margin-top: 6px;
+    padding: 8px 12px;
+    background: rgba(186, 26, 26, 0.08);
+    border-radius: 6px;
+    border-left: 3px solid var(--md-sys-color-error);
+    animation: slideInDown 0.3s ease-out;
+}
+
+.error-message.show {
+    display: block;
+}
+
+.error-message::before {
+    content: "⚠️";
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+/* 錯誤提示動畫 */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .form-textarea {
@@ -469,3 +559,38 @@
 .spot-review-page #spotDesc {
     box-sizing: border-box;
 }
+
+/* 多圖上傳區塊樣式 */
+.multi-image-upload { margin-top: 12px; }
+.multi-image-dropzone {
+  border: 2px dashed #bbb;
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+  color: #888;
+  background: #fafbfc;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.multi-image-dropzone.dragover { border-color: #2196f3; background: #e3f2fd; }
+.multi-image-list { display: flex; flex-wrap: wrap; gap: 12px; }
+.multi-image-item {
+  display: flex; flex-direction: column; align-items: center;
+  border: 1px solid #ddd; border-radius: 6px; padding: 8px; background: #fff;
+  width: 120px; position: relative;
+}
+.multi-image-thumb {
+  width: 100px; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 6px;
+  border: 1px solid #ccc;
+}
+.multi-image-desc {
+  width: 100%; margin-bottom: 4px; font-size: 13px; padding: 2px 4px;
+  border: 1px solid #ccc; border-radius: 3px;
+}
+.multi-image-delete {
+  background: #e57373; color: #fff; border: none; border-radius: 3px;
+  padding: 2px 8px; font-size: 13px; cursor: pointer;
+  margin-top: 2px;
+}
+.multi-image-delete:hover { background: #c62828; }

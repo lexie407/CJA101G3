@@ -1518,3 +1518,38 @@
         grid-template-columns: 1fr !important;
     }
 } 
+
+/* 多圖上傳區塊樣式（from spot-form.css） */
+.multi-image-upload { margin-top: 12px; }
+.multi-image-dropzone {
+  border: 2px dashed #bbb;
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+  color: #888;
+  background: #fafbfc;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.multi-image-dropzone.dragover { border-color: #2196f3; background: #e3f2fd; }
+.multi-image-list { display: flex; flex-wrap: wrap; gap: 12px; }
+.multi-image-item {
+  display: flex; flex-direction: column; align-items: center;
+  border: 1px solid #ddd; border-radius: 6px; padding: 8px; background: #fff;
+  width: 120px; position: relative;
+}
+.multi-image-thumb {
+  width: 100px; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 6px;
+  border: 1px solid #ccc;
+}
+.multi-image-desc {
+  width: 100%; margin-bottom: 4px; font-size: 13px; padding: 2px 4px;
+  border: 1px solid #ccc; border-radius: 3px;
+}
+.multi-image-delete {
+  background: #e57373; color: #fff; border: none; border-radius: 3px;
+  padding: 2px 8px; font-size: 13px; cursor: pointer;
+  margin-top: 2px;
+}
+.multi-image-delete:hover { background: #c62828; } 

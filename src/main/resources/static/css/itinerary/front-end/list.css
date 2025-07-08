@@ -126,7 +126,7 @@
 
 .itinerary-list-search-row {
     display: grid;
-    grid-template-columns: 1fr 200px auto;
+    grid-template-columns: 1fr 200px 200px auto;
     gap: 1rem;
     align-items: end;
 }
@@ -361,6 +361,8 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .itinerary-list-card__favorite {
@@ -468,6 +470,72 @@
     color: #1976d2;
 }
 
+/* 建立者類型樣式 */
+.itinerary-list-card__author {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.creator-name {
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.creator-official {
+    color: #ff6f00 !important; /* 橙色 - 官方 */
+}
+
+.creator-self {
+    color: #4caf50 !important; /* 綠色 - 自己的 */
+}
+
+.creator-member {
+    color: #2196f3 !important; /* 藍色 - 其他會員 */
+}
+
+.creator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all var(--itinerary-transition);
+}
+
+.creator-badge .material-icons {
+    font-size: 0.9rem !important;
+    margin-right: 0 !important;
+}
+
+.creator-badge--official {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    color: #e65100;
+    border: 1px solid #ffcc02;
+}
+
+.creator-badge--self {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    color: #2e7d32;
+    border: 1px solid #4caf50;
+}
+
+.creator-badge--member {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1565c0;
+    border: 1px solid #2196f3;
+}
+
+.creator-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
 /* 優化卡片底部按鈕 */
 .itinerary-list-card__actions {
     display: flex;
@@ -528,6 +596,68 @@
 .edit-itinerary-btn:hover {
     background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%) !important;
     box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4) !important;
+}
+
+/* 複製行程按鈕樣式 */
+.copy-itinerary-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%) !important;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3) !important;
+}
+
+.copy-itinerary-btn:hover {
+    background: linear-gradient(135deg, #43a047 0%, #4caf50 100%) !important;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4) !important;
+}
+
+/* 管理行程按鈕樣式 */
+.manage-hint-btn {
+    background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%) !important;
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3) !important;
+}
+
+.manage-hint-btn:hover {
+    background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%) !important;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4) !important;
+}
+
+/* 卡片標籤容器 */
+.itinerary-list-card__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* 我的行程標籤 */
+.itinerary-list-card__badge--mine {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+    color: white;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    animation: pulse-mine 2s infinite;
+}
+
+.itinerary-list-card__badge--mine .material-icons {
+    font-size: 1rem;
+}
+
+/* 我的行程標籤動畫 */
+@keyframes pulse-mine {
+    0% {
+        box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    }
+    50% {
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
+    }
+    100% {
+        box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+    }
 }
 
 /* 7. 空狀態 - 小卡片風格優化 */
@@ -599,8 +729,13 @@
 
 @media (max-width: 992px) {
     .itinerary-list-search-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 1rem;
+    }
+    
+    .itinerary-list-search-actions {
+        grid-column: 1 / -1;
+    }
     }
     
     .itinerary-list-search-actions {
@@ -626,6 +761,15 @@
     :root {
         --itinerary-grid-gap: 1rem;
         --section-spacing: 1rem;
+    }
+    
+    .itinerary-list-search-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .itinerary-list-search-actions {
+        grid-column: 1;
     }
     
     .itinerary-list-hero {

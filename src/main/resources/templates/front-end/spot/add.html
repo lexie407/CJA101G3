@@ -36,7 +36,7 @@
                                         </a>
                                     </li>
                                     <li class="spot-add-breadcrumb__item">
-                                        <a th:href="@{/spot/spotlist}" class="spot-add-breadcrumb__link">
+                                        <a th:href="@{/spot/list}" class="spot-add-breadcrumb__link">
                                             <span class="material-icons">list</span>
                                             景點列表
                                         </a>
@@ -184,6 +184,62 @@
                                                         </div>
                                                         <div class="spot-add-error-text" id="spotLocError"></div>
                                                     </div>
+
+                                                    <!-- 地區（下拉選單） -->
+                                                    <div class="spot-add-form-group">
+                                                        <label for="region" class="spot-add-label">地區</label>
+                                                        <div class="spot-add-input-container">
+                                                            <span class="material-icons spot-add-input-icon">public</span>
+                                                            <select id="region" name="region" class="spot-add-input" th:field="*{region}">
+                                                                <option value="">請選擇地區</option>
+                                                                <option value="台北市">台北市</option>
+                                                                <option value="新北市">新北市</option>
+                                                                <option value="桃園市">桃園市</option>
+                                                                <option value="台中市">台中市</option>
+                                                                <option value="台南市">台南市</option>
+                                                                <option value="高雄市">高雄市</option>
+                                                                <option value="基隆市">基隆市</option>
+                                                                <option value="新竹市">新竹市</option>
+                                                                <option value="新竹縣">新竹縣</option>
+                                                                <option value="苗栗縣">苗栗縣</option>
+                                                                <option value="彰化縣">彰化縣</option>
+                                                                <option value="南投縣">南投縣</option>
+                                                                <option value="雲林縣">雲林縣</option>
+                                                                <option value="嘉義市">嘉義市</option>
+                                                                <option value="嘉義縣">嘉義縣</option>
+                                                                <option value="屏東縣">屏東縣</option>
+                                                                <option value="宜蘭縣">宜蘭縣</option>
+                                                                <option value="花蓮縣">花蓮縣</option>
+                                                                <option value="台東縣">台東縣</option>
+                                                                <option value="澎湖縣">澎湖縣</option>
+                                                                <option value="金門縣">金門縣</option>
+                                                                <option value="連江縣">連江縣</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="spot-add-help-text">選擇景點所在的縣市地區</div>
+                                                    </div>
+
+                                                    <!-- 聯絡電話 -->
+                                                    <div class="spot-add-form-group">
+                                                        <label for="tel" class="spot-add-label">聯絡電話</label>
+                                                        <div class="spot-add-input-container">
+                                                            <span class="material-icons spot-add-input-icon">phone</span>
+                                                            <input id="tel" name="tel" type="text" class="spot-add-input" th:field="*{tel}" maxlength="20" placeholder="例如：02-12345678">
+                                                        </div>
+                                                        <div class="spot-add-help-text">請輸入景點的聯絡電話，格式如：02-12345678</div>
+                                                        <div class="spot-add-error-text" id="telError"></div>
+                                                    </div>
+
+                                                    <!-- 官方網站 -->
+                                                    <div class="spot-add-form-group">
+                                                        <label for="website" class="spot-add-label">官方網站</label>
+                                                        <div class="spot-add-input-container">
+                                                            <span class="material-icons spot-add-input-icon">language</span>
+                                                            <input id="website" name="website" type="url" class="spot-add-input" th:field="*{website}" maxlength="255" placeholder="例如：https://www.example.com">
+                                                        </div>
+                                                        <div class="spot-add-help-text">請輸入景點的官方網站URL，必須包含http://或https://</div>
+                                                        <div class="spot-add-error-text" id="websiteError"></div>
+                                                    </div>
                                                 </div>
 
                                                 <!-- 景點描述 -->
@@ -197,40 +253,33 @@
                                                                   class="spot-add-textarea" 
                                                                   th:field="*{spotDesc}"
                                                                   rows="6" 
-                                                                  placeholder="請詳細描述這個景點的特色、美景、歷史背景、適合的遊覽時間、交通方式等資訊..."
-                                                                  maxlength="1000"
-                                                                  required
-                                                                  aria-describedby="spotDescHelp"></textarea>
-                                                        <div class="spot-add-char-count">
-                                                            <span id="descCharCount">0</span>/1000
-                                                        </div>
+                                                                  placeholder="請詳細描述這個景點的特色、美景、歷史背景、適合的遊覽時間、交通方式等資訊..."></textarea>
+                                                        <div id="descCharCount" class="spot-add-char-count">0/500</div>
                                                     </div>
-                                                    <div id="spotDescHelp" class="spot-add-help-text">
-                                                        詳細的描述能幫助其他旅客更了解這個景點，建議包含特色、交通、最佳遊覽時間等資訊
-                                                    </div>
+                                                    <div class="spot-add-help-text">請輸入100~500字，讓其他旅人更了解這個景點</div>
                                                     <div class="spot-add-error-text" id="spotDescError"></div>
+                                                </div>
+                                                <!-- 多圖上傳區塊（完全複製後台） -->
+                                                <div class="form-group form-group-full" style="margin-top: 2.5rem;">
+                                                    <label class="form-label">景點多圖上傳</label>
+                                                    <div id="multiImageUpload" class="multi-image-upload">
+                                                        <input id="multiImageInput" type="file" accept="image/*" multiple style="display:none;">
+                                                        <div class="multi-image-dropzone" id="multiImageDropzone">
+                                                            <span>拖曳圖片到此，或 <button type="button" id="multiImageSelectBtn" class="btn btn-sm btn-secondary">選擇圖片</button></span>
+                                                        </div>
+                                                        <div class="multi-image-list" id="multiImageList">
+                                                            <!-- 動態顯示已上傳圖片、描述、刪除按鈕 -->
+                                                        </div>
+                                                        <div class="helper-text">可上傳多張圖片，每張可填寫描述，支援拖拉排序與刪除</div>
+                                                    </div>
                                                 </div>
                                             </div>
 
                                             <!-- 提交須知 -->
-                                            <div class="spot-add-notice">
-                                                <div class="spot-add-notice__icon">
-                                                    <span class="material-icons">info</span>
-                                                </div>
-                                                <div class="spot-add-notice__content">
-                                                    <h4 class="spot-add-notice__title">提交須知</h4>
-                                                    <ul class="spot-add-notice__list">
-                                                        <li>景點提交後將進入審核階段，審核通過後才會公開顯示</li>
-                                                        <li>請確保提供的資訊真實準確，避免重複提交相同景點</li>
-                                                        <li>建議提供詳細的景點描述，幫助其他旅客了解</li>
-                                                        <li>如有疑問，請透過「與我聊聊」功能聯繫客服人員</li>
-                                                    </ul>
-                                                </div>
-                                            </div>
 
                                             <!-- 按鈕區域 -->
                                             <div class="spot-add-actions">
-                                                <a th:href="@{/spot/spotlist}" class="spot-add-btn spot-add-btn--secondary">
+                                                <a th:href="@{/spot/list}" class="spot-add-btn spot-add-btn--secondary">
                                                     <span class="material-icons">arrow_back</span>
                                                     返回列表
                                                 </a>

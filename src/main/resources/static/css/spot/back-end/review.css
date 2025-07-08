@@ -1,5 +1,25 @@
 /* Review 頁面專用樣式 */
 
+/* 針對景點審核頁面，覆蓋模板中的 content-area-main padding */
+/* 使用頁面特有的標識來確保只影響景點審核頁面 */
+main.spot-review-page {
+    padding: 0;
+    width: 100%;
+    min-height: calc(100vh - 60px);
+    background: var(--md-sys-color-surface-container-lowest);
+}
+
+/* 當景點審核頁面作為 content-area-main 使用時，覆蓋全域 padding */
+.main-content main.spot-review-page {
+    padding: 0;
+}
+
+/* 為搜尋區域重新設定適當的間距 */
+.spot-review-page .search-section {
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
 /* 審核頁面容器 - 統一使用 back_style.css 標準設定 */
 /* 移除所有覆蓋樣式，使用 .content-area-main 標準 padding: 20px */
 
@@ -12,21 +32,68 @@
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     border: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
-    overflow: hidden; /* 確保圓角效果 */
+    overflow: hidden;
+    width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
 }
 
 /* 表格樣式調整 */
-.admin-table {
+.spot-list-table-wrapper .admin-table {
     width: 100%;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
     border-collapse: separate;
     border-spacing: 0;
     margin: 0;
+    table-layout: fixed;
 }
 
-.admin-table th {
+/* 表格欄位寬度設定 */
+.spot-list-table-wrapper .admin-table th:first-child,
+.spot-list-table-wrapper .admin-table td:first-child {
+    width: 50px;
+    text-align: center;
+}
+
+.spot-list-table-wrapper .admin-table th:nth-child(2),
+.spot-list-table-wrapper .admin-table td:nth-child(2) {
+    width: 60px;
+}
+
+.spot-list-table-wrapper .admin-table th:nth-child(3),
+.spot-list-table-wrapper .admin-table td:nth-child(3) {
+    width: 15%;
+}
+
+.spot-list-table-wrapper .admin-table th:nth-child(4),
+.spot-list-table-wrapper .admin-table td:nth-child(4) {
+    width: 15%;
+}
+
+.spot-list-table-wrapper .admin-table th:nth-child(5),
+.spot-list-table-wrapper .admin-table td:nth-child(5) {
+    width: auto;
+}
+
+.spot-list-table-wrapper .admin-table th:nth-child(6),
+.spot-list-table-wrapper .admin-table td:nth-child(6) {
+    width: 100px;
+}
+
+.spot-list-table-wrapper .admin-table th:nth-child(7),
+.spot-list-table-wrapper .admin-table td:nth-child(7) {
+    width: 80px;
+    text-align: center;
+}
+
+.spot-list-table-wrapper .admin-table th:nth-child(8),
+.spot-list-table-wrapper .admin-table td:nth-child(8) {
+    width: 100px;
+    text-align: center;
+}
+
+/* 表格標題和單元格基本樣式 */
+.spot-list-table-wrapper .admin-table th {
     background: var(--md-sys-color-surface-container, #f5f5f5);
     padding: 16px 20px;
     text-align: left;
@@ -40,7 +107,7 @@
     z-index: 10;
 }
 
-.admin-table td {
+.spot-list-table-wrapper .admin-table td {
     padding: 18px 20px;
     border-bottom: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
     font-size: 14px;
@@ -49,25 +116,33 @@
     line-height: 1.5;
 }
 
-.admin-table tr:hover {
-    background: var(--md-sys-color-surface-container, #f5f5f5);
-    transition: background-color 0.2s ease;
+/* 表格內容溢出處理 */
+.spot-list-table-wrapper .admin-table th,
+.spot-list-table-wrapper .admin-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 描述欄位允許換行 */
+.spot-list-table-wrapper .admin-table td:nth-child(5) {
+    white-space: normal;
 }
 
 /* 勾選框樣式 */
-.admin-table #selectAll,
-.admin-table .spot-checkbox {
+.spot-list-table-wrapper .admin-table #selectAll,
+.spot-list-table-wrapper .admin-table .spot-checkbox {
     transform: scale(1.2);
     margin: 0;
 }
 
-.admin-table #selectAll:indeterminate {
+.spot-list-table-wrapper .admin-table #selectAll:indeterminate {
     background-color: #1976d2;
     opacity: 0.7;
 }
 
 /* 選中的行樣式 */
-.admin-table tr.selected {
+.spot-list-table-wrapper .admin-table tr.selected {
     background-color: rgba(33, 150, 243, 0.08) !important;
     border-left: 4px solid #2196F3;
 }
@@ -76,7 +151,9 @@
 
 /* 確保內容區有足夠的最小高度來觸發拖拉條 */
 .content-container {
-    min-height: calc(100vh - 100px);
+    width: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 /* 自定義 Modal 樣式 */
@@ -469,7 +546,7 @@
 }
 
 /* 隱藏表格行的樣式 */
-.admin-table tr[data-status].hidden {
+.spot-list-table-wrapper .admin-table tr[data-status].hidden {
     display: none;
 }
 
@@ -496,15 +573,8 @@
     }
 }
 
-.spot-review-page {
-    padding-top: 20px;
-    padding-left: 50px;
-    padding-right: 50px;
-}
-
 .spot-review-page .admin-table {
     width: 100%;
-    max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -519,4 +589,91 @@
     justify-content: flex-end;
     gap: 8px;
     align-items: center;
-} 
+}
+
+/* 響應式設計 - 強化表格橫向滑動與內容自適應 */
+@media (max-width: 1024px) {
+    .spot-review-page .search-section {
+        padding: 15px;
+    }
+    
+    .admin-table th:nth-child(5) { width: 25%; } /* 描述欄位變窄 */
+}
+
+@media (max-width: 768px) {
+    .spot-review-page .search-section {
+        padding: 10px;
+    }
+    
+    .spot-list-table-wrapper {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .spot-list-table-wrapper .admin-table {
+        min-width: 900px;
+    }
+}
+
+@media (max-width: 600px) {
+  .spot-review-page .search-section {
+    padding: 5px;
+  }
+  
+  .spot-list-table-wrapper {
+    padding: 0;
+  }
+  .admin-table th, .admin-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  .search-container {
+    padding: 10px 4px;
+  }
+}
+
+@media (max-width: 500px) {
+  .admin-table th, .admin-table td {
+    font-size: 11px;
+    padding: 6px 2px;
+  }
+}
+
+/* 移除自定義的次導覽列樣式，使用全域樣式 */
+/* 只保留最基本的響應式處理 */
+@media (max-width: 768px) {
+    .secondary-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .secondary-nav ul {
+        min-width: max-content;
+        padding: 0 20px;
+    }
+}
+
+/* 美化最小寬度下的滾動條 */
+.secondary-nav::-webkit-scrollbar {
+    height: 6px;
+}
+
+.secondary-nav::-webkit-scrollbar-track {
+    background: var(--md-sys-color-surface-container);
+}
+
+.secondary-nav::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline);
+    border-radius: 3px;
+}
+
+.secondary-nav::-webkit-scrollbar-thumb:hover {
+    background: var(--md-sys-color-outline-variant);
+}
+
+/* 主要內容區域 */
+.main-content-area {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}

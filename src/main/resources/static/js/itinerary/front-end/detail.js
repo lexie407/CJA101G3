@@ -65,6 +65,7 @@ function bindButtonEvents() {
     if (bottomFavoriteBtn) {
         bottomFavoriteBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            showToast('已點擊收藏按鈕', 'info');
             toggleFavorite();
         });
     }
@@ -87,14 +88,7 @@ function bindButtonEvents() {
         });
     }
     
-    // 建立揪團按鈕
-    const createActivityBtn = document.querySelector('#createActivityBtn');
-    if (createActivityBtn) {
-        createActivityBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            createActivity();
-        });
-    }
+    // 建立揪團按鈕已移除，現在只在「我的行程」頁面中提供
     
     // 景點按鈕
     document.addEventListener('click', function(e) {
@@ -154,7 +148,10 @@ function loadItineraryData() {
         })
         .then(data => {
             if (data.success) {
+                // 設定收藏狀態
+                isFavorited = data.isFavorited || false;
                 updatePageData(data);
+                updateFavoriteButton();
             } else {
                 showToast(data.message || '載入失敗', 'error');
             }
@@ -172,8 +169,11 @@ function updatePageData(itinerary) {
     // 更新頁面標題
     document.title = `${itinerary.itnName} - 行程詳情 - 島遊Kha`;
     
-    // 更新英雄區塊
-    updateHeroSection(itinerary);
+    // 更新行程標題
+    const titleElement = document.querySelector('.itinerary-detail-title');
+    if (titleElement) {
+        titleElement.textContent = itinerary.itnName;
+    }
     
     // 更新行程描述
     updateDescription(itinerary);
@@ -181,11 +181,8 @@ function updatePageData(itinerary) {
     // 更新景點列表
     updateSpotsList(itinerary.spots);
     
-    // 更新行程資訊
-    updateItineraryInfo(itinerary);
-    
-    // 更新相關行程
-    updateRelatedItineraries(itinerary.related);
+    // 更新行程元數據
+    updateItineraryMeta(itinerary);
 }
 
 /**
@@ -222,9 +219,53 @@ function updateHeroSection(itinerary) {
  * 更新行程描述
  */
 function updateDescription(itinerary) {
-    const descElement = document.querySelector('.itinerary-detail-desc');
+    const descElement = document.querySelector('.itinerary-description-text');
     if (descElement) {
         descElement.textContent = itinerary.itnDesc || '暫無描述';
+    }
+}
+
+/**
+ * 更新行程元數據
+ */
+function updateItineraryMeta(itinerary) {
+    // 更新建立者
+    const authorElement = document.querySelector('.itinerary-meta-item span:nth-child(2)');
+    if (authorElement && authorElement.parentElement.querySelector('.material-icons').textContent === 'person') {
+        authorElement.textContent = `會員 ${itinerary.crtId}`;
+    }
+    
+    // 更新建立時間
+    const dateElement = document.querySelector('.itinerary-meta-item span:nth-child(2)');
+    const dateElements = document.querySelectorAll('.itinerary-meta-item');
+    for (let element of dateElements) {
+        const icon = element.querySelector('.material-icons');
+        if (icon && icon.textContent === 'schedule') {
+            const span = element.querySelector('span:nth-child(2)');
+            if (span) {
+                span.textContent = formatDate(itinerary.itnCreateDat);
+            }
+            break;
+        }
+    }
+    
+    // 更新景點數量
+    const spotElements = document.querySelectorAll('.itinerary-meta-item');
+    for (let element of spotElements) {
+        const icon = element.querySelector('.material-icons');
+        if (icon && icon.textContent === 'place') {
+            const span = element.querySelector('span:nth-child(2)');
+            if (span) {
+                span.textContent = `${itinerary.spotCount || 0} 個景點`;
+            }
+            break;
+        }
+    }
+    
+    // 更新景點數量標題
+    const spotCountElement = document.querySelector('.itinerary-spot-count');
+    if (spotCountElement) {
+        spotCountElement.textContent = `(${itinerary.spotCount || 0} 個景點)`;
     }
 }
 
@@ -232,26 +273,21 @@ function updateDescription(itinerary) {
  * 更新景點列表
  */
 function updateSpotsList(spots) {
-    const spotsContainer = document.querySelector('.itinerary-detail-spots');
-    if (!spotsContainer || !spots) return;
+    const spotsContainer = document.querySelector('.itinerary-spots-list');
+    if (!spotsContainer) return;
     
-    const spotsList = spotsContainer.querySelector('.itinerary-spot-item');
-    if (!spotsList) return;
-    
-    // 清空現有內容
-    spotsList.innerHTML = '';
-    
-    // 添加景點
-    spots.forEach((spot, index) => {
-        const spotElement = createSpotElement(spot, index + 1);
-        spotsList.appendChild(spotElement);
-    });
-    
-    // 更新標題中的景點數量
-    const sectionTitle = spotsContainer.querySelector('.itinerary-detail-section-title');
-    if (sectionTitle) {
-        sectionTitle.innerHTML = `<span class="material-icons">place</span>行程景點 (${spots.length}個景點)`;
+    // 如果有景點數據，顯示實際景點
+    if (spots && spots.length > 0) {
+        // 清空現有內容
+        spotsContainer.innerHTML = '';
+        
+        // 添加景點
+        spots.forEach((spot, index) => {
+            const spotElement = createSpotElement(spot, index + 1);
+            spotsContainer.appendChild(spotElement);
+        });
     }
+    // 如果沒有景點數據，保持現有的範例景點顯示
 }
 
 /**
@@ -264,17 +300,14 @@ function createSpotElement(spot, number) {
         <div class="itinerary-spot-number">${number}</div>
         <div class="itinerary-spot-content">
             <div class="itinerary-spot-header">
-                <h3 class="itinerary-spot-name">${spot.spotName}</h3>
+                <h4 class="itinerary-spot-name">${spot.spotName || '景點名稱'}</h4>
                 <div class="itinerary-spot-actions">
                     <button class="itinerary-spot-btn" 
-                            data-action="view" 
                             data-spot-id="${spot.spotId}" 
                             title="查看景點詳情">
                         <span class="material-icons">visibility</span>
                     </button>
                     <button class="itinerary-spot-btn" 
-                            data-action="map" 
-                            data-spot-id="${spot.spotId}" 
                             title="在地圖上查看">
                         <span class="material-icons">map</span>
                     </button>
@@ -282,8 +315,9 @@ function createSpotElement(spot, number) {
             </div>
             <p class="itinerary-spot-location">
                 <span class="material-icons">place</span>
-                ${spot.spotLoc}
+                <span>${spot.spotLoc || '景點地址'}</span>
             </p>
+            <p class="itinerary-spot-description">${spot.spotDesc || '景點描述'}</p>
         </div>
     `;
     
@@ -390,6 +424,7 @@ function createRelatedItineraryElement(itinerary) {
  * 切換收藏狀態
  */
 function toggleFavorite() {
+    showToast('已點擊收藏按鈕', 'info');
     if (!itineraryId) return;
     
     const favoriteBtn = document.querySelector('.itinerary-action-btn--favorite');
@@ -418,9 +453,16 @@ function toggleFavorite() {
     })
     .then(data => {
         if (data.success) {
-            isFavorited = !isFavorited;
+            isFavorited = data.isFavorited;
             updateFavoriteButton();
-            showToast(isFavorited ? '已加入收藏' : '已取消收藏', 'success');
+            // 新增明顯提示
+            showToast(data.message || (isFavorited ? '已加入收藏' : '已取消收藏'), isFavorited ? 'success' : 'info');
+            // 通知其他頁面
+            localStorage.setItem('favoriteChange', JSON.stringify({
+                itineraryId: itineraryId,
+                isFavorited: isFavorited,
+                timestamp: new Date().getTime()
+            }));
         } else {
             showToast(data.message || '操作失敗', 'error');
         }
@@ -519,7 +561,7 @@ function copyItinerary() {
  */
 function processCopyItinerary(customName) {
     // 發送複製請求
-    fetch(`/api/itinerary/${itineraryId}/copy`, {
+    fetch(`/itinerary/api/${itineraryId}/copy`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -566,41 +608,7 @@ function editItinerary() {
     window.location.href = `/itinerary/edit/${itineraryId}`;
 }
 
-/**
- * 建立揪團
- */
-function createActivity() {
-    if (!itineraryId) {
-        showToast('無法獲取行程ID', 'error');
-        return;
-    }
-    
-    // 確認是否已登入
-    fetch('/api/members/check-login')
-        .then(response => response.json())
-        .then(data => {
-            if (!data.isLoggedIn) {
-                // 未登入，顯示提示並導向登入頁
-                showLoginRequiredModal('activity');
-                return;
-            }
-            
-            // 已登入，顯示確認對話框
-            showConfirmModal(
-                '建立揪團',
-                '確定要以此行程建立揪團活動嗎？系統會自動複製此行程作為揪團活動的行程。',
-                '確定建立',
-                () => {
-                    // 導向到建立揪團頁面，並帶上行程ID
-                    window.location.href = `/groupactivity/create?itnId=${itineraryId}`;
-                }
-            );
-        })
-        .catch(error => {
-            console.error('檢查登入狀態失敗:', error);
-            showToast('網路錯誤，請稍後再試', 'error');
-    });
-}
+// 建立揪團功能已移至「我的行程」頁面
 
 /**
  * 分享行程

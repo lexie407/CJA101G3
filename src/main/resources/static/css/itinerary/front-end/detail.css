@@ -229,6 +229,18 @@
     font-size: 1.2rem;
 }
 
+.itinerary-action-btn#favoriteBtn:hover,
+.itinerary-action-btn#favoriteBtn.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+    transition: all var(--itinerary-detail-transition);
+}
+
+.itinerary-action-btn#favoriteBtn .material-icons {
+    color: var(--md-sys-color-on-primary);
+}
+
 .itinerary-detail-meta {
     display: flex;
     gap: 2rem;
@@ -1105,3 +1117,66 @@
 .modal-btn-primary:hover {
     background-color: #1976D2;
 } 
+
+/* 上方小愛心收藏按鈕 */
+.itinerary-action-btn--favorite:hover,
+.itinerary-action-btn--favorite.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+.itinerary-action-btn--favorite:hover .material-icons,
+.itinerary-action-btn--favorite.active .material-icons {
+    color: var(--md-sys-color-on-primary);
+}
+
+/* 底部大收藏按鈕 */
+.itinerary-primary-btn#favoriteBtn:hover,
+.itinerary-primary-btn#favoriteBtn.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+.itinerary-primary-btn#favoriteBtn:hover .material-icons,
+.itinerary-primary-btn#favoriteBtn.active .material-icons {
+    color: var(--md-sys-color-on-primary);
+}
+
+/* ===== Toast 提示樣式 ===== */
+.toast {
+    position: fixed;
+    right: 40px;
+    bottom: 40px;
+    min-width: 180px;
+    max-width: 320px;
+    background: #323232;
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    transition: opacity 0.3s, transform 0.3s;
+    transform: translateY(30px);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.toast--show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+.toast--success {
+    background: #4caf50;
+}
+.toast--error {
+    background: #f44336;
+}
+.toast--warning {
+    background: #ff9800;
+}
+.toast__content .material-icons {
+    font-size: 1.3em;
+    vertical-align: middle;
+}
