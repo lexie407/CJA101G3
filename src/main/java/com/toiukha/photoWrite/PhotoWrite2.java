@@ -13,6 +13,7 @@ class PhotoWrite2 {
 		String userid = "root";
 		String passwd = "0212";
 		String photos = "src/main/resources/static/DB_photo3"; //測試用圖片已置於【專案錄徑】底下的【resources/DB_photos3】目錄內
+
 		String update = "update advertisment set ADIMAGE =? where ADID=?";
 
 		int count = 1;
