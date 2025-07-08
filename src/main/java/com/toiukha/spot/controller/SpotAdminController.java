@@ -50,6 +50,7 @@ import org.springframework.http.HttpStatus;
 import java.util.ArrayList;
 import com.toiukha.spot.model.SpotImgVO;
 import com.toiukha.spot.service.SpotImgService;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * 景點管理後端總控制器
@@ -302,88 +303,28 @@ public class SpotAdminController {
     @PostMapping("/add")
     @ResponseBody
     public Map<String, Object> processAdd(@Valid @ModelAttribute SpotVO spotVO,
-                           BindingResult result,
-                           RedirectAttributes redirectAttr,
-                           @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
-                           @RequestParam(value = "multiImages", required = false) List<MultipartFile> multiImages,
-                           @RequestParam(value = "multiImageDescs", required = false) List<String> multiImageDescs) {
+                                          BindingResult result,
+                                          HttpSession session) {
         Map<String, Object> resp = new HashMap<>();
-        final int MAX_IMAGES = 8;
-        final long MAX_SIZE = 2 * 1024 * 1024L;
-        final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/jpg");
-        try {
-            if (result.hasErrors()) {
-                resp.put("success", false);
-                resp.put("message", formatValidationErrors(result));
-                return resp;
-            }
-            // 驗證總數量（含舊圖）
-            int existCount = 0;
-            if (spotVO.getSpotId() != null) {
-                existCount = spotImgService.getImagesBySpotId(spotVO.getSpotId()).size();
-            }
-            int newCount = (multiImages != null ? multiImages.size() : 0);
-            if (existCount + newCount > MAX_IMAGES) {
-                resp.put("success", false);
-                resp.put("message", "最多只能上傳" + MAX_IMAGES + "張圖片");
-                return resp;
-            }
-            // 驗證每張圖片
-            if (multiImages != null) {
-                for (MultipartFile mf : multiImages) {
-                    if (mf == null || mf.isEmpty()) continue;
-                    if (!ALLOWED_TYPES.contains(mf.getContentType())) {
-                        resp.put("success", false);
-                        resp.put("message", "僅允許 JPG、PNG 格式圖片");
-                        return resp;
-                    }
-                    if (mf.getSize() > MAX_SIZE) {
-                        resp.put("success", false);
-                        resp.put("message", "單張圖片不可超過2MB");
-                        return resp;
-                    }
-                }
-            }
-            // 儲存單圖
-            if (imageFile != null && !imageFile.isEmpty()) {
-                String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
-                String uploadDir = "src/main/resources/static/images/spot/";
-                File dir = new File(uploadDir);
-                if (!dir.exists()) dir.mkdirs();
-                File dest = new File(uploadDir + fileName);
-                Files.copy(imageFile.getInputStream(), Paths.get(dest.toURI()));
-                spotVO.setFirstPictureUrl("/images/spot/" + fileName);
-            }
-            spotVO.setCrtId(1);
-            spotVO.setSpotStatus((byte) 1);
-            spotService.addSpot(spotVO);
-            // 儲存多圖
-            if (multiImages != null && !multiImages.isEmpty()) {
-                for (int i = 0; i < multiImages.size(); i++) {
-                    MultipartFile mf = multiImages.get(i);
-                    if (mf == null || mf.isEmpty()) continue;
-                    String fileName = UUID.randomUUID() + "_" + mf.getOriginalFilename();
-                    String uploadDir = "src/main/resources/static/images/spot/";
-                    File dir = new File(uploadDir);
-                    if (!dir.exists()) dir.mkdirs();
-                    File dest = new File(uploadDir + fileName);
-                    Files.copy(mf.getInputStream(), Paths.get(dest.toURI()));
-                    SpotImgVO img = new SpotImgVO();
-                    img.setSpotId(spotVO.getSpotId());
-                    img.setImgPath("/images/spot/" + fileName);
-                    if (multiImageDescs != null && i < multiImageDescs.size())
-                        img.setImgDesc(multiImageDescs.get(i));
-                    img.setImgTime(java.time.LocalDateTime.now());
-                    spotImgService.saveImage(img);
-                }
-            }
-            resp.put("success", true);
-            return resp;
-        } catch (Exception e) {
+        if (result.hasErrors()) {
             resp.put("success", false);
-            resp.put("message", formatExceptionMessage(e));
+            resp.put("message", "表單資料有誤，請修正後重試");
             return resp;
         }
+        try {
+            Integer adminId = getCurrentUserId(session);
+            logger.info("[DEBUG] 新增景點時取得的 adminId: {}", adminId);
+            spotVO.setCrtId(adminId);
+            spotVO.setSpotStatus((byte) 1); // 直接上架
+            spotService.save(spotVO);
+            resp.put("success", true);
+            resp.put("message", "景點新增成功");
+        } catch (Exception e) {
+            logger.error("新增景點失敗", e);
+            resp.put("success", false);
+            resp.put("message", "系統錯誤，請稍後再試");
+        }
+        return resp;
     }
 
     /**
@@ -672,391 +613,6 @@ public class SpotAdminController {
      * @return 重導向到列表頁
      */
     @PostMapping("/batch-reject")
-    public String batchRejectSpots(@RequestParam("spotIds") List<Integer> spotIds,
-                                   RedirectAttributes redirectAttr) {
-        try {
-            if (spotIds == null || spotIds.isEmpty()) {
-                redirectAttr.addFlashAttribute("errorMessage", "請選擇要退回的景點");
-                return "redirect:/admin/spot/spotlist";
-            }
-            
-            int rejectedCount = 0;
-            for (Integer spotId : spotIds) {
-                try {
-                    spotService.rejectSpot(spotId, "批次退回", "");
-                    rejectedCount++;
-                } catch (Exception e) {
-                    logger.warn("退回景點 {} 時發生錯誤: {}", spotId, e.getMessage());
-                }
-            }
-            
-            redirectAttr.addFlashAttribute("successMessage", "成功退回 " + rejectedCount + " 個景點");
-        } catch (Exception e) {
-            redirectAttr.addFlashAttribute("errorMessage", "批量退回失敗：" + e.getMessage());
-        }
-        return "redirect:/admin/spot/spotlist";
-    }
-
-    /**
-     * 後台首頁 (Dashboard)
-     * @param model 模型
-     * @return 後台首頁
-     */
-    @GetMapping("/dashboard")
-    public String adminDashboard(Model model) {
-        // 取得統計資料
-        model.addAttribute("totalSpots", spotService.getTotalSpotCount());
-        model.addAttribute("pendingCount", spotService.getSpotCountByStatus(0));
-        model.addAttribute("approvedCount", spotService.getSpotCountByStatus(1));
-        model.addAttribute("rejectedCount", spotService.getSpotCountByStatus(2));
-        return "back-end/spot/dashboard";
-    }
-
-    /**
-     * 權限不足頁面
-     * @return 權限不足頁面
-     */
-    @GetMapping("/forbidden")
-    public String forbiddenPage() {
-        return "redirect:/admins/login";
-    }
-
-    @GetMapping({"", "/"})
-    public String redirectToList() {
-        return "redirect:/admins/dashboard";
-    }
-
-    // ===================================================================================
-    // API 端點 (API Endpoints)
-    // ===================================================================================
-
-    /**
-     * API 連線測試
-     * @return 測試結果
-     */
-    @GetMapping("/api/test-api")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<String>> testApiConnection() {
-        logger.info("執行 API 連線測試...");
-        try {
-            boolean isAvailable = governmentDataService.isApiAvailable();
-            if (isAvailable) {
-                logger.info("API 連線測試成功");
-                return ResponseEntity.ok(ApiResponse.success("政府觀光 API 連線正常"));
-            } else {
-                logger.warn("API 連線測試失敗");
-                return ResponseEntity.ok(ApiResponse.error("無法連線至政府觀光 API，請檢查網路或 API 服務狀態"));
-            }
-        } catch (Exception e) {
-            logger.error("API 連線測試時發生未知錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("系統發生未知錯誤，請聯繫管理員"));
-        }
-    }
-
-    /**
-     * 匯入所有景點資料
-     * @param limit 匯入筆數
-     * @param crtId 建立者ID
-     * @return 匯入結果
-     */
-    @PostMapping("/api/import-spots")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<GovernmentDataService.ImportResult>> importAllSpots(
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(defaultValue = "1") Integer crtId) {
-        logger.info("開始匯入全台景點資料，上限 {} 筆，操作人員 ID: {}", limit, crtId);
-        try {
-            GovernmentDataService.ImportResult result = governmentDataService.importGovernmentData(crtId, limit, null);
-            return ResponseEntity.ok(ApiResponse.success("全台景點資料匯入完成", result));
-        } catch (Exception e) {
-            logger.error("匯入全台景點資料時發生錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("系統發生未知錯誤，請聯繫管理員"));
-        }
-    }
-
-    /**
-     * 依縣市匯入景點資料
-     * @param city 縣市名稱
-     * @param limit 匯入筆數
-     * @param crtId 建立者ID
-     * @return 匯入結果
-     */
-    @PostMapping("/api/import-spots-by-city")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<GovernmentDataService.ImportResult>> importSpotsByCity(
-            @RequestParam String city,
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(defaultValue = "1") Integer crtId) {
-        logger.info("開始匯入 {} 的景點資料，上限 {} 筆，操作人員 ID: {}", city, limit, crtId);
-        
-        // 修正常見的錯誤城市代碼
-        String correctedCity = correctCityCode(city);
-        if (!city.equals(correctedCity)) {
-            logger.info("城市代碼已修正: {} -> {}", city, correctedCity);
-            city = correctedCity;
-        }
-        
-        try {
-            GovernmentDataService.ImportResult result = governmentDataService.importGovernmentData(crtId, limit, city);
-            return ResponseEntity.ok(ApiResponse.success(city + " 景點資料匯入完成", result));
-        } catch (Exception e) {
-            logger.error("匯入 {} 的景點資料時發生錯誤", city, e);
-            return ResponseEntity.status(500).body(ApiResponse.error("系統發生未知錯誤，請聯繫管理員"));
-        }
-    }
-    
-    /**
-     * 修正常見的錯誤城市代碼
-     * @param city 原始城市代碼
-     * @return 修正後的城市代碼
-     */
-    private String correctCityCode(String city) {
-        if (city == null) return null;
-        
-        // 城市代碼修正對照表
-        Map<String, String> corrections = Map.ofEntries(
-            Map.entry("PenghuCounty", "Penghu"),
-            Map.entry("TaitungCounty", "Taitung"),
-            Map.entry("HualienCounty", "Hualien"),
-            Map.entry("YilanCounty", "Yilan"),
-            Map.entry("KinmenCounty", "Kinmen"),
-            Map.entry("LienchiangCounty", "Lienchiang"),
-            Map.entry("YunlinCounty", "Yunlin"),
-            Map.entry("NantouCounty", "Nantou"),
-            Map.entry("ChanghuaCounty", "Changhua"),
-            Map.entry("MiaoliCounty", "Miaoli"),
-            Map.entry("PingtungCounty", "Pingtung"),
-            Map.entry("TaoyuanCounty", "Taoyuan"),
-            Map.entry("NewTaipeiCity", "NewTaipei"),
-            Map.entry("TaichungCity", "Taichung"),
-            Map.entry("TainanCity", "Tainan"),
-            Map.entry("KaohsiungCity", "Kaohsiung")
-        );
-        
-        return corrections.getOrDefault(city, city);
-    }
-
-    // ===================================================================================
-    // 從 SpotDataImportController 移轉過來的方法
-    // ===================================================================================
-
-    /**
-     * 完整的資料整合流程 (匯入 + 豐富化)
-     * @param crtId 建立者ID
-     * @return 整合結果
-     */
-    @PostMapping("/api/complete-integration")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<SpotEnrichmentService.EnrichmentResult>> completeDataIntegration(
-            @RequestParam(value = "crtId", defaultValue = "1") Integer crtId) {
-        logger.info("開始完整資料整合流程，建立者ID: {}", crtId);
-        try {
-            SpotEnrichmentService.EnrichmentResult result = spotEnrichmentService.completeDataIntegration(crtId);
-            if (result.isSuccess()) {
-                return ResponseEntity.ok(ApiResponse.success("資料整合成功", result));
-            } else {
-                return ResponseEntity.ok(ApiResponse.error("資料整合失敗: " + result.getErrorMessage()));
-            }
-        } catch (Exception e) {
-            logger.error("資料整合時發生錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("資料整合時發生錯誤: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * 豐富化所有景點資料 (異步執行)
-     * @return 執行狀態
-     */
-    @PostMapping("/api/enrich/all")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<String>> enrichAllSpots() {
-        logger.info("開始異步豐富化所有景點資料");
-        try {
-            spotEnrichmentService.enrichSpotDataAsync();
-            return ResponseEntity.ok(ApiResponse.success("豐富化任務已開始，將在背景執行"));
-        } catch (Exception e) {
-            logger.error("啟動豐富化任務時發生錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("啟動豐富化任務時發生錯誤: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * 豐富化指定景點
-     * @param spotIds 景點ID列表
-     * @return 豐富化結果
-     */
-    @PostMapping("/api/enrich/spots")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<SpotEnrichmentService.EnrichmentResult>> enrichSpecificSpots(
-            @RequestBody List<Integer> spotIds) {
-        logger.info("開始豐富化指定景點，數量: {}", spotIds.size());
-        try {
-            SpotEnrichmentService.EnrichmentResult result = spotEnrichmentService.enrichSpecificSpots(spotIds);
-            return ResponseEntity.ok(ApiResponse.success("指定景點豐富化完成", result));
-        } catch (Exception e) {
-            logger.error("豐富化指定景點時發生錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("豐富化指定景點時發生錯誤: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * 取得匯入統計資訊
-     * @return 統計資訊
-     */
-    @GetMapping("/api/stats")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getImportStats() {
-        try {
-            List<SpotVO> allSpots = spotService.getAllSpots();
-            long totalSpots = allSpots.size();
-            long governmentDataSpots = allSpots.stream().filter(SpotVO::isFromGovernmentData).count();
-            long spotsWithGoogleData = allSpots.stream().filter(SpotVO::hasGoogleRating).count();
-            long spotsWithCoordinates = allSpots.stream().filter(SpotVO::hasValidCoordinates).count();
-            long activeSpots = allSpots.stream().filter(SpotVO::isActive).count();
-            
-            Map<String, Object> stats = Map.of(
-                "totalSpots", totalSpots,
-                "governmentDataSpots", governmentDataSpots,
-                "spotsWithGoogleData", spotsWithGoogleData,
-                "spotsWithCoordinates", spotsWithCoordinates,
-                "activeSpots", activeSpots,
-                "governmentDataPercentage", totalSpots > 0 ? (governmentDataSpots * 100.0 / totalSpots) : 0,
-                "googleDataPercentage", totalSpots > 0 ? (spotsWithGoogleData * 100.0 / totalSpots) : 0,
-                "coordinatePercentage", totalSpots > 0 ? (spotsWithCoordinates * 100.0 / totalSpots) : 0
-            );
-            return ResponseEntity.ok(ApiResponse.success("統計資訊查詢成功", stats));
-        } catch (Exception e) {
-            logger.error("查詢統計資訊時發生錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("查詢統計資訊時發生錯誤: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * 根據縣市取得景點統計
-     * @return 縣市統計
-     */
-    @GetMapping("/api/stats/region")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<Map<String, Long>>> getRegionStats() {
-        try {
-            List<SpotVO> allSpots = spotService.getActiveSpots();
-            Map<String, Long> regionStats = allSpots.stream()
-                .filter(spot -> spot.getRegion() != null && !spot.getRegion().trim().isEmpty())
-                .collect(java.util.stream.Collectors.groupingBy(
-                    SpotVO::getRegion,
-                    java.util.stream.Collectors.counting()
-                ));
-            return ResponseEntity.ok(ApiResponse.success("縣市統計查詢成功", regionStats));
-        } catch (Exception e) {
-            logger.error("查詢縣市統計時發生錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("查詢縣市統計時發生錯誤: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * 根據縣市查詢景點
-     * @param region 縣市名稱
-     * @return 景點列表
-     */
-    @GetMapping("/api/region/{region}")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<List<SpotVO>>> getSpotsByRegion(@PathVariable String region) {
-        try {
-            List<SpotVO> spots = spotService.getSpotsByRegion(region);
-            return ResponseEntity.ok(ApiResponse.success("區域景點查詢成功", spots));
-        } catch (Exception e) {
-            logger.error("查詢區域景點時發生錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("查詢區域景點時發生錯誤: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * 取得地圖顯示用的景點資料 (有座標的景點)
-     * @return 有座標的景點列表
-     */
-    @GetMapping("/api/map")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<List<SpotVO>>> getSpotsForMap() {
-        try {
-            List<SpotVO> spots = spotService.getActiveSpotsWithCoordinates();
-            return ResponseEntity.ok(ApiResponse.success("地圖景點資料查詢成功", spots));
-        } catch (Exception e) {
-            logger.error("查詢地圖景點資料時發生錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("查詢地圖景點資料時發生錯誤: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * 取得已審核景點資料供景點列表頁面使用（狀態1、2、3）
-     * @return 已審核景點列表
-     */
-    @GetMapping("/api/all")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<List<SpotVO>>> getAllSpotsForAdmin() {
-        try {
-            logger.info("=== API /api/all 被調用（景點列表頁面）===");
-            // 只返回已審核的景點（狀態1、2、3），過濾掉待審核的景點（狀態0）
-            Sort sortObj = Sort.by(Sort.Direction.DESC, "spotId");
-            List<SpotVO> spots = spotService.searchAllReviewedSpotsForAdmin(null, null, null, sortObj);
-            logger.info("API返回已審核景點數量: {}", spots.size());
-            
-            // 記錄前5筆資料
-            for (int i = 0; i < Math.min(spots.size(), 5); i++) {
-                SpotVO spot = spots.get(i);
-                logger.info("  {}. ID: {}, 名稱: {}, 狀態: {} ({})", 
-                           i + 1, spot.getSpotId(), spot.getSpotName(), 
-                           spot.getSpotStatus(), spot.getStatusText());
-            }
-            logger.info("=========================");
-            
-            return ResponseEntity.ok(ApiResponse.success("已審核景點資料查詢成功", spots));
-        } catch (Exception e) {
-            logger.error("查詢已審核景點資料時發生錯誤", e);
-            return ResponseEntity.status(500).body(ApiResponse.error("查詢已審核景點資料時發生錯誤: " + e.getMessage()));
-        }
-    }
-
-    // ======================== 景點審核 API ========================
-
-    /**
-     * 批次通過景點審核
-     */
-    @PostMapping("/api/batch-approve")
-    @ResponseBody
-    public ApiResponse<String> batchApprove(@RequestBody List<Integer> spotIds) {
-        int count = 0;
-        for (Integer id : spotIds) {
-            if (spotService.activateSpot(id)) count++;
-        }
-        return ApiResponse.success("已通過 " + count + " 筆景點審核");
-    }
-
-    /**
-     * 單筆通過景點審核
-     */
-    @PostMapping("/api/approve/{id}")
-    @ResponseBody
-    public ApiResponse<String> approveSpot(@PathVariable Integer id) {
-        boolean ok = spotService.activateSpot(id);
-        return ok ? ApiResponse.success("景點已通過審核") : ApiResponse.error("通過失敗");
-    }
-
-    /**
-     * 單筆退回景點審核（含退回原因）
-     */
-    @PostMapping("/api/reject/{id}")
-    @ResponseBody
-    public ApiResponse<String> rejectSpot(@PathVariable Integer id, @RequestBody Map<String, String> body) {
-        String reason = body.getOrDefault("reason", "");
-        String remark = body.getOrDefault("remark", "");
-        boolean ok = spotService.rejectSpot(id, reason, remark);
-        return ok ? ApiResponse.success("景點已退回") : ApiResponse.error("退回失敗");
-    }
-
-    /**
-     * 批次退回景點審核
-     */
-    @PostMapping("/api/batch-reject")
     @ResponseBody
     public ApiResponse<String> batchRejectSpots(@RequestBody List<Integer> spotIds) {
         int count = 0;
@@ -1297,6 +853,34 @@ public class SpotAdminController {
         return ResponseEntity.ok(ApiResponse.success("成功補全 Place ID 的景點數：" + updated));
     }
 
+    /**
+     * 匯入景點資料
+     * @param limit 匯入數量限制
+     * @param session 使用者 Session
+     * @return 匯入結果
+     */
+    @PostMapping("/api/import-spots")
+    @ResponseBody
+    public Map<String, Object> importSpots(@RequestParam(value = "limit", required = false, defaultValue = "10") int limit, HttpSession session) {
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            Integer adminId = getCurrentUserId(session);
+            GovernmentDataService.ImportResult result = governmentDataService.importGovernmentData(adminId, limit, null);
+            if (result.isSuccess()) {
+                resp.put("success", true);
+                resp.put("message", "成功匯入 " + result.getSuccessCount() + " 筆景點資料");
+            } else {
+                resp.put("success", false);
+                resp.put("message", result.getErrorMessage() != null ? result.getErrorMessage() : "匯入失敗");
+            }
+        } catch (Exception e) {
+            logger.error("匯入景點失敗", e);
+            resp.put("success", false);
+            resp.put("message", "匯入失敗，請稍後再試");
+        }
+        return resp;
+    }
+
     // ===================================================================================
     // 私有輔助方法 (Private Helper Methods)
     // ===================================================================================
@@ -1392,5 +976,15 @@ public class SpotAdminController {
             resp.put("message", e.getMessage());
         }
         return resp;
+    }
+
+    /**
+     * 從 Session 中獲取當前使用者ID
+     * @param session HTTP Session
+     * @return 使用者ID
+     */
+    private Integer getCurrentUserId(HttpSession session) {
+        Object adminId = session.getAttribute("adminId");
+        return adminId != null ? (Integer) adminId : null;
     }
 } 

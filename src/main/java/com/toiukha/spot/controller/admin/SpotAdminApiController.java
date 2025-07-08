@@ -97,7 +97,7 @@ public class SpotAdminApiController {
     public ResponseEntity<ApiResponse<SpotVO>> addSpot(@Valid @RequestBody SpotDTO spotDTO) {
         try {
             // 檢查名稱是否重複
-            if (spotService.existsBySpotName(spotDTO.getSpotName())) {
+            if (spotService.existsBySpotNameAndSpotLoc(spotDTO.getSpotName(), spotDTO.getSpotLoc())) {
                 return ResponseEntity.ok(ApiResponse.error("景點名稱已存在"));
             }
             
@@ -139,7 +139,7 @@ public class SpotAdminApiController {
             }
             
             // 檢查名稱是否重複 (排除自己)
-            if (spotService.existsBySpotName(spotDTO.getSpotName()) && 
+            if (spotService.existsBySpotNameAndSpotLoc(spotDTO.getSpotName(), spotDTO.getSpotLoc()) && 
                 !existingSpot.getSpotName().equals(spotDTO.getSpotName())) {
                 return ResponseEntity.ok(ApiResponse.error("景點名稱已存在"));
             }
@@ -322,7 +322,7 @@ public class SpotAdminApiController {
             
             // 檢查名稱是否重複
             for (SpotDTO spotDTO : spotDTOList) {
-                if (spotService.existsBySpotName(spotDTO.getSpotName())) {
+                if (spotService.existsBySpotNameAndSpotLoc(spotDTO.getSpotName(), spotDTO.getSpotLoc())) {
                     return ResponseEntity.ok(ApiResponse.error("景點名稱已存在: " + spotDTO.getSpotName()));
                 }
             }

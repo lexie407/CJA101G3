@@ -24,7 +24,7 @@ function loadFavoriteItineraries() {
     grid.innerHTML = '';
     emptyMessage.style.display = 'none';
 
-    fetch('/itinerary/api/favorites')
+    fetch('/api/itinerary/favorites')
         .then(response => {
             if (!response.ok) {
                 throw new Error('網路錯誤或伺服器問題');
@@ -140,7 +140,7 @@ function toggleFavorite(button, isInFavoritesPage = false) {
     const itineraryId = button.dataset.itineraryId;
     if (!itineraryId) return;
 
-    fetch(`/itinerary/api/${itineraryId}/favorite`, {
+    fetch(`/api/itinerary/${itineraryId}/favorite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
     })

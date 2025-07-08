@@ -677,3 +677,245 @@ main.spot-review-page {
     margin: 0;
     padding: 0;
 }
+
+/* 載入動畫 */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 表格載入中狀態 */
+.spot-list-table-wrapper.loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.spot-list-table-wrapper.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+/* 確保表格內容可見 */
+.spot-list-table-wrapper .admin-table {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* 表格內容載入中的佔位元素 */
+.spot-list-table-wrapper .loading-placeholder {
+    text-align: center;
+    padding: 40px 0;
+    color: #666;
+}
+
+.spot-list-table-wrapper .loading-placeholder i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* 修正表格內圖片顯示 */
+.spot-img-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+}
+
+.spot-img-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    transition: transform 0.2s;
+}
+
+.spot-img-thumb:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+/* === 表格排版優化 === */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.admin-table th, .admin-table td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px 4px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 15px;
+  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-table th {
+  background: #f8f8f8;
+  font-weight: 600;
+}
+
+.admin-table th:nth-child(1), .admin-table td:nth-child(1) { width: 40px; }
+.admin-table th:nth-child(2), .admin-table td:nth-child(2) { width: 60px; }
+.admin-table th:nth-child(3), .admin-table td:nth-child(3) { width: 120px; }
+.admin-table th:nth-child(4), .admin-table td:nth-child(4) { width: 160px; }
+.admin-table th:nth-child(5), .admin-table td:nth-child(5) { width: 70px; }
+.admin-table th:nth-child(6), .admin-table td:nth-child(6) { width: 200px; }
+.admin-table th:nth-child(7), .admin-table td:nth-child(7) { width: 110px; }
+.admin-table th:nth-child(8), .admin-table td:nth-child(8) { width: 70px; }
+.admin-table th:nth-child(9), .admin-table td:nth-child(9) { width: 90px; }
+
+.spot-img-thumb {
+  max-width: 48px;
+  max-height: 48px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+
+/* 讓描述/退回原因欄位內容自動省略 */
+.admin-table td:nth-child(6) {
+  max-width: 200px;
+}
+
+/* 讓操作欄按鈕置中 */
+.admin-table td.action-buttons-table {
+  text-align: center;
+}
+
+/* 描述欄位樣式 */
+.desc-container, .reject-container {
+    position: relative;
+}
+
+.desc-text, .reject-text {
+    color: var(--md-sys-color-on-surface);
+    text-decoration: none;
+    position: relative;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.desc-text:hover, .reject-text:hover {
+    color: var(--md-sys-color-primary);
+}
+
+/* 確保描述欄位的寬度合適 */
+.spot-list-table-wrapper .admin-table td:nth-child(6) {
+    max-width: 300px;
+    white-space: normal;
+}
+
+/* 描述 Modal 樣式 */
+#descModal .modal-content {
+    max-width: 600px;
+    width: 90%;
+    padding: 24px;
+    border-radius: 8px;
+    background: var(--md-sys-color-surface);
+}
+
+#descModal h5 {
+    margin: 0 0 16px 0;
+    color: var(--md-sys-color-on-surface);
+    font-size: 18px;
+    font-weight: 500;
+}
+
+#descModal .desc-content {
+    padding: 16px;
+    background: var(--md-sys-color-surface-container);
+    border-radius: 4px;
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+#descModal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+#descModal .btn-flat {
+    padding: 8px 16px;
+    border-radius: 4px;
+    background: none;
+    border: none;
+    color: var(--md-sys-color-primary);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#descModal .btn-flat:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+/* 讓所有表格欄位與內容置中對齊 */
+.admin-table th, .admin-table td {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* 保持描述欄位允許換行 */
+.spot-list-table-wrapper .admin-table td:nth-child(6) {
+    max-width: 300px;
+    white-space: normal;
+}
+
+/* === 景點圖片欄位優化 === */
+.admin-table th:nth-child(5), .admin-table td:nth-child(5) {
+    width: 90px !important;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.admin-table td:nth-child(5) {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.spot-img-thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    border: 1.5px solid #e0e0e0;
+    background: #fff;
+    display: block;
+    margin: 0 auto;
+    transition: box-shadow 0.2s;
+}
+
+.spot-img-thumb:hover {
+    box-shadow: 0 4px 16px rgba(33,150,243,0.18);
+    border-color: #90caf9;
+}
+
+.admin-table th, .admin-table td {
+    vertical-align: middle !important;
+}
+
+/* 預設圖示也置中 */
+.admin-table td:nth-child(5) > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 64px;
+}
