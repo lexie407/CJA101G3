@@ -551,8 +551,9 @@
 
                     <!-- 商品預覽 -->
                     <div th:if="${report.itemId != null}" class="item-preview">
-                        <img th:src="@{/item/DBGifReader(id=${report.itemId})}" 
-                             alt="商品圖片" class="item-image">
+                        <img th:src="@{/item/DBGifReader(itemId=${report.itemId})}" 
+                             alt="商品圖片" class="item-image"
+                             onerror="this.src='/DB_photos1/1.jpg'">
                         <div class="item-details">
                             <h5>商品編號：<span th:text="${report.itemId}">商品編號</span></h5>
                             <p>點擊圖片查看商品詳情</p>

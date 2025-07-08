@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -210,15 +211,30 @@ public class ProductFavController {
             
             // 獲取商品詳細信息
             Map<Integer, ItemVO> itemDetails = new HashMap<>();
+            Map<Integer, String> itemImages = new HashMap<>();
             for (ProductFavVO favorite : favorites) {
                 ItemVO item = itemService.getOneItem(favorite.getItemId());
                 if (item != null) {
                     itemDetails.put(favorite.getItemId(), item);
+                    
+                    // 處理圖片：轉換為 base64
+                    if (item.getItemImg() != null && item.getItemImg().length > 0) {
+                        try {
+                            String base64Image = java.util.Base64.getEncoder().encodeToString(item.getItemImg());
+                            itemImages.put(favorite.getItemId(), "data:image/jpeg;base64," + base64Image);
+                        } catch (Exception e) {
+                            System.err.println("圖片轉換失敗，商品ID: " + favorite.getItemId());
+                            itemImages.put(favorite.getItemId(), "/images/default-product.png"); // 預設圖片
+                        }
+                    } else {
+                        itemImages.put(favorite.getItemId(), "/images/default-product.png"); // 預設圖片
+                    }
                 }
             }
             
             model.addAttribute("favorites", favorites);
             model.addAttribute("itemDetails", itemDetails);
+            model.addAttribute("itemImages", itemImages);
             model.addAttribute("favoriteCount", favorites.size());
             model.addAttribute("member", member);
             // 設定導覽列的 active 狀態
@@ -266,6 +282,53 @@ public class ProductFavController {
         }
     }
     
+    /**
+     * 批量檢查收藏狀態
+     * @param memId 會員ID
+     * @param itemIds 商品ID列表（逗號分隔）
+     * @param session HTTP Session
+     * @return 收藏狀態Map
+     */
+    @PostMapping("/check_favorites_batch")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> checkFavoritesBatch(
+            @RequestParam("memId") String memId,
+            @RequestParam("itemIds") String itemIds,
+            HttpSession session) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // 驗證會員身份
+            if (!validateMemberId(memId, session)) {
+                response.put("error", "not_logged_in");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // 解析商品ID列表
+            String[] itemIdArray = itemIds.split(",");
+            Integer memIdInt = Integer.valueOf(memId);
+            
+            // 檢查每個商品的收藏狀態
+            for (String itemIdStr : itemIdArray) {
+                try {
+                    Integer itemId = Integer.valueOf(itemIdStr.trim());
+                    boolean isFavorited = productFavService.isFavorite(memIdInt, itemId);
+                    response.put(itemId.toString(), isFavorited);
+                } catch (NumberFormatException e) {
+                    // 跳過無效的商品ID
+                    continue;
+                }
+            }
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("error", "system_error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
     /**
      * 獲取會員收藏統計資訊
      * @param session HTTP Session

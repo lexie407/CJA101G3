@@ -66,6 +66,34 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .add-to-favorite-btn:hover {
+            transform: scale(1.1);
+            color: #FFA000;
+        }
+        
+        .add-to-favorite-btn.favorited {
+            color: #FF6B6B;
+        }
+        
+        .add-to-favorite-btn.favorited:hover {
+            color: #FF5252;
+        }
+        
+        .add-to-favorite-btn.processing {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .add-to-favorite-btn.processing i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* Modal 樣式 */
@@ -152,7 +180,8 @@
         /* 圖片輪播樣式 */
         .carousel-container {
             position: relative;
-            max-width: 100%;
+            max-width: 1200px; /* 限制最大寬度以維持良好比例 */
+            width: 100%;
             margin: 0 auto 32px auto;
             overflow: hidden;
             border-radius: 12px;
@@ -167,7 +196,22 @@
         .carousel-wrapper {
             position: relative;
             width: 100%;
-            height: 300px;
+            aspect-ratio: 6 / 4; /* 6:4 橫式比例 */
+            max-height: 400px; /* 限制最大高度 */
+            min-height: 250px; /* 限制最小高度 */
+        }
+
+        /* 針對不支援 aspect-ratio 的舊瀏覽器的備用方案 */
+        @supports not (aspect-ratio: 1) {
+            .carousel-wrapper {
+                height: 300px; /* 備用固定高度 */
+            }
+            
+            @media (max-width: 768px) {
+                .carousel-wrapper {
+                    height: 200px; /* 手機版備用高度 */
+                }
+            }
         }
 
         .carousel-slide {
@@ -196,8 +240,10 @@
         .carousel-slide img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* 保持原比例填滿容器 */
+            object-position: center; /* 圖片居中顯示 */
             border-radius: 12px;
+            transition: transform 0.3s ease; /* 添加滑順的縮放動畫 */
         }
 
         .carousel-caption {
@@ -307,7 +353,8 @@
         /* 響應式設計 */
         @media (max-width: 768px) {
             .carousel-wrapper {
-                height: 200px;
+                min-height: 180px; /* 手機版較小的最小高度 */
+                max-height: 280px; /* 手機版較小的最大高度 */
             }
 
             .carousel-caption {
@@ -544,9 +591,140 @@
                     window.changeSlide = changeSlide;
                     window.currentSlide = currentSlide;
 
+                    // Toast 提示功能
+                    function showToast(message, type = 'info') {
+                        // 移除現有的 toast
+                        $('.toast-message').remove();
+                        
+                        var colors = {
+                            'success': '#4CAF50',
+                            'error': '#F44336',
+                            'info': '#2196F3',
+                            'warning': '#FF9800'
+                        };
+                        
+                        var toast = $('<div class="toast-message">' + message + '</div>');
+                        toast.css({
+                            'position': 'fixed',
+                            'top': '20px',
+                            'right': '20px',
+                            'background': colors[type] || colors.info,
+                            'color': 'white',
+                            'padding': '12px 20px',
+                            'border-radius': '8px',
+                            'box-shadow': '0 4px 12px rgba(0,0,0,0.2)',
+                            'z-index': '9999',
+                            'font-size': '14px',
+                            'opacity': '0',
+                            'transform': 'translateX(100%)',
+                            'transition': 'all 0.3s ease'
+                        });
+                        
+                        $('body').append(toast);
+                        
+                        // 動畫顯示
+                        setTimeout(function() {
+                            toast.css({
+                                'opacity': '1',
+                                'transform': 'translateX(0)'
+                            });
+                        }, 100);
+                        
+                        // 3秒後自動消失
+                        setTimeout(function() {
+                            toast.css({
+                                'opacity': '0',
+                                'transform': 'translateX(100%)'
+                            });
+                            setTimeout(function() {
+                                toast.remove();
+                            }, 300);
+                        }, 3000);
+                    }
+
+                    // 初始化收藏狀態
+                    function initFavoriteStatus() {
+                        var memId = $('input[name="memId"]').val();
+                        if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
+                            return; // 未登入用戶不需要檢查收藏狀態
+                        }
+                        
+                        // 收集所有商品ID
+                        var itemIds = [];
+                        $('.add-to-favorite-btn').each(function() {
+                            var itemId = $(this).data('itemid');
+                            if (itemId) {
+                                itemIds.push(itemId);
+                            }
+                        });
+                        
+                        // 批量檢查收藏狀態
+                        if (itemIds.length > 0) {
+                            $.ajax({
+                                url: '/productfav/check_favorites_batch',
+                                type: 'POST',
+                                data: { 
+                                    memId: memId,
+                                    itemIds: itemIds.join(',')
+                                },
+                                success: function(response) {
+                                    if (typeof response === 'string') {
+                                        try {
+                                            response = JSON.parse(response);
+                                        } catch (e) {
+                                            console.error('解析收藏狀態響應失敗:', e);
+                                            return;
+                                        }
+                                    }
+                                    
+                                    // 更新每個商品的收藏狀態
+                                    $('.add-to-favorite-btn').each(function() {
+                                        var $btn = $(this);
+                                        var itemId = $btn.data('itemid');
+                                        var isFavorited = response[itemId] === true;
+                                        
+                                        updateFavoriteButton($btn, isFavorited);
+                                    });
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error('檢查收藏狀態失敗:', error);
+                                }
+                            });
+                        }
+                    }
+                    
+                    // 更新收藏按鈕狀態
+                    function updateFavoriteButton($btn, isFavorited) {
+                        var $icon = $btn.find('i');
+                        
+                        if (isFavorited) {
+                            $icon.removeClass('fa-regular fa-star').addClass('fa-solid fa-star');
+                            $btn.addClass('favorited');
+                        } else {
+                            $icon.removeClass('fa-solid fa-star').addClass('fa-regular fa-star');
+                            $btn.removeClass('favorited');
+                        }
+                    }
+                    
+                    // 更新頁面上所有相同商品的收藏狀態
+                    function updateAllItemFavoriteStatus(itemId, isFavorited) {
+                        // 更新商品卡片中的收藏按鈕
+                        $('.add-to-favorite-btn[data-itemid="' + itemId + '"]').each(function() {
+                            updateFavoriteButton($(this), isFavorited);
+                        });
+                        
+                        // 更新模態框中的收藏按鈕（如果存在）
+                        $('#item-modal-backdrop .add-to-favorite-btn[data-itemid="' + itemId + '"]').each(function() {
+                            updateFavoriteButton($(this), isFavorited);
+                        });
+                    }
+
                     $(document).ready(function () {
                         // 初始化輪播功能
                         initCarousel();
+                        
+                        // 初始化收藏狀態
+                        initFavoriteStatus();
 
                         // 為輪播幻燈片添加點擊事件（使用事件委派）
                         $(document).on('click', '.carousel-slide', function (e) {
@@ -570,26 +748,42 @@
                         // 收藏功能
                         $(document).on('click', '.add-to-favorite-btn', function (e) {
                             e.stopPropagation();
-                            var itemId = $(this).data('itemid');
-                            var memId = $(this).data('memid');
+                            var $btn = $(this);
+                            var itemId = $btn.data('itemid');
+                            var memId = $btn.data('memid');
+                            
                             if (!memId || memId === '' || memId === 'null' || memId === 'undefined') {
                                 // 跳轉到登入頁面並帶上 redirect 參數
                                 window.location.href = '/members/login?redirect=' + encodeURIComponent('/item/listAllItem');
                                 return;
                             }
+                            
+                            // 防止重複點擊
+                            if ($btn.hasClass('processing')) return;
+                            $btn.addClass('processing');
+                            
                             $.ajax({
                                 url: '/productfav/add_to_favorite',
                                 type: 'POST',
                                 data: { itemId: itemId, memId: memId },
                                 success: function (response) {
                                     if (response === 'success') {
-                                        alert('已加入收藏！');
+                                        // 加入收藏成功 - 更新所有相同商品的收藏狀態
+                                        updateAllItemFavoriteStatus(itemId, true);
+                                        showToast('已加入收藏！', 'success');
+                                    } else if (response === '取消收藏') {
+                                        // 取消收藏成功 - 更新所有相同商品的收藏狀態
+                                        updateAllItemFavoriteStatus(itemId, false);
+                                        showToast('已取消收藏！', 'info');
                                     } else {
-                                        alert(response + ' !');
+                                        showToast(response, 'error');
                                     }
                                 },
                                 error: function (xhr, status, error) {
-                                    alert('加入收藏失敗，請稍後再試！\n錯誤信息：' + error);
+                                    showToast('操作失敗，請稍後再試！', 'error');
+                                },
+                                complete: function() {
+                                    $btn.removeClass('processing');
                                 }
                             });
                         });
@@ -997,6 +1191,12 @@
                                 if (now > start && now < end) showDisc = true;
                             }
 
+                            // 檢查當前商品的收藏狀態
+                            var cardFavoriteBtn = card.find('.add-to-favorite-btn');
+                            var isFavorited = cardFavoriteBtn.hasClass('favorited');
+                            var starIcon = isFavorited ? 'fa-solid fa-star' : 'fa-regular fa-star';
+                            var favoriteClass = isFavorited ? 'favorited' : '';
+                            
                             var modalHtml = `
                                 <div class="modal-backdrop" id="item-modal-backdrop">
                                     <div class="modal-content" style="display:flex;flex-direction:row;align-items:center;gap:32px;min-width:620px;max-width:980px;padding:32px 32px 32px 0;text-align:left;">
@@ -1021,9 +1221,9 @@
                                                 <input type="number" name="quantity" class="quantity-input" min="1" max="99" value="1"
                                                     style="width: 60px; height: 36px; border-radius: 6px; border: 1.5px solid #ccc; text-align: center; margin-right: 8px;font-size:1.1rem;" />
                                                 <button type="button" class="add-to-cart-btn" style="font-size:1.1rem;height:40px;">加入購物車</button>
-                                                <button type="button" class="add-to-favorite-btn"
+                                                <button type="button" class="add-to-favorite-btn ${favoriteClass}"
                                                     data-itemid="${itemId}" data-memid="${memId}" style="font-size:1.3rem;height:40px;width:40px;">
-                                                    <i class="fa-regular fa-star"></i>
+                                                    <i class="${starIcon}"></i>
                                                 </button>
                                             </form>
                                         </div>

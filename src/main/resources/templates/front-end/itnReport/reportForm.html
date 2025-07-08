@@ -187,6 +187,12 @@
             cursor: pointer;
             transition: all 0.3s ease;
             background: #fafafa;
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .file-upload-area:hover {
@@ -202,9 +208,10 @@
         .file-upload input[type="file"] {
             position: absolute;
             opacity: 0;
-            width: 100%;
-            height: 100%;
+            width: 1px;
+            height: 1px;
             cursor: pointer;
+            z-index: -1;
         }
 
         .upload-icon {
@@ -217,6 +224,12 @@
             font-size: 16px;
             color: var(--on-surface);
             margin-bottom: 4px;
+            word-break: break-word;
+        }
+        
+        .file-upload-area .remove-file:hover {
+            background: rgba(244, 67, 54, 1) !important;
+            transform: scale(1.1);
         }
 
         /* 按鈕設計 */
@@ -479,6 +492,15 @@
             }
         });
 
+        // 點擊上傳區域觸發文件選擇
+        fileUploadArea.addEventListener('click', (e) => {
+            // 如果點擊的是移除按鈕，不觸發文件選擇
+            if (e.target.classList.contains('remove-file') || e.target.closest('.remove-file')) {
+                return;
+            }
+            fileInput.click();
+        });
+
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 updateFileDisplay(e.target.files[0]);
@@ -487,7 +509,73 @@
 
         function updateFileDisplay(file) {
             const uploadText = fileUploadArea.querySelector('.upload-text');
+            const uploadIcon = fileUploadArea.querySelector('.upload-icon');
+            
+            // 驗證文件類型
+            if (!file.type.startsWith('image/')) {
+                alert('請選擇圖片檔案！');
+                fileInput.value = '';
+                return;
+            }
+            
+            // 驗證文件大小 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('檔案大小不能超過5MB！');
+                fileInput.value = '';
+                return;
+            }
+            
+            // 更新顯示
             uploadText.textContent = `已選擇：${file.name}`;
+            uploadIcon.textContent = 'check_circle';
+            fileUploadArea.style.borderColor = 'var(--success-color)';
+            fileUploadArea.style.backgroundColor = 'rgba(76, 175, 80, 0.04)';
+            
+            // 創建移除按鈕
+            let removeBtn = fileUploadArea.querySelector('.remove-file');
+            if (!removeBtn) {
+                removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-file';
+                removeBtn.innerHTML = '<i class="material-icons">close</i>';
+                removeBtn.style.cssText = `
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: rgba(244, 67, 54, 0.9);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 32px;
+                    height: 32px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 18px;
+                    transition: background 0.3s ease;
+                `;
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    resetFileUpload();
+                });
+                fileUploadArea.appendChild(removeBtn);
+            }
+        }
+        
+        function resetFileUpload() {
+            const uploadText = fileUploadArea.querySelector('.upload-text');
+            const uploadIcon = fileUploadArea.querySelector('.upload-icon');
+            const removeBtn = fileUploadArea.querySelector('.remove-file');
+            
+            fileInput.value = '';
+            uploadText.textContent = '點擊選擇圖片或拖拽到此處';
+            uploadIcon.textContent = 'cloud_upload';
+            fileUploadArea.style.borderColor = 'var(--outline)';
+            fileUploadArea.style.backgroundColor = '#fafafa';
+            
+            if (removeBtn) {
+                removeBtn.remove();
+            }
         }
 
         // 表單提交載入動畫
@@ -498,5 +586,9 @@
             document.body.appendChild(loading);
         });
     </script>
+
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../js/notification/websocket.js"></script>
 </body>
 </html> 

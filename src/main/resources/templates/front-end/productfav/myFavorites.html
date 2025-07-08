@@ -205,10 +205,10 @@
                                 </button>
                                 
                                 <!-- 商品圖片 -->
-                                <img th:src="@{'/item/DBGifReader/' + ${favorite.itemId}}" 
+                                <img th:src="${itemImages[favorite.itemId] ?: '/images/default-product.png'}" 
                                      alt="商品圖片"
                                      class="product-image"
-                                     onerror="this.src='/images/user.png'">
+                                     onerror="this.src='/images/default-product.png'">
                                 
                                 <!-- 商品資訊 -->
                                 <div class="product-info">

@@ -7,6 +7,7 @@
     <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+        /* 強制覆蓋外部CSS樣式 - 緊湊版本 */
         /* Material Design 色彩系統 */
         :root {
             --primary-color: #1976d2;
@@ -26,159 +27,173 @@
         }
 
         body {
-            background-color: var(--background-color);
-            font-family: 'Roboto', 'Noto Sans TC', sans-serif;
-            margin: 0;
-            padding: 0;
+            background-color: var(--background-color) !important;
+            font-family: 'Roboto', 'Noto Sans TC', sans-serif !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .main-content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+            flex: 1 !important;
         }
 
         .report-container {
-            max-width: 900px;
-            margin: 24px auto;
-            padding: 0 16px;
+            max-width: 1200px !important;
+            margin: 8px auto !important;
+            padding: 0 16px !important;
         }
 
         .page-header {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, #ff7043 100%);
-            color: white;
-            padding: 32px 24px;
-            border-radius: 16px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 32px rgba(255, 87, 34, 0.24);
-            position: relative;
-            overflow: hidden;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #ff7043 100%) !important;
+            color: white !important;
+            padding: 12px 16px !important;
+            border-radius: 8px !important;
+            margin-bottom: 8px !important;
+            box-shadow: 0 2px 8px rgba(255, 87, 34, 0.24) !important;
         }
 
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: float 6s ease-in-out infinite;
-        }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
 
         .page-title {
-            font-size: 28px;
-            font-weight: 500;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            font-size: 20px !important;
+            font-weight: 600 !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
         }
 
+
+
         .page-subtitle {
-            font-size: 16px;
+            font-size: 14px;
             opacity: 0.9;
-            margin: 8px 0 0 0;
+            margin: 4px 0 0 0;
+            line-height: 1.3;
         }
 
         /* 訂單資訊卡片 */
         .order-info {
-            background: var(--surface-color);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 16px var(--shadow);
-            border: 1px solid var(--outline);
+            background: var(--surface-color) !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            margin-bottom: 8px !important;
+            box-shadow: 0 2px 8px var(--shadow) !important;
+            border: 1px solid var(--outline) !important;
         }
 
         .order-info h4 {
-            margin: 0 0 16px 0;
+            margin: 0 0 10px 0;
             color: var(--primary-color);
-            font-size: 18px;
-            font-weight: 500;
+            font-size: 16px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--outline);
         }
 
         .order-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .order-detail-item {
             background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
             border: 1px solid var(--outline);
+            transition: all 0.3s ease;
+        }
+        
+        .order-detail-item:hover {
+            background: #e9ecef;
         }
 
         .detail-label {
             font-size: 12px;
             color: var(--on-surface-variant);
             margin-bottom: 4px;
+            font-weight: 500;
         }
 
         .detail-value {
-            font-size: 16px;
+            font-size: 14px;
             color: var(--on-surface);
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .item-preview {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 8px;
             background: #f8f9fa;
-            padding: 16px;
-            border-radius: 12px;
+            padding: 8px;
+            border-radius: 6px;
             border: 1px solid var(--outline);
-            margin-top: 16px;
+            margin-top: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .item-preview:hover {
+            background: #e9ecef;
         }
 
         .item-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
             object-fit: cover;
             border: 2px solid var(--outline);
+            transition: all 0.3s ease;
+        }
+        
+        .item-image:hover {
+            transform: scale(1.02);
         }
 
         .item-details h5 {
-            margin: 0 0 8px 0;
-            font-size: 16px;
+            margin: 0 0 6px 0;
+            font-size: 14px;
             color: var(--on-surface);
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .item-details p {
-            margin: 4px 0;
+            margin: 2px 0;
             color: var(--on-surface-variant);
-            font-size: 14px;
+            font-size: 12px;
+            line-height: 1.3;
         }
 
         /* 表單卡片 */
         .form-card {
-            background: var(--surface-color);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 16px var(--shadow);
-            margin-bottom: 24px;
+            background: var(--surface-color) !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            box-shadow: 0 2px 8px var(--shadow) !important;
+            margin-bottom: 8px !important;
         }
 
         .form-title {
-            font-size: 20px;
-            font-weight: 500;
-            color: var(--on-surface);
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            color: var(--on-surface) !important;
+            margin-bottom: 10px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding-bottom: 6px !important;
+            border-bottom: 1px solid var(--outline) !important;
         }
 
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 10px !important;
         }
 
         .form-label {
@@ -186,7 +201,7 @@
             font-size: 14px;
             font-weight: 500;
             color: var(--on-surface);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .required {
@@ -195,10 +210,10 @@
 
         .form-control {
             width: 100%;
-            padding: 16px;
+            padding: 10px;
             border: 2px solid var(--outline);
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 14px;
             background: var(--surface-color);
             color: var(--on-surface);
             transition: all 0.3s ease;
@@ -217,39 +232,40 @@
 
         .form-control.textarea {
             resize: vertical;
-            min-height: 120px;
+            min-height: 60px;
             font-family: inherit;
+            line-height: 1.4;
         }
 
         .form-help {
             font-size: 12px;
             color: var(--on-surface-variant);
-            margin-top: 4px;
+            margin-top: 2px;
+            line-height: 1.3;
         }
 
         /* 檢舉理由選項 */
         .reason-options {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 6px;
+            margin-bottom: 8px;
         }
 
         .reason-option {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 16px;
+            gap: 8px;
+            padding: 8px;
             background: #f8f9fa;
             border: 2px solid var(--outline);
-            border-radius: 12px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .reason-option:hover {
             background: #e9ecef;
-            border-color: var(--secondary-color);
         }
 
         .reason-option.selected {
@@ -279,12 +295,17 @@
 
         .file-upload-area {
             border: 2px dashed var(--outline);
-            border-radius: 12px;
-            padding: 24px;
+            border-radius: 6px;
+            padding: 12px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             background: #fafafa;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .file-upload-area:hover {
@@ -300,113 +321,88 @@
         .file-upload input[type="file"] {
             position: absolute;
             opacity: 0;
-            width: 100%;
-            height: 100%;
+            width: 1px;
+            height: 1px;
             cursor: pointer;
+            z-index: -1;
         }
 
         .upload-icon {
-            font-size: 48px;
+            font-size: 24px;
             color: var(--secondary-color);
-            margin-bottom: 12px;
+            margin-bottom: 4px;
         }
 
         .upload-text {
-            font-size: 16px;
+            font-size: 12px;
             color: var(--on-surface);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+            font-weight: 500;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
         }
 
         /* 按鈕設計 */
         .btn {
-            padding: 16px 32px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 24px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
+            min-height: 32px;
         }
 
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
 
-        .btn:hover::before {
-            transform: translateX(0);
-        }
 
         .btn-primary {
             background: linear-gradient(45deg, var(--secondary-color), #ff7043);
             color: white;
-            width: 100%;
-            margin-bottom: 12px;
+            flex: 1;
+            margin-bottom: 0;
         }
 
         .btn-primary:hover {
             background: linear-gradient(45deg, var(--secondary-dark), var(--secondary-color));
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(255, 87, 34, 0.3);
         }
 
         .btn-secondary {
             background: #f5f5f5;
             color: var(--on-surface);
             border: 1px solid var(--outline);
-            width: 100%;
+            flex: 1;
         }
 
         .btn-secondary:hover {
             background: #eeeeee;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .btn-group {
             display: flex;
-            gap: 12px;
+            gap: 8px;
+            margin-top: 0;
         }
 
-        @media (max-width: 768px) {
-            .btn-group {
-                flex-direction: column;
-            }
-            
-            .btn-secondary {
-                width: 100%;
-            }
-        }
+
 
         /* 警告訊息 */
         .alert {
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 24px;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            animation: slideIn 0.3s ease;
+            gap: 8px;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+
 
         .alert-error {
             background: #ffebee;
@@ -421,36 +417,85 @@
         }
 
         /* 響應式設計 */
+        @media (max-width: 1024px) {
+            .report-container {
+                max-width: 90%;
+                padding: 0 20px;
+            }
+            
+            .order-details {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .reason-options {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            }
+        }
+        
         @media (max-width: 768px) {
             .report-container {
-                margin: 16px auto;
+                margin: 8px auto;
                 padding: 0 12px;
             }
             
             .page-header {
-                padding: 24px 16px;
-                margin-bottom: 16px;
+                padding: 10px 12px;
+                margin-bottom: 8px;
             }
             
             .form-card, .order-info {
-                padding: 16px;
+                padding: 10px;
             }
             
             .btn {
-                padding: 14px 24px;
+                padding: 8px 16px;
+                min-height: 30px;
+                font-size: 12px;
             }
             
             .order-details {
                 grid-template-columns: 1fr;
+                gap: 6px;
             }
             
             .item-preview {
                 flex-direction: column;
                 text-align: center;
+                gap: 6px;
+                padding: 8px;
             }
             
             .reason-options {
                 grid-template-columns: 1fr;
+                gap: 4px;
+            }
+            
+            .reason-option {
+                padding: 6px;
+            }
+            
+            .btn-group {
+                gap: 6px;
+                flex-direction: column;
+            }
+            
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                flex: none;
+            }
+            
+            .file-upload-area {
+                padding: 8px;
+                min-height: 50px;
+            }
+            
+            .upload-icon {
+                font-size: 20px;
+            }
+            
+            .upload-text {
+                font-size: 11px;
             }
         }
 
@@ -535,8 +580,10 @@
                     </div>
                     
                     <div class="item-preview">
-                        <img th:src="@{'/item/DBGifReader/' + ${item.itemId}}" 
-                             alt="商品圖片" class="item-image">
+                        <img th:src="@{'/item/DBGifReader?itemId=' + ${item.itemId}}" 
+                             th:alt="${item.itemName}" 
+                             class="item-image"
+                             onerror="this.src='/DB_photos1/1.jpg'">
                         <div class="item-details">
                             <h5 th:text="${item.itemName}">商品名稱</h5>
                             <p>商品編號：<span th:text="${item.itemId}">商品編號</span></p>
@@ -620,7 +667,7 @@
                                     <i class="material-icons">send</i>
                                     提交檢舉
                                 </button>
-                                <a th:href="@{/item-report/my-orders}" class="btn btn-secondary">
+                                <a th:href="@{/order/listCompletedOrders}" class="btn btn-secondary">
                                     <i class="material-icons">arrow_back</i>
                                     返回我的訂單
                                 </a>
@@ -642,10 +689,21 @@
             });
         });
 
-        // 文件拖拽上傳
+        // 文件上傳功能
         const fileUploadArea = document.getElementById('fileUploadArea');
         const fileInput = document.getElementById('repImg');
 
+        // 點擊上傳區域觸發文件選擇
+        fileUploadArea.addEventListener('click', (e) => {
+            // 如果點擊的是移除按鈕，不觸發文件選擇
+            if (e.target.textContent === '[移除]') {
+                e.stopPropagation();
+                return;
+            }
+            fileInput.click();
+        });
+
+        // 拖拽上傳
         fileUploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             fileUploadArea.classList.add('dragover');
@@ -666,6 +724,7 @@
             }
         });
 
+        // 文件選擇變更事件
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 updateFileDisplay(e.target.files[0]);
@@ -674,7 +733,61 @@
 
         function updateFileDisplay(file) {
             const uploadText = fileUploadArea.querySelector('.upload-text');
-            uploadText.textContent = `已選擇：${file.name}`;
+            const uploadIcon = fileUploadArea.querySelector('.upload-icon');
+            const formHelp = fileUploadArea.querySelector('.form-help');
+            
+            // 檢查文件大小（5MB = 5 * 1024 * 1024 bytes）
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('檔案大小不能超過 5MB！');
+                fileInput.value = '';
+                return;
+            }
+            
+            // 檢查文件類型
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('只支援 JPG、PNG、GIF 格式的圖片！');
+                fileInput.value = '';
+                return;
+            }
+            
+            // 截取檔案名稱，避免太長導致容器變窄
+            const fileName = file.name.length > 20 ? file.name.substring(0, 20) + '...' : file.name;
+            
+            uploadText.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; flex-wrap: wrap;">
+                    <span style="color: #4caf50; font-weight: 600; flex: 1; min-width: 0;">✓ ${fileName}</span>
+                    <span style="color: #f44336; cursor: pointer; padding: 4px 8px; border-radius: 4px; background: rgba(244, 67, 54, 0.1); margin-left: 8px; font-size: 12px;" onclick="clearFile()">移除</span>
+                </div>
+            `;
+            
+            uploadIcon.textContent = 'check_circle';
+            uploadIcon.style.color = '#4caf50';
+            formHelp.textContent = `檔案大小：${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            
+            // 更新上傳區域樣式
+            fileUploadArea.style.borderColor = 'var(--success-color)';
+            fileUploadArea.style.backgroundColor = 'rgba(76, 175, 80, 0.04)';
+            fileUploadArea.style.minHeight = '80px';
+        }
+
+        // 清除已選擇的文件
+        function clearFile() {
+            const uploadText = fileUploadArea.querySelector('.upload-text');
+            const uploadIcon = fileUploadArea.querySelector('.upload-icon');
+            const formHelp = fileUploadArea.querySelector('.form-help');
+            
+            fileInput.value = '';
+            uploadText.textContent = '點擊選擇圖片或拖拽到此處';
+            uploadIcon.textContent = 'cloud_upload';
+            uploadIcon.style.color = '#ff5722';
+            formHelp.textContent = '建議上傳相關證據圖片，支援格式：JPG、PNG、GIF，檔案大小不超過5MB';
+            
+            // 重置上傳區域樣式
+            fileUploadArea.style.borderColor = 'var(--outline)';
+            fileUploadArea.style.backgroundColor = '#fafafa';
+            fileUploadArea.style.minHeight = '80px';
         }
 
         // 表單提交處理
@@ -706,7 +819,9 @@
             document.body.appendChild(loading);
         });
     </script>
+
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="../js/notification/websocket.js"></script>
 </body>
-</html> 
-</html> 
-</html> 
+</html>
