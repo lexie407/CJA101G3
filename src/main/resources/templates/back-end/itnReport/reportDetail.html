@@ -580,7 +580,7 @@
                     </h2>
                     <div class="image-section">
                         <div th:if="${report.repImg != null}">
-                            <img th:src="@{/item-report/image(repId=${report.repId})}" 
+                            <img th:src="@{/admin/reports/image/{repId}(repId=${report.repId})}" 
                                  alt="檢舉圖片" class="report-image">
                         </div>
                         <div th:if="${report.repImg == null}" class="no-image">
