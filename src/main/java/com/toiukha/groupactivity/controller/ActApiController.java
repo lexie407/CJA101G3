@@ -6,6 +6,7 @@ import com.toiukha.groupactivity.service.ActService;
 import com.toiukha.groupactivity.service.ActStatusScheduler;
 import com.toiukha.groupactivity.service.DefaultImageService;
 import com.toiukha.itinerary.model.ItineraryVO;
+import com.toiukha.itinerary.service.ItineraryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -20,7 +21,6 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -589,111 +589,7 @@ public class ActApiController {
     }
 
 
-    //取得公開行程
-    @GetMapping("/itineraries")
-    public ResponseEntity<?> getPublicItineraries() {
-        try {
-            List<ItineraryVO> itineraries = actSvc.getPublicItineraries();
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "data", itineraries
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "error", "取得行程列表失敗: " + e.getMessage()
-            ));
-        }
-    }
 
-    //驗證行程存在
-    @GetMapping("/validate-itinerary/{itnId}")
-    public ResponseEntity<?> validateItinerary(@PathVariable Integer itnId) {
-        try {
-            boolean isValid = actSvc.validateItinerary(itnId);
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "valid", isValid
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "error", "驗證行程失敗: " + e.getMessage()
-            ));
-        }
-    }
-
-    //取得單一行程詳情
-    @GetMapping("/itinerary/{itnId}")
-    public ResponseEntity<?> getItineraryDetail(@PathVariable Integer itnId) {
-        try {
-            ItineraryVO itnVo = actSvc.getItineraryById(itnId);
-            if (itnVo == null) {
-                return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "error", "行程不存在"
-                ));
-            }
-            // 封裝成簡單DTO
-            ItinerarySimpleDTO dto = new ItinerarySimpleDTO();
-            dto.setItnId(itnVo.getItnId());
-            dto.setItnName(itnVo.getItnName());
-            dto.setItnDesc(itnVo.getItnDesc());
-            dto.setIsPublic(itnVo.getIsPublic() == null ? null : itnVo.getIsPublic().intValue());
-            // 景點轉換
-            List<SpotSimpleDTO> spotList = new ArrayList<>();
-            if (itnVo.getItnSpots() != null) {
-                for (var itnSpot : itnVo.getItnSpots()) {
-                    if (itnSpot.getSpot() != null) {
-                        SpotSimpleDTO spotDto = new SpotSimpleDTO();
-                        spotDto.setSpotName(itnSpot.getSpot().getSpotName());
-                        spotDto.setSpotAddress(itnSpot.getSpot().getSpotLoc());
-                        spotList.add(spotDto);
-                    }
-                }
-            }
-            dto.setItnSpots(spotList);
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "data", dto
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "error", "取得行程詳情失敗: " + e.getMessage()
-            ));
-        }
-    }
-
-    //假行程詳情API（for 前端測試用，待行程模組修復後移除）
-//    @GetMapping("/itinerary/{itnId}")
-//    @ResponseBody
-//    public Map<String, Object> getItineraryDetail(@PathVariable Integer itnId) {
-//        Map<String, Object> response = new HashMap<>();
-//        Map<String, Object> itinerary = new HashMap<>();
-//        itinerary.put("itnId", itnId);
-//        itinerary.put("itnName", "合歡山健行");
-//        itinerary.put("itnDesc", "一起去合歡山走走吧");
-//        itinerary.put("isPublic", 1);
-//
-//        // 假景點
-//        List<Map<String, Object>> itnSpots = new ArrayList<>();
-//        Map<String, Object> spot1 = new HashMap<>();
-//        spot1.put("spotName", "台中高鐵站");
-//        spot1.put("spotAddress", "台北市烏日區");
-//        itnSpots.add(spot1);
-//
-//        Map<String, Object> spot2 = new HashMap<>();
-//        spot2.put("spotName", "武嶺");
-//        spot2.put("spotAddress", "台中市和平區");
-//        itnSpots.add(spot2);
-//
-//        itinerary.put("itnSpots", itnSpots);
-//
-//        response.put("success", true);
-//        response.put("data", itinerary);
-//        return response;
-//    }
 
 // ========== 錯誤驗證處理 ==========
 
@@ -780,9 +676,6 @@ public class ActApiController {
         }
         return result;
     }
-
-
-
 
     // ========================================
     // 測試相關端點 - 開發完成後可移除
@@ -982,6 +875,140 @@ public class ActApiController {
         }
     }
 
+
+
+    // ========================================
+    // 行程模組相關
+    // ========================================
+
+    //取得公開行程
+    @GetMapping("/itineraries")
+    public ResponseEntity<?> getPublicItineraries() {
+        try {
+            List<ItineraryVO> itineraries = actSvc.getPublicItineraries();
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", itineraries
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "error", "取得行程列表失敗: " + e.getMessage()
+            ));
+        }
+    }
+
+    //驗證行程存在
+    @GetMapping("/validate-itinerary/{itnId}")
+    public ResponseEntity<?> validateItinerary(@PathVariable Integer itnId) {
+        try {
+            boolean isValid = actSvc.validateItinerary(itnId);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "valid", isValid
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "error", "驗證行程失敗: " + e.getMessage()
+            ));
+        }
+    }
+
+    //取得單一行程詳情
+    @GetMapping("/itinerary/{itnId}")
+    public ResponseEntity<?> getItineraryDetail(@PathVariable Integer itnId) {
+        try {
+            ItineraryVO itnVo = actSvc.getItineraryById(itnId);
+            if (itnVo == null) {
+                return ResponseEntity.ok(Map.of(
+                        "success", false,
+                        "error", "行程不存在"
+                ));
+            }
+            // 封裝成簡單DTO
+            ItinerarySimpleDTO dto = new ItinerarySimpleDTO();
+            dto.setItnId(itnVo.getItnId());
+            dto.setItnName(itnVo.getItnName());
+            dto.setItnDesc(itnVo.getItnDesc());
+            dto.setIsPublic(itnVo.getIsPublic() == null ? null : itnVo.getIsPublic().intValue());
+            // 景點轉換
+            List<SpotSimpleDTO> spotList = new ArrayList<>();
+            if (itnVo.getItnSpots() != null) {
+                for (var itnSpot : itnVo.getItnSpots()) {
+                    if (itnSpot.getSpot() != null) {
+                        SpotSimpleDTO spotDto = new SpotSimpleDTO();
+                        spotDto.setSpotName(itnSpot.getSpot().getSpotName());
+                        spotDto.setSpotAddress(itnSpot.getSpot().getSpotLoc());
+                        spotList.add(spotDto);
+                    }
+                }
+            }
+            dto.setItnSpots(spotList);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", dto
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "error", "取得行程詳情失敗: " + e.getMessage()
+            ));
+        }
+    }
+
+    //透過會員查詢既有行程
+    @Autowired
+    private ItineraryService itinerarySvc;
+
+    @GetMapping("/itinerary/creator/{memberId}")
+    public List<ItinerarySimpleDTO> getItinerariesByCreator(@PathVariable Integer memberId) {
+        List<ItineraryVO> voList = itinerarySvc.getItinerariesByCrtId(memberId);
+        List<ItinerarySimpleDTO> dtoList = new ArrayList<>();
+        for (ItineraryVO itnVo : voList) {
+            ItinerarySimpleDTO dto = new ItinerarySimpleDTO();
+            dto.setItnId(itnVo.getItnId());
+            dto.setItnName(itnVo.getItnName());
+            dto.setItnDesc(itnVo.getItnDesc());
+            dto.setIsPublic(itnVo.getIsPublic() == null ? null : itnVo.getIsPublic().intValue());
+            // 如果你只要基本資料，這裡可以不用setItnSpots
+            dtoList.add(dto);
+        }
+        return dtoList;
+    }
+
+    //假行程詳情API（for 前端測試用，待行程模組修復後移除）
+//    @GetMapping("/itinerary/{itnId}")
+//    @ResponseBody
+//    public Map<String, Object> getItineraryDetail(@PathVariable Integer itnId) {
+//        Map<String, Object> response = new HashMap<>();
+//        Map<String, Object> itinerary = new HashMap<>();
+//        itinerary.put("itnId", itnId);
+//        itinerary.put("itnName", "合歡山健行");
+//        itinerary.put("itnDesc", "一起去合歡山走走吧");
+//        itinerary.put("isPublic", 1);
+//
+//        // 假景點
+//        List<Map<String, Object>> itnSpots = new ArrayList<>();
+//        Map<String, Object> spot1 = new HashMap<>();
+//        spot1.put("spotName", "台中高鐵站");
+//        spot1.put("spotAddress", "台北市烏日區");
+//        itnSpots.add(spot1);
+//
+//        Map<String, Object> spot2 = new HashMap<>();
+//        spot2.put("spotName", "武嶺");
+//        spot2.put("spotAddress", "台中市和平區");
+//        itnSpots.add(spot2);
+//
+//        itinerary.put("itnSpots", itnSpots);
+//
+//        response.put("success", true);
+//        response.put("data", itinerary);
+//        return response;
+//    }
+
+
+
 //    // 臨時行程查詢API（for 前端測試用，待行程模組修復後移除）
 //    @GetMapping("/itinerary/creator/{memberId}")
 //    @ResponseBody
@@ -1023,6 +1050,7 @@ public class ActApiController {
 //
 //        return spots;
 //    }
+
 
     // ===================以行程發起揪團活動API（for 行程模組串接測試用）
     /*

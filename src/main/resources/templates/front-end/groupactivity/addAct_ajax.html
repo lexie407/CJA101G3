@@ -1059,6 +1059,9 @@
             console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
             return;
         }
+        // fetch(`/api/act/itinerary/creator/${currentMemberId}`)
+        // fetch(`/itinerary/creator/${currentMemberId}`)
+        //在揪團模組另外建立API
         fetch(`/api/act/itinerary/creator/${currentMemberId}`)
             .then(res => res.json())
             .then(list => {
