@@ -113,6 +113,31 @@
                             <div class="spot-detail-layout">
                                 <!-- 左側主要內容 -->
                                 <div class="spot-detail-content">
+                                    <!-- 景點圖片卡片 -->
+                                    <div class="spot-detail-card">
+                                        <div class="spot-detail-card__header">
+                                            <h2 class="spot-detail-card__title">
+                                                <span class="material-icons">photo</span>
+                                                景點圖片
+                                            </h2>
+                                        </div>
+                                        <div class="spot-detail-card__content">
+                                            <div class="spot-detail-image-container">
+                                                <img th:if="${spot.firstPictureUrl}" 
+                                                     th:src="${spot.firstPictureUrl}" 
+                                                     th:alt="${spot.spotName}"
+                                                     class="spot-detail-main-image"
+                                                     loading="lazy"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                <div class="spot-detail-image-placeholder" 
+                                                     th:style="${spot.firstPictureUrl != null and spot.firstPictureUrl != '' ? 'display: none;' : 'display: flex;'}">
+                                                    <span class="material-icons">image</span>
+                                                    <span>暫無圖片</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- 景點描述卡片 -->
                                     <div class="spot-detail-card">
                                         <div class="spot-detail-card__header">

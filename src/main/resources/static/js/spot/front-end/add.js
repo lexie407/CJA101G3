@@ -34,7 +34,7 @@
             minLengths: {
                 spotName: 2,
                 spotLoc: 3,
-                spotDesc: 20
+                spotDesc: 10
             },
             requiredFields: ['spotName', 'spotLoc', 'spotDesc']
         },
@@ -155,6 +155,15 @@
             // 描述字元計數
             if (this.elements.spotDesc && this.elements.descCharCount) {
                 this.updateCharacterCount('spotDesc');
+            }
+            // 景點描述即時字數統計
+            if (this.elements.spotDesc && this.elements.descCharCount) {
+                const updateDescCount = () => {
+                    const len = this.elements.spotDesc.value.length;
+                    this.elements.descCharCount.textContent = `${len}/500`;
+                };
+                this.elements.spotDesc.addEventListener('input', updateDescCount);
+                updateDescCount();
             }
         },
 
@@ -280,7 +289,7 @@
                         }
                         break;
                     case 'spotDesc':
-                        if (value.length < 20) {
+                        if (value.length < 10) {
                             errors.push('描述內容太短，請提供更詳細的資訊');
                         }
                         break;
@@ -639,11 +648,236 @@
     `;
     document.head.appendChild(style);
 
-    /**
-     * 頁面載入完成後初始化
-     */
-    document.addEventListener('DOMContentLoaded', () => {
+    // ===== 多圖上傳區塊（會員新增景點） =====
+    const input = document.getElementById('multiImageInput');
+    const dropzone = document.getElementById('multiImageDropzone');
+    const selectBtn = document.getElementById('multiImageSelectBtn');
+    const list = document.getElementById('multiImageList');
+    let helperText = dropzone?.parentElement.querySelector('.helper-text');
+    let images = [];
+    const MAX_IMAGES = 8;
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
+
+    if (!input || !dropzone || !selectBtn || !list) return;
+
+    selectBtn.addEventListener('click', () => {
+        if (!selectBtn.disabled) input.click();
+    });
+    dropzone.addEventListener('dragover', e => {
+        if (isUploadFull()) return;
+        e.preventDefault(); dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', e => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+    dropzone.addEventListener('drop', e => {
+        if (isUploadFull()) return;
+        e.preventDefault(); dropzone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+    input.addEventListener('change', e => handleFiles(e.target.files));
+
+    function isUploadFull() {
+        return images.length >= MAX_IMAGES;
+    }
+    function updateHelper() {
+        const remain = MAX_IMAGES - images.length;
+        if (helperText) {
+            helperText.textContent = `可上傳多張圖片，每張可填寫描述，支援拖拉排序與刪除（剩餘${remain}張）`;
+        }
+        selectBtn.disabled = remain <= 0;
+        dropzone.style.opacity = remain <= 0 ? 0.5 : 1;
+        dropzone.style.pointerEvents = remain <= 0 ? 'none' : 'auto';
+    }
+    function handleFiles(files) {
+        let totalCount = images.length;
+        for (let file of files) {
+            if (totalCount >= MAX_IMAGES) {
+                SpotAdd.showToast(`最多只能上傳${MAX_IMAGES}張圖片，請先刪除部分圖片再嘗試。`, 'error');
+                break;
+            }
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                SpotAdd.showToast('僅允許 JPG、PNG 格式圖片，請重新選擇。', 'error');
+                continue;
+            }
+            if (file.size > MAX_SIZE) {
+                SpotAdd.showToast('單張圖片不可超過2MB，請壓縮後再上傳。', 'error');
+                continue;
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                images.push({ file, url: e.target.result, desc: '' });
+                renderList();
+            };
+            reader.readAsDataURL(file);
+            totalCount++;
+        }
+        input.value = '';
+        updateHelper();
+    }
+    function renderList() {
+        list.innerHTML = '';
+        images.forEach((img, idx) => {
+            const item = document.createElement('div');
+            item.className = 'multi-image-item';
+            item.draggable = true;
+            item.innerHTML = `
+                <img src="${img.url}" class="multi-image-thumb">
+                <input type="text" class="multi-image-desc" placeholder="描述(選填)" value="${img.desc || ''}">
+                <button type="button" class="multi-image-delete">刪除</button>
+            `;
+            item.querySelector('.multi-image-delete').onclick = () => {
+                images.splice(idx, 1); renderList(); updateHelper();
+            };
+            item.querySelector('.multi-image-desc').oninput = e => {
+                images[idx].desc = e.target.value;
+            };
+            item.ondragstart = e => { e.dataTransfer.setData('text/plain', idx); };
+            item.ondragover = e => e.preventDefault();
+            item.ondrop = e => {
+                e.preventDefault();
+                const from = +e.dataTransfer.getData('text/plain');
+                const to = idx;
+                if (from !== to) {
+                    const moved = images.splice(from, 1)[0];
+                    images.splice(to, 0, moved);
+                    renderList();
+                }
+            };
+            list.appendChild(item);
+        });
+        updateHelper();
+    }
+    // 表單送出時附加多圖資料
+    const form = document.getElementById('spotAddForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (images.length === 0) {
+                SpotAdd.showToast('請至少上傳一張圖片', 'error');
+                e.preventDefault();
+                return;
+            }
+            if (images.length > 0) {
+                const formData = new FormData(form);
+                images.forEach((img, i) => {
+                    formData.append('multiImages', img.file);
+                    formData.append('multiImageDescs', img.desc);
+                });
+                e.preventDefault();
+                fetch(form.action, {
+                    method: form.method,
+                    body: formData
+                }).then(resp => resp.json())
+                  .then(data => {
+                    if (data.success) {
+                      SpotAdd.showToast('景點與圖片已送出，待審核', 'success');
+                      setTimeout(() => location.href = '/spot/list', 1200);
+                    } else {
+                      SpotAdd.showToast(data.message || '儲存失敗', 'error');
+                    }
+                  }).catch(() => SpotAdd.showToast('儲存失敗', 'error'));
+            }
+        });
+    }
+
+    // ===== 自動帶入地區、電話、官方網站（參考後台） =====
+    function extractRegionFromAddress(address) {
+        if (!address) return null;
+        const regions = [
+            '台北市', '臺北市', '新北市', '桃園市', '台中市', '臺中市', '台南市', '臺南市', '高雄市',
+            '基隆市', '新竹市', '嘉義市', '新竹縣', '苗栗縣', '彰化縣', '南投縣', '雲林縣',
+            '嘉義縣', '屏東縣', '宜蘭縣', '花蓮縣', '台東縣', '臺東縣', '澎湖縣', '金門縣', '連江縣'
+        ];
+        for (const region of regions) {
+            if (address.includes(region)) {
+                if (region === '臺北市') return '台北市';
+                if (region === '臺中市') return '台中市';
+                if (region === '臺南市') return '台南市';
+                if (region === '臺東縣') return '台東縣';
+                return region;
+            }
+        }
+        return null;
+    }
+
+    function setupSpotInfoChangeListener() {
+        const spotNameInput = document.getElementById('spotName');
+        const spotLocInput = document.getElementById('spotLoc');
+        if (!spotNameInput || !spotLocInput) return;
+        let lastSpotName = spotNameInput.value;
+        let lastSpotLoc = spotLocInput.value;
+        function clearAutoFilledFields() {
+            const telInput = document.getElementById('tel');
+            const websiteInput = document.getElementById('website');
+            if (telInput) {
+                telInput.value = '';
+                telInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (websiteInput) {
+                websiteInput.value = '';
+                websiteInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+        spotNameInput.addEventListener('input', function() {
+            const currentValue = this.value.trim();
+            if (currentValue !== lastSpotName && lastSpotName !== '') {
+                clearAutoFilledFields();
+            }
+            lastSpotName = currentValue;
+        });
+        spotLocInput.addEventListener('input', function() {
+            const currentValue = this.value.trim();
+            if (currentValue !== lastSpotLoc && lastSpotLoc !== '') {
+                clearAutoFilledFields();
+            }
+            lastSpotLoc = currentValue;
+        });
+    }
+
+    function setupAddressAutoComplete() {
+        const spotLocInput = document.getElementById('spotLoc');
+        const regionSelect = document.getElementById('region');
+        if (!spotLocInput || !regionSelect) return;
+        setupSpotInfoChangeListener();
+        spotLocInput.addEventListener('blur', function() {
+            const address = this.value.trim();
+            if (!address) return;
+            const region = extractRegionFromAddress(address);
+            if (region) {
+                regionSelect.value = region;
+                regionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                fetchGooglePlaceDataFront(true);
+            }
+        });
+    }
+
+    async function fetchGooglePlaceDataFront(silent = false, forceUpdate = false) {
+        const spotName = document.getElementById('spotName').value.trim();
+        const spotLoc = document.getElementById('spotLoc').value.trim();
+        if (!spotName || !spotLoc) return;
+        try {
+            const response = await fetch('/api/spot/public/google-place-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: spotName, address: spotLoc })
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            const telInput = document.getElementById('tel');
+            const websiteInput = document.getElementById('website');
+            if (data.phoneNumber && (forceUpdate || !telInput.value)) {
+                telInput.value = data.phoneNumber;
+                telInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (data.website && (forceUpdate || !websiteInput.value)) {
+                websiteInput.value = data.website;
+                websiteInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        } catch (e) { /* 可加提示 */ }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
         SpotAdd.init();
+        setupAddressAutoComplete();
     });
 
     // 匯出模組供測試使用

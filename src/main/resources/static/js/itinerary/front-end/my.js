@@ -96,6 +96,24 @@ function bindFilterEvents() {
  */
 function bindItineraryActions() {
     document.addEventListener('click', function(e) {
+        // 公開狀態切換
+        const toggleBtn = e.target.closest('.toggle-public-btn');
+        if (toggleBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('切換按鈕被點擊');
+            
+            const itineraryId = toggleBtn.getAttribute('data-id');
+            const isPublic = toggleBtn.getAttribute('data-public') === 'true';
+            
+            console.log('行程ID:', itineraryId);
+            console.log('目前狀態:', isPublic);
+            
+            if (itineraryId) {
+                togglePublicStatus(itineraryId, isPublic, toggleBtn);
+            }
+        }
+        
         // 編輯按鈕
         if (e.target.closest('.edit-btn')) {
             e.preventDefault();
@@ -126,15 +144,6 @@ function bindItineraryActions() {
             const button = e.target.closest('.delete-btn');
             const itineraryId = button.dataset.id;
             deleteItinerary(itineraryId);
-        }
-        
-        // 公開狀態切換
-        if (e.target.closest('.toggle-public-btn')) {
-            e.preventDefault();
-            const button = e.target.closest('.toggle-public-btn');
-            const itineraryId = button.dataset.id;
-            const isPublic = button.dataset.public === 'true';
-            togglePublicStatus(itineraryId, isPublic, button);
         }
     });
 }
@@ -575,20 +584,10 @@ function performDeleteItinerary(itineraryId) {
  * @param {HTMLElement} button - 按鈕元素
  */
 function togglePublicStatus(itineraryId, currentPublic, button) {
-    // 確認對話框
+    // 直接執行切換，先禁用按鈕避免重複點擊
+    button.disabled = true;
     const newStatus = !currentPublic;
-    const confirmMessage = newStatus 
-        ? '確定要將此行程設為公開嗎？公開後所有人都能查看此行程。' 
-        : '確定要將此行程設為私人嗎？設為私人後只有您能查看此行程。';
-    
-    showConfirmModal(
-        '切換行程狀態', 
-        confirmMessage,
-        function() {
-            // 使用者確認後執行
-            performTogglePublic(itineraryId, newStatus, button);
-        }
-    );
+    performTogglePublic(itineraryId, newStatus, button);
 }
 
 /**
@@ -598,51 +597,75 @@ function togglePublicStatus(itineraryId, currentPublic, button) {
  * @param {HTMLElement} button - 按鈕元素
  */
 function performTogglePublic(itineraryId, makePublic, button) {
-    // 顯示載入中
+    const originalContent = button.innerHTML;
+    let loadingShown = false;
+    let loadingTimer = null;
     button.disabled = true;
-    const originalText = button.innerHTML;
-    const loadingText = makePublic ? '正在設為公開...' : '正在設為私人...';
-    button.innerHTML = `<span class="material-icons">hourglass_empty</span> ${loadingText}`;
-    
-    // 發送API請求
-    fetch(`/itinerary/toggle-visibility/${itineraryId}`, {
+
+    // 延遲顯示 loading 狀態（例如 200ms）
+    loadingTimer = setTimeout(() => {
+        loadingShown = true;
+        button.innerHTML = `<span class=\"material-icons\" style=\"margin-right: 4px;\">hourglass_empty</span>${makePublic ? '正在設為公開...' : '正在設為私人...'}`;
+    }, 200);
+
+    fetch(`/api/itinerary/${itineraryId}/toggle-visibility`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name=\"_csrf\"]')?.getAttribute('content')
         },
+        body: JSON.stringify({ makePublic: makePublic }),
         credentials: 'same-origin'
     })
     .then(response => {
         if (!response.ok) {
+            if (response.status === 401) {
+                window.location.href = '/members/login?redirect=/itinerary/my';
+                throw new Error('請先登入會員');
+            } else if (response.status === 403) {
+                throw new Error('您沒有權限修改此行程');
+            } else if (response.status === 404) {
+                throw new Error('找不到指定的行程');
+            }
             throw new Error(`API 錯誤 (${response.status})`);
         }
         return response.json();
     })
     .then(data => {
+        clearTimeout(loadingTimer);
         if (data.success) {
-            // 顯示成功訊息
-            showToast(data.message, 'success');
-            
-            // 重新載入頁面以更新UI
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            showToast(data.message || '狀態更新成功', 'success');
+            const newContent = makePublic 
+                ? '<span class=\"material-icons\" style=\"margin-right: 4px;\">lock</span>設為私人'
+                : '<span class=\"material-icons\" style=\"margin-right: 4px;\">public</span>設為公開';
+            requestAnimationFrame(() => {
+                button.dataset.public = makePublic.toString();
+                button.innerHTML = newContent;
+                button.disabled = false;
+                const statusBadge = button.closest('.itinerary-card').querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.className = makePublic ? 'status-badge status-public' : 'status-badge status-private';
+                    statusBadge.innerHTML = makePublic 
+                        ? '<span class=\"material-icons\">public</span>公開'
+                        : '<span class=\"material-icons\">lock</span>私人';
+                }
+            });
         } else {
-            // 顯示錯誤訊息
             showToast(data.message || '操作失敗', 'error');
-            
-            // 恢復按鈕狀態
-            button.disabled = false;
-            button.innerHTML = originalText;
+            requestAnimationFrame(() => {
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            });
         }
     })
     .catch(error => {
+        clearTimeout(loadingTimer);
         console.error('切換公開狀態失敗:', error);
-        showToast('操作失敗，請稍後再試', 'error');
-        
-        // 恢復按鈕狀態
-        button.disabled = false;
-        button.innerHTML = originalText;
+        showToast(error.message || '操作失敗，請稍後再試', 'error');
+        requestAnimationFrame(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        });
     });
 }
 
@@ -777,16 +800,14 @@ function createItineraryCard(itinerary) {
                 ${isPublic ? `
                     <button class="itn-capsule-outline-btn toggle-public-btn" 
                             data-id="${itinerary.id}" 
-                            data-public="true"
-                            onclick="togglePublicStatus('${itinerary.id}', true, this)">
+                            data-public="true">
                         <span class="material-icons">lock</span>
                         設為私人
                     </button>
                 ` : `
                     <button class="itn-capsule-outline-btn toggle-public-btn" 
                             data-id="${itinerary.id}" 
-                            data-public="false"
-                            onclick="togglePublicStatus('${itinerary.id}', false, this)">
+                            data-public="false">
                         <span class="material-icons">public</span>
                         設為公開
                     </button>
@@ -873,25 +894,49 @@ function checkEmptyState() {
  */
 function showConfirmModal(title, message, onConfirm) {
     const modal = document.getElementById('confirmModal');
-    const titleElement = document.querySelector('.modal-title');
+    const titleElement = modal.querySelector('.modal-title');
     const messageElement = document.getElementById('confirmMessage');
     const okBtn = document.getElementById('confirmOk');
+    const cancelBtn = document.getElementById('confirmCancel');
+    const closeBtn = document.getElementById('modalClose');
     
-    if (modal && titleElement && messageElement && okBtn) {
+    if (modal && titleElement && messageElement && okBtn && cancelBtn && closeBtn) {
+        // 設置內容
         titleElement.textContent = title;
         messageElement.textContent = message;
         
-        // 移除舊的事件監聽器
+        // 清除所有舊的事件監聽器
         const newOkBtn = okBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        const newCloseBtn = closeBtn.cloneNode(true);
+        
         okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
         
         // 添加新的事件監聽器
         newOkBtn.addEventListener('click', function() {
             hideModal();
-            if (onConfirm) onConfirm();
+            if (typeof onConfirm === 'function') {
+                onConfirm();
+            }
         });
         
-        modal.classList.add('show');
+        newCancelBtn.addEventListener('click', hideModal);
+        newCloseBtn.addEventListener('click', hideModal);
+        
+        // 點擊背景關閉
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideModal();
+            }
+        });
+        
+        // 顯示對話框
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
     }
 }
 
@@ -902,6 +947,9 @@ function hideModal() {
     const modal = document.getElementById('confirmModal');
     if (modal) {
         modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
     }
 }
 
@@ -919,8 +967,8 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `itinerary-toast itinerary-toast--${type}`;
     toast.innerHTML = `
-        <span class="material-icons">${type === 'success' ? 'check_circle' : 'error'}</span>
-        <span>${message}</span>
+        <span class="material-icons" style="font-size: 16px;">${type === 'success' ? 'check_circle' : 'error'}</span>
+        <span style="font-size: 14px;">${message}</span>
     `;
     
     // 添加到頁面
@@ -932,31 +980,36 @@ function showToast(message, type = 'success') {
     toast.style.right = '20px';
     toast.style.backgroundColor = type === 'success' ? '#4CAF50' : '#F44336';
     toast.style.color = 'white';
-    toast.style.padding = '12px 20px';
+    toast.style.padding = '8px 16px';
     toast.style.borderRadius = '4px';
-    toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+    toast.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
     toast.style.display = 'flex';
     toast.style.alignItems = 'center';
     toast.style.zIndex = '9999';
     toast.style.opacity = '0';
-    toast.style.transition = 'opacity 0.3s ease-in-out';
+    toast.style.transition = 'all 0.3s ease-in-out';
+    toast.style.transform = 'translateY(20px)';
+    toast.style.fontSize = '14px';
+    toast.style.maxWidth = '250px';
     
     // 設置圖標樣式
     const icon = toast.querySelector('.material-icons');
-    icon.style.marginRight = '8px';
+    icon.style.marginRight = '6px';
     
     // 顯示toast
-    setTimeout(() => {
+    requestAnimationFrame(() => {
         toast.style.opacity = '1';
-    }, 10);
+        toast.style.transform = 'translateY(0)';
+    });
     
-    // 3秒後隱藏toast
+    // 2秒後隱藏toast
     setTimeout(() => {
         toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
         setTimeout(() => {
             toast.remove();
         }, 300);
-    }, 3000);
+    }, 2000);
 }
 
 /**

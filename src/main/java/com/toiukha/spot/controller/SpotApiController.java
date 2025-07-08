@@ -63,12 +63,7 @@ public class SpotApiController {
      */
     @GetMapping("/public/search")
     public ResponseEntity<?> searchPublicSpots(@RequestParam String keyword) {
-        try {
-            return ResponseEntity.ok(spotService.searchSpots(keyword));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "搜尋景點失敗"));
-        }
+        return ResponseEntity.ok(spotService.searchPublicSpots(keyword));
     }
 
     /**
@@ -118,6 +113,23 @@ public class SpotApiController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "獲取景點詳情失敗"));
+        }
+    }
+
+    /**
+     * Google Places Autocomplete 建議關鍵字
+     * @param input 使用者輸入
+     * @return 建議字串清單
+     */
+    @GetMapping("/google-suggest")
+    public ResponseEntity<?> getGoogleSuggest(@RequestParam String input) {
+        try {
+            var suggestions = googleApiService.getPlaceAutocompleteSuggestions(input);
+            return ResponseEntity.ok(Map.of("success", true, "suggestions", suggestions));
+        } catch (Exception e) {
+            log.error("Google Suggest 失敗", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "取得建議失敗"));
         }
     }
 } 

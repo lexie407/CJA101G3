@@ -20,7 +20,7 @@ import java.util.Map;
  * 處理行程相關的資料交換
  */
 @RestController
-@RequestMapping("/itinerary/api")
+@RequestMapping("/api/itinerary")
 public class ItineraryRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(ItineraryRestController.class);
@@ -30,6 +30,9 @@ public class ItineraryRestController {
 
     @Autowired
     private com.toiukha.favItn.model.FavItnService favItnService;
+
+    @Autowired
+    private com.toiukha.spot.service.SpotService spotService;
 
     /**
      * 取得行程列表
@@ -521,13 +524,77 @@ public class ItineraryRestController {
     /**
      * 搜尋景點（用於建立行程時選擇景點）
      */
-    @GetMapping("/spots/search")
+    @GetMapping("/searchSpots")
     public ResponseEntity<?> searchSpots(@RequestParam String keyword) {
-        // TODO: 實作景點搜尋邏輯
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "景點搜尋成功");
-        response.put("keyword", keyword);
+        return ResponseEntity.ok(spotService.searchPublicSpots(keyword));
+    }
+
+    /**
+     * 切換行程公開狀態
+     */
+    @PostMapping("/{id}/toggle-visibility")
+    public ResponseEntity<?> toggleVisibility(
+            @PathVariable Integer id,
+            @RequestBody Map<String, Boolean> request,
+            HttpSession session) {
         
-        return ResponseEntity.ok(response);
+        try {
+            // 從 Session 獲取當前登入會員
+            MembersVO member = (MembersVO) session.getAttribute("member");
+            if (member == null) {
+                logger.warn("未登入用戶嘗試切換行程公開狀態，行程 ID: {}", id);
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "message", "請先登入會員"
+                ));
+            }
+            
+            // 檢查行程是否存在
+            ItineraryVO itinerary = itineraryService.getItineraryById(id);
+            if (itinerary == null) {
+                logger.warn("嘗試切換不存在的行程公開狀態，行程 ID: {}", id);
+                return ResponseEntity.status(404).body(Map.of(
+                    "success", false,
+                    "message", "找不到指定的行程"
+                ));
+            }
+            
+            // 檢查是否為行程擁有者
+            if (!itinerary.getCrtId().equals(member.getMemId())) {
+                logger.warn("用戶 {} 嘗試切換非自己的行程公開狀態，行程 ID: {}", member.getMemId(), id);
+                return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "您沒有權限修改此行程"
+                ));
+            }
+            
+            // 獲取要設置的狀態
+            Boolean makePublic = request.get("makePublic");
+            if (makePublic == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "缺少必要參數"
+                ));
+            }
+            
+            // 更新公開狀態
+            itinerary.setIsPublic(makePublic ? (byte)1 : (byte)0);
+            itineraryService.updateItinerary(itinerary);
+            
+            logger.info("成功切換行程公開狀態，行程 ID: {}，新狀態: {}", id, makePublic ? "公開" : "私人");
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", String.format("已將行程設為%s", makePublic ? "公開" : "私人"),
+                "isPublic", makePublic
+            ));
+            
+        } catch (Exception e) {
+            logger.error("切換行程公開狀態時發生錯誤，行程 ID: {}", id, e);
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "message", "系統錯誤：" + e.getMessage()
+            ));
+        }
     }
 } 

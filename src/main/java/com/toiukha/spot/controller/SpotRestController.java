@@ -78,7 +78,7 @@ public class SpotRestController {
     @Deprecated
     public ResponseEntity<ApiResponse<List<SpotVO>>> getActiveSpots() {
         // 重導向到新的前台控制器
-        return spotUserApiController.getActiveSpots();
+        return spotUserApiController.getActiveSpots(null, null, null);
     }
 
     /**
@@ -101,15 +101,9 @@ public class SpotRestController {
      * @return API回應包含搜尋結果
      */
     @GetMapping("/search")
-    @Deprecated
     public ResponseEntity<ApiResponse<List<SpotVO>>> searchSpots(@RequestParam String keyword) {
-        // 重導向到新的前台控制器
-        try {
-            List<SpotVO> spots = spotService.searchPublicSpots(keyword);
-            return ResponseEntity.ok(ApiResponse.success("搜尋成功", spots));
-        } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error("搜尋失敗: " + e.getMessage()));
-        }
+        List<SpotVO> spots = spotService.searchPublicSpots(keyword);
+        return ResponseEntity.ok(ApiResponse.success("搜尋成功", spots));
     }
 
     /**

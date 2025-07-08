@@ -114,6 +114,14 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
     boolean existsByGovtId(String govtId);
     
     /**
+     * 批量查詢已存在的政府資料ID (效能優化)
+     * @param govtIds 政府資料ID列表
+     * @return 已存在的政府資料ID列表
+     */
+    @Query("SELECT s.govtId FROM SpotVO s WHERE s.govtId IN :govtIds")
+    List<String> findExistingGovtIds(@Param("govtIds") List<String> govtIds);
+    
+    /**
      * 查詢沒有座標的景點 (用於地理編碼)
      * @return 沒有座標的景點列表
      */
@@ -233,4 +241,26 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
             @Param("rating") Double rating,
             @Param("sortBy") String sortBy,
             @Param("sortDirection") String sortDirection);
+
+    /**
+     * 查詢所有沒有 Google Place ID 的景點
+     */
+    @Query("SELECT s FROM SpotVO s WHERE s.googlePlaceId IS NULL OR s.googlePlaceId = ''")
+    List<SpotVO> findAllWithoutPlaceId();
+
+    /**
+     * 更新指定景點的 Google Place ID
+     */
+    @Modifying
+    @Query("UPDATE SpotVO s SET s.googlePlaceId = :placeId WHERE s.spotId = :spotId")
+    int updatePlaceId(@Param("spotId") Integer spotId, @Param("placeId") String placeId);
+
+    /**
+     * 查詢 spotLoc 屬於多個城市且狀態為上架的景點
+     * @param spotLocs 景點地址列表
+     * @param spotStatus 景點狀態
+     * @return 符合條件的景點列表
+     */
+    @Query("SELECT s FROM SpotVO s WHERE s.spotLoc IN :spotLocs AND s.spotStatus = :spotStatus")
+    List<SpotVO> findBySpotLocInAndSpotStatus(@Param("spotLocs") List<String> spotLocs, @Param("spotStatus") byte spotStatus);
 } 

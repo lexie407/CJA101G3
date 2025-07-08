@@ -65,6 +65,7 @@ function bindButtonEvents() {
     if (bottomFavoriteBtn) {
         bottomFavoriteBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            showToast('已點擊收藏按鈕', 'info');
             toggleFavorite();
         });
     }
@@ -423,6 +424,7 @@ function createRelatedItineraryElement(itinerary) {
  * 切換收藏狀態
  */
 function toggleFavorite() {
+    showToast('已點擊收藏按鈕', 'info');
     if (!itineraryId) return;
     
     const favoriteBtn = document.querySelector('.itinerary-action-btn--favorite');
@@ -453,8 +455,8 @@ function toggleFavorite() {
         if (data.success) {
             isFavorited = data.isFavorited;
             updateFavoriteButton();
-            showToast(data.message || (isFavorited ? '已加入收藏' : '已取消收藏'), 'success');
-            
+            // 新增明顯提示
+            showToast(data.message || (isFavorited ? '已加入收藏' : '已取消收藏'), isFavorited ? 'success' : 'info');
             // 通知其他頁面
             localStorage.setItem('favoriteChange', JSON.stringify({
                 itineraryId: itineraryId,

@@ -7,6 +7,7 @@
 let currentPage = 1;
 let currentSize = 10;
 let isLoading = false;
+let isCopying = false;
 
 // DOM 載入完成後初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -515,27 +516,26 @@ function toggleVisibility(button, makePublic) {
     });
 }
 
-
-
 /**
  * 複製行程
  */
 function copyItinerary(button) {
+    if (isCopying) return;
+    isCopying = true;
     const itineraryId = button.dataset.itineraryId;
     if (!itineraryId) {
         console.error('行程 ID 不存在');
+        isCopying = false;
         return;
     }
-    
     // 顯示確認對話框
     if (!confirm('確定要複製這個行程嗎？複製後的行程會保存到您的「我的行程」中。')) {
+        isCopying = false;
         return;
     }
-    
     button.disabled = true;
     const originalHTML = button.innerHTML;
     button.innerHTML = '<span class="material-icons">hourglass_empty</span>複製中...';
-    
     // 呼叫複製API
     fetch(`/itinerary/api/${itineraryId}/copy`, {
         method: 'POST',
@@ -546,7 +546,6 @@ function copyItinerary(button) {
     })
     .then(response => {
         if (response.status === 401) {
-            // 未登入，顯示登入對話框
             showLoginDialog(button, originalHTML);
             throw new Error('請先登入');
         }
@@ -558,13 +557,10 @@ function copyItinerary(button) {
     .then(data => {
         if (data.success) {
             showToast('行程複製成功！', 'success');
-            
-            // 詢問用戶是否要前往編輯新行程
             setTimeout(() => {
                 if (confirm('行程複製成功！是否要前往編輯新行程？')) {
                     window.location.href = `/itinerary/edit/${data.newItineraryId}`;
                 } else {
-                    // 前往我的行程列表
                     window.location.href = '/itinerary/my';
                 }
             }, 1000);
@@ -579,6 +575,7 @@ function copyItinerary(button) {
         }
     })
     .finally(() => {
+        isCopying = false;
         button.disabled = false;
         button.innerHTML = originalHTML;
     });

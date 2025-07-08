@@ -193,18 +193,18 @@
                                         建立揪團
                                     </button>
                                     <button th:if="${itinerary.isPublicItinerary()}" 
+                                            type="button"
                                             class="itn-capsule-outline-btn toggle-public-btn"
                                             th:data-id="${itinerary.itnId}"
-                                            th:data-public="true"
-                                            onclick="togglePublicStatus(this.getAttribute('data-id'), true, this)">
+                                            th:data-public="true">
                                         <span class="material-icons">lock</span>
                                         設為私人
                                     </button>
                                     <button th:unless="${itinerary.isPublicItinerary()}" 
+                                            type="button"
                                             class="itn-capsule-outline-btn toggle-public-btn"
                                             th:data-id="${itinerary.itnId}"
-                                            th:data-public="false"
-                                            onclick="togglePublicStatus(this.getAttribute('data-id'), false, this)">
+                                            th:data-public="false">
                                         <span class="material-icons">public</span>
                                         設為公開
                                     </button>

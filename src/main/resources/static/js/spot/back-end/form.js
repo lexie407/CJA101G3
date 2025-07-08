@@ -1090,6 +1090,183 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ===== 多圖上傳區塊 =====
+function setupMultiImageUpload() {
+    const input = document.getElementById('multiImageInput');
+    const dropzone = document.getElementById('multiImageDropzone');
+    const selectBtn = document.getElementById('multiImageSelectBtn');
+    const list = document.getElementById('multiImageList');
+    // 新增剩餘可上傳提示
+    let helperText = dropzone.parentElement.querySelector('.helper-text');
+    let images = [];
+    let existImages = [];
+    const MAX_IMAGES = 8;
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
+
+    // 編輯模式：載入已存在圖片
+    if (window.spotExistImages) {
+        existImages = window.spotExistImages.map(img => ({
+            ...img,
+            isServer: true
+        }));
+        renderList();
+    }
+
+    // 點擊選擇圖片
+    selectBtn.addEventListener('click', () => {
+        if (!selectBtn.disabled) input.click();
+    });
+    // 拖拉上傳
+    dropzone.addEventListener('dragover', e => {
+        if (isUploadFull()) return;
+        e.preventDefault(); dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', e => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+    dropzone.addEventListener('drop', e => {
+        if (isUploadFull()) return;
+        e.preventDefault(); dropzone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+    input.addEventListener('change', e => handleFiles(e.target.files));
+
+    // 判斷是否已達上限
+    function isUploadFull() {
+        return existImages.length + images.length >= MAX_IMAGES;
+    }
+
+    // 更新剩餘可上傳提示與按鈕狀態
+    function updateHelper() {
+        const remain = MAX_IMAGES - (existImages.length + images.length);
+        if (helperText) {
+            helperText.textContent = `可上傳多張圖片，每張可填寫描述，支援拖拉排序與刪除（剩餘${remain}張）`;
+        }
+        selectBtn.disabled = remain <= 0;
+        dropzone.style.opacity = remain <= 0 ? 0.5 : 1;
+        dropzone.style.pointerEvents = remain <= 0 ? 'none' : 'auto';
+    }
+
+    function handleFiles(files) {
+        let totalCount = existImages.length + images.length;
+        for (let file of files) {
+            if (totalCount >= MAX_IMAGES) {
+                showToast('錯誤', `最多只能上傳${MAX_IMAGES}張圖片，請先刪除部分圖片再嘗試。`, 'error');
+                break;
+            }
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                showToast('錯誤', '僅允許 JPG、PNG 格式圖片，請重新選擇。', 'error');
+                continue;
+            }
+            if (file.size > MAX_SIZE) {
+                showToast('錯誤', '單張圖片不可超過2MB，請壓縮後再上傳。', 'error');
+                continue;
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                images.push({ file, url: e.target.result, desc: '' });
+                renderList();
+            };
+            reader.readAsDataURL(file);
+            totalCount++;
+        }
+        input.value = '';
+        updateHelper();
+    }
+
+    function renderList() {
+        list.innerHTML = '';
+        // 渲染已存在圖片
+        existImages.forEach((img, idx) => {
+            const item = document.createElement('div');
+            item.className = 'multi-image-item';
+            item.innerHTML = `
+                <img src="${img.imgPath}" class="multi-image-thumb">
+                <input type="text" class="multi-image-desc" placeholder="描述(選填)" value="${img.imgDesc || ''}" disabled>
+                <button type="button" class="multi-image-delete">刪除</button>
+            `;
+            // 刪除已存在圖片
+            item.querySelector('.multi-image-delete').onclick = () => {
+                if (confirm('確定要刪除此圖片？')) {
+                    fetch('/admin/spot/img/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `spotId=${img.spotId}&imgId=${img.imgId}`
+                    }).then(resp => resp.json()).then(data => {
+                        if (data.success) {
+                            existImages.splice(idx, 1); renderList(); updateHelper();
+                        } else {
+                            showToast('錯誤', data.message || '刪除失敗', 'error');
+                        }
+                    });
+                }
+            };
+            list.appendChild(item);
+        });
+        // 渲染新上傳圖片
+        images.forEach((img, idx) => {
+            const item = document.createElement('div');
+            item.className = 'multi-image-item';
+            item.draggable = true;
+            item.innerHTML = `
+                <img src="${img.url}" class="multi-image-thumb">
+                <input type="text" class="multi-image-desc" placeholder="描述(選填)" value="${img.desc || ''}">
+                <button type="button" class="multi-image-delete">刪除</button>
+            `;
+            // 刪除新上傳圖片
+            item.querySelector('.multi-image-delete').onclick = () => {
+                images.splice(idx, 1); renderList(); updateHelper();
+            };
+            // 編輯描述
+            item.querySelector('.multi-image-desc').oninput = e => {
+                images[idx].desc = e.target.value;
+            };
+            // 拖拉排序（僅本次有效）
+            item.ondragstart = e => { e.dataTransfer.setData('text/plain', idx); };
+            item.ondragover = e => e.preventDefault();
+            item.ondrop = e => {
+                e.preventDefault();
+                const from = +e.dataTransfer.getData('text/plain');
+                const to = idx;
+                if (from !== to) {
+                    const moved = images.splice(from, 1)[0];
+                    images.splice(to, 0, moved);
+                    renderList();
+                }
+            };
+            list.appendChild(item);
+        });
+        updateHelper();
+    }
+
+    // 表單送出時附加多圖資料
+    document.getElementById('spotForm').addEventListener('submit', function(e) {
+        if (images.length > 0) {
+            const formData = new FormData(this);
+            images.forEach((img, i) => {
+                formData.append('multiImages', img.file);
+                formData.append('multiImageDescs', img.desc);
+            });
+            e.preventDefault();
+            fetch(this.action, {
+                method: this.method,
+                body: formData
+            }).then(resp => resp.json())
+              .then(data => {
+                if (data.success) {
+                  showToast('成功', '景點與圖片已儲存', 'info');
+                  setTimeout(() => location.reload(), 1200);
+                } else {
+                  showToast('錯誤', data.message || '儲存失敗', 'error');
+                }
+              }).catch(() => showToast('錯誤', '儲存失敗', 'error'));
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupMultiImageUpload();
+});
+
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
     console.log('景點表單頁面初始化');

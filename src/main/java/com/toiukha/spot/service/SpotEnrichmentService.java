@@ -589,4 +589,21 @@ public class SpotEnrichmentService {
                                success, processedCount, enrichedCount, errorCount, importResult);
         }
     }
+
+    public void enrichSpotPictureUrlIfNeeded(List<SpotVO> spots) {
+        for (SpotVO spot : spots) {
+            String url = spot.getFirstPictureUrl();
+            // 判斷為空或為預設404圖時才補圖
+            if ((url == null || url.trim().isEmpty() || url.contains("404.png")) && spot.getGooglePlaceId() != null) {
+                // 取得 Google 圖片預覽
+                Map<String, Object> googleData = enrichSpotWithGoogleData(spot);
+                if (googleData != null && Boolean.TRUE.equals(googleData.get("success"))) {
+                    Map<String, Object> data = (Map<String, Object>) googleData.get("data");
+                    if (data != null && data.get("previewPhotoUrl") != null) {
+                        spot.setFirstPictureUrl(data.get("previewPhotoUrl").toString());
+                    }
+                }
+            }
+        }
+    }
 } 

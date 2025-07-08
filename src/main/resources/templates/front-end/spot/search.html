@@ -162,6 +162,8 @@
                         </div>
 
                         <!-- 熱門搜尋標籤 -->
+                        <!-- 移除原本的熱門搜尋區塊，改為動態建議 -->
+                        <!--
                         <div th:if="${(hasSearched == null or !hasSearched)}" class="spot-search-popular">
                             <h3 class="spot-search-popular__title">
                                 <span class="material-icons">local_fire_department</span>
@@ -178,8 +180,8 @@
                                 <button class="spot-search-tag" onclick="searchKeyword('花蓮')">花蓮</button>
                             </div>
                         </div>
-
-                        
+                        -->
+                        <div id="spot-search-suggest" class="spot-search-suggest" style="display:none;"></div>
 
                 <!-- 搜尋結果區域 -->
                 <section th:if="${hasSearched != null and hasSearched}" class="spot-search-results">
@@ -192,29 +194,25 @@
                                 <span th:if="${searchKeyword != null and !searchKeyword.isEmpty()}">：「<span th:text="${searchKeyword}">關鍵字</span>」</span>
                             </h2>
                             <!-- 顯示篩選條件 -->
-                            <div class="spot-search-filter-summary" th:if="${selectedRegion != null and !selectedRegion.isEmpty() or selectedRating != null}">
+                            <div class="spot-search-results-meta" th:if="${selectedRegion != null and !selectedRegion.isEmpty() or selectedRating != null}">
                                 <span class="material-icons">filter_list</span>
                                 <span>篩選條件：</span>
                                 <span th:if="${selectedRegion != null and !selectedRegion.isEmpty()}" class="filter-tag">
                                     地區：<span th:text="${selectedRegion}">地區</span>
                                 </span>
-                                <span th:if="${selectedRating != null}" class="filter-tag">
-                                    評分：<span th:text="${selectedRating}">評分</span>星以上
-                                </span>
                             </div>
-                            <div class="spot-search-results-meta">
-                                <span class="spot-search-results-count">
-                                    找到 <strong th:text="${spotList != null ? spotList.size() : 0}">0</strong> 個結果
-                                </span>
-                                <div class="spot-search-results-actions">
-                                    <button class="spot-search-view-toggle active" data-view="grid" title="網格檢視">
-                                        <span class="material-icons">grid_view</span>
-                                    </button>
-                                    <button class="spot-search-view-toggle" data-view="list" title="列表檢視">
-                                        <span class="material-icons">view_list</span>
-                                    </button>
-                                </div>
-                            </div>
+                        </div>
+                        <!-- Google 地圖查無資料提示區塊移到這裡 -->
+                        <div th:if="${searchKeyword != null and #lists.isEmpty(searchResults)}" class="spot-search-no-result">
+                            <p>
+                                <span class="material-icons" aria-hidden="true">check_circle</span>
+                                找不到符合關鍵字「<span th:text="${searchKeyword}"></span>」的景點
+                            </p>
+                            <a th:href="'https://www.google.com/maps/search/' + ${#strings.replace(searchKeyword, ' ', '+')}"
+                               class="google-maps-search-btn" target="_blank" rel="noopener">
+                                <span class="material-icons">map</span>
+                                在 Google 地圖搜尋
+                            </a>
                         </div>
 
                         <!-- 搜尋結果列表 -->

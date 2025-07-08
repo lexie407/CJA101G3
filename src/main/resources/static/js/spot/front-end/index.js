@@ -32,6 +32,7 @@
         initCategoryButtons();
         initRegionButtons();
         initSortFunctionality();
+        initSearchBox(); // 新增：首頁搜尋功能
         
         // 初始化收藏功能
         initFavoriteButtons();
@@ -248,33 +249,26 @@
     }
 
     /**
-     * 根據地址推測地區
+     * 根據地址推測地區（依據用戶提供的縣市對應表）
      */
     function getRegionFromLocation(location) {
-        // 北台灣（支援繁體和簡體字）
-        if (location.includes('台北') || location.includes('臺北') || 
-            location.includes('新北') || location.includes('桃園') || 
-            location.includes('新竹') || location.includes('基隆') || 
-            location.includes('宜蘭')) {
+        // 北台灣
+        if (/台北市|新北市|基隆市|桃園市|新竹市|新竹縣|宜蘭縣/.test(location)) {
             return '北台灣';
-        } 
+        }
         // 中台灣
-        else if (location.includes('台中') || location.includes('臺中') || 
-                 location.includes('彰化') || location.includes('南投') || 
-                 location.includes('雲林') || location.includes('苗栗')) {
+        if (/台中市|彰化縣|南投縣|雲林縣|苗栗縣/.test(location)) {
             return '中台灣';
-        } 
+        }
         // 南台灣
-        else if (location.includes('台南') || location.includes('臺南') || 
-                 location.includes('高雄') || location.includes('屏東') || 
-                 location.includes('嘉義')) {
+        if (/高雄市|台南市|嘉義市|嘉義縣|屏東縣|澎湖縣/.test(location)) {
             return '南台灣';
-        } 
+        }
         // 東台灣
-        else if (location.includes('花蓮') || location.includes('台東') || location.includes('臺東')) {
+        if (/花蓮縣|台東縣/.test(location)) {
             return '東台灣';
         }
-        return '南台灣'; // 預設改為南台灣，因為目前所有景點都在南台灣
+        return '其他';
     }
 
     /**
@@ -362,39 +356,96 @@
         });
     }
 
-    /**
-     * 初始化地區按鈕
-     */
+    // 新增：地區切換時 AJAX 後端撈資料
+    function fetchSpotsByRegion(region) {
+        let url = '/api/spot/public/list';
+        if (region && region !== '全部地區') {
+            url += '?region=' + encodeURIComponent(region) + '&limit=6';
+        } else {
+            url += '?limit=6';
+        }
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success && Array.isArray(data.data)) {
+                    renderSpots(data.data);
+                } else {
+                    renderSpots([]);
+                }
+            })
+            .catch(() => renderSpots([]));
+    }
+    function renderSpots(spotArr) {
+        const grid = document.querySelector('.spot-index-popular__grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        if (!spotArr || spotArr.length === 0) {
+            showEmptyState();
+            return;
+        } else {
+            hideEmptyState && hideEmptyState();
+        }
+        spotArr.forEach(spot => {
+            // 這裡建議用模板字串或複製現有卡片結構
+            const card = document.createElement('div');
+            card.className = 'spot-index-spot-card';
+            card.innerHTML = `
+                <div class="spot-index-spot-card__image">
+                    <img src="${spot.firstPictureUrl || '/images/spot/default.jpg'}" alt="${spot.spotName}" class="spot-index-spot-card__img" loading="lazy">
+                </div>
+                <div class="spot-index-spot-card__content">
+                    <h3 class="spot-index-spot-card__name">${spot.spotName}</h3>
+                    <p class="spot-index-spot-card__location"><span class="material-icons">place</span>${spot.spotLoc || ''}</p>
+                    <p class="spot-index-spot-card__desc">${spot.spotDesc ? (spot.spotDesc.length > 60 ? spot.spotDesc.substring(0, 60) + '...' : spot.spotDesc) : '暫無描述'}</p>
+                    <a href="/spot/user/detail/${spot.spotId}" class="spot-index-spot-card__link">查看詳情</a>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+    // 切換地區時更新網址參數
+    function updateRegionUrl(region) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('region', region);
+        history.replaceState({}, '', `${location.pathname}?${params}`);
+    }
+    // 攔截地區按鈕點擊
     function initRegionButtons() {
         const regionButtons = document.querySelectorAll('.spot-index-region-item');
         regionButtons.forEach(button => {
             button.addEventListener('click', function(e) {
-                e.preventDefault(); // 防止預設行為
-                e.stopPropagation(); // 防止事件冒泡
-                
-                // 移除其他按鈕的active狀態
+                e.preventDefault();
+                e.stopPropagation();
                 regionButtons.forEach(btn => btn.classList.remove('active'));
-                // 添加當前按鈕的active狀態
                 this.classList.add('active');
-                
-                // 獲取按鈕文字，排除圖示元素
+                // 取得地區文字
                 const textNodes = Array.from(this.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
                 const region = textNodes.map(node => node.textContent.trim()).join('').trim();
-                console.log('按鈕文字:', region);
-                
-                if (region === '全部地區') {
-                    // 移除地區篩選
-                    removeFilter('region');
-                } else {
-                    // 添加地區篩選
-                    addFilter('region', region, region);
-                }
-                applyFiltersInstantly();
-                
-                return false; // 確保不會有任何導航行為
+                // AJAX 撈資料
+                fetchSpotsByRegion(region);
+                // 更新網址
+                updateRegionUrl(region);
+                return false;
             });
         });
     }
+    // 頁面初始載入時根據 URL 參數自動載入對應地區
+    document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const region = params.get('region') || '全部地區';
+        // 設定對應按鈕 active
+        const regionButtons = document.querySelectorAll('.spot-index-region-item');
+        regionButtons.forEach(btn => {
+            const textNodes = Array.from(btn.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+            const btnRegion = textNodes.map(node => node.textContent.trim()).join('').trim();
+            if (btnRegion === region) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        fetchSpotsByRegion(region);
+    });
 
     /**
      * 初始化排序功能
@@ -520,37 +571,39 @@
      * 更新景點顯示
      */
     function updateSpotDisplay() {
-        const spotGrid = document.querySelector('.spot-index-popular__grid');
-        if (!spotGrid) return;
-        
-        // 隱藏所有景點卡片
-        allSpots.forEach(spot => {
-            if (spot.element) {
-                spot.element.style.display = 'none';
+        const grid = document.querySelector('.spot-index-popular__grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        const input = document.getElementById('searchInput');
+        const keyword = input && input.value.trim();
+        let spotsToShow = filteredSpots;
+        // 判斷是否有搜尋
+        if (!keyword) {
+            // 檢查目前有無地區篩選
+            const activeRegionBtn = document.querySelector('.spot-index-region-item.active');
+            let region = '';
+            if (activeRegionBtn) {
+                // 取得按鈕文字（排除 icon）
+                const textNodes = Array.from(activeRegionBtn.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+                region = textNodes.map(node => node.textContent.trim()).join('').trim();
             }
-        });
-        
-        // 顯示篩選後的景點
-        if (filteredSpots.length > 0) {
-            filteredSpots.forEach((spot, index) => {
-                if (spot.element && index < 8) { // 只顯示前8個
-                    spot.element.style.display = 'block';
-                    // 添加淡入動畫
-                    if (!prefersReducedMotion) {
-                        spot.element.style.opacity = '0';
-                        spot.element.style.transform = 'translateY(20px)';
-                        setTimeout(() => {
-                            spot.element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                            spot.element.style.opacity = '1';
-                            spot.element.style.transform = 'translateY(0)';
-                        }, index * 100);
-                    }
-                }
-            });
-            hideEmptyState();
-        } else {
-            showEmptyState();
+            if (region && region !== '全部地區') {
+                // 只顯示該地區前6筆
+                spotsToShow = filteredSpots.filter(spot => spot.region === region).slice(0, 6);
+            } else {
+                // 全部地區只顯示前6筆
+                spotsToShow = filteredSpots.slice(0, 6);
+            }
         }
+        if (spotsToShow.length === 0) {
+            showEmptyState();
+            return;
+        } else {
+            hideEmptyState && hideEmptyState();
+        }
+        spotsToShow.forEach(spot => {
+            if (spot.element) grid.appendChild(spot.element);
+        });
     }
 
     /**
@@ -764,6 +817,38 @@
         
         showToast('已重置所有篩選條件', 'success');
     };
+
+    // === 新增：首頁搜尋功能 ===
+    function initSearchBox() {
+        const input = document.getElementById('searchInput');
+        const btn = document.querySelector('.spot-index-search-btn');
+        if (!input || !btn) return;
+        // 按下 Enter 搜尋
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                doSearch();
+            }
+        });
+        // 點擊按鈕搜尋
+        btn.addEventListener('click', doSearch);
+    }
+    function doSearch() {
+        const input = document.getElementById('searchInput');
+        if (!input) return;
+        const keyword = input.value.trim();
+        if (!keyword) {
+            filteredSpots = [...allSpots];
+        } else {
+            filteredSpots = allSpots.filter(spot =>
+                spot.name.includes(keyword) ||
+                spot.location.includes(keyword) ||
+                spot.description.includes(keyword)
+            );
+        }
+        updateSpotDisplay();
+        updateStatsDisplay && updateStatsDisplay();
+    }
+    // === end ===
 
     /**
      * 初始化滾動動畫

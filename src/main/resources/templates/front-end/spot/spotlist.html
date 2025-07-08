@@ -105,6 +105,11 @@
                     </div>
                 </section>
 
+                <!-- 景點總數顯示 -->
+                <div class="spot-list-total-count" th:if="${spotList != null}" style="margin: 0 0 16px 24px; font-size: 1.1em; color: #666;">
+                    共 <span th:text="${spotList.size()}">0</span> 筆景點
+                </div>
+  
                 <!-- 景點列表主要內容 -->
                 <section class="spot-list-main">
                     <div class="container">
@@ -197,40 +202,6 @@
                                     進階搜尋
                                 </a>
                             </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 快速連結區域 -->
-                <section class="spot-list-quick-links">
-                    <div class="container">
-                        <div class="spot-list-quick-links__header">
-                            <h2 class="spot-list-quick-links__title">
-                                <span class="material-icons">link</span>
-                                相關功能
-                            </h2>
-                        </div>
-                        <div class="spot-list-quick-links__grid">
-                            <a th:href="@{/spot/user/search}" class="spot-list-quick-link" title="進階搜尋景點">
-                                <span class="material-icons">search</span>
-                                <span>進階搜尋</span>
-                            </a>
-                            <a th:href="@{/spot/user/add}" class="spot-list-quick-link" title="新增景點">
-                                <span class="material-icons">add_location</span>
-                                <span>新增景點</span>
-                            </a>
-                            <a th:href="@{/spot/favorites}" class="spot-list-quick-link" title="我的收藏">
-                                <span class="material-icons">favorite</span>
-                                <span>我的收藏</span>
-                            </a>
-                            <a th:href="@{/spot/map}" class="spot-list-quick-link" title="地圖瀏覽">
-                                <span class="material-icons">map</span>
-                                <span>地圖瀏覽</span>
-                            </a>
-                            <a th:href="@{/}" class="spot-list-quick-link" title="回到首頁">
-                                <span class="material-icons">home</span>
-                                <span>回到首頁</span>
-                            </a>
                         </div>
                     </div>
                 </section>

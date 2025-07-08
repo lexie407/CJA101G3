@@ -52,6 +52,9 @@ public interface SpotService {
     boolean existsByGovtId(String govtId);
     boolean existsById(Integer id);
     
+    // 批量驗證（效能優化）
+    List<String> findExistingGovtIds(List<String> govtIds);
+    
     // 座標相關
     List<SpotVO> getSpotsWithoutCoordinates();
     List<SpotVO> getSpotsWithCoordinates();
@@ -69,6 +72,7 @@ public interface SpotService {
     List<SpotVO> getSpotsByIds(List<Integer> spotIds);
     List<SpotVO> getActiveSpots();
     List<SpotVO> addSpotsInBatch(List<SpotVO> spots);
+    List<SpotVO> addSpotsInBatchOptimized(List<SpotVO> spots); // 優化的批量插入
     void resetAutoIncrement();
     
     // 批次結果類別
@@ -130,4 +134,9 @@ public interface SpotService {
     
     // 批次匯入方法
     BatchResult addSpotsWithGeocoding(List<SpotVO> spots);
+    List<SpotVO> getSpotsByCities(List<String> cities);
+    /**
+     * 多城市+關鍵字搜尋（先名稱，少於3個再加地址）
+     */
+    List<SpotVO> searchPublicSpotsByCities(String keyword, List<String> cities);
 } 

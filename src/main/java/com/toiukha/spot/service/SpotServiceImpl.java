@@ -11,14 +11,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional
 public class SpotServiceImpl implements SpotService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SpotServiceImpl.class);
+
     @Autowired
     private SpotRepository spotRepository;
+
+    @Autowired
+    private GooglePlacesService googlePlacesService;
 
     @Override
     public SpotVO findById(Integer id) {
@@ -52,24 +60,16 @@ public class SpotServiceImpl implements SpotService {
 
     @Override
     public List<SpotVO> searchPublicSpots(String keyword) {
+        List<SpotVO> spots;
         if (keyword == null || keyword.trim().isEmpty()) {
-            return spotRepository.findBySpotStatus((byte) 1);
-        }
-        
+            spots = spotRepository.findBySpotStatus((byte) 1);
+        } else {
         String trimmedKeyword = keyword.trim();
-        
-        // 第一步：只搜尋名稱
         List<SpotVO> nameResults = spotRepository.findBySpotNameContainingAndSpotStatus(trimmedKeyword, (byte) 1);
-        
-        // 如果名稱搜尋結果大於等於3個，直接返回名稱搜尋結果
         if (nameResults.size() >= 3) {
-            return nameResults;
-        }
-        
-        // 如果名稱搜尋結果少於3個，加入地址搜尋
+                spots = nameResults;
+            } else {
         List<SpotVO> addressResults = spotRepository.findBySpotLocContainingAndSpotStatus(trimmedKeyword, (byte) 1);
-        
-        // 合併結果，避免重複
         List<SpotVO> combinedResults = new java.util.ArrayList<>(nameResults);
         for (SpotVO addressResult : addressResults) {
             boolean alreadyExists = combinedResults.stream()
@@ -78,13 +78,16 @@ public class SpotServiceImpl implements SpotService {
                 combinedResults.add(addressResult);
             }
         }
-        
-        return combinedResults;
+                spots = combinedResults;
+            }
+        }
+        return spots;
     }
 
     @Override
     public List<SpotVO> getAllPublicSpots() {
-        return spotRepository.findBySpotStatus((byte) 1);
+        List<SpotVO> spots = spotRepository.findBySpotStatus((byte) 1);
+        return spots;
     }
 
     @Override
@@ -94,21 +97,17 @@ public class SpotServiceImpl implements SpotService {
 
     @Override
     public List<SpotVO> getSpotsByRegion(String region) {
-        // 獲取所有上架景點
         List<SpotVO> activeSpots = getActiveSpots();
-        
-        // 如果地區為空或是"所有地區"，返回所有上架景點
         if (region == null || region.trim().isEmpty() || region.equals("所有地區")) {
             return activeSpots;
         }
-        
-        // 根據地區篩選
-        return activeSpots.stream()
+        List<SpotVO> filtered = activeSpots.stream()
                 .filter(spot -> {
                     String spotRegion = getSpotRegion(spot.getSpotLoc());
                     return region.equals(spotRegion);
                 })
                 .collect(Collectors.toList());
+        return filtered;
     }
     
     /**
@@ -220,6 +219,27 @@ public class SpotServiceImpl implements SpotService {
 
     @Override
     public Page<SpotVO> searchReviewedSpotsForAdmin(String keyword, Integer spotStatus, String region, Pageable pageable) {
+        // 只針對有 keyword 的情況做名稱/地址分開搜尋
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String trimmedKeyword = keyword.trim();
+            // 只搜尋名稱
+            List<SpotVO> nameResults = spotRepository.findBySpotNameContainingAndSpotStatus(trimmedKeyword, spotStatus != null ? spotStatus.byteValue() : 1);
+            if (nameResults.size() >= 3) {
+                return new org.springframework.data.domain.PageImpl<>(nameResults, pageable, nameResults.size());
+            }
+            // 名稱少於3個再搜尋地址
+            List<SpotVO> addressResults = spotRepository.findBySpotLocContainingAndSpotStatus(trimmedKeyword, spotStatus != null ? spotStatus.byteValue() : 1);
+            // 合併去重
+            List<SpotVO> combinedResults = new java.util.ArrayList<>(nameResults);
+            for (SpotVO addressResult : addressResults) {
+                boolean alreadyExists = combinedResults.stream().anyMatch(spot -> spot.getSpotId().equals(addressResult.getSpotId()));
+                if (!alreadyExists) {
+                    combinedResults.add(addressResult);
+                }
+            }
+            return new org.springframework.data.domain.PageImpl<>(combinedResults, pageable, combinedResults.size());
+        }
+        // 沒有 keyword 則維持原本查詢
         return spotRepository.findByKeywordAndStatusAndRegion(keyword, spotStatus, region, pageable);
     }
 
@@ -266,6 +286,25 @@ public class SpotServiceImpl implements SpotService {
     }
 
     @Override
+    public List<String> findExistingGovtIds(List<String> govtIds) {
+        if (govtIds == null || govtIds.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        
+        try {
+            List<String> existingIds = spotRepository.findExistingGovtIds(govtIds);
+            logger.debug("批量查詢結果：輸入 {} 個 govtId，找到 {} 個已存在", govtIds.size(), existingIds.size());
+            return existingIds;
+        } catch (Exception e) {
+            logger.error("批量查詢 govtId 時發生錯誤，回退到逐個查詢: {}", e.getMessage());
+            // 回退到逐個查詢
+            return govtIds.stream()
+                    .filter(this::existsByGovtId)
+                    .collect(java.util.stream.Collectors.toList());
+        }
+    }
+
+    @Override
     public boolean existsById(Integer id) {
         return spotRepository.existsById(id);
     }
@@ -297,6 +336,20 @@ public class SpotServiceImpl implements SpotService {
     @Transactional
     public SpotVO addSpot(SpotVO spotVO) {
         spotVO.setSpotCreateAt(LocalDateTime.now());
+        // 新增：自動補 Place ID (但在批量匯入時跳過以提升效能)
+        // 檢查是否為批量匯入模式（透過 ThreadLocal 或其他方式）
+        boolean isBatchImport = Boolean.TRUE.equals(ThreadLocal.withInitial(() -> false).get());
+        
+        if (!isBatchImport && (spotVO.getGooglePlaceId() == null || spotVO.getGooglePlaceId().isEmpty())) {
+            try {
+                var placeInfo = googlePlacesService.searchPlace(spotVO.getSpotName(), spotVO.getSpotLoc(), spotVO.getSpotLat(), spotVO.getSpotLng());
+                if (placeInfo != null && placeInfo.getPlaceId() != null && !placeInfo.getPlaceId().isEmpty()) {
+                    spotVO.setGooglePlaceId(placeInfo.getPlaceId());
+                }
+            } catch (Exception e) {
+                // 可加 log.warn("新增景點自動補 Place ID 失敗: " + spotVO.getSpotName(), e);
+            }
+        }
         return spotRepository.save(spotVO);
     }
 
@@ -358,6 +411,76 @@ public class SpotServiceImpl implements SpotService {
 
     @Override
     @Transactional
+    public List<SpotVO> addSpotsInBatchOptimized(List<SpotVO> spots) {
+        if (spots == null || spots.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        
+        logger.info("開始批量插入優化處理，共 {} 筆景點", spots.size());
+        long startTime = System.currentTimeMillis();
+        
+        // 設定建立時間
+        LocalDateTime now = LocalDateTime.now();
+        spots.forEach(spot -> {
+            if (spot.getSpotCreateAt() == null) {
+                spot.setSpotCreateAt(now);
+            }
+        });
+        
+        try {
+            // 使用 JPA 的 saveAll 方法進行批量插入
+            List<SpotVO> savedSpots = spotRepository.saveAll(spots);
+            
+            long insertTime = System.currentTimeMillis();
+            logger.info("批量插入完成，共 {} 筆，耗時 {} 毫秒", 
+                       savedSpots.size(), (insertTime - startTime));
+            
+            // 在插入後補充圖片 - 只針對有 Google Place ID 的景點
+            logger.info("開始補充景點圖片...");
+            int enrichedCount = 0;
+            for (SpotVO spot : savedSpots) {
+                try {
+                    if (spot.getGooglePlaceId() != null && !spot.getGooglePlaceId().trim().isEmpty() 
+                        && (spot.getFirstPictureUrl() == null || spot.getFirstPictureUrl().trim().isEmpty())) {
+                        
+                        // 獲取 Google Places 圖片
+                        var placeDetails = googlePlacesService.getPlaceDetails(spot.getGooglePlaceId());
+                        if (placeDetails != null && placeDetails.getPhotoReferences() != null 
+                            && !placeDetails.getPhotoReferences().isEmpty()) {
+                            
+                            String photoUrl = googlePlacesService.getPhotoUrl(
+                                placeDetails.getPhotoReferences().get(0), 800);
+                            if (photoUrl != null && !photoUrl.trim().isEmpty()) {
+                                spot.setFirstPictureUrl(photoUrl);
+                                spotRepository.save(spot);  // 更新圖片URL
+                                enrichedCount++;
+                                logger.debug("已為景點 '{}' 補充圖片", spot.getSpotName());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.warn("為景點 '{}' 補充圖片時發生錯誤: {}", spot.getSpotName(), e.getMessage());
+                    // 繼續處理下一個，不中斷整個流程
+                }
+            }
+            
+            long endTime = System.currentTimeMillis();
+            logger.info("圖片補充完成，共補充 {} 筆圖片，總耗時 {} 毫秒（插入：{} 毫秒，圖片：{} 毫秒）", 
+                       enrichedCount, 
+                       (endTime - startTime),
+                       (insertTime - startTime),
+                       (endTime - insertTime));
+            
+            return savedSpots;
+        } catch (Exception e) {
+            long endTime = System.currentTimeMillis();
+            logger.error("批量插入失敗，耗時 {} 毫秒: {}", (endTime - startTime), e.getMessage());
+            throw new RuntimeException("批量插入景點失敗: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
     public void resetAutoIncrement() {
         spotRepository.resetAutoIncrement();
     }
@@ -405,5 +528,79 @@ public class SpotServiceImpl implements SpotService {
     @Override
     public List<SpotVO> findBySearchCriteria(String keyword, String region, Double rating, String sortBy, String sortDirection) {
         return spotRepository.findBySearchCriteria(keyword, region, rating, sortBy, sortDirection);
+    }
+
+    /**
+     * 自動補全所有沒有 Google Place ID 的景點，並存回 MySQL
+     * 回傳補全的筆數
+     */
+    @Transactional
+    public int enrichAllSpotsWithGooglePlaceId() {
+        List<SpotVO> spots = spotRepository.findAllWithoutPlaceId();
+        int updated = 0;
+        for (SpotVO spot : spots) {
+            // 用名稱+地址查詢 Google Place ID
+            String placeId = null;
+            try {
+                var placeInfo = googlePlacesService.searchPlace(spot.getSpotName(), spot.getSpotLoc(), spot.getSpotLat(), spot.getSpotLng());
+                if (placeInfo != null && placeInfo.getPlaceId() != null && !placeInfo.getPlaceId().isEmpty()) {
+                    placeId = placeInfo.getPlaceId();
+                    // 更新到 MySQL
+                    int result = spotRepository.updatePlaceId(spot.getSpotId(), placeId);
+                    if (result > 0) updated++;
+                }
+            } catch (Exception e) {
+                // 可加 log.warn("查詢/更新 Place ID 失敗: " + spot.getSpotName(), e);
+            }
+        }
+        return updated;
+    }
+
+    @Override
+    public List<SpotVO> getSpotsByCities(List<String> cities) {
+        if (cities == null || cities.isEmpty()) {
+            return getActiveSpots();
+        }
+        List<SpotVO> all = getActiveSpots();
+        return all.stream()
+            .filter(spot -> {
+                String loc = spot.getSpotLoc();
+                return loc != null && cities.stream().anyMatch(loc::contains);
+            })
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SpotVO> searchPublicSpotsByCities(String keyword, List<String> cities) {
+        if (cities == null || cities.isEmpty()) {
+            // 沒有指定城市，直接用原本的 searchPublicSpots
+            return searchPublicSpots(keyword);
+        }
+        List<SpotVO> all = getSpotsByCities(cities);
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return all;
+        }
+        String trimmedKeyword = keyword.trim();
+        // 先名稱搜尋
+        List<SpotVO> nameResults = all.stream()
+            .filter(spot -> spot.getSpotName() != null && spot.getSpotName().contains(trimmedKeyword))
+            .collect(Collectors.toList());
+        if (nameResults.size() >= 3) {
+            return nameResults;
+        }
+        // 名稱少於3個再加地址搜尋
+        List<SpotVO> addressResults = all.stream()
+            .filter(spot -> spot.getSpotLoc() != null && spot.getSpotLoc().contains(trimmedKeyword))
+            .collect(Collectors.toList());
+        // 合併去重
+        List<SpotVO> combinedResults = new java.util.ArrayList<>(nameResults);
+        for (SpotVO addressResult : addressResults) {
+            boolean alreadyExists = combinedResults.stream()
+                .anyMatch(spot -> spot.getSpotId().equals(addressResult.getSpotId()));
+            if (!alreadyExists) {
+                combinedResults.add(addressResult);
+            }
+        }
+        return combinedResults;
     }
 } 

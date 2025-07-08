@@ -130,6 +130,7 @@
 }
 
 .spot-search-box {
+    position: relative;
     display: flex;
     align-items: center;
     background: var(--md-sys-color-surface);
@@ -139,6 +140,7 @@
     box-shadow: var(--spot-search-card-shadow);
     transition: all var(--spot-search-transition);
     margin-bottom: 1rem;
+    overflow: visible;
 }
 
 .spot-search-box:focus-within {
@@ -350,53 +352,6 @@
     outline: none;
     border-color: var(--md-sys-color-primary);
     box-shadow: 0 0 0 2px rgba(var(--md-sys-color-primary-rgb), 0.2);
-}
-
-/* 6. 熱門搜尋 */
-.spot-search-popular {
-    margin-bottom: 3rem;
-    text-align: center;
-}
-
-.spot-search-popular__title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: var(--md-sys-color-on-surface);
-}
-
-.spot-search-popular__title .material-icons {
-    color: var(--md-sys-color-secondary);
-}
-
-.spot-search-popular__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: center;
-}
-
-.spot-search-tag {
-    background: var(--md-sys-color-surface-container);
-    color: var(--md-sys-color-on-surface);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: 20px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: all var(--spot-search-transition);
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.spot-search-tag:hover {
-    background: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-    transform: translateY(-2px);
-    box-shadow: var(--spot-search-card-shadow);
 }
 
 /* 7. 快速連結 */
@@ -1003,10 +958,6 @@
         grid-template-columns: 1fr;
     }
     
-    .spot-search-popular__tags {
-        justify-content: flex-start;
-    }
-    
     .spot-search-tips-grid {
         grid-template-columns: 1fr;
     }
@@ -1136,7 +1087,6 @@
 /* 16. 列印樣式 */
 @media print {
     .spot-search-hero,
-    .spot-search-popular,
     .spot-search-quick-links,
     .spot-search-suggestions,
     .spot-search-toast-container {
@@ -1190,4 +1140,69 @@
 
 .spot-search-notification--info .material-icons {
     color: #2196f3;
+}
+
+/* autocomplete 建議下拉選單美化 */
+.spot-search-suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    min-width: 240px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    max-height: 320px;
+    overflow-y: auto;
+    z-index: 100;
+}
+.spot-search-suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: left;
+    background: #fff;
+    outline: none;
+    transition: background 0.2s;
+}
+.spot-search-suggestion-item:last-child {
+    border-bottom: none;
+}
+.spot-search-suggestion-item:hover, .spot-search-suggestion-item:focus {
+    background: #f5faff;
+}
+.suggestion-main {
+    font-weight: 600;
+    color: #222;
+}
+.suggestion-secondary {
+    font-size: 0.92em;
+    color: #888;
+    margin-top: 2px;
+}
+
+.google-maps-search-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    background: #4285F4;
+    color: #fff;
+    border-radius: 6px;
+    padding: 0.5em 1.2em;
+    font-weight: 500;
+    text-decoration: none;
+    margin-top: 1em;
+    transition: background 0.2s;
+}
+.google-maps-search-btn:hover {
+    background: #3367d6;
+    color: #fff;
+}
+.google-maps-search-btn .material-icons {
+    font-size: 1.2em;
+}
+
+.spot-search-no-result {
+    margin-top: 2.5em;
 }

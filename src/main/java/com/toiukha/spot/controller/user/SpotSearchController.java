@@ -2,6 +2,7 @@ package com.toiukha.spot.controller.user;
 
 import com.toiukha.spot.model.SpotVO;
 import com.toiukha.spot.repository.SpotRepository;
+import com.toiukha.spot.service.SpotService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +17,9 @@ public class SpotSearchController {
     @Autowired
     private SpotRepository spotRepository;
 
+    @Autowired
+    private SpotService spotService;
+
     @GetMapping("/search")
     @ResponseBody
     public List<SpotVO> search(
@@ -24,7 +28,10 @@ public class SpotSearchController {
             @RequestParam(required = false) Double rating,
             @RequestParam(required = false, defaultValue = "rating") String sortBy,
             @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
-
-        return spotRepository.findBySearchCriteria(keyword, region, rating, sortBy, sortDirection);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return spotService.searchPublicSpots(keyword.trim());
+        } else {
+            return spotService.getActiveSpots();
+        }
     }
 } 

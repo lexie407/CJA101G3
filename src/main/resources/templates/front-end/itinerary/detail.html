@@ -33,13 +33,21 @@
                     </div>
                 </section>
 
-                <!-- 返回按鈕 -->
+                <!-- 返回按鈕（麵包屑區塊） -->
                 <section class="itinerary-detail-breadcrumb">
                     <div class="container">
-                        <a th:href="@{${param.from != null and param.from[0] == 'my'} ? /itinerary/my : /itinerary/itnlist}" class="itinerary-breadcrumb-link">
-                                    <span class="material-icons">arrow_back</span>
-                                    <span th:text="${param.from != null and param.from[0] == 'my' ? '返回我的行程' : '返回行程列表'}">返回行程列表</span>
-                                </a>
+                        <a th:if="${param.from != null and param.from[0] == 'my'}"
+                           th:href="@{/itinerary/my}"
+                           class="itinerary-breadcrumb-link">
+                            <span class="material-icons">arrow_back</span>
+                            返回我的行程
+                        </a>
+                        <a th:unless="${param.from != null and param.from[0] == 'my'}"
+                           th:href="@{/itinerary/itnlist}"
+                           class="itinerary-breadcrumb-link">
+                            <span class="material-icons">arrow_back</span>
+                            返回行程列表
+                        </a>    
                     </div>
                 </section>
 
@@ -254,9 +262,17 @@
                             <!-- 這個按鈕現在被移到「我的行程」頁面中，詳情頁面不再顯示建立揪團按鈕 -->
                             
                             <!-- 返回列表按鈕 - 所有人可見 -->
-                            <a th:href="@{${param.from != null and param.from[0] == 'my'} ? /itinerary/my : /itinerary/itnlist}" class="itinerary-text-btn">
+                            <a th:if="${param.from != null and param.from[0] == 'my'}"
+                               th:href="@{/itinerary/my}"
+                               class="itinerary-text-btn">
                                 <span class="material-icons">arrow_back</span>
-                                <span th:text="${param.from != null and param.from[0] == 'my' ? '返回我的行程' : '返回列表'}">返回列表</span>
+                                返回我的行程
+                            </a>
+                            <a th:unless="${param.from != null and param.from[0] == 'my'}"
+                               th:href="@{/itinerary/itnlist}"
+                               class="itinerary-text-btn">
+                                <span class="material-icons">arrow_back</span>
+                                返回列表
                             </a>
                         </div>
                     </div>

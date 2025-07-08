@@ -22,6 +22,7 @@ public class SpotUserController {
             return "redirect:/404error";
         }
         model.addAttribute("spot", spot);
+        model.addAttribute("isFavorited", false);
         return "front-end/spot/detail";
     }
 } 

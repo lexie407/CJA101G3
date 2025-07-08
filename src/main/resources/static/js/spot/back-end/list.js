@@ -77,23 +77,14 @@ function confirmDelete(spotName) {
 // 圖片錯誤處理函數（從HTML中的onerror移過來）
 function handleImageError(img) {
     console.log('圖片載入失敗:', img.src);
-    img.classList.add('hidden');
-    const placeholder = img.parentNode.querySelector('.spot-image-placeholder');
-    if (placeholder) {
-        placeholder.classList.remove('spot-image-placeholder-none');
-        placeholder.classList.add('spot-image-placeholder-flex');
-    }
+    img.onerror = null;
+    img.src = '/images/404.png';
 }
 
 // 圖片載入成功處理
 function handleImageLoad(img) {
     console.log('圖片載入成功:', img.src);
     img.classList.remove('hidden');
-    const placeholder = img.parentNode.querySelector('.spot-image-placeholder');
-    if (placeholder) {
-        placeholder.classList.remove('spot-image-placeholder-flex');
-        placeholder.classList.add('spot-image-placeholder-none');
-    }
 }
 
 // 暴露到全域供HTML使用
@@ -824,10 +815,7 @@ function createTableRow(spot) {
         <td><span class="spot-id">#${spotId}</span></td>
         <td>
             <div class="spot-info">
-                ${hasImage ? 
-                    `<img src="${firstPictureUrl}" alt="${spotName}" class="spot-image" onload="handleImageLoad(this)" onerror="handleImageError(this)">` : ''
-                }
-                <div class="spot-image-placeholder ${hasImage ? 'spot-image-placeholder-none' : 'spot-image-placeholder-flex'}">🏞️</div>
+                <img src="${firstPictureUrl || '/images/404.png'}" alt="${spotName}" class="spot-image" onload="handleImageLoad(this)" onerror="handleImageError(this)">
                 <div class="spot-text-info">
                     <div class="spot-name">${spotName}</div>
                     <div class="spot-desc" title="${spotDesc}">${truncateText(spotDesc, 50)}</div>
@@ -1651,6 +1639,12 @@ function initializeApiImport() {
         if (count < 10 || count > 200) {
             alert('請輸入10-200之間的數字');
             return;
+        }
+        
+        // 提醒用戶優化後的效能
+        if (count > 100) {
+            const proceed = confirm(`您選擇匯入 ${count} 筆資料。\n\n優化後的系統預計處理時間約 ${Math.ceil(count/50)} 分鐘。\n是否繼續？`);
+            if (!proceed) return;
         }
 
         try {

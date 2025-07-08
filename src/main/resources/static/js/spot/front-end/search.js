@@ -685,41 +685,54 @@
             hideSuggestions();
             return;
         }
-        
-        // TODO: 實作搜尋建議API調用
-        // 目前顯示歷史記錄中的匹配項目
-        const suggestions = searchHistory
-            .filter(item => item.keyword.toLowerCase().includes(keyword.toLowerCase()))
-            .slice(0, 5);
-        
-        if (suggestions.length > 0) {
-            createSuggestionsUI(suggestions);
-        }
+        // 呼叫後端 API 取得建議
+        fetch(`/api/spot/v2/google-suggest?input=${encodeURIComponent(keyword)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+                    createSuggestionsUI(data.suggestions);
+                } else {
+                    hideSuggestions();
+                }
+            })
+            .catch(() => hideSuggestions());
     }
 
     function createSuggestionsUI(suggestions) {
-        hideSuggestions(); // 先移除現有建議
-        
+        hideSuggestions();
         const searchBox = document.querySelector('.spot-search-box');
-        if (!searchBox) return;
-        
+        const searchInput = document.querySelector('.spot-search-box__input');
+        if (!searchBox || !searchInput) return;
         const suggestionsContainer = document.createElement('div');
         suggestionsContainer.className = 'spot-search-suggestions-dropdown';
         suggestionsContainer.innerHTML = suggestions.map(item => `
-            <button class="spot-search-suggestion-item" onclick="searchKeyword('${item.keyword}')">
-                <span class="material-icons">history</span>
-                <span>${item.keyword}</span>
-            </button>
+            <div class="spot-search-suggestion-item" tabindex="0">
+                <div class="suggestion-main">${item.main}</div>
+                <div class="suggestion-secondary">${item.secondary || ''}</div>
+            </div>
         `).join('');
-        
-        searchBox.appendChild(suggestionsContainer);
+        suggestionsContainer.querySelectorAll('.spot-search-suggestion-item').forEach((div, idx) => {
+            div.addEventListener('click', function() {
+                // 填入主名稱+副標題
+                searchInput.value = suggestions[idx].main + (suggestions[idx].secondary ? ' ' + suggestions[idx].secondary : '');
+                hideSuggestions();
+                searchInput.form.submit();
+            });
+        });
+        // 定位於搜尋框下方
+        const rect = searchBox.getBoundingClientRect();
+        suggestionsContainer.style.position = 'fixed';
+        suggestionsContainer.style.left = rect.left + 'px';
+        suggestionsContainer.style.top = (rect.bottom) + 'px';
+        suggestionsContainer.style.width = rect.width + 'px';
+        suggestionsContainer.style.zIndex = 9999;
+        document.body.appendChild(suggestionsContainer);
+        // 滾動時自動隱藏
+        window.addEventListener('scroll', hideSuggestions, { once: true });
     }
 
     function hideSuggestions() {
-        const existing = document.querySelector('.spot-search-suggestions-dropdown');
-        if (existing) {
-            existing.remove();
-        }
+        document.querySelectorAll('.spot-search-suggestions-dropdown').forEach(el => el.remove());
     }
 
     /**

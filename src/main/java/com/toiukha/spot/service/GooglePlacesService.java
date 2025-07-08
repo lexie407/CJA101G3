@@ -244,9 +244,8 @@ public class GooglePlacesService {
         if (apiKey == null || apiKey.trim().isEmpty() || photoReference == null) {
             return null;
         }
-        
-        // 新版 Places API 的照片 URL 格式
-        return photoReference + "/media?key=" + apiKey + "&maxWidth=" + maxWidth;
+        // 修正參數名稱為 maxWidthPx
+        return "https://places.googleapis.com/v1/" + photoReference + "/media?key=" + apiKey + "&maxWidthPx=" + maxWidth;
     }
 
     /**

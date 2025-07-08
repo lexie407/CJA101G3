@@ -201,8 +201,7 @@
                                             <!-- 複製行程按鈕 - 所有登入用戶都可以複製 -->
                                             <button th:if="${session.member != null}" 
                                                     th:data-itinerary-id="${itinerary.itnId}"
-                                                    class="itinerary-list-card__link copy-itinerary-btn" 
-                                                    onclick="copyItinerary(this)">
+                                                    class="itinerary-list-card__link copy-itinerary-btn">
                                                 <span class="material-icons" aria-hidden="true">content_copy</span>
                                                 複製行程
                                             </button>
