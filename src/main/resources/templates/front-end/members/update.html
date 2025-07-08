@@ -134,9 +134,8 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-.alert.alert-danger,
-.error-messages-container {
-  color: var(--md-sys-color-error) !important; 
+.alert.alert-danger, .error-messages-container {
+	color: var(--md-sys-color-error) !important;
 }
 </style>
 </head>
@@ -246,19 +245,21 @@
 							</div>
 						</div>
 
-<!-- 						<div class="form-group"> -->
-<!-- 							<label for="memAvatarFrame">頭像框圖片:</label>  -->
-							<input type="file" name="memAvatarFrameFile" id="memAvatarFrame" accept="image/*" style="display: none">
-<!-- 							<div class="avatar-preview"> -->
-<!-- 								<img id="avatarFramePreview" -->
-<!-- 									th:src="@{/members/DBGifReader(memId=${membersVO.memId}, type='memAvatarFrame')}" -->
-<!-- 									alt="頭像框預覽" /> <span th:unless="${membersVO.memId != null}" -->
-<!-- 									class="material-icons avatar-placeholder">crop_square</span> -->
-<!-- 							</div> -->
-<!-- 						</div> -->
+						<!-- 						<div class="form-group"> -->
+						<!-- 							<label for="memAvatarFrame">頭像框圖片:</label>  -->
+						<input type="file" name="memAvatarFrameFile" id="memAvatarFrame"
+							accept="image/*" style="display: none">
+						<!-- 							<div class="avatar-preview"> -->
+						<!-- 								<img id="avatarFramePreview" -->
+						<!-- 									th:src="@{/members/DBGifReader(memId=${membersVO.memId}, type='memAvatarFrame')}" -->
+						<!-- 									alt="頭像框預覽" /> <span th:unless="${membersVO.memId != null}" -->
+						<!-- 									class="material-icons avatar-placeholder">crop_square</span> -->
+						<!-- 							</div> -->
+						<!-- 						</div> -->
 
 						<div class="form-actions">
-							<button type="button" onclick="window.location.href = '/members/view'"
+							<button type="button"
+								onclick="window.location.href = '/members/view'"
 								class="material-button md-primary-button">
 								<span class="material-icons">arrow_back</span> 返回
 							</button>
@@ -286,5 +287,8 @@
 			</main>
 		</div>
 	</div>
+	<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+	<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+	<script src="../js/notification/websocket.js"></script>
 </body>
 </html>
