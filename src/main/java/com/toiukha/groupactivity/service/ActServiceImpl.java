@@ -213,11 +213,27 @@ public class ActServiceImpl implements ActService {
         String cleanedActName = (actName != null && !actName.trim().isEmpty()) ? actName.trim() : null;
         Integer cleanedHostId = (hostId != null && hostId > 0) ? hostId : null;
         LocalDateTime cleanedActStart = actStart;
-        Integer cleanedMaxCap = (maxCap != null && maxCap > 0) ? maxCap : null;
+        Integer min = null, max = null;
+        // 依 maxCap 自動轉換區間
+        if (maxCap != null) {
+            if (maxCap == 3) { min = 1; max = 3; } // 1~3人
+            else if (maxCap == 6) { min = 4; max = 6; } // 4~6人
+            else if (maxCap == 10) { min = 7; max = 10; } // 7~10人
+            else if (maxCap == 11) { min = 11; max = 99; } // 10人以上
+        }
         Byte isPublic = (byte) 1;
-        Specification<ActVO> spec = ActSpecification.buildSpec(
-            cleanedRecruitStatus, cleanedActName, cleanedHostId, isPublic, cleanedActStart, cleanedMaxCap
-        );
+        Specification<ActVO> spec;
+        if (min != null && max != null) {
+            spec = ActSpecification.buildSpecWithRange(
+                cleanedRecruitStatus, cleanedActName, cleanedHostId, isPublic,
+                cleanedActStart, null, min, max
+            );
+        } else {
+            Integer cleanedMaxCap = (maxCap != null && maxCap > 0) ? maxCap : null;
+            spec = ActSpecification.buildSpec(
+                cleanedRecruitStatus, cleanedActName, cleanedHostId, isPublic, cleanedActStart, cleanedMaxCap
+            );
+        }
         Pageable sortedPageable = org.springframework.data.domain.PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
