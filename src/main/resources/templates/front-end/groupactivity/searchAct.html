@@ -52,6 +52,24 @@
                   <option value="11">10人以上</option>
                 </select>
               </div>
+              <!-- 日期區間 -->
+              <div class="act-search-group act-date-range act-date-range-group">
+                <label class="act-search-label">活動日期區間</label>
+                <div class="act-date-range-row">
+                  <input type="date" id="dateRangeStart" name="dateRangeStart" class="act-search-input" />
+                  <span class="act-date-range-sep">至</span>
+                  <input type="date" id="dateRangeEnd" name="dateRangeEnd" class="act-search-input" />
+                </div>
+              </div>
+              <!-- 活動類型 -->
+              <div class="act-search-group act-type-multiselect type-group" style="position:relative;">
+                <label class="act-search-label">活動類型</label>
+                <div id="actTypeSelect" class="act-type-select-box act-search-input" tabindex="0">
+                  <div id="selectedActTypes" class="act-type-pills"></div>
+                  <span id="actTypePlaceholder" class="act-type-placeholder">請選擇活動類型</span>
+                </div>
+                <div id="actTypeOptions" class="act-type-options" style="display:none;"></div>
+              </div>
               <!-- 地點 -->
               <div class="act-search-group city-group">
                 <label for="actCityInput" class="act-search-label">地點</label>
@@ -64,27 +82,11 @@
                   <option value="ISLANDS">離島</option>
                 </select>
               </div>
-              <!-- 活動類型 -->
-              <div class="act-search-group act-type-multiselect type-group" style="position:relative;">
-                <label class="act-search-label">活動類型</label>
-                <div id="actTypeSelect" class="act-type-select-box act-search-input" tabindex="0">
-                  <div id="selectedActTypes" class="act-type-pills"></div>
-                  <span id="actTypePlaceholder" class="act-type-placeholder">請選擇活動類型</span>
-                </div>
-                <div id="actTypeOptions" class="act-type-options" style="display:none;"></div>
-              </div>
-              <!-- 日期區間 -->
-              <div class="act-search-group act-date-range act-date-range-group">
-                <label class="act-search-label">活動日期區間</label>
-                <div class="act-date-range-row">
-                  <input type="date" id="dateRangeStart" name="dateRangeStart" class="act-search-input" />
-                  <span class="act-date-range-sep">至</span>
-                  <input type="date" id="dateRangeEnd" name="dateRangeEnd" class="act-search-input" />
-                </div>
-              </div>
+
               <!-- 搜尋按鈕 -->
               <div class="act-search-btn-group btn-group">
                 <button type="submit" class="act-btn act-btn-primary">篩選活動</button>
+                <button type="button" class="act-btn act-btn-secondary" id="clearFiltersBtn">清空條件</button>
               </div>
             </form>
           </div>
@@ -331,6 +333,28 @@
         searchActivities(true);
         initialState.style.display = "none";
       });
+
+      // ====== 清空篩選條件按鈕功能 ======
+      const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+      if (clearFiltersBtn) {
+        clearFiltersBtn.onclick = function() {
+          // 人數
+          const maxCapInput = document.getElementById('maxCapInput');
+          if (maxCapInput) maxCapInput.value = '';
+          // 日期
+          const dateRangeStart = document.getElementById('dateRangeStart');
+          const dateRangeEnd = document.getElementById('dateRangeEnd');
+          if (dateRangeStart) dateRangeStart.value = '';
+          if (dateRangeEnd) dateRangeEnd.value = '';
+          // 地點
+          const actCityInput = document.getElementById('actCityInput');
+          if (actCityInput) actCityInput.value = '';
+          // 活動類型（多選）
+          selectedTypes = [];
+          renderTypePills();
+          renderTypeOptions();
+        };
+      }
     </script>
   </body>
 </html>

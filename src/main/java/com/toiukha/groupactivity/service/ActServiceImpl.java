@@ -205,23 +205,35 @@ public class ActServiceImpl implements ActService {
 
     //分頁查詢已公開活動
     @Override
-    public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName, 
-                                           Integer hostId, LocalDateTime actStart, 
+    public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName,
+                                           Integer hostId, LocalDateTime actStart,
                                            Integer maxCap, Pageable pageable) {
         //參數清洗
         Byte cleanedRecruitStatus = (recruitStatus != null && recruitStatus >= 0 && recruitStatus <= 5) ? recruitStatus : null;
         String cleanedActName = (actName != null && !actName.trim().isEmpty()) ? actName.trim() : null;
         Integer cleanedHostId = (hostId != null && hostId > 0) ? hostId : null;
         LocalDateTime cleanedActStart = actStart;
-        Integer cleanedMaxCap = (maxCap != null && maxCap > 0) ? maxCap : null;
-        
-        // 只顯示公開活動
+        Integer min = null, max = null;
+        // 依 maxCap 自動轉換區間
+        if (maxCap != null) {
+            if (maxCap == 3) { min = 1; max = 3; } // 1~3人
+            else if (maxCap == 6) { min = 4; max = 6; } // 4~6人
+            else if (maxCap == 10) { min = 7; max = 10; } // 7~10人
+            else if (maxCap == 11) { min = 11; max = 99; } // 10人以上
+        }
         Byte isPublic = (byte) 1;
-        Specification<ActVO> spec = ActSpecification.buildSpec(
-            cleanedRecruitStatus, cleanedActName, cleanedHostId, isPublic, cleanedActStart, cleanedMaxCap
-        );
-
-        // 招募中優先，再依活動開始時間降冪排序
+        Specification<ActVO> spec;
+        if (min != null && max != null) {
+            spec = ActSpecification.buildSpecWithRange(
+                cleanedRecruitStatus, cleanedActName, cleanedHostId, isPublic,
+                cleanedActStart, null, min, max
+            );
+        } else {
+            Integer cleanedMaxCap = (maxCap != null && maxCap > 0) ? maxCap : null;
+            spec = ActSpecification.buildSpec(
+                cleanedRecruitStatus, cleanedActName, cleanedHostId, isPublic, cleanedActStart, cleanedMaxCap
+            );
+        }
         Pageable sortedPageable = org.springframework.data.domain.PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
@@ -231,11 +243,8 @@ public class ActServiceImpl implements ActService {
             )
         );
         Page<ActVO> actPage = actRepo.findAll(spec, sortedPageable);
-        
-        // 轉換為 ActCardDTO 並加入行程資訊
         return actPage.map(actVO -> {
             ActCardDTO dto = ActCardDTO.fromVO(actVO);
-            // 如果有行程ID，查詢行程資訊
             if (actVO.getItnId() != null) {
                 ItineraryVO itinerary = getItineraryById(actVO.getItnId());
                 if (itinerary != null) {
@@ -247,30 +256,23 @@ public class ActServiceImpl implements ActService {
         });
     }
 
-    //分頁查詢已公開活動（含當前用戶參與狀態）
     @Override
-    public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName, 
-                                           Integer hostId, LocalDateTime actStart, 
-                                           Integer maxCap, Integer currentUserId, 
+    public Page<ActCardDTO> searchPublicActs(Byte recruitStatus, String actName,
+                                           Integer hostId, LocalDateTime actStart,
+                                           Integer maxCap, Integer currentUserId,
                                            Pageable pageable) {
-        // 呼叫原有方法
         Page<ActCardDTO> result = searchPublicActs(recruitStatus, actName, hostId, actStart, maxCap, pageable);
-        
         // 如果有當前用戶，查詢參與狀態
         if (currentUserId != null) {
             List<Integer> joinedActIds = partRepo.findActIdsByMemId(currentUserId);
-            
-            // 設定參與狀態
             result.getContent().forEach(dto -> {
                 dto.setIsCurrentUserParticipant(joinedActIds.contains(dto.getActId()));
             });
         } else {
-            // 未登入用戶，全部設為 false
             result.getContent().forEach(dto -> {
                 dto.setIsCurrentUserParticipant(false);
             });
         }
-        
         return result;
     }
 
@@ -476,6 +478,7 @@ public class ActServiceImpl implements ActService {
     @Override
     public Page<ActCardDTO> searchByTags(List<ActTag> typeTags, List<ActTag> cityTags, Pageable pageable) {
         Set<Integer> actIds = new HashSet<>();
+        
         // 只選地區
         if ((typeTags == null || typeTags.isEmpty()) && cityTags != null && !cityTags.isEmpty()) {
             for (ActTag cityTag : cityTags) {
@@ -488,14 +491,24 @@ public class ActServiceImpl implements ActService {
                 actIds.addAll(tagSvc.getActsByTag(typeTag));
             }
         }
-        // 同時選類型與地區，取聯集
+        // 同時選類型與地區，取交集（修正！）
         else if (typeTags != null && !typeTags.isEmpty() && cityTags != null && !cityTags.isEmpty()) {
+            Set<Integer> typeActIds = new HashSet<>();
+            Set<Integer> cityActIds = new HashSet<>();
+            
+            // 收集類型活動ID
             for (ActTag typeTag : typeTags) {
-                actIds.addAll(tagSvc.getActsByTag(typeTag));
+                typeActIds.addAll(tagSvc.getActsByTag(typeTag));
             }
+            
+            // 收集地區活動ID
             for (ActTag cityTag : cityTags) {
-                actIds.addAll(tagSvc.getActsByTag(cityTag));
+                cityActIds.addAll(tagSvc.getActsByTag(cityTag));
             }
+            
+            // 取交集：同時符合類型和地區的活動
+            typeActIds.retainAll(cityActIds);
+            actIds = typeActIds;
         }
         // 沒有標籤，回傳所有公開活動
         else {

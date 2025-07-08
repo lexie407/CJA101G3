@@ -542,7 +542,7 @@
             <div class="activity-info-section" style="position: relative">
               <div class="activity-banner-img">
                 <img
-                  th:src="@{'/api/act/image/' + ${act.actId}}"
+                  th:src="@{'/act/DBGifReader?actId=' + ${act.actId}}"
                   alt="活動圖片"
                 />
               </div>

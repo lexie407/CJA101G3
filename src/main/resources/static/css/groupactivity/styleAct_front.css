@@ -862,6 +862,21 @@
   }
 }
 
+/* 日期區間同一行顯示 */
+.act-date-range-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .act-date-range-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+}
+
 /* 統一搜尋欄位寬度與外觀 */
 .act-search-group .act-search-input,
 .act-search-group .act-type-select-box {

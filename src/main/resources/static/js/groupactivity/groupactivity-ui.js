@@ -35,7 +35,7 @@ window.GroupActivityUI = (function () {
     // 圖片 HTML
     let imageHtml = "";
     if (showImage) {
-      imageHtml = `<img src="/api/act/image/${activity.actId}" alt="活動圖片" class="act-card-image">`;
+              imageHtml = `<img src="/act/DBGifReader?actId=${activity.actId}" alt="活動圖片" class="act-card-image">`;
     }
 
     // 基本資訊 - 根據模板類型調整
