@@ -410,12 +410,9 @@
 
         // console.log('呼叫API:', `/api/act/itinerary/${itnId}`);
         
-        // 呼叫API取得行程詳情
+        // 改用假API
         fetch(`/api/act/itinerary/${itnId}`)
-          .then(response => {
-            // console.log('API回應狀態:', response.status);
-            return response.json();
-          })
+          .then(response => response.json())
           .then(data => {
             // console.log('API回應資料:', data);
             document.getElementById('itineraryLoading').style.display = 'none';

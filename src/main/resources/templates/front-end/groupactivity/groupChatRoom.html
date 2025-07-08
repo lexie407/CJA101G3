@@ -220,7 +220,7 @@
 
       function updateStatus(message, type) {
         statusOutput.textContent = message;
-        statusOutput.className = `chat-status ${type}`;
+        statusOutput.className = `act-chat-status ${type}`;
       }
 
       function enableInputs(enabled) {
@@ -327,42 +327,41 @@
 
       function loadChatHistory() {
         // 載入歷史聊天記錄
-        // ---需除錯--- 
-        // fetch(`/act/group/${actId}/chat/history`)
-        //   .then((response) => {
-        //     if (!response.ok) {
-        //       throw new Error(
-        //         `HTTP ${response.status}: ${response.statusText}`
-        //       );
-        //     }
-        //     return response.json();
-        //   })
-        //   .then((data) => {
-        //     if (data.messages && data.messages.length > 0) {
-        //       // 清空現有訊息區域
-        //       messagesArea.innerHTML = "";
+        fetch(`/act/group/${actId}/chat/history`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(
+                `HTTP ${response.status}: ${response.statusText}`
+              );
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (data.messages && data.messages.length > 0) {
+              // 清空現有訊息區域
+              messagesArea.innerHTML = "";
 
-        //       // 顯示載入的歷史記錄
-        //       data.messages.forEach((messageJson) => {
-        //         try {
-        //           const messageData = JSON.parse(messageJson);
-        //           displayMessage(messageData);
-        //         } catch (e) {
-        //           // 靜默處理解析錯誤
-        //         }
-        //       });
+              // 顯示載入的歷史記錄
+              data.messages.forEach((messageJson) => {
+                try {
+                  const messageData = JSON.parse(messageJson);
+                  displayMessage(messageData);
+                } catch (e) {
+                  console.error("解析歷史訊息錯誤:", e);
+                }
+              });
 
-        //       addSystemMessage(`📋 已載入 ${data.count} 條歷史訊息`);
-        //     } else {
-        //       addSystemMessage(
-        //         "📝 這是一個全新的聊天室，開始您的第一段對話吧！"
-        //       );
-        //     }
-        //   })
-        //   .catch((error) => {
-        //     addSystemMessage("⚠️ 載入歷史記錄失敗，但您仍可以正常聊天");
-        //     console.error("載入歷史記錄錯誤:", error);
-        //   });
+              addSystemMessage(`📋 已載入 ${data.count} 條歷史訊息`);
+            } else {
+              addSystemMessage(
+                "📝 這是一個全新的聊天室，開始您的第一段對話吧！"
+              );
+            }
+          })
+          .catch((error) => {
+            addSystemMessage("⚠️ 載入歷史記錄失敗，但您仍可以正常聊天");
+            console.error("載入歷史記錄錯誤:", error);
+          });
       }
 
       // Enter 鍵發送訊息

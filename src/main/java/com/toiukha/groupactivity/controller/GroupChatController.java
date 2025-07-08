@@ -92,10 +92,12 @@ public class GroupChatController {
     // 優先從WebSocket session attributes取得memberVO
     private MembersVO getMemberVO(SimpMessageHeaderAccessor headerAccessor) {
         try {
+            // 從WebSocket session attributes取得memberVO（由notification的HttpHandshakeInterceptor存入）
             Object memberObj = headerAccessor.getSessionAttributes().get("memberVO");
             if (memberObj instanceof MembersVO) {
                 return (MembersVO) memberObj;
             }
+            
             // 相容舊邏輯：從HttpSession取得
             HttpSession httpSession = (HttpSession) headerAccessor.getSessionAttributes().get("HTTP_SESSION");
             if (httpSession != null) {

@@ -19,7 +19,7 @@ import java.util.List;
 public class GroupChatService {
 
     @Autowired
-    private ActService actService;
+    private ActService actService; // 注入 ActServiceImpl
 
     @Autowired
     private PartService participantService;

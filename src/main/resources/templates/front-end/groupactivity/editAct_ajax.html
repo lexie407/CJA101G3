@@ -408,12 +408,11 @@
                             </select>
                             <label for="isPublic">是否公開</label>
                         </div>
+                        <div class="form-text text-warning" id="publicWarning" style="display: none;">
+                            <!-- 動態內容由JavaScript控制 -->
+                        </div>
                     </div>
-
-                    <div class="form-text text-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        活動經公開就不得刪除，請留意！
-                    </div>
+                    
 
                     <!--系統處理欄位不可編輯-->
                     <div class="act-detail-info">
@@ -1086,16 +1085,114 @@
         initializeForm();
     }
 
+    // 公開狀態防護邏輯
+    function initializePublicStatusProtection() {
+        const isPublicSelect = document.getElementById('isPublic');
+        const publicWarning = document.getElementById('publicWarning');
+        
+        if (!isPublicSelect || !publicWarning) return;
+        
+        // 檢查初始狀態
+        const initialIsPublic = isPublicSelect.value;
+        
+        if (initialIsPublic === '1') {
+            // 活動已經公開（再次編輯），禁用私人選項並顯示強烈警示
+            const privateOption = isPublicSelect.querySelector('option[value="0"]');
+            if (privateOption) {
+                privateOption.disabled = true;
+                privateOption.textContent = '私人 (已公開活動不可切換)';
+            }
+            publicWarning.style.display = 'block';
+            publicWarning.className = 'form-text text-danger'; // 改為紅色警示
+            publicWarning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <strong>注意：</strong>活動已公開，無法切換回私人狀態！';
+        } else {
+            // 活動尚未公開（初次編輯），顯示溫和提示
+            publicWarning.style.display = 'block';
+            publicWarning.className = 'form-text text-info'; // 改為藍色提示
+            publicWarning.innerHTML = '<i class="fas fa-info-circle"></i> 活動經公開就不得刪除，請留意！';
+        }
+        
+        // 監聽狀態變化
+        isPublicSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            const privateOption = this.querySelector('option[value="0"]');
+            
+            if (selectedValue === '1') {
+                // 選擇公開時，立即禁用私人選項並顯示強烈警示
+                if (privateOption) {
+                    privateOption.disabled = true;
+                    privateOption.textContent = '私人 (已公開活動不可切換)';
+                }
+                publicWarning.style.display = 'block';
+                publicWarning.className = 'form-text text-danger'; // 改為紅色警示
+                publicWarning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <strong>注意：</strong>活動已公開，無法切換回私人狀態！';
+            } else if (selectedValue === '0') {
+                // 選擇私人時，啟用私人選項並顯示溫和提示
+                if (privateOption) {
+                    privateOption.disabled = false;
+                    privateOption.textContent = '私人';
+                }
+                publicWarning.style.display = 'block';
+                publicWarning.className = 'form-text text-info'; // 改為藍色提示
+                publicWarning.innerHTML = '<i class="fas fa-info-circle"></i> 活動經公開就不得刪除，請留意！';
+            }
+        });
+    }
+    
+    // 在初始化時調用公開狀態防護
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializePublicStatusProtection);
+    } else {
+        initializePublicStatusProtection();
+    }
+
+    // ====== 行程下拉選單動態載入 ======
+    // (function loadItinerarySelect() {
+    //     if (!currentMemberId) {
+    //         console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
+    //         return;
+    //     }
+    //     fetch(`/itinerary/creator/${currentMemberId}`)
+    //         .then(res => res.json())
+    //         .then(list => {
+    //             const select = document.getElementById('itinerarySelect');
+    //             if (!select) return;
+    //             select.innerHTML = '<option value="">請選擇行程</option>';
+    //             if (Array.isArray(list) && list.length > 0) {
+    //                 list.forEach(itn => {
+    //                     const option = document.createElement('option');
+    //                     option.value = itn.itnId;
+    //                     option.textContent = `${itn.itnName}（${itn.itnDesc || '無描述'}）`;
+    //                     if (itnId && itn.itnId == itnId) {
+    //                         option.selected = true;
+    //                     }
+    //                     select.appendChild(option);
+    //                 });
+    //             } else {
+    //                 const option = document.createElement('option');
+    //                 option.value = '';
+    //                 option.textContent = '（查無可用行程，請先建立行程）';
+    //                 select.appendChild(option);
+    //             }
+    //         })
+    //         .catch(err => {
+    //             console.error('[行程下拉] 載入行程清單失敗:', err);
+    //             const select = document.getElementById('itinerarySelect');
+    //             if (select) {
+    //                 select.innerHTML = '<option value="">（行程載入失敗）</option>';
+    //             }
+    //         });
+    // })();
+    // 改用假API
     (function loadItinerarySelect() {
         if (!currentMemberId) {
             console.warn('[行程下拉] 無法取得會員ID，無法載入行程清單');
             return;
         }
-        fetch(`/itinerary/creator/${currentMemberId}`)
+        fetch(`/api/act/itinerary/creator/${currentMemberId}`)
             .then(res => res.json())
             .then(list => {
                 const select = document.getElementById('itinerarySelect');
-                const currentItnId = document.getElementById('itnId').value;
                 if (!select) return;
                 select.innerHTML = '<option value="">請選擇行程</option>';
                 if (Array.isArray(list) && list.length > 0) {
@@ -1103,7 +1200,7 @@
                         const option = document.createElement('option');
                         option.value = itn.itnId;
                         option.textContent = `${itn.itnName}（${itn.itnDesc || '無描述'}）`;
-                        if (currentItnId && itn.itnId == currentItnId) {
+                        if (itnId && itn.itnId == itnId) {
                             option.selected = true;
                         }
                         select.appendChild(option);
@@ -1122,10 +1219,6 @@
                     select.innerHTML = '<option value="">（行程載入失敗）</option>';
                 }
             });
-        // 當選擇變動時，同步 itnId
-        document.getElementById('itinerarySelect').addEventListener('change', function () {
-            document.getElementById('itnId').value = this.value;
-        });
     })();
 </script>
 </body>

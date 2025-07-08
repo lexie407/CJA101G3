@@ -291,7 +291,7 @@
 
             <div class="form-group">
               <label>允許退出</label>
-              <select th:field="*{allowCancel}" style="border: 1px solid #888;">
+              <select th:field="*{allowCancel}" id="allowCancel" style="border: 1px solid #888;">
                 <option value="0">不允許</option>
                 <option value="1">允許</option>
               </select>
@@ -300,7 +300,7 @@
 
           <div class="form-group">
             <label>招募狀態</label>
-            <select th:field="*{recruitStatus}" style="border: 1px solid #888;">
+            <select th:field="*{recruitStatus}" id="recruitStatus" style="border: 1px solid #888;">
               <option value="0">招募中</option>
               <option value="1">成團</option>
               <option value="2">未成團</option>
@@ -308,6 +308,11 @@
               <option value="4">系統凍結</option>
               <option value="5">活動結束</option>
             </select>
+          </div>
+          
+          <div class="form-text text-warning" id="freezeWarning" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            活動已凍結，自動設為不允許退出！
           </div>
 
           <div class="form-group">
@@ -371,5 +376,48 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // 凍結狀態防護邏輯
+    function initializeFreezeStatusProtection() {
+        const recruitStatusSelect = document.getElementById('recruitStatus');
+        const allowCancelSelect = document.getElementById('allowCancel');
+        const freezeWarning = document.getElementById('freezeWarning');
+        
+        if (!recruitStatusSelect || !allowCancelSelect || !freezeWarning) return;
+        
+        // 檢查初始狀態
+        const initialRecruitStatus = recruitStatusSelect.value;
+        if (initialRecruitStatus === '4') {
+            // 如果活動已經是凍結狀態，自動設為不允許退出
+            allowCancelSelect.value = '0';
+            allowCancelSelect.disabled = true;
+            freezeWarning.style.display = 'block';
+        }
+        
+        // 監聽招募狀態變化
+        recruitStatusSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            
+            if (selectedValue === '4') {
+                // 選擇凍結時，自動設為不允許退出並禁用
+                allowCancelSelect.value = '0';
+                allowCancelSelect.disabled = true;
+                freezeWarning.style.display = 'block';
+            } else {
+                // 選擇其他狀態時，啟用允許退出選項
+                allowCancelSelect.disabled = false;
+                freezeWarning.style.display = 'none';
+            }
+        });
+    }
+    
+    // 在頁面載入時初始化凍結狀態防護
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeFreezeStatusProtection);
+    } else {
+        initializeFreezeStatusProtection();
+    }
+  </script>
   </body>
 </html>
