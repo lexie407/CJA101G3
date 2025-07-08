@@ -67,27 +67,19 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
     List<ItineraryVO> findPublicItineraries();
 
     /**
-     * 查詢所有非揪團模組的公開行程
-     * @return 非揪團模組的公開行程列表，按建立時間倒序排列
+     * 查詢所有公開行程（不排除 10~20）
+     * @return 公開行程列表，按建立時間倒序排列
      */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND i.itnStatus = 1 AND (i.itnId < 10 OR i.itnId > 20) ORDER BY i.itnCreateDat DESC")
-    List<ItineraryVO> findPublicItinerariesNotFromActivity();
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 ORDER BY i.itnCreateDat DESC")
+    List<ItineraryVO> findAllPublicItineraries();
 
     /**
-     * 查詢非揪團模組的公開行程（分頁）
-     * @param pageable 分頁資訊
-     * @return 非揪團模組的公開行程分頁結果
-     */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND i.itnStatus = 1 AND (i.itnId < 10 OR i.itnId > 20)")
-    Page<ItineraryVO> findPublicItinerariesNotFromActivity(Pageable pageable);
-
-    /**
-     * 查詢公開行程（分頁）
+     * 查詢所有公開行程（分頁，不排除 10~20）
      * @param pageable 分頁資訊
      * @return 公開行程分頁結果
      */
     @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1")
-    Page<ItineraryVO> findPublicItineraries(Pageable pageable);
+    Page<ItineraryVO> findAllPublicItineraries(Pageable pageable);
 
     /**
      * 複合搜尋：根據名稱搜尋公開行程
@@ -99,32 +91,12 @@ public interface ItineraryRepository extends JpaRepository<ItineraryVO, Integer>
     List<ItineraryVO> searchPublicItineraries(@Param("keyword") String keyword);
 
     /**
-     * 複合搜尋：根據名稱搜尋非揪團模組的公開行程
-     * @param keyword 搜尋關鍵字
-     * @return 符合條件的非揪團模組公開行程列表
-     */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.itnId < 10 OR i.itnId > 20) AND " +
-           "i.itnName LIKE %:keyword% ORDER BY i.itnCreateDat DESC")
-    List<ItineraryVO> searchPublicItinerariesNotFromActivity(@Param("keyword") String keyword);
-
-    /**
-     * 複合搜尋：根據名稱搜尋非揪團模組的公開行程（分頁）
-     * @param keyword 搜尋關鍵字
-     * @param pageable 分頁資訊
-     * @return 符合條件的非揪團模組公開行程分頁結果
-     */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND (i.itnId < 10 OR i.itnId > 20) AND " +
-           "i.itnName LIKE %:keyword%")
-    Page<ItineraryVO> searchPublicItinerariesNotFromActivity(@Param("keyword") String keyword, Pageable pageable);
-
-    /**
      * 複合搜尋：根據名稱搜尋公開行程（分頁）
      * @param keyword 搜尋關鍵字
      * @param pageable 分頁資訊
      * @return 符合條件的公開行程分頁結果
      */
-    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND " +
-           "i.itnName LIKE %:keyword%")
+    @Query("SELECT i FROM ItineraryVO i WHERE i.isPublic = 1 AND i.itnName LIKE %:keyword%")
     Page<ItineraryVO> searchPublicItineraries(@Param("keyword") String keyword, Pageable pageable);
 
     /**

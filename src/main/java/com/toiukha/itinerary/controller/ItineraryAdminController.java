@@ -64,12 +64,6 @@ public class ItineraryAdminController {
             // 查詢所有行程資料（不使用分頁，前端自己處理）
             List<ItineraryVO> allItineraries = itineraryService.getAllItineraries();
             
-            // 過濾排除揪團模組行程（ID 10-20），保留會員和管理員建立的行程
-            allItineraries = allItineraries.stream()
-                .filter(itinerary -> itinerary.getItnId() != null && 
-                        (itinerary.getItnId() < 10 || itinerary.getItnId() > 20))
-                .collect(java.util.stream.Collectors.toList());
-            
             // 創建簡化的 DTO 物件，避免 Hibernate 懶加載序列化問題
             List<Map<String, Object>> simplifiedItineraries = allItineraries.stream()
                 .map(itinerary -> {
@@ -124,12 +118,6 @@ public class ItineraryAdminController {
         try {
             // 查詢所有行程資料（不使用分頁，前端自己處理）
             List<ItineraryVO> allItineraries = itineraryService.getAllItineraries();
-            
-            // 過濾排除揪團模組行程（ID 10-20），保留會員和管理員建立的行程
-            allItineraries = allItineraries.stream()
-                .filter(itinerary -> itinerary.getItnId() != null && 
-                        (itinerary.getItnId() < 10 || itinerary.getItnId() > 20))
-                .collect(java.util.stream.Collectors.toList());
             
             // 創建簡化的 DTO 物件，避免 Hibernate 懶加載序列化問題
             List<Map<String, Object>> simplifiedItineraries = allItineraries.stream()

@@ -386,18 +386,24 @@
             hideEmptyState && hideEmptyState();
         }
         spotArr.forEach(spot => {
-            // 這裡建議用模板字串或複製現有卡片結構
+            console.log('渲染 spot:', spot.spotName, spot.firstPictureUrl);
             const card = document.createElement('div');
             card.className = 'spot-index-spot-card';
+            let imageHtml = '';
+            if (spot.firstPictureUrl) {
+                imageHtml = `<img src="${spot.firstPictureUrl}" alt="${spot.spotName}" class="spot-index-spot-card__img" loading="eager" width="320" height="180">`;
+            } else {
+                imageHtml = `<div class="spot-index-spot-card__image--placeholder"></div>`;
+            }
             card.innerHTML = `
                 <div class="spot-index-spot-card__image">
-                    <img src="${spot.firstPictureUrl || '/images/spot/default.jpg'}" alt="${spot.spotName}" class="spot-index-spot-card__img" loading="lazy">
+                    ${imageHtml}
                 </div>
                 <div class="spot-index-spot-card__content">
                     <h3 class="spot-index-spot-card__name">${spot.spotName}</h3>
                     <p class="spot-index-spot-card__location"><span class="material-icons">place</span>${spot.spotLoc || ''}</p>
                     <p class="spot-index-spot-card__desc">${spot.spotDesc ? (spot.spotDesc.length > 60 ? spot.spotDesc.substring(0, 60) + '...' : spot.spotDesc) : '暫無描述'}</p>
-                    <a href="/spot/user/detail/${spot.spotId}" class="spot-index-spot-card__link">查看詳情</a>
+                    <a href="/spot/detail/${spot.spotId}" class="spot-index-spot-card__link">查看詳情</a>
                 </div>
             `;
             grid.appendChild(card);

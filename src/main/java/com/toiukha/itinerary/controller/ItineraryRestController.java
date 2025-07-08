@@ -44,13 +44,69 @@ public class ItineraryRestController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Boolean isPublic) {
         
-        // TODO: 實作行程列表查詢邏輯
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "行程列表查詢成功");
-        response.put("page", page);
-        response.put("size", size);
-        
-        return ResponseEntity.ok(response);
+        try {
+            logger.info("查詢行程列表，頁碼: {}, 每頁筆數: {}, 關鍵字: {}, 是否公開: {}", 
+                       page, size, keyword, isPublic);
+            
+            List<ItineraryVO> itineraries = itineraryService.getPublicItineraries();
+            
+            // 如果有關鍵字，進行篩選
+            if (keyword != null && !keyword.isEmpty()) {
+                String lowerKeyword = keyword.toLowerCase();
+                itineraries = itineraries.stream()
+                    .filter(itn -> 
+                        (itn.getItnName() != null && itn.getItnName().toLowerCase().contains(lowerKeyword)) || 
+                        (itn.getItnDesc() != null && itn.getItnDesc().toLowerCase().contains(lowerKeyword))
+                    )
+                    .collect(java.util.stream.Collectors.toList());
+                logger.info("關鍵字篩選後剩餘 {} 筆", itineraries.size());
+            }
+            
+            // 創建簡化的 DTO 物件
+            List<Map<String, Object>> simplifiedItineraries = new ArrayList<>();
+            for (ItineraryVO itinerary : itineraries) {
+                Map<String, Object> dto = new HashMap<>();
+                dto.put("id", itinerary.getItnId());
+                dto.put("name", itinerary.getItnName());
+                dto.put("description", itinerary.getItnDesc());
+                dto.put("isPublic", itinerary.getIsPublic() == 1);
+                dto.put("createdAt", itinerary.getItnCreateDat());
+                dto.put("updatedAt", itinerary.getItnUpdateDat());
+                dto.put("spotCount", itinerary.getSpotCount());
+                
+                simplifiedItineraries.add(dto);
+            }
+            
+            // 分頁處理
+            int totalItems = simplifiedItineraries.size();
+            int totalPages = (int) Math.ceil((double) totalItems / size);
+            int startIndex = (page - 1) * size;
+            int endIndex = Math.min(startIndex + size, totalItems);
+            
+            List<Map<String, Object>> pagedItineraries = 
+                simplifiedItineraries.subList(startIndex, endIndex);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "行程列表查詢成功");
+            response.put("page", page);
+            response.put("size", size);
+            response.put("totalItems", totalItems);
+            response.put("totalPages", totalPages);
+            response.put("itineraries", pagedItineraries);
+            
+            logger.info("成功返回行程列表，總筆數: {}, 當前頁筆數: {}", 
+                       totalItems, pagedItineraries.size());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            logger.error("查詢行程列表時發生錯誤", e);
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "message", "系統錯誤：" + e.getMessage()
+            ));
+        }
     }
 
     /**
@@ -170,6 +226,43 @@ public class ItineraryRestController {
         response.put("id", id);
         
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 取得指定會員的行程列表（供揪團使用）
+     */
+    @GetMapping("/creator/{memberId}")
+    public ResponseEntity<?> getItinerariesByCreator(@PathVariable Integer memberId) {
+        try {
+            logger.info("查詢會員 ID {} 的行程列表（揪團使用）", memberId);
+            
+            // 獲取會員的行程列表
+            List<ItineraryVO> itineraries = itineraryService.getItinerariesByCrtId(memberId);
+            logger.info("找到 {} 筆行程", itineraries.size());
+            
+            // 轉換為簡化的 DTO
+            List<Map<String, Object>> dtoList = new ArrayList<>();
+            for (ItineraryVO itn : itineraries) {
+                Map<String, Object> dto = new HashMap<>();
+                dto.put("id", itn.getItnId());
+                dto.put("name", itn.getItnName());
+                dto.put("description", itn.getItnDesc());
+                dto.put("isPublic", itn.getIsPublic() == 1);
+                dtoList.add(dto);
+            }
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "行程列表查詢成功",
+                "itineraries", dtoList
+            ));
+        } catch (Exception e) {
+            logger.error("查詢會員行程列表時發生錯誤", e);
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "message", "系統錯誤：" + e.getMessage()
+            ));
+        }
     }
 
     /**

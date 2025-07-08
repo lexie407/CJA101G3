@@ -6,7 +6,6 @@
 <div th:fragment="subnav(activeItem)">
     <header class="secondary-nav">
         <ul>
-            <li><a th:href="@{/itinerary/}" th:classappend="${activeItem == 'home' ? 'active' : ''}">行程首頁</a></li>
             <li><a th:href="@{/itinerary/itnlist}" th:classappend="${activeItem == 'list' ? 'active' : ''}">行程列表</a></li>
             <li><a th:href="@{/itinerary/my}" th:classappend="${activeItem == 'my' ? 'active' : ''}">我的行程</a></li>
             <li><a th:href="@{/itinerary/add}" th:classappend="${activeItem == 'add' ? 'active' : ''}">建立行程</a></li>

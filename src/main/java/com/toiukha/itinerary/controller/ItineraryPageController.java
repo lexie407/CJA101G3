@@ -40,24 +40,6 @@ public class ItineraryPageController {
     private MembersService membersService;
 
     /**
-     * 行程首頁
-     */
-    @GetMapping("/")
-    public String homePage(Model model) {
-        model.addAttribute("currentPage", "travel");
-        return "front-end/itinerary/index";
-    }
-    
-    /**
-     * 行程首頁 - 別名路由
-     */
-    @GetMapping({"/index", "/home", "/main"})
-    public String homePageAlias(Model model) {
-        model.addAttribute("currentPage", "travel");
-        return "front-end/itinerary/index";
-    }
-
-    /**
      * 行程列表頁面
      */
     @GetMapping("/itnlist")
@@ -79,14 +61,24 @@ public class ItineraryPageController {
             } else if (isPublic != null) {
                 itineraryList = itineraryService.getItinerariesByPublicStatus(isPublic);
             } else {
-                itineraryList = itineraryService.getAllPublicItineraries();
+                itineraryList = itineraryService.getPublicItineraries();
             }
             
             // 根據建立者類型篩選
+            // 允許會員(1)、管理員(2)和揪團活動(3)建立的行程
+            final List<Byte> allowedCreatorTypes = List.of((byte) 1, (byte) 2, (byte) 3); 
+
             if (creatorType != null) {
+                // 如果有指定類型，則只篩選該類型
                 itineraryList = itineraryList.stream()
                     .filter(itinerary -> itinerary.getCreatorType() != null && 
                             itinerary.getCreatorType().equals(creatorType.byteValue()))
+                    .collect(Collectors.toList());
+            } else {
+                // 如果未指定類型，則顯示所有允許的類型
+                itineraryList = itineraryList.stream()
+                    .filter(itinerary -> itinerary.getCreatorType() != null && 
+                            allowedCreatorTypes.contains(itinerary.getCreatorType()))
                     .collect(Collectors.toList());
             }
             

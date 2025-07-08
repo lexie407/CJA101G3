@@ -24,6 +24,41 @@ public class SpotDataInitController {
     private SpotService spotService;
 
     /**
+     * 清理測試景點資料
+     * @return 清理結果
+     */
+    @GetMapping("/clean-test-data")
+    @ResponseBody
+    public String cleanTestData() {
+        try {
+            // 定義測試景點的名稱列表
+            List<String> testSpotNames = List.of(
+                "日月潭", "阿里山", "太魯閣國家公園", "墾丁國家公園", 
+                "九份老街", "清境農場", "野柳地質公園", "溪頭自然教育園區", 
+                "花蓮七星潭", "台東三仙台"
+            );
+            
+            int deletedCount = 0;
+            for (String spotName : testSpotNames) {
+                // 找到所有符合名稱的景點
+                List<SpotVO> spots = spotService.searchSpots(spotName);
+                for (SpotVO spot : spots) {
+                    // 檢查是否為測試資料（通過 crtId 判斷）
+                    if (spot.getCrtId() != null && spot.getCrtId() >= 10 && spot.getCrtId() <= 19) {
+                        spotService.deleteById(spot.getSpotId());
+                        deletedCount++;
+                    }
+                }
+            }
+            
+            return "成功清理 " + deletedCount + " 個測試景點資料";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "清理失敗: " + e.getMessage();
+        }
+    }
+
+    /**
      * 初始化景點測試資料
      * @return 初始化結果
      */
