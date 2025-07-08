@@ -403,6 +403,8 @@ public class MembersController {
 
 		/*************************** 3. 設定更新時間 ***************************/
 		membersVO.setMemUpdatedAt(new Timestamp(System.currentTimeMillis()));
+		
+		membersVO.setMemLogErrTime(original.getMemLogErrTime());
 
 		/*************************** 4. 執行更新並導向查詢結果頁 ***************************/
 		membersService.editMember(membersVO);
