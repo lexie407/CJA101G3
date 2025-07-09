@@ -6,7 +6,7 @@
     <title>廣告詳情 - 島遊Kha</title>
     
     <!-- 引入 Thymeleaf 模板中的 headResources 片段，包含 Material Design 相關 CSS/JS -->
-    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
 
     <!-- 這裡可以放置此頁面特有的 CSS -->
     <style>
@@ -132,11 +132,13 @@
 
 	<div class="app-container">
 		<!-- 引入 Thymeleaf 模板中的 navbar 片段 -->
-		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div th:insert="~{/navStoreTemplate :: navbar}"></div>
 		
 		<div class="main-content">
 			<header class="secondary-nav">
-                <div th:insert="~{/subnavItem_Store_back::subnav(${activeItem})}"></div>
+                <ul>
+                    <div th:insert="~{/subnavItem_Store_back:: subnav(${activeItem})}"></div>
+                </ul>
             </header>
 			
             <main class="content-area-main">
