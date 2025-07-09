@@ -110,9 +110,7 @@ public class SpotAdminController {
      */
     @GetMapping("/spotreview")
     public String spotreviewPage(Model model) {
-        // 調用現有的業務邏輯，但返回新的模板路徑
-        reviewPage(model);
-        return "back-end/spot/spotreview";
+        return reviewPage(model);
     }
 
     /**
@@ -316,6 +314,10 @@ public class SpotAdminController {
     public String reviewPage(Model model) {
         // 查詢 SPOTSTATUS=0 的景點（待審核），自動過濾不合格
         List<SpotVO> pendingList = spotService.getPendingSpotsWithAutoCheck();
+        
+        // 自動補充圖片 URL（優先使用使用者上傳的圖片，沒有的話補充 Google 圖片）
+        spotEnrichmentService.enrichSpotPictureUrlIfNeeded(pendingList);
+        
         model.addAttribute("pendingList", pendingList);
         model.addAttribute("currentPage", "spotReview");
         return "back-end/spot/spotreview";
@@ -674,6 +676,61 @@ public class SpotAdminController {
     }
 
     /**
+     * 單個景點審核通過 API
+     * @param spotId 景點ID
+     * @return API回應
+     */
+    @PostMapping("/api/approve/{spotId}")
+    @ResponseBody
+    public ApiResponse<String> approveSpot(@PathVariable Integer spotId) {
+        try {
+            logger.info("開始審核通過景點，景點ID: {}", spotId);
+            if (spotService.activateSpot(spotId)) {
+                logger.info("景點審核通過成功，景點ID: {}", spotId);
+                return ApiResponse.success("景點審核通過成功");
+            } else {
+                logger.warn("景點審核通過失敗，景點ID: {}", spotId);
+                return ApiResponse.error("景點審核通過失敗");
+            }
+        } catch (Exception e) {
+            logger.error("審核通過景點時發生錯誤，景點ID: {}", spotId, e);
+            return ApiResponse.error("審核通過失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 單個景點審核退回 API
+     * @param spotId 景點ID
+     * @param requestBody 包含退回原因和備註的請求體
+     * @return API回應
+     */
+    @PostMapping("/api/reject/{spotId}")
+    @ResponseBody
+    public ApiResponse<String> rejectSpot(@PathVariable Integer spotId, @RequestBody Map<String, String> requestBody) {
+        try {
+            logger.info("開始審核退回景點，景點ID: {}", spotId);
+            String reason = requestBody.get("reason");
+            String remark = requestBody.get("remark");
+            
+            if (reason == null || reason.trim().isEmpty()) {
+                logger.warn("退回原因為空，景點ID: {}", spotId);
+                return ApiResponse.error("請提供退回原因");
+            }
+            
+            if (spotService.rejectSpot(spotId, reason, remark != null ? remark : "")) {
+                logger.info("景點審核退回成功，景點ID: {}, 原因: {}", spotId, reason);
+                return ApiResponse.success("景點審核退回成功");
+            } else {
+                logger.warn("景點審核退回失敗，景點ID: {}", spotId);
+                return ApiResponse.error("景點審核退回失敗");
+            }
+        } catch (Exception e) {
+            logger.error("審核退回景點時發生錯誤，景點ID: {}", spotId, e);
+            return ApiResponse.error("審核退回失敗: " + e.getMessage());
+        }
+    }
+
+    /**
      * 批次移至待審核狀態
      */
     @PostMapping("/api/batch-pending")
@@ -681,6 +738,61 @@ public class SpotAdminController {
     public ApiResponse<String> batchPendingSpots(@RequestBody List<Integer> spotIds) {
         int count = spotService.batchUpdateStatus(spotIds, (byte) 0); // 0=待審核
         return ApiResponse.success("已將 " + count + " 筆景點移至待審");
+    }
+
+    /**
+     * 批次審核通過 API
+     * @param spotIds 景點ID列表
+     * @return API回應
+     */
+    @PostMapping("/api/batch-approve")
+    @ResponseBody
+    public ApiResponse<String> batchApproveSpots(@RequestBody List<Integer> spotIds) {
+        try {
+            logger.info("開始批次審核通過，景點ID列表: {}", spotIds);
+            
+            if (spotIds == null || spotIds.isEmpty()) {
+                return ApiResponse.error("請選擇要通過的景點");
+            }
+            
+            int count = spotService.batchActivateSpots(spotIds);
+            logger.info("批次審核通過成功，共通過 {} 筆景點", count);
+            
+            return ApiResponse.success("已通過 " + count + " 筆景點");
+        } catch (Exception e) {
+            logger.error("批次審核通過時發生錯誤", e);
+            return ApiResponse.error("批次審核通過失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 批次審核拒絕 API
+     * @param spotIds 景點ID列表
+     * @return API回應
+     */
+    @PostMapping("/api/batch-reject")
+    @ResponseBody
+    public ApiResponse<String> batchRejectSpotsApi(@RequestBody List<Integer> spotIds) {
+        try {
+            logger.info("開始批次審核拒絕，景點ID列表: {}", spotIds);
+            
+            if (spotIds == null || spotIds.isEmpty()) {
+                return ApiResponse.error("請選擇要拒絕的景點");
+            }
+            
+            int count = 0;
+            for (Integer id : spotIds) {
+                if (spotService.rejectSpot(id, "批次拒絕", "")) {
+                    count++;
+                }
+            }
+            
+            logger.info("批次審核拒絕成功，共拒絕 {} 筆景點", count);
+            return ApiResponse.success("已拒絕 " + count + " 筆景點");
+        } catch (Exception e) {
+            logger.error("批次審核拒絕時發生錯誤", e);
+            return ApiResponse.error("批次審核拒絕失敗: " + e.getMessage());
+        }
     }
 
     /**
@@ -936,6 +1048,25 @@ public class SpotAdminController {
             resp.put("errorCount", 0);
         }
         return resp;
+    }
+
+    /**
+     * 臨時測試端點 - 檢查景點圖片資料
+     */
+    @GetMapping("/api/test-images/{spotId}")
+    @ResponseBody
+    public Map<String, Object> testSpotImages(@PathVariable Integer spotId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            List<SpotImgVO> images = spotImgService.getImagesBySpotId(spotId);
+            result.put("spotId", spotId);
+            result.put("imageCount", images.size());
+            result.put("images", images);
+            return result;
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            return result;
+        }
     }
 
     // ===================================================================================

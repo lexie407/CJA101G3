@@ -278,7 +278,7 @@ public class SpotUserApiController {
             @RequestParam(value = "multiImageDescs", required = false) List<String> multiImageDescs,
             HttpSession session) {
         Map<String, Object> resp = new HashMap<>();
-        final int MAX_IMAGES = 1;
+        final int MAX_IMAGES = 8;
         final long MAX_SIZE = 2 * 1024 * 1024L;
         final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/jpg");
         try {
@@ -289,26 +289,22 @@ public class SpotUserApiController {
                 resp.put("message", "請先登入");
                 return ResponseEntity.status(401).body(resp);
             }
-            // 驗證多圖
-            int validImageCount = 0;
-            if (multiImages != null) {
+            
+            // 移除圖片必須上傳的驗證
+            // 如果有上傳圖片，才進行圖片驗證
+            if (multiImages != null && !multiImages.isEmpty()) {
+                int validImageCount = 0;
                 for (MultipartFile mf : multiImages) {
                     if (mf != null && !mf.isEmpty()) validImageCount++;
                 }
-            }
-            // 無論 multiImages 為 null、空 list 或內容全為空檔案都禁止送出
-            if (multiImages == null || multiImages.isEmpty() || validImageCount == 0) {
-                resp.put("success", false);
-                resp.put("message", "請至少上傳1張圖片");
-                return ResponseEntity.ok(resp);
-            }
-            int newCount = multiImages.size();
-            if (newCount > MAX_IMAGES) {
-                resp.put("success", false);
-                resp.put("message", "最多只能上傳" + MAX_IMAGES + "張圖片");
-                return ResponseEntity.ok(resp);
-            }
-            if (multiImages != null) {
+                
+                if (validImageCount > MAX_IMAGES) {
+                    resp.put("success", false);
+                    resp.put("message", "最多只能上傳" + MAX_IMAGES + "張圖片");
+                    return ResponseEntity.ok(resp);
+                }
+                
+                // 驗證圖片格式和大小
                 for (MultipartFile mf : multiImages) {
                     if (mf == null || mf.isEmpty()) continue;
                     if (!ALLOWED_TYPES.contains(mf.getContentType())) {
@@ -323,18 +319,22 @@ public class SpotUserApiController {
                     }
                 }
             }
+            
             // 檢查名稱是否重複
             if (spotService.existsBySpotNameAndSpotLoc(spotDTO.getSpotName(), spotDTO.getSpotLoc())) {
                 resp.put("success", false);
                 resp.put("message", "同名同地點的景點已存在，請使用其他名稱或地點");
                 return ResponseEntity.ok(resp);
             }
+            
             // 轉換DTO為VO
             SpotVO spotVO = spotMapper.toVO(spotDTO);
             spotVO.setCrtId(currentUserId);
             spotVO.setSpotStatus((byte) 0); // 待審核
             SpotVO savedSpot = spotService.addSpot(spotVO);
-            // 儲存多圖
+            
+            // 儲存多圖（如果有的話）
+            String firstImagePath = null;
             if (multiImages != null && !multiImages.isEmpty()) {
                 for (int i = 0; i < multiImages.size(); i++) {
                     MultipartFile mf = multiImages.get(i);
@@ -345,15 +345,31 @@ public class SpotUserApiController {
                     if (!dir.exists()) dir.mkdirs();
                     File dest = new File(uploadDir + fileName);
                     Files.copy(mf.getInputStream(), Paths.get(dest.toURI()));
+                    
+                    String imgPath = "/images/spot/" + fileName;
+                    
+                    // 儲存到 SpotImgVO 表
                     SpotImgVO img = new SpotImgVO();
                     img.setSpotId(savedSpot.getSpotId());
-                    img.setImgPath("/images/spot/" + fileName);
+                    img.setImgPath(imgPath);
                     if (multiImageDescs != null && i < multiImageDescs.size())
                         img.setImgDesc(multiImageDescs.get(i));
                     img.setImgTime(java.time.LocalDateTime.now());
                     spotImgService.saveImage(img);
+                    
+                    // 記錄第一張圖片的路徑
+                    if (i == 0) {
+                        firstImagePath = imgPath;
+                    }
+                }
+                
+                // 更新景點的 firstPictureUrl（如果有上傳圖片）
+                if (firstImagePath != null) {
+                    savedSpot.setFirstPictureUrl(firstImagePath);
+                    spotService.updateSpot(savedSpot);
                 }
             }
+            
             resp.put("success", true);
             return ResponseEntity.ok(resp);
         } catch (Exception e) {
