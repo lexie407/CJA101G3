@@ -168,12 +168,12 @@ public class ItineraryServiceImpl implements ItineraryService {
     // 其他業務邏輯方法...
     @Override
     public List<ItineraryVO> getPublicItineraries() {
-        return itineraryRepository.findPublicItineraries();
+        return itineraryRepository.findAllPublicItineraries();
     }
     
     @Override
     public Page<ItineraryVO> getPublicItineraries(Pageable pageable) {
-        return itineraryRepository.findPublicItineraries(pageable);
+        return itineraryRepository.findAllPublicItineraries(pageable);
     }
 
     @Override
@@ -209,16 +209,6 @@ public class ItineraryServiceImpl implements ItineraryService {
     @Override
     public Page<ItineraryVO> findItinerariesWithFilters(String keyword, Integer status, Integer isPublic, Pageable pageable) {
         return itineraryRepository.findWithFilters(keyword, status, isPublic, pageable);
-    }
-
-    @Override
-    public List<ItineraryVO> getPublicItinerariesNotFromActivity() {
-        return itineraryRepository.findPublicItinerariesNotFromActivity();
-    }
-
-    @Override
-    public Page<ItineraryVO> getPublicItinerariesNotFromActivity(Pageable pageable) {
-        return itineraryRepository.findPublicItinerariesNotFromActivity(pageable);
     }
 
     @Override
@@ -271,16 +261,6 @@ public class ItineraryServiceImpl implements ItineraryService {
     @Override
     public long getTotalItineraryCount() {
         return itineraryRepository.count();
-    }
-
-    @Override
-    public List<ItineraryVO> searchPublicItinerariesNotFromActivity(String keyword) {
-        return itineraryRepository.searchPublicItinerariesNotFromActivity(keyword);
-    }
-
-    @Override
-    public Page<ItineraryVO> searchPublicItinerariesNotFromActivity(String keyword, Pageable pageable) {
-        return itineraryRepository.searchPublicItinerariesNotFromActivity(keyword, pageable);
     }
 
     @Override

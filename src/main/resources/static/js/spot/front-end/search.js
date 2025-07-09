@@ -44,7 +44,6 @@
         const searchForm = document.querySelector('.spot-search-form');
         const searchInput = document.querySelector('.spot-search-box__input');
         const regionSelect = document.getElementById('region');
-        const ratingSelect = document.getElementById('rating');
         const sortBySelect = document.getElementById('sortBy');
         const sortDirectionSelect = document.getElementById('sortDirection');
         
@@ -54,9 +53,8 @@
                 // 允許只選擇地區而沒有關鍵字的搜尋
                 const keyword = searchInput.value.trim();
                 const region = regionSelect ? regionSelect.value : '';
-                const rating = ratingSelect ? ratingSelect.value : '';
                 
-                if (!keyword && !region && !rating) {
+                if (!keyword && !region) {
                     e.preventDefault();
                     showToast('請輸入搜尋關鍵字或選擇篩選條件', 'warning');
                     searchInput.focus();
@@ -94,14 +92,6 @@
             if (regionSelect) {
                 regionSelect.addEventListener('change', function() {
                     console.log('地區變更:', this.value);
-                    searchForm.submit();
-                });
-            }
-            
-            // 評分篩選變更
-            if (ratingSelect) {
-                ratingSelect.addEventListener('change', function() {
-                    console.log('評分篩選變更:', this.value);
                     searchForm.submit();
                 });
             }

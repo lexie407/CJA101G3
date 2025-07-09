@@ -78,28 +78,6 @@ public interface ItineraryService {
     List<ItineraryVO> getPublicItineraries();
 
     /**
-     * 查詢所有非揪團模組的公開行程
-     * @return 非揪團模組的公開行程列表
-     */
-    List<ItineraryVO> getPublicItinerariesNotFromActivity();
-
-    /**
-     * 查詢非揪團模組的公開行程（分頁）
-     * @param pageable 分頁參數
-     * @return 非揪團模組的公開行程分頁結果
-     */
-    Page<ItineraryVO> getPublicItinerariesNotFromActivity(Pageable pageable);
-    
-    /**
-     * 批量添加景點到行程中
-     * @param itnId 行程ID
-     * @param spotIds 景點ID列表
-     * @return 添加的景點數量
-     */
-    @Transactional
-    int addSpotsToItinerary(Integer itnId, List<Integer> spotIds);
-
-    /**
      * 查詢公開行程（分頁）
      * @param pageable 分頁參數
      * @return 公開行程分頁結果
@@ -136,19 +114,13 @@ public interface ItineraryService {
     List<ItineraryVO> getPrivateItinerariesByCrtId(Integer crtId);
 
     /**
-     * 搜尋非揪團模組的公開行程
-     * @param keyword 搜尋關鍵字
-     * @return 符合條件的非揪團模組公開行程列表
+     * 批量添加景點到行程中
+     * @param itnId 行程ID
+     * @param spotIds 景點ID列表
+     * @return 添加的景點數量
      */
-    List<ItineraryVO> searchPublicItinerariesNotFromActivity(String keyword);
-
-    /**
-     * 搜尋非揪團模組的公開行程（分頁）
-     * @param keyword 搜尋關鍵字
-     * @param pageable 分頁參數
-     * @return 符合條件的非揪團模組公開行程分頁結果
-     */
-    Page<ItineraryVO> searchPublicItinerariesNotFromActivity(String keyword, Pageable pageable);
+    @Transactional
+    int addSpotsToItinerary(Integer itnId, List<Integer> spotIds);
 
     // ========== 3. 搜尋功能 ==========
 

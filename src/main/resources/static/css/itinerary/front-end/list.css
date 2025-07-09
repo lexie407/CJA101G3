@@ -129,6 +129,7 @@
     grid-template-columns: 1fr 200px 200px auto;
     gap: 1rem;
     align-items: end;
+    padding-right: 14rem;
 }
 
 .itinerary-list-search-group {
@@ -136,6 +137,7 @@
     flex-direction: column;
     gap: 0.5rem;
 }
+
 
 .itinerary-list-search-label {
     font-size: 0.9rem;
@@ -161,6 +163,7 @@
     font-size: 0.95rem;
     transition: all var(--itinerary-transition);
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    max-width: 300px;
 }
 
 .itinerary-list-search-input:focus,
@@ -735,10 +738,6 @@
     
     .itinerary-list-search-actions {
         grid-column: 1 / -1;
-    }
-    }
-    
-    .itinerary-list-search-actions {
         justify-content: flex-end;
     }
     

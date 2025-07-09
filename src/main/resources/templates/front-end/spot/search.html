@@ -118,21 +118,6 @@
                                             </select>
                                         </div>
                                         
-                                        <!-- 評分篩選 -->
-                                        <div class="spot-search-advanced__group">
-                                            <label for="rating" class="spot-search-advanced__label">
-                                                <span class="material-icons">star</span>
-                                                最低評分
-                                            </label>
-                                            <select id="rating" name="rating" class="spot-search-advanced__select">
-                                                <option value="">不限</option>
-                                                <option value="4" th:selected="${selectedRating != null and selectedRating == 4}">4星以上</option>
-                                                <option value="3" th:selected="${selectedRating != null and selectedRating == 3}">3星以上</option>
-                                                <option value="2" th:selected="${selectedRating != null and selectedRating == 2}">2星以上</option>
-                                                <option value="1" th:selected="${selectedRating != null and selectedRating == 1}">1星以上</option>
-                                            </select>
-                                        </div>
-                                        
                                         <!-- 排序方式 -->
                                         <div class="spot-search-advanced__group">
                                             <label for="sortBy" class="spot-search-advanced__label">
@@ -266,9 +251,9 @@
                                                 <span th:text="${spot.spotCreateAt != null ? spot.spotCreateAt.toString().substring(0, 10) : ''}">2024-01-01</span>
                                             </div>
                                             <div class="spot-search-card__tags">
-                                                <span class="spot-search-card__tag">
-                                                    <span class="material-icons">category</span>
-                                                    自然景觀
+                                                <!-- <span class="spot-search-card__tag"> -->
+                                                    <!-- <span class="material-icons">category</span> -->
+                                                    <!-- 自然景觀 -->
                                                 </span>
                                             </div>
                                         </div>

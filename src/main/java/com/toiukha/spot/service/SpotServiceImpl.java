@@ -225,7 +225,8 @@ public class SpotServiceImpl implements SpotService {
             // 只搜尋名稱
             List<SpotVO> nameResults = spotRepository.findBySpotNameContainingAndSpotStatus(trimmedKeyword, spotStatus != null ? spotStatus.byteValue() : 1);
             if (nameResults.size() >= 3) {
-                return new org.springframework.data.domain.PageImpl<>(nameResults, pageable, nameResults.size());
+                // 修復：正確處理分頁邏輯
+                return createPageFromList(nameResults, pageable);
             }
             // 名稱少於3個再搜尋地址
             List<SpotVO> addressResults = spotRepository.findBySpotLocContainingAndSpotStatus(trimmedKeyword, spotStatus != null ? spotStatus.byteValue() : 1);
@@ -237,15 +238,40 @@ public class SpotServiceImpl implements SpotService {
                     combinedResults.add(addressResult);
                 }
             }
-            return new org.springframework.data.domain.PageImpl<>(combinedResults, pageable, combinedResults.size());
+            // 修復：正確處理分頁邏輯
+            return createPageFromList(combinedResults, pageable);
         }
-        // 沒有 keyword 則維持原本查詢
-        return spotRepository.findByKeywordAndStatusAndRegion(keyword, spotStatus, region, pageable);
+        // 沒有 keyword 則維持原本查詢，但確保只查詢已審核的景點
+        // 如果沒有指定狀態，預設查詢上架狀態（1）
+        Integer effectiveStatus = spotStatus != null ? spotStatus : 1;
+        return spotRepository.findByKeywordAndStatusAndRegion(keyword, effectiveStatus, region, pageable);
+    }
+
+    /**
+     * 從完整列表創建分頁結果
+     * @param fullList 完整的資料列表
+     * @param pageable 分頁參數
+     * @return 分頁結果
+     */
+    private Page<SpotVO> createPageFromList(List<SpotVO> fullList, Pageable pageable) {
+        int totalElements = fullList.size();
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), totalElements);
+        
+        // 確保索引範圍有效
+        if (start >= totalElements) {
+            return new org.springframework.data.domain.PageImpl<>(new java.util.ArrayList<>(), pageable, totalElements);
+        }
+        
+        List<SpotVO> pageContent = fullList.subList(start, end);
+        return new org.springframework.data.domain.PageImpl<>(pageContent, pageable, totalElements);
     }
 
     @Override
     public List<SpotVO> searchAllReviewedSpotsForAdmin(String keyword, Integer spotStatus, String region, Sort sort) {
-        return spotRepository.findBySpotStatusAndRegionContaining(spotStatus, region, sort);
+        // 如果沒有指定狀態，預設查詢上架狀態（1）
+        Integer effectiveStatus = spotStatus != null ? spotStatus : 1;
+        return spotRepository.findBySpotStatusAndRegionContaining(effectiveStatus, region, sort);
     }
 
     @Override
@@ -526,13 +552,8 @@ public class SpotServiceImpl implements SpotService {
     }
 
     @Override
-    public List<SpotVO> findBySearchCriteria(String keyword, String region, Double rating, String sortBy) {
-        return spotRepository.findBySearchCriteria(keyword, region, rating, sortBy, "desc");
-    }
-
-    @Override
-    public List<SpotVO> findBySearchCriteria(String keyword, String region, Double rating, String sortBy, String sortDirection) {
-        return spotRepository.findBySearchCriteria(keyword, region, rating, sortBy, sortDirection);
+    public List<SpotVO> findBySearchCriteria(String keyword, String region, String sortBy, String sortDirection) {
+        return spotRepository.findBySearchCriteria(keyword, region, sortBy, sortDirection);
     }
 
     /**

@@ -25,8 +25,7 @@ public interface SpotService {
     List<SpotVO> getSpotsByStatus(byte spotStatus);
     List<SpotVO> getSpotsByRegion(String region);
     List<SpotVO> searchSpotsWithFilters(String keyword, String region);
-    List<SpotVO> findBySearchCriteria(String keyword, String region, Double rating, String sortBy);
-    List<SpotVO> findBySearchCriteria(String keyword, String region, Double rating, String sortBy, String sortDirection);
+    List<SpotVO> findBySearchCriteria(String keyword, String region, String sortBy, String sortDirection);
     
     // 狀態管理
     boolean activateSpot(Integer id);

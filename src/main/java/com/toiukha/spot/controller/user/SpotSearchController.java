@@ -25,7 +25,6 @@ public class SpotSearchController {
     public List<SpotVO> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String region,
-            @RequestParam(required = false) Double rating,
             @RequestParam(required = false, defaultValue = "rating") String sortBy,
             @RequestParam(required = false, defaultValue = "desc") String sortDirection) {
         if (keyword != null && !keyword.trim().isEmpty()) {

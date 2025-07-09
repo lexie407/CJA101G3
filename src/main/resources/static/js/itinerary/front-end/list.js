@@ -40,14 +40,6 @@ function initializeItineraryList() {
  * 綁定搜尋表單事件
  */
 function bindSearchForm() {
-    const searchForm = document.querySelector('.itinerary-list-search-form');
-    if (searchForm) {
-        searchForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            performSearch();
-        });
-    }
-    
     // 即時搜尋（可選）
     const searchInput = document.getElementById('keyword');
     if (searchInput) {
@@ -65,17 +57,10 @@ function bindSearchForm() {
  * 執行搜尋
  */
 function performSearch() {
-    const keyword = document.getElementById('keyword')?.value || '';
-    const isPublic = document.getElementById('isPublic')?.value;
-    
-    // 更新 URL 參數
-    const url = new URL(window.location);
-    if (keyword) url.searchParams.set('keyword', keyword);
-    if (isPublic) url.searchParams.set('isPublic', isPublic);
-    url.searchParams.delete('page'); // 重置頁碼
-    
-    // 重新載入頁面或使用 AJAX
-    window.location.href = url.toString();
+    const searchForm = document.querySelector('.itinerary-list-search-form');
+    if (searchForm) {
+        searchForm.submit();
+    }
 }
 
 /**
@@ -113,12 +98,16 @@ function toggleFavorite(button) {
     const originalHTML = button.innerHTML;
     
     // 呼叫收藏API
-    fetch(`/itinerary/api/${itineraryId}/favorite`, {
+    fetch(`/favItn`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        body: JSON.stringify({
+            favItnId: parseInt(itineraryId),
+            memId: window.currentMemberId // 需要從頁面獲取當前會員ID
+        })
     })
     .then(response => {
         if (response.status === 401) {
@@ -363,13 +352,22 @@ function loadMoreItineraries() {
     }
     
     // 模擬 API 呼叫
-            fetch(`/api/itinerary/itnlist?page=${currentPage}&size=${currentSize}`)
+            fetch(`/api/itinerary/list?page=${currentPage}&size=${currentSize}`)
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.data.length > 0) {
-                appendItineraries(data.data);
+            if (data.success && data.itineraries && data.itineraries.length > 0) {
+                appendItineraries(data.itineraries);
+                
+                // 如果已經是最後一頁，隱藏載入更多按鈕
+                if (currentPage >= data.totalPages) {
+                    const loadMoreBtn = document.querySelector('.itinerary-list-load-more-btn');
+                    if (loadMoreBtn) {
+                        loadMoreBtn.style.display = 'none';
+                    }
+                }
             } else {
                 // 沒有更多資料
+                const loadMoreBtn = document.querySelector('.itinerary-list-load-more-btn');
                 if (loadMoreBtn) {
                     loadMoreBtn.style.display = 'none';
                 }
@@ -382,6 +380,7 @@ function loadMoreItineraries() {
         })
         .finally(() => {
             isLoading = false;
+            const loadMoreBtn = document.querySelector('.itinerary-list-load-more-btn');
             if (loadMoreBtn) {
                 loadMoreBtn.disabled = false;
                 loadMoreBtn.innerHTML = '<span class="material-icons">expand_more</span>載入更多';
@@ -416,7 +415,7 @@ function createItineraryElement(itinerary) {
         <article class="itinerary-list-card">
             <div class="itinerary-list-card__header">
                 <button class="itinerary-list-card__favorite" 
-                        data-itinerary-id="${itinerary.itnId}"
+                        data-itinerary-id="${itinerary.id}"
                         title="加入收藏">
                     <span class="material-icons">favorite_border</span>
                 </button>
@@ -426,20 +425,20 @@ function createItineraryElement(itinerary) {
                 </span>
             </div>
             <div class="itinerary-list-card__content">
-                <h3 class="itinerary-list-card__title">${itinerary.itnName}</h3>
-                <p class="itinerary-list-card__description">${itinerary.itnDesc || '暫無描述'}</p>
+                <h3 class="itinerary-list-card__title">${itinerary.name}</h3>
+                <p class="itinerary-list-card__description">${itinerary.description || '暫無描述'}</p>
                 <div class="itinerary-list-card__meta">
                     <div class="itinerary-list-card__author">
                         <span class="material-icons">person</span>
-                        <span>${itinerary.creator || '匿名'}</span>
+                        <span>${itinerary.creatorDisplayName || '匿名'}</span>
                     </div>
                     <div class="itinerary-list-card__date">
                         <span class="material-icons">schedule</span>
-                        <span>${formatDate(itinerary.itnCreatedAt)}</span>
+                        <span>${formatDate(itinerary.createdAt)}</span>
                     </div>
                 </div>
                 <div class="itinerary-list-card__actions">
-                    <a href="/itinerary/detail/${itinerary.itnId}" class="itinerary-list-card__link">
+                    <a href="/itinerary/detail/${itinerary.id}" class="itinerary-list-card__link">
                         <span class="material-icons">visibility</span>
                         查看行程
                     </a>
@@ -465,7 +464,7 @@ function formatDate(dateString) {
  */
 function resetSearchForm() {
     document.getElementById('keyword').value = '';
-    document.getElementById('isPublic').value = '';
+    document.getElementById('creatorType').value = '';
     document.querySelector('.itinerary-list-search-form').submit();
 }
 
@@ -528,16 +527,11 @@ function copyItinerary(button) {
         isCopying = false;
         return;
     }
-    // 顯示確認對話框
-    if (!confirm('確定要複製這個行程嗎？複製後的行程會保存到您的「我的行程」中。')) {
-        isCopying = false;
-        return;
-    }
     button.disabled = true;
     const originalHTML = button.innerHTML;
     button.innerHTML = '<span class="material-icons">hourglass_empty</span>複製中...';
     // 呼叫複製API
-    fetch(`/itinerary/api/${itineraryId}/copy`, {
+    fetch(`/api/itinerary/${itineraryId}/copy`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -557,13 +551,6 @@ function copyItinerary(button) {
     .then(data => {
         if (data.success) {
             showToast('行程複製成功！', 'success');
-            setTimeout(() => {
-                if (confirm('行程複製成功！是否要前往編輯新行程？')) {
-                    window.location.href = `/itinerary/edit/${data.newItineraryId}`;
-                } else {
-                    window.location.href = '/itinerary/my';
-                }
-            }, 1000);
         } else {
             showToast(data.message || '複製失敗', 'error');
         }

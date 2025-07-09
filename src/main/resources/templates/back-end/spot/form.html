@@ -235,7 +235,7 @@
         <th:block th:if="${isEdit}">
 <script th:inline="javascript">
     /*<![CDATA[*/
-    window.spotExistImages = /*[[${#objects.toJson(spotImgList)}]]*/ [];
+    window.spotExistImages = /*[[${spotImgList}]]*/ [];
     /*]]>*/
 </script>
 </th:block>
