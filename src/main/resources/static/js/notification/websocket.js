@@ -32,78 +32,48 @@ var stompClient = null;
 			       handleNewNotification(notification);
 			   });
 
-               // (可選) 如果您也有公共廣播通知，可以在這裡訂閱
-               // stompClient.subscribe('/topic/public-announcements', function (message) {
-               //     var announcement = JSON.parse(message.body);
-               //     displayRealtimeNotification("📢 公告: " + announcement.content);
-               //     // 公告可能不計入未讀數，依據需求而定
-               // });
-
            }, function (error) {
                console.error('WebSocket 連接錯誤:', error);
-               // 這裡可以添加重試邏輯，例如 setTimeout(connectWebSocket, 5000);
            });
        }
 
        // 處理新接收到的通知
        function handleNewNotification(notification) {
            console.log("收到新通知:", notification);
-		   // 檢查當前是否在通知列表頁
 		   const onNotificationPage = window.location.pathname === "/notification/getMemNoti";
-		   console.log(onNotificationPage);
 		   if(!onNotificationPage){
-				unreadNotificationsCount++; // 未讀通知數量增加
-				updateNotificationUI(); // 更新 UI
+				unreadNotificationsCount++; 
+				updateNotificationUI(); 
+                // 使用 sessionStorage 保存狀態
+                sessionStorage.setItem('hasUnreadNotifications', 'true');
+                sessionStorage.setItem('unreadCount', unreadNotificationsCount);
 		   }
-           
-//           displayRealtimeNotification("🔔 新通知給 " + notification.recipientUserId + ": " + notification.content + " (預計時間: " + (notification.sendTime ? new Date(notification.sendTime).toLocaleString() : '即時') + ")");
-           
-           // 可以選擇播放音效或發出瀏覽器通知
-//            playNotificationSound();
-//            showBrowserNotification(notification.content);
        }
 
        // 更新通知按鈕和徽章的 UI
        function updateNotificationUI() {
            if (unreadNotificationsCount > 0) {
-               notificationButton.classList.add('has_new_noti'); // 添加 has_new_noti 類別，使其變色
+               notificationButton.classList.add('has_new_noti');
 			   notificationButtonHover.innerHTML = `你有${unreadNotificationsCount}筆新通知`;
            } else {
-//               notificationButton.classList.remove('has_new_noti'); // 移除 has_new_noti 類別
-//			   notificationButton.innerHTML = `<span class="material-icons">notifications</span>通知`;
+               notificationButton.classList.remove('has_new_noti');
            }
        }
-
-       // 顯示即時通知到頁面列表
-//       function displayRealtimeNotification(message) {
-//           var p = document.createElement('p');
-//           p.className = 'notification-item'; // 可以為此添加 CSS 樣式
-//           p.textContent = message;
-//           realtimeNotificationsDiv.prepend(p); // 新通知顯示在最上方
-//           // 控制顯示的通知數量
-//           while (realtimeNotificationsDiv.children.length > 10) {
-//               realtimeNotificationsDiv.removeChild(realtimeNotificationsDiv.lastChild);
-//           }
-//       }
 
        // 當點擊通知按鈕時
        notificationButton.addEventListener('click', function() {
            console.log("通知按鈕被點擊。");
-           // 在實際應用中，這裡會導航到通知列表頁面，或者彈出一個模態框顯示通知。
-           // 點擊後，我們假設用戶已經「讀取」了通知，所以重置計數器和 UI
            resetNotifications();
-           // 範例：導航到另一個通知列表頁面 (假設有 /user/notifications-list 這個頁面)
-           // window.location.href = "/user/notifications-list";
        });
 
        // 重置未讀通知狀態
        function resetNotifications() {
            unreadNotificationsCount = 0;
+           // 清除 sessionStorage
+           sessionStorage.removeItem('hasUnreadNotifications');
+           sessionStorage.removeItem('unreadCount');
            updateNotificationUI();
-           // 在實際應用中，這裡還需要發送一個請求給後端，將資料庫中的通知標記為已讀。
-           // fetch('/api/notifications/mark-all-as-read?userId=' + currentUserId, { method: 'POST' })
-           //     .then(response => console.log('所有通知已標記為已讀'))
-           //     .catch(error => console.error('標記已讀失敗:', error));
+           // 實際應用中可能需要後端交互
        }
 	   
 	   // **新增此函數：斷開 WebSocket 連接**
@@ -114,12 +84,18 @@ var stompClient = null;
 	       }
 	   }
 
-       // 頁面載入時自動連接 WebSocket
+       // 頁面載入時執行的邏輯
        window.onload = function() {
-           connectWebSocket();
-           // 初始化 UI 狀態
-           updateNotificationUI(); 
+           if (currentUserId) {
+               connectWebSocket();
+           }
+           // 從 sessionStorage 恢復狀態
+           if (sessionStorage.getItem('hasUnreadNotifications') === 'true') {
+               unreadNotificationsCount = parseInt(sessionStorage.getItem('unreadCount'), 10) || 0;
+               updateNotificationUI();
+           }
        };
+
        // 頁面關閉或導航離開時斷開 WebSocket 連接
        window.onbeforeunload = disconnect;
 	   
