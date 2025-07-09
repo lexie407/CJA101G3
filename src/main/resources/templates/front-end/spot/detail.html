@@ -123,14 +123,18 @@
                                         </div>
                                         <div class="spot-detail-card__content">
                                             <div class="spot-detail-image-container">
-                                                <img th:if="${spot.firstPictureUrl}" 
-                                                     th:src="${spot.firstPictureUrl}" 
+                                                <img th:if="${spot.firstPictureUrl != null and !spot.firstPictureUrl.isEmpty()}"
+                                                     th:src="${spot.firstPictureUrl}"
                                                      th:alt="${spot.spotName}"
                                                      class="spot-detail-main-image"
-                                                     loading="lazy"
-                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                     loading="lazy">
+                                                <img th:if="${(spot.firstPictureUrl == null or spot.firstPictureUrl.isEmpty()) and fakePictureUrl != null}"
+                                                     th:src="${fakePictureUrl}"
+                                                     th:alt="${spot.spotName}"
+                                                     class="spot-detail-main-image"
+                                                     loading="lazy">
                                                 <div class="spot-detail-image-placeholder" 
-                                                     th:style="${spot.firstPictureUrl != null and spot.firstPictureUrl != '' ? 'display: none;' : 'display: flex;'}">
+                                                     th:if="${(spot.firstPictureUrl == null or spot.firstPictureUrl.isEmpty()) and fakePictureUrl == null}">
                                                     <span class="material-icons">image</span>
                                                     <span>暫無圖片</span>
                                                 </div>
@@ -193,57 +197,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- 相關景點推薦 -->
-                                    <div class="spot-detail-card">
-                                        <div class="spot-detail-card__header">
-                                            <h2 class="spot-detail-card__title">
-                                                <span class="material-icons">explore</span>
-                                                相關景點推薦
-                                            </h2>
-                                        </div>
-                                        <div class="spot-detail-card__content">
-                                            <div th:if="${relatedSpots != null and !relatedSpots.isEmpty()}" 
-                                                 class="spot-detail-related-grid">
-                                                <div th:each="relatedSpot : ${relatedSpots}" class="spot-detail-related-card">
-                                                    <div class="spot-detail-related-card__image">
-                                                        <img th:if="${relatedSpot.firstPictureUrl}" 
-                                                             th:src="${relatedSpot.firstPictureUrl}" 
-                                                             th:alt="${relatedSpot.spotName}"
-                                                             loading="lazy"
-                                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                        <div class="spot-detail-related-card__placeholder" 
-                                                             th:style="${relatedSpot.firstPictureUrl != null and relatedSpot.firstPictureUrl != '' ? 'display: none;' : 'display: flex;'}">
-                                                            <span class="material-icons">image</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="spot-detail-related-card__content">
-                                                        <h3 class="spot-detail-related-card__title" th:text="${relatedSpot.spotName}">相關景點</h3>
-                                                        <p class="spot-detail-related-card__location">
-                                                            <span class="material-icons">place</span>
-                                                            <span th:text="${relatedSpot.spotLoc}">景點地址</span>
-                                                        </p>
-                                                        <div class="spot-detail-related-card__rating">
-                                                            <span class="material-icons">star</span>
-                                                            <span>4.2</span>
-                                                        </div>
-                                                        <a th:href="@{/spot/detail/{id}(id=${relatedSpot.spotId})}" 
-                                                           class="spot-detail-related-card__link">
-                                                            <span class="material-icons">visibility</span>
-                                                            查看詳情
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div th:unless="${relatedSpots != null and !relatedSpots.isEmpty()}" 
-                                                 class="spot-detail-empty">
-                                                <div class="spot-detail-empty__icon">
-                                                    <span class="material-icons">explore_off</span>
-                                                </div>
-                                                <p class="spot-detail-empty__text">暫無相關景點推薦</p>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 <!-- 右側資訊欄 -->
@@ -294,35 +247,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- 快速操作卡片 -->
-                                    <div class="spot-detail-info-card">
-                                        <div class="spot-detail-info-card__header">
-                                            <h3 class="spot-detail-info-card__title">
-                                                <span class="material-icons">bolt</span>
-                                                快速操作
-                                            </h3>
-                                        </div>
-                                        <div class="spot-detail-info-card__content">
-                                            <div class="spot-detail-quick-actions">
-                                                <button class="spot-detail-quick-btn" onclick="addToItinerary()">
-                                                    <span class="material-icons">add_road</span>
-                                                    <span>加入行程</span>
-                                                </button>
-                                                <button class="spot-detail-quick-btn" onclick="joinGroupActivity()">
-                                                    <span class="material-icons">groups</span>
-                                                    <span>查看揪團</span>
-                                                </button>
-                                                <button class="spot-detail-quick-btn" onclick="scrollToMap()">
-                                                    <span class="material-icons">map</span>
-                                                    <span>查看地圖</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 分享卡片 -->
-                                    <!-- 已移除：分享景點功能卡片 -->
                                 </aside>
                             </div>
                         </div>

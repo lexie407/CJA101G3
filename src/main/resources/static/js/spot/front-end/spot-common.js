@@ -66,7 +66,7 @@
             }
             
             try {
-                const response = await fetch(`${API_ENDPOINT}/batch-status`, {
+                const response = await fetch(`${API_ENDPOINT}/status/batch`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

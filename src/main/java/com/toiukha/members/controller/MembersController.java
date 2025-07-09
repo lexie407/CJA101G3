@@ -310,12 +310,17 @@ public class MembersController {
 			return "redirect:/members/listAll";
 		}
 
-		// 使用 page 和 size 動態分頁
-		Pageable pageable = PageRequest.of(page, size, Sort.by("memId").ascending());
-		Page<MembersVO> pageResult = membersService.searchByCriteria(memStatus, memAcc, memId, memName, pageable);
+//		// 使用 page 和 size 動態分頁
+//		Pageable pageable = PageRequest.of(page, size, Sort.by("memId").ascending());
+//		Page<MembersVO> pageResult = membersService.searchByCriteria(memStatus, memAcc, memId, memName, pageable);
+		
+		List<MembersVO> membersList =
+		        membersService.searchByCriteria(memStatus, memAcc, memId, memName);
 
-		model.addAttribute("page", pageResult);
-		model.addAttribute("membersList", pageResult.getContent());
+//		model.addAttribute("page", pageResult);
+//		model.addAttribute("membersList", pageResult.getContent());
+		
+		model.addAttribute("membersList", membersList);
 
 		model.addAttribute("memStatus", memStatus);
 		model.addAttribute("memAcc", memAcc);

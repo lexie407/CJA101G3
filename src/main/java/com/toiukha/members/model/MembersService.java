@@ -2,7 +2,9 @@ package com.toiukha.members.model;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -293,8 +295,35 @@ public class MembersService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        return membersRepository.findAll(spec, pageable);
+//        return membersRepository.findAll(spec, pageable);
+        
+     // 1. 一次撈完所有符合條件的清單（不分頁）
+        List<MembersVO> fullList = membersRepository.findAll(spec, Sort.by("memId").ascending());
+
+        // 2. 用 PageImpl 把它包成一個「unpaged」的 Page 回傳
+        return new PageImpl<>(fullList, Pageable.unpaged(), fullList.size());
     }
+	
+	
+	public List<MembersVO> searchByCriteria(
+            Byte memStatus,
+            String memAcc,
+            Integer memId,
+            String memName) {
+        // 直接呼叫上面那支五參數、傳入 unpaged()
+        Page<MembersVO> allPage = searchByCriteria(
+            memStatus,
+            memAcc,
+            memId,
+            memName,
+            Pageable.unpaged()
+        );
+        return allPage.getContent();
+    }
+
+	
+	
+	
 	
 	
 	@Transactional

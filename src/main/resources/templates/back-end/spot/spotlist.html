@@ -104,11 +104,11 @@
                     <div class="pagination-control">
                         <span>每頁顯示</span>
                         <select id="pageSizeSelect">
-                            <option value="5">5 筆</option>
-                            <option value="10" selected>10 筆</option>
-                            <option value="20">20 筆</option>
-                            <option value="30">30 筆</option>
-                            <option value="-1">顯示所有</option>
+                            <option value="5" th:selected="${param.size != null and param.size[0] == '5'}">5 筆</option>
+                            <option value="10" th:selected="${param.size == null or param.size[0] == '10'}">10 筆</option>
+                            <option value="20" th:selected="${param.size != null and param.size[0] == '20'}">20 筆</option>
+                            <option value="30" th:selected="${param.size != null and param.size[0] == '30'}">30 筆</option>
+                            <option value="-1" th:selected="${param.size != null and param.size[0] == '-1'}">顯示所有</option>
                         </select>
                     </div>
                 </div>
@@ -195,11 +195,10 @@
                         <td><span class="spot-location" th:text="${spot.spotLoc}">地點</span></td>
                         <td>
                             <span th:switch="${spot.spotStatus}">
-                                <span th:case="0" class="status-badge status-pending">待審核</span>
                                 <span th:case="1" class="status-badge status-active">上架</span>
                                 <span th:case="2" class="status-badge status-rejected">退回</span>
                                 <span th:case="3" class="status-badge status-inactive">下架</span>
-                                <span th:case="*" class="status-badge">未知</span>
+                                <span th:case="*" class="status-badge status-unknown">未知</span>
                             </span>
                         </td>
                         <td><span class="spot-date" th:text="${#temporals.format(spot.spotCreateAt, 'yyyy-MM-dd')}">2025-06-26</span></td>
@@ -207,9 +206,6 @@
                             <div class="action-buttons">
                                 <a th:href="@{/admin/spot/detail/{id}(id=${spot.spotId})}" class="action-btn btn-view" title="查看">👁️</a>
                                 <a th:href="@{/admin/spot/edit/{id}(id=${spot.spotId})}" class="action-btn btn-edit" title="編輯">✏️</a>
-                                <form th:action="@{/admin/spot/delete/{id}(id=${spot.spotId})}" method="post" class="action-form" th:data-spot-name="${spot.spotName}">
-                                    <button type="submit" class="action-btn btn-delete" title="刪除">🗑️</button>
-                                </form>
                             </div>
                         </td>
                     </tr>
@@ -306,11 +302,8 @@
                     <div class="warning-content">
                         <strong>🚀 效能優化說明：</strong>
                         <ul>
-                            <li>✅ 已啟用批量處理，匯入速度大幅提升（比原本快 5-10 倍）</li>
-                            <li>⚡ 使用智慧重複檢查，減少資料庫查詢次數</li>
                             <li>🎯 系統會自動跳過重複的景點</li>
                             <li>🎲 全台匯入會隨機打亂景點順序，確保多樣性</li>
-                            <li>📊 實際匯入數量可能略高於設定值（這是正常現象）</li>
                             <li>⏱️ 建議匯入數量：30-100 筆（處理時間約 30-60 秒）</li>
                         </ul>
                     </div>
@@ -375,14 +368,22 @@
 
             <!-- 匯入結果區域 -->
             <div id="importResult" class="result-area" style="display:none;">
-                <div class="result-header">
-                    <i class="material-icons">assessment</i>
-                    <h4>匯入結果</h4>
-                </div>
                 <div class="result-content"></div>
             </div>
         </div>
     </div>
+
+    <!-- 後端分頁資訊傳遞給前端 -->
+    <script th:inline="javascript">
+        window.backendPaginationInfo = {
+            totalPages: /*[[${spotPage.totalPages}]]*/ 0,
+            totalElements: /*[[${spotPage.totalElements}]]*/ 0,
+            currentPage: /*[[${spotPage.number}]]*/ 0,
+            size: /*[[${spotPage.size}]]*/ 0,
+            numberOfElements: /*[[${spotPage.numberOfElements}]]*/ 0
+        };
+        console.log('後端分頁資訊:', window.backendPaginationInfo);
+    </script>
 </body>
 </html> 
 

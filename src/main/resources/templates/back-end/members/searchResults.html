@@ -336,10 +336,10 @@ td[colspan="23"] {
 				<section class="md-card">
 					<h2 class="md-headline">搜尋結果</h2>
 
-					<th:block
-						th:replace="~{back-end/members/pagination :: paginationTop(
-      ${page}, ${page.size}, ${memStatus}, ${memAcc}, ${memId}, ${memName}
-  )}" />
+<!-- 					<th:block -->
+<!-- 						th:replace="~{back-end/members/pagination :: paginationTop( -->
+<!--       ${page}, ${page.size}, ${memStatus}, ${memAcc}, ${memId}, ${memName} -->
+<!--   )}" /> -->
 					<div class="table-container">
 						<table class="datatable-class">
 							<thead>
@@ -406,10 +406,10 @@ td[colspan="23"] {
 					</div>
 
 					<!-- 後端分頁片段，不用修改 pagination.html -->
-					<th:block
-						th:replace="~{back-end/members/pagination :: paginationBottom(
-      ${page}, ${page.size}, ${memStatus}, ${memAcc}, ${memId}, ${memName}
- )}" />
+<!-- 					<th:block -->
+<!-- 						th:replace="~{back-end/members/pagination :: paginationBottom( -->
+<!--       ${page}, ${page.size}, ${memStatus}, ${memAcc}, ${memId}, ${memName} -->
+<!--  )}" /> -->
 				</section>
 			</main>
 		</div>

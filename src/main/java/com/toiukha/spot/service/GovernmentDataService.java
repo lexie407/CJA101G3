@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * 政府觀光資料處理服務
@@ -209,157 +210,87 @@ public class GovernmentDataService {
      * 使用隨機順序處理 JSON 檔案 (全台匯入時使用)
      */
     private void processJsonFileWithRandomOrder(InputStream inputStream, Integer crtId, ImportResult result, int limit) throws IOException {
-        JsonFactory jsonFactory = new JsonFactory();
-        InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        JsonParser jsonParser = jsonFactory.createParser(reader);
+        JsonFactory factory = new JsonFactory();
+        JsonParser jsonParser = factory.createParser(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
         
-        List<GovernmentSpotData> availableSpots = new ArrayList<>();
-        int totalReadCount = 0;
-        int alreadyExistsCount = 0;
+        // 先讀取所有資料到記憶體
+        List<GovernmentSpotData> allSpots = new ArrayList<>();
         
-        // 首先讀取所有景點資料並篩選出尚未匯入的景點
-        if (navigateToInfoArray(jsonParser)) {
-            logger.info("開始讀取所有景點資料並篩選未匯入的景點...");
-            
-            while (jsonParser.nextToken() == JsonToken.START_OBJECT) {
-                try {
-                    GovernmentSpotData govData = objectMapper.readValue(jsonParser, GovernmentSpotData.class);
-                    totalReadCount++;
-                    
-                    // 基本資料驗證（與 convertToSpotVO 中的驗證保持一致）
-                    if (govData.getName() == null || govData.getName().trim().isEmpty()) {
-                        continue;
-                    }
-                    
-                    if (govData.getAddress() == null || govData.getAddress().trim().isEmpty()) {
-                        continue;
-                    }
-                    
-                    // 檢查是否已經匯入過（檢查 govtId 是否存在）
-                    if (govData.getId() != null && !govData.getId().trim().isEmpty()) {
-                        boolean alreadyExists = spotService.existsByGovtId(govData.getId());
-                        if (!alreadyExists) {
-                            availableSpots.add(govData);
-                        } else {
-                            alreadyExistsCount++;
-                        }
-                    }
-                    
-                } catch (Exception e) {
-                    logger.warn("讀取單筆資料時發生錯誤", e);
-                    result.incrementErrorCount();
+        // 移動到資料陣列開始
+        if (!navigateToInfoArray(jsonParser)) {
+            logger.error("無法找到資料陣列");
+            result.setSuccess(false);
+            result.setErrorMessage("無法找到資料陣列");
+            return;
+        }
+        
+        // 讀取所有資料
+        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+            if (jsonParser.currentToken() == JsonToken.START_OBJECT) {
+                GovernmentSpotData spotData = parseSpotData(jsonParser);
+                if (spotData != null) {
+                    allSpots.add(spotData);
                 }
             }
         }
         
-        jsonParser.close();
+        // 先取得所有已存在的 govId
+        List<String> govIds = allSpots.stream()
+                .map(GovernmentSpotData::getId)
+                .filter(id -> id != null && !id.trim().isEmpty())
+                .collect(java.util.stream.Collectors.toList());
+        List<String> existingGovIds = spotService.findExistingGovtIds(govIds);
+        Set<String> existingGovIdSet = new java.util.HashSet<>(existingGovIds);
         
-        logger.info("讀取完成，總共讀取 {} 筆景點資料，其中 {} 筆已存在，{} 筆可匯入", 
-                    totalReadCount, alreadyExistsCount, availableSpots.size());
-        
-        // 如果沒有可匯入的景點
-        if (availableSpots.isEmpty()) {
-            logger.info("沒有找到可匯入的新景點");
-            result.incrementSkippedCount(alreadyExistsCount);
-            return;
-        }
+        logger.info("讀取完成，總共讀取 {} 筆景點資料，其中 {} 筆已存在，{} 筆可匯入",
+                allSpots.size(), existingGovIds.size(), allSpots.size() - existingGovIds.size());
         
         // 隨機打亂順序
-        java.util.Collections.shuffle(availableSpots, new java.util.Random());
+        java.util.Collections.shuffle(allSpots);
         
-        // 限制要處理的數量
-        int actualLimit = (limit != -1 && limit < availableSpots.size()) ? limit : availableSpots.size();
-        List<GovernmentSpotData> spotsToProcess = availableSpots.subList(0, actualLimit);
-        
-        logger.info("將匯入 {} 筆景點（從 {} 筆可用景點中選取）", spotsToProcess.size(), availableSpots.size());
-        
-        // 按照隨機順序處理景點
-        List<SpotVO> batch = new ArrayList<>();
+        // 如果有限制筆數，只取指定數量
+        int targetSize = limit > 0 ? Math.min(limit, allSpots.size() - existingGovIds.size()) : allSpots.size() - existingGovIds.size();
+        List<SpotVO> batchSpots = new ArrayList<>();
         int processedCount = 0;
         
-        for (GovernmentSpotData govData : spotsToProcess) {
-            try {
-                // 轉換為 SpotVO 並加入批次（已篩選過的資料不會返回 null）
-                SpotVO spot = convertToSpotVO(govData, crtId);
-                    batch.add(spot);
+        logger.info("將匯入 {} 筆景點（從 {} 筆可用景點中選取）", targetSize, allSpots.size() - existingGovIds.size());
+        
+        // 處理每一筆資料
+        for (GovernmentSpotData govData : allSpots) {
+            // 檢查是否已存在
+            if (existingGovIdSet.contains(govData.getId())) {
+                result.incrementSkippedCount();
+                continue;
+            }
+            
+            // 轉換資料
+            SpotVO spotVO = convertToSpotVO(govData, crtId);
+            if (spotVO != null) {
+                batchSpots.add(spotVO);
+                processedCount++;
                 
-                // 當批次達到指定大小時進行處理
-                if (batch.size() >= BATCH_SIZE) {
-                    int batchSuccess = processBatchAndGetSuccessCount(batch, result);
-                    batch.clear();
-                    
-                    processedCount += BATCH_SIZE;
-                    logger.info("已處理 {} 筆資料 (隨機順序)，成功匯入 {} 筆", processedCount, batchSuccess);
+                // 如果達到批次大小或已處理完指定數量，就進行批次處理
+                if (batchSpots.size() >= BATCH_SIZE || processedCount >= targetSize) {
+                    logger.info("開始優化批次處理，批次大小: {}", batchSpots.size());
+                    processBatch(batchSpots, result);
+                    batchSpots.clear();
                 }
-                
-            } catch (Exception e) {
-                logger.warn("處理單筆資料時發生錯誤", e);
-                result.incrementErrorCount();
+            }
+            
+            // 如果已經處理完指定數量，就結束
+            if (processedCount >= targetSize) {
+                break;
             }
         }
         
         // 處理剩餘的資料
-        if (!batch.isEmpty()) {
-            int batchSuccess = processBatchAndGetSuccessCount(batch, result);
-            processedCount += batch.size();
-            logger.info("處理剩餘 {} 筆資料，成功匯入 {} 筆", batch.size(), batchSuccess);
+        if (!batchSpots.isEmpty()) {
+            logger.info("處理剩餘 {} 筆資料", batchSpots.size());
+            processBatch(batchSpots, result);
         }
         
-        // 記錄已存在的景點數量
-        result.incrementSkippedCount(alreadyExistsCount);
-        
-        // 檢查是否達到了預期的匯入數量
-        if (limit != -1 && result.getSuccessCount() < limit && result.getSuccessCount() < availableSpots.size()) {
-            int remaining = limit - result.getSuccessCount();
-            logger.info("未達到預期匯入數量，還需 {} 筆，將嘗試匯入更多景點", remaining);
-            
-            // 從剩餘的可用景點中選擇更多來補足
-            if (actualLimit < availableSpots.size()) {
-                List<GovernmentSpotData> additionalSpots = availableSpots.subList(actualLimit, 
-                                                                                  Math.min(actualLimit + remaining * 2, availableSpots.size()));
-                logger.info("將嘗試額外匯入 {} 筆景點", additionalSpots.size());
-                
-                // 處理這些額外的景點
-                for (GovernmentSpotData govData : additionalSpots) {
-                    // 如果已達到匯入上限，則停止
-                    if (result.getSuccessCount() >= limit) {
-                        logger.info("已達到指定的匯入上限: {}", limit);
-                        break;
-                    }
-                    
-                    try {
-                        // 轉換為 SpotVO 並加入批次
-                        SpotVO spot = convertToSpotVO(govData, crtId);
-                        
-                        // 直接處理單筆資料，不使用批次
-                        try {
-                            // 再次檢查是否已存在
-                            if (spot.getGovtId() != null && !spot.getGovtId().trim().isEmpty() && 
-                                spotService.existsByGovtId(spot.getGovtId())) {
-                                logger.info("景點已存在，跳過: {}", spot.getSpotName());
-                                result.incrementSkippedCount();
-                                continue;
-                            }
-                            
-                            spotService.addSpot(spot);
-                            result.incrementSuccessCount();
-                            processedCount++;
-                        } catch (Exception e) {
-                            logger.error("儲存額外景點時發生錯誤: {} ({}), 原因: {}", 
-                                       spot.getSpotName(), spot.getGovtId(), e.getMessage());
-                            result.incrementErrorCount();
-        }
-                        
-                    } catch (Exception e) {
-                        logger.warn("處理額外景點時發生錯誤", e);
-                        result.incrementErrorCount();
-                    }
-                }
-            }
-        }
-        
-        logger.info("隨機匯入完成，總計處理 {} 筆資料，成功 {} 筆，錯誤 {} 筆，跳過 {} 筆（已存在）", 
-                    processedCount, result.getSuccessCount(), result.getErrorCount(), alreadyExistsCount);
+        logger.info("隨機匯入完成，總計處理 {} 筆資料，成功 {} 筆，錯誤 {} 筆，跳過 {} 筆（已存在）",
+                processedCount, result.getSuccessCount(), result.getErrorCount(), result.getSkippedCount());
     }
 
     /**

@@ -95,83 +95,7 @@
                     </div>
                 </section>
 
-                <!-- 熱門景點推薦 -->
-                <section class="spot-index-popular">
-                    <div class="container">
-                        <div class="spot-index-popular__header">
-                            <h2 class="spot-index-section-title">
-                                <span class="material-icons">local_fire_department</span>
-                                熱門景點
-                            </h2>
-                            <div class="spot-index-header-actions">
-                                <div class="spot-index-category-filters">
-                                    <button class="spot-index-category-item active">熱門</button>
-                                    <button class="spot-index-category-item">精選</button>
-                                    <button class="spot-index-category-item">最新</button>
-                                </div>
-                                <div class="spot-index-sort-area">
-                                    <select class="spot-index-sort-select" aria-label="排序方式">
-                                        <option value="popular">按熱門度</option>
-                                        <option value="rating">按評分</option>
-                                        <option value="newest">按最新</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 重構後的篩選區域 -->
-                        <div class="spot-index-filter-area">
-                            <!-- 左側篩選區域 -->
-                            <div class="spot-index-filter-section">
-                                <div class="spot-index-filter-card">
-                                    <div class="spot-index-filter-groups">
-                                        <div class="spot-index-filter-group">
-                                            <label class="spot-index-filter-label">評分篩選</label>
-                                            <select class="spot-index-filter-select" aria-label="選擇評分條件" data-filter-type="rating">
-                                                <option value="">所有評分</option>
-                                                <option value="4.5">4.5+ 優秀</option>
-                                                <option value="4.0">4.0+ 良好</option>
-                                                <option value="3.5">3.5+ 普通</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="spot-index-filter-group">
-                                            <label class="spot-index-filter-label">門票類型</label>
-                                            <select class="spot-index-filter-select" aria-label="選擇門票類型" data-filter-type="ticket">
-                                                <option value="">全部門票</option>
-                                                <option value="free">免費景點</option>
-                                                <option value="paid">付費景點</option>
-                                            </select>
-                                        </div>
-                                        <div class="spot-index-filter-group">
-                                            <label class="spot-index-filter-label">景點類型</label>
-                                            <select class="spot-index-filter-select" aria-label="選擇景點類型" data-filter-type="type">
-                                                <option value="">所有類型</option>
-                                                <option value="nature">自然風景</option>
-                                                <option value="culture">文化古蹟</option>
-                                                <option value="leisure">休閒娛樂</option>
-                                                <option value="food">美食餐廳</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="spot-index-filter-actions">
-                                        <button class="spot-index-reset-btn" onclick="resetAllFilters()">
-                                            <span class="material-icons" aria-hidden="true">refresh</span>
-                                            重置篩選
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- 篩選標籤顯示區域 -->
-                            <div class="spot-index-filter-tags" id="filterTagsContainer" style="display: none;">
-                                <h3 class="spot-index-filter-tags__title">
-                                    <span class="material-icons">filter_list</span>
-                                    目前篩選條件：
-                                </h3>
-                                <div class="tags-list" id="filterTagsList"></div>
-                            </div>
-                        </div>
+                
                         
                         <!-- 調試信息 -->
                         <!-- <div style="background-color: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc;">
@@ -189,9 +113,7 @@
                         </div> -->
                         
                         <div th:if="${spotList != null and !spotList.isEmpty()}" class="spot-index-popular__grid">
-                            <div th:each="spot : ${spotList}" 
-                                 class="spot-index-spot-card"
-                                 th:data-spot-id="${spot.spotId}">
+                            <div th:each="spot : ${spotList}" class="spot-index-spot-card" th:data-spot-id="${spot.spotId}">
                                 <div class="spot-index-spot-card__image">
                                     <!-- 收藏按鈕 -->
                                     <button 
@@ -206,16 +128,24 @@
                                     <!-- 預設圖示 -->
                                     <span class="spot-index-spot-card__icon material-icons">home</span>
                                     <!-- 如果有圖片的話 -->
-                                    <img th:if="${spot.firstPictureUrl}" 
+                                    <img th:if="${spot.firstPictureUrl != null and !spot.firstPictureUrl.isEmpty()}" 
                                          th:src="${spot.firstPictureUrl}" 
                                          th:alt="${spot.spotName}"
                                          loading="lazy"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                                         style="display: block;">
+                                         class="spot-index-spot-card__img">
+                                    <!-- 假資料圖片對應 -->
+                                    <img th:if="${(spot.firstPictureUrl == null or spot.firstPictureUrl.isEmpty()) and fakePictureUrlMap != null and fakePictureUrlMap.containsKey(spot.spotId)}"
+                                         th:src="${fakePictureUrlMap.get(spot.spotId)}"
+                                         th:alt="${spot.spotName}"
+                                         loading="lazy"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                         class="spot-index-spot-card__img">
                                     <!-- 圖片載入失敗時的佔位符 -->
-                                    <div class="spot-index-spot-card__placeholder" style="display: none;">
-                                        <span class="material-icons">image_not_supported</span>
-                                        <span>圖片載入失敗</span>
+                                    <div class="spot-index-spot-card__placeholder" 
+                                         th:if="${(spot.firstPictureUrl == null or spot.firstPictureUrl.isEmpty()) and (fakePictureUrlMap == null or !fakePictureUrlMap.containsKey(spot.spotId))}">
+                                        <span class="material-icons">photo_library</span>
+                                        <span>探索精彩景點</span>
                                     </div>
                                 </div>
                                 <div class="spot-index-spot-card__content">

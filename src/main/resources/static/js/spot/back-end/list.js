@@ -203,6 +203,153 @@ if (document.readyState === 'loading') {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('=== DOMContentLoaded 事件觸發 ===');
     
+    // 檢查是否為後端分頁模式
+    const isBackendPagination = window.backendPaginationInfo !== undefined;
+    console.log('分頁模式:', isBackendPagination ? '後端分頁' : '前端分頁');
+    
+    if (isBackendPagination) {
+        // 後端分頁模式：只初始化分頁按鈕和基本功能
+        console.log('使用後端分頁模式');
+        
+        // 更新分頁資訊顯示
+        updatePaginationInfo();
+        
+        // 綁定分頁按鈕事件
+        bindPaginationEvents();
+        
+        // 綁定其他基本事件（不包含前端篩選邏輯）
+        bindBasicEvents();
+        
+        // 初始化篩選按鈕狀態
+        initializeFilterStates();
+        
+        // 新增：後端分頁模式下搜尋功能
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const keyword = this.value.trim();
+                    const url = new URL(window.location.href);
+                    if (keyword) {
+                        url.searchParams.set('keyword', keyword);
+                    } else {
+                        url.searchParams.delete('keyword');
+                    }
+                    url.searchParams.delete('page'); // 搜尋時重設分頁
+                    window.location.href = url.toString();
+                }
+            });
+            searchInput.addEventListener('blur', function() {
+                const keyword = this.value.trim();
+                const url = new URL(window.location.href);
+                if (keyword) {
+                    url.searchParams.set('keyword', keyword);
+                } else {
+                    url.searchParams.delete('keyword');
+                }
+                url.searchParams.delete('page');
+                window.location.href = url.toString();
+            });
+        }
+        
+        // 新增：後端分頁模式下的篩選按鈕事件綁定
+        const filterDropdowns = document.querySelectorAll('.filter-dropdown');
+        filterDropdowns.forEach(dropdown => {
+            const btn = dropdown.querySelector('.filter-btn');
+            const menu = dropdown.querySelector('.dropdown-menu');
+            const radioButtons = dropdown.querySelectorAll('input[type="radio"]');
+            
+            if (btn && menu) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    filterDropdowns.forEach(otherDropdown => {
+                        if (otherDropdown !== dropdown) {
+                            const otherMenu = otherDropdown.querySelector('.dropdown-menu');
+                            const otherBtn = otherDropdown.querySelector('.filter-btn');
+                            if (otherMenu) otherMenu.classList.remove('show');
+                            if (otherBtn) otherBtn.classList.remove('active');
+                        }
+                    });
+                    menu.classList.toggle('show');
+                    btn.classList.toggle('active');
+                });
+                
+                // 監聽 radio 按鈕變更 - 後端分頁模式
+                radioButtons.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        console.log('篩選條件改變:', this.name, '=', this.value);
+                        updateButtonState(dropdown);
+                        
+                        // 更新 URL 參數並重新載入頁面
+                        const url = new URL(window.location.href);
+                        const filterType = dropdown.dataset.filter;
+                        
+                        if (filterType === 'status') {
+                            if (this.value === 'all') {
+                                url.searchParams.delete('status');
+                            } else {
+                                url.searchParams.set('status', this.value);
+                            }
+                        } else if (filterType === 'region') {
+                            if (this.value === 'all') {
+                                url.searchParams.delete('region');
+                            } else {
+                                url.searchParams.set('region', this.value);
+                            }
+                        }
+                        
+                        url.searchParams.delete('page'); // 篩選時重設分頁
+                        window.location.href = url.toString();
+                    });
+                });
+            }
+        });
+        
+        // 新增：後端分頁模式下的清除按鈕事件綁定
+        const clearBtn = document.querySelector('.clear-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                console.log('清除按鈕被點擊');
+                const url = new URL(window.location.href);
+                // 清除所有篩選參數
+                url.searchParams.delete('keyword');
+                url.searchParams.delete('status');
+                url.searchParams.delete('region');
+                url.searchParams.delete('page');
+                window.location.href = url.toString();
+            });
+        }
+        
+        // 新增：後端分頁模式下的排序按鈕事件綁定
+        const sortBtn = document.getElementById('sortBtn');
+        if (sortBtn) {
+            sortBtn.addEventListener('click', function() {
+                console.log('排序按鈕被點擊');
+                
+                // 添加點擊動畫
+                this.classList.add('sorting');
+                setTimeout(() => {
+                    this.classList.remove('sorting');
+                }, 600);
+                
+                // 切換排序方向
+                const url = new URL(window.location.href);
+                const currentDirection = url.searchParams.get('direction') || 'desc';
+                const newDirection = currentDirection === 'desc' ? 'asc' : 'desc';
+                
+                url.searchParams.set('direction', newDirection);
+                url.searchParams.delete('page'); // 排序時重設分頁
+                window.location.href = url.toString();
+            });
+        }
+        
+        return;
+    }
+    
+    // 以下是原有的前端分頁初始化邏輯（保留為備用）
+    console.log('使用前端分頁模式（備用）');
+    
     // 初始化全域變數
     initializeGlobalData();
     
@@ -371,25 +518,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // 分頁大小切換 - 改為純前端操作
+    // 分頁大小切換 - 後端分頁請求
     const pageSizeSelect = document.getElementById('pageSizeSelect');
     if (pageSizeSelect) {
         pageSizeSelect.addEventListener('change', () => {
-            const selectedValue = parseInt(pageSizeSelect.value);
-            if (selectedValue === -1) {
-                // 顯示所有：設定 pageSize 為資料總數
-                pageSize = filteredData.length > 0 ? filteredData.length : allSpotData.length;
-                console.log('切換為顯示所有，pageSize設為:', pageSize);
-            } else {
-                pageSize = selectedValue;
-                console.log('分頁大小改變為:', pageSize);
-            }
-            currentPage = 0; // 重置到第一頁
-            
-            // 清除所有勾選狀態
-            clearAllSelections();
-            
-            renderTable();
+            const selectedValue = pageSizeSelect.value;
+            // 取得目前的 URL 參數
+            const url = new URL(window.location.href);
+            url.searchParams.set('size', selectedValue);
+            url.searchParams.set('page', 0); // 切換分頁大小時回到第一頁
+            window.location.href = url.toString();
         });
     }
     
@@ -403,15 +541,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 點擊外部關閉下拉選單
-    document.addEventListener('click', function() {
-        filterDropdowns.forEach(dropdown => {
-            dropdown.querySelector('.dropdown-menu').classList.remove('show');
-            dropdown.querySelector('.filter-btn').classList.remove('active');
-        });
-        // 同時關閉批量操作選單
-        const batchMenu = document.getElementById('batchMenu');
-        if (batchMenu) {
-            batchMenu.classList.remove('show');
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.filter-dropdown')) {
+            filterDropdowns.forEach(dropdown => {
+                const menu = dropdown.querySelector('.dropdown-menu');
+                const btn = dropdown.querySelector('.filter-btn');
+                if (menu) menu.classList.remove('show');
+                if (btn) btn.classList.remove('active');
+            });
         }
     });
     
@@ -860,30 +997,38 @@ function updatePaginationInfo() {
     const pageSizeSelect = document.getElementById('pageSizeSelect');
     const isShowAll = pageSizeSelect && pageSizeSelect.value === '-1';
     
-    let totalPages, startRecord, endRecord;
+    // 使用後端分頁資訊
+    const backendInfo = window.backendPaginationInfo;
+    const totalPages = backendInfo?.totalPages || 1;
+    const totalElements = backendInfo?.totalElements || 0;
+    const currentPage = backendInfo?.currentPage || 0;
+    const numberOfElements = backendInfo?.numberOfElements || 0;
+    const size = backendInfo?.size || 10;
     
-    if (isShowAll) {
-        // 顯示所有模式
-        totalPages = 1;
-        startRecord = filteredData.length > 0 ? 1 : 0;
-        endRecord = filteredData.length;
+    console.log('使用後端分頁資訊:', { totalPages, totalElements, currentPage, numberOfElements, size, isShowAll });
+    
+    let startRecord, endRecord;
+    
+    if (isShowAll || totalElements === 0) {
+        // 顯示所有模式或無資料
+        startRecord = totalElements > 0 ? 1 : 0;
+        endRecord = totalElements;
     } else {
         // 正常分頁模式
-        totalPages = Math.ceil(filteredData.length / pageSize);
-        startRecord = filteredData.length > 0 ? currentPage * pageSize + 1 : 0;
-        endRecord = Math.min((currentPage + 1) * pageSize, filteredData.length);
+        startRecord = totalElements > 0 ? currentPage * size + 1 : 0;
+        endRecord = Math.min((currentPage + 1) * size, totalElements);
     }
     
     // 更新分頁文字資訊
     const paginationInfo = document.getElementById('paginationInfo');
     if (paginationInfo) {
-        if (filteredData.length > 0) {
+        if (totalElements > 0) {
             if (isShowAll) {
-                paginationInfo.innerHTML = `顯示所有資料 (共 ${filteredData.length} 筆)`;
+                paginationInfo.innerHTML = `顯示所有資料 (共 ${totalElements} 筆)`;
             } else {
                 paginationInfo.innerHTML = `
                     共 ${totalPages} 頁，目前在第 ${currentPage + 1} 頁
-                    (顯示第 ${startRecord}-${endRecord} 筆，共 ${filteredData.length} 筆)
+                    (顯示第 ${startRecord}-${endRecord} 筆，共 ${totalElements} 筆)
                 `;
             }
         } else {
@@ -894,7 +1039,7 @@ function updatePaginationInfo() {
     // 更新表格標題的數量標籤
     const countBadge = document.querySelector('.count-badge');
     if (countBadge) {
-        countBadge.textContent = `共 ${filteredData.length} 筆`;
+        countBadge.textContent = `共 ${totalElements} 筆`;
     }
     
     // 更新分頁按鈕狀態
@@ -1150,6 +1295,35 @@ function initializeFilterStates() {
         pageSizeSelect.value = pageSize.toString();
     }
     
+    // 根據 URL 參數設定正確的 radio 按鈕狀態
+    if (urlStatus) {
+        // 設定狀態篩選的 radio 按鈕
+        const statusRadio = document.querySelector(`input[name="status"][value="${urlStatus}"]`);
+        if (statusRadio) {
+            statusRadio.checked = true;
+        }
+    } else {
+        // 如果沒有狀態參數，設定為全部狀態
+        const statusAll = document.getElementById('status-all');
+        if (statusAll) {
+            statusAll.checked = true;
+        }
+    }
+    
+    if (urlRegion) {
+        // 設定地區篩選的 radio 按鈕
+        const regionRadio = document.querySelector(`input[name="region"][value="${urlRegion}"]`);
+        if (regionRadio) {
+            regionRadio.checked = true;
+        }
+    } else {
+        // 如果沒有地區參數，設定為全部地區
+        const regionAll = document.querySelector('input[name="region"][value="all"]');
+        if (regionAll) {
+            regionAll.checked = true;
+        }
+    }
+    
     // 初始化所有篩選下拉選單的狀態
     document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
         updateButtonState(dropdown);
@@ -1171,43 +1345,49 @@ function initializeFilterStates() {
     }
 }
 
-// 分頁函數
+// 分頁函數 - 改為後端分頁
 function goToPage(page) {
-    const totalPages = Math.ceil(filteredData.length / pageSize);
-    if (page >= 0 && page < totalPages) {
-        currentPage = page;
-        
-        // 清除所有勾選狀態
-        clearAllSelections();
-        
-        renderTable();
-        console.log(`跳轉到第 ${page + 1} 頁`);
+    // 檢查是否為顯示全部模式
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    const isShowAll = pageSizeSelect && pageSizeSelect.value === '-1';
+    
+    if (isShowAll) {
+        // 顯示全部模式下不需要分頁
+        return;
     }
+    
+    // 取得目前的 URL 參數
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', page);
+    window.location.href = url.toString();
 }
 
 function goToPrevPage() {
+    const currentPageParam = new URLSearchParams(window.location.search).get('page') || '0';
+    const currentPage = parseInt(currentPageParam);
     if (currentPage > 0) {
         goToPage(currentPage - 1);
     }
 }
 
 function goToNextPage() {
-    const totalPages = Math.ceil(filteredData.length / pageSize);
-    if (currentPage < totalPages - 1) {
+    const currentPageParam = new URLSearchParams(window.location.search).get('page') || '0';
+    const currentPage = parseInt(currentPageParam);
+    const totalPagesFromBackend = window.backendPaginationInfo?.totalPages || 1;
+    if (currentPage < totalPagesFromBackend - 1) {
         goToPage(currentPage + 1);
     }
 }
 
 function goToLastPage() {
-    const totalPages = Math.ceil(filteredData.length / pageSize);
-    goToPage(totalPages - 1);
+    const totalPagesFromBackend = window.backendPaginationInfo?.totalPages || 1;
+    goToPage(totalPagesFromBackend - 1);
 }
 
-// 更新分頁按鈕狀態和頁碼
+// 更新分頁按鈕狀態和頁碼 - 改為使用後端分頁資訊
 function updatePaginationButtons() {
     const pageSizeSelect = document.getElementById('pageSizeSelect');
     const isShowAll = pageSizeSelect && pageSizeSelect.value === '-1';
-    const totalPages = isShowAll ? 1 : Math.ceil(filteredData.length / pageSize);
     const paginationContainer = document.getElementById('paginationContainer');
     
     if (!paginationContainer) return;
@@ -1218,8 +1398,16 @@ function updatePaginationButtons() {
     // 獲取分頁按鈕容器
     const paginationNav = paginationContainer.querySelector('nav');
     
+    // 獲取後端分頁資訊
+    const currentPageParam = new URLSearchParams(window.location.search).get('page') || '0';
+    const currentPage = parseInt(currentPageParam);
+    const totalPages = window.backendPaginationInfo?.totalPages || 1;
+    const totalElements = window.backendPaginationInfo?.totalElements || 0;
+    
+    console.log('分頁資訊:', { currentPage, totalPages, totalElements, isShowAll });
+    
     // 在「顯示所有」模式下隱藏分頁控制按鈕
-    if (isShowAll || filteredData.length === 0) {
+    if (isShowAll || totalElements === 0) {
         if (paginationNav) paginationNav.classList.add('hidden');
     } else {
         // 正常分頁模式且有資料時顯示分頁按鈕
@@ -1233,7 +1421,7 @@ function updatePaginationButtons() {
     const lastBtn = document.getElementById('lastPageBtn');
     const pageNumbers = document.getElementById('pageNumbers');
     
-    // 禁用/上架按鈕
+    // 禁用/啟用按鈕
     if (firstBtn && prevBtn) {
         if (currentPage === 0) {
             firstBtn.classList.add('disabled');
@@ -1255,7 +1443,7 @@ function updatePaginationButtons() {
     }
     
     // 生成頁碼按鈕
-    if (pageNumbers) {
+    if (pageNumbers && totalPages > 1) {
         pageNumbers.innerHTML = '';
         
         // 計算顯示的頁碼範圍（最多顯示 5 個頁碼）
@@ -1273,7 +1461,7 @@ function updatePaginationButtons() {
             pageItem.className = 'page-item' + (i === currentPage ? ' active' : '');
             
             const pageButton = document.createElement('button');
-            pageButton.type = 'button';  // 確保已設置
+            pageButton.type = 'button';
             pageButton.className = 'page-link';
             pageButton.textContent = (i + 1).toString();
             pageButton.addEventListener('click', () => goToPage(i));
@@ -1281,6 +1469,8 @@ function updatePaginationButtons() {
             pageItem.appendChild(pageButton);
             pageNumbers.appendChild(pageItem);
         }
+    } else if (pageNumbers) {
+        pageNumbers.innerHTML = '';
     }
 }
 
@@ -1727,23 +1917,14 @@ function showResult(result) {
     if (result.success) {
         // 確保 data 存在且包含 ImportResult 數據
         const data = result.data || {};
-        
         resultContent.innerHTML = `
             <div class="success-message">
                 <i class="material-icons">check_circle</i>
-                <p>匯入成功！</p>
-                <ul>
-                    <li>✅ 成功匯入: ${data.successCount || 0} 筆</li>
-                    <li>⏭️ 重複跳過: ${data.skippedCount || 0} 筆</li>
-                    <li>❌ 匯入失敗: ${data.errorCount || 0} 筆</li>
-                </ul>
                 <p class="success-note">匯入完成，關閉視窗後將自動更新資料</p>
             </div>
         `;
-        
-        // 顯示 Toastify 通知
         Toastify({
-            text: `✅ 匯入成功！共匯入 ${data.successCount || 0} 筆資料`,
+            text: `✅ 匯入成功！ `,
             duration: 3000,
             close: true,
             gravity: "top",
@@ -1759,8 +1940,6 @@ function showResult(result) {
                 <p>${result.message || '匯入失敗，請稍後再試'}</p>
             </div>
         `;
-        
-        // 顯示 Toastify 通知
         Toastify({
             text: `❌ ${result.message || '匯入失敗，請稍後再試'}`,
             duration: 3000,
@@ -1774,10 +1953,80 @@ function showResult(result) {
     }
 }
 
-// 在 document ready 時初始化
-document.addEventListener('DOMContentLoaded', () => {
-    // ... 其他初始化代碼 ...
+// 後端分頁模式下的基本事件綁定
+function bindBasicEvents() {
+    console.log('綁定基本事件（後端分頁模式）');
     
-    // 初始化API匯入功能
+    // 綁定圖片事件
+    bindImageEvents();
+    
+    // 綁定批量操作按鈕事件
+    bindBatchActions();
+    
+    // 綁定表單提交事件
+    bindFormSubmissions();
+    
+    // 分頁大小切換 - 後端分頁請求
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', () => {
+            const selectedValue = pageSizeSelect.value;
+            // 取得目前的 URL 參數
+            const url = new URL(window.location.href);
+            url.searchParams.set('size', selectedValue);
+            url.searchParams.set('page', 0); // 切換分頁大小時回到第一頁
+            window.location.href = url.toString();
+        });
+    }
+    
+    // 全選/取消全選
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+            const isChecking = this.checked;
+            
+            checkboxes.forEach((checkbox, index) => {
+                // 為每個 checkbox 添加漸進式延遲動畫
+                setTimeout(() => {
+                    checkbox.checked = isChecking;
+                    const row = checkbox.closest('tr');
+                    
+                    if (isChecking) {
+                        row.style.animationDelay = `${index * 50}ms`;
+                        row.classList.add('selected');
+                    } else {
+                        row.style.animationDelay = `${index * 30}ms`;
+                        row.classList.remove('selected');
+                    }
+                }, index * (isChecking ? 50 : 30));
+            });
+            
+            // 延遲更新選中資訊，等動畫完成
+            setTimeout(() => {
+                updateSelectedInfo();
+            }, checkboxes.length * (isChecking ? 50 : 30) + 100);
+        });
+    }
+    
+    // 綁定個別 checkbox 事件
+    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const row = this.closest('tr');
+            if (this.checked) {
+                row.classList.add('selected');
+            } else {
+                row.classList.remove('selected');
+            }
+            updateSelectedInfo();
+        });
+    });
+    
+    console.log('基本事件綁定完成');
+}
+
+// API匯入功能初始化
+document.addEventListener('DOMContentLoaded', () => {
     initializeApiImport();
 });

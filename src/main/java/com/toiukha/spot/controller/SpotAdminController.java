@@ -110,9 +110,7 @@ public class SpotAdminController {
      */
     @GetMapping("/spotreview")
     public String spotreviewPage(Model model) {
-        // 調用現有的業務邏輯，但返回新的模板路徑
-        reviewPage(model);
-        return "back-end/spot/spotreview";
+        return reviewPage(model);
     }
 
     /**
@@ -148,6 +146,61 @@ public class SpotAdminController {
         // 建立排序物件
         Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sortObj = Sort.by(sortDirection, sort);
+
+        // 處理顯示全部的情況
+        if (size == -1) {
+            logger.info("請求顯示全部資料，直接查詢所有已審核景點");
+            List<SpotVO> allSpots = spotService.searchAllReviewedSpotsForAdmin(keyword, status, region, sortObj);
+            
+            // 新增：自動補 Google 圖片
+            spotEnrichmentService.enrichSpotPictureUrlIfNeeded(allSpots);
+            
+            logger.info("查詢到 {} 筆景點資料", allSpots.size());
+            
+            // 將 SpotVO 列表轉換為簡單的 Map 列表，避免序列化問題
+            List<Map<String, Object>> allSpotsJsonData = allSpots.stream().map(spot -> {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("spotId", spot.getSpotId());
+                map.put("spotName", spot.getSpotName());
+                map.put("spotDesc", spot.getSpotDesc());
+                map.put("spotLoc", spot.getSpotLoc());
+                map.put("spotStatus", spot.getSpotStatus());
+                map.put("spotCreateAt", spot.getSpotCreateAt() != null ? spot.getSpotCreateAt().toString() : null);
+                map.put("firstPictureUrl", spot.getFirstPictureUrl());
+                map.put("region", spot.getRegion());
+                return map;
+            }).collect(java.util.stream.Collectors.toList());
+            
+            // 創建一個模擬的分頁物件，讓模板能正常工作
+            Pageable dummyPageable = PageRequest.of(0, allSpots.size() > 0 ? allSpots.size() : 1, sortObj);
+            Page<SpotVO> spotPage = new org.springframework.data.domain.PageImpl<>(allSpots, dummyPageable, allSpots.size());
+            
+            // 添加模型屬性
+            model.addAttribute("spotPage", spotPage);
+            model.addAttribute("spotList", allSpots);
+            model.addAttribute("allSpotsJsonData", allSpotsJsonData);
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", 1);
+            model.addAttribute("totalSpots", spotService.getTotalSpotCount());
+            model.addAttribute("pendingCount", spotService.getSpotCountByStatus(0));
+            model.addAttribute("approvedCount", spotService.getSpotCountByStatus(1));
+            model.addAttribute("rejectedCount", spotService.getSpotCountByStatus(2));
+            
+            // 搜尋條件 (用於保持表單狀態)
+            model.addAttribute("currentKeyword", keyword);
+            model.addAttribute("currentStatus", status);
+            model.addAttribute("currentRegion", region);
+            model.addAttribute("currentSort", sort);
+            model.addAttribute("currentDirection", direction);
+            
+            // 查詢所有地區
+            List<String> allRegions = spotService.getAllRegions();
+            model.addAttribute("allRegions", allRegions);
+            
+            return "back-end/spot/spotlist";
+        }
+
+        // 正常分頁處理
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
         // 景點列表顯示已審核的景點（上架1和退回2），過濾掉待審核的景點（狀態0）
@@ -255,22 +308,16 @@ public class SpotAdminController {
     }
 
     /**
-     * 顯示 API 匯入管理頁面
-     * @return API 匯入管理頁面
-     */
-    @GetMapping("/api-import")
-    public String apiImportPage(Model model) {
-        model.addAttribute("currentPage", "spotManagement");
-        return "back-end/spot/api-import";
-    }
-
-    /**
      * 顯示景點審核頁面（僅顯示待審核景點）
      */
     @GetMapping("/review")
     public String reviewPage(Model model) {
         // 查詢 SPOTSTATUS=0 的景點（待審核），自動過濾不合格
         List<SpotVO> pendingList = spotService.getPendingSpotsWithAutoCheck();
+        
+        // 自動補充圖片 URL（優先使用使用者上傳的圖片，沒有的話補充 Google 圖片）
+        spotEnrichmentService.enrichSpotPictureUrlIfNeeded(pendingList);
+        
         model.addAttribute("pendingList", pendingList);
         model.addAttribute("currentPage", "spotReview");
         return "back-end/spot/spotreview";
@@ -303,16 +350,22 @@ public class SpotAdminController {
     @PostMapping("/add")
     @ResponseBody
     public Map<String, Object> processAdd(@Valid @ModelAttribute SpotVO spotVO,
-                                          BindingResult result,
+                           BindingResult result,
                                           HttpSession session) {
         Map<String, Object> resp = new HashMap<>();
-        if (result.hasErrors()) {
-            resp.put("success", false);
+            if (result.hasErrors()) {
+                resp.put("success", false);
             resp.put("message", "表單資料有誤，請修正後重試");
-            return resp;
-        }
+                return resp;
+            }
         try {
             Integer adminId = getCurrentUserId(session);
+            if (adminId == null) {
+                logger.error("[ERROR] 新增景點失敗：adminId 為 null，請重新登入後台");
+                resp.put("success", false);
+                resp.put("message", "請重新登入後台管理員再操作");
+                return resp;
+            }
             logger.info("[DEBUG] 新增景點時取得的 adminId: {}", adminId);
             spotVO.setCrtId(adminId);
             spotVO.setSpotStatus((byte) 1); // 直接上架
@@ -324,7 +377,7 @@ public class SpotAdminController {
             resp.put("success", false);
             resp.put("message", "系統錯誤，請稍後再試");
         }
-        return resp;
+            return resp;
     }
 
     /**
@@ -623,6 +676,61 @@ public class SpotAdminController {
     }
 
     /**
+     * 單個景點審核通過 API
+     * @param spotId 景點ID
+     * @return API回應
+     */
+    @PostMapping("/api/approve/{spotId}")
+    @ResponseBody
+    public ApiResponse<String> approveSpot(@PathVariable Integer spotId) {
+        try {
+            logger.info("開始審核通過景點，景點ID: {}", spotId);
+            if (spotService.activateSpot(spotId)) {
+                logger.info("景點審核通過成功，景點ID: {}", spotId);
+                return ApiResponse.success("景點審核通過成功");
+            } else {
+                logger.warn("景點審核通過失敗，景點ID: {}", spotId);
+                return ApiResponse.error("景點審核通過失敗");
+            }
+        } catch (Exception e) {
+            logger.error("審核通過景點時發生錯誤，景點ID: {}", spotId, e);
+            return ApiResponse.error("審核通過失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 單個景點審核退回 API
+     * @param spotId 景點ID
+     * @param requestBody 包含退回原因和備註的請求體
+     * @return API回應
+     */
+    @PostMapping("/api/reject/{spotId}")
+    @ResponseBody
+    public ApiResponse<String> rejectSpot(@PathVariable Integer spotId, @RequestBody Map<String, String> requestBody) {
+        try {
+            logger.info("開始審核退回景點，景點ID: {}", spotId);
+            String reason = requestBody.get("reason");
+            String remark = requestBody.get("remark");
+            
+            if (reason == null || reason.trim().isEmpty()) {
+                logger.warn("退回原因為空，景點ID: {}", spotId);
+                return ApiResponse.error("請提供退回原因");
+            }
+            
+            if (spotService.rejectSpot(spotId, reason, remark != null ? remark : "")) {
+                logger.info("景點審核退回成功，景點ID: {}, 原因: {}", spotId, reason);
+                return ApiResponse.success("景點審核退回成功");
+            } else {
+                logger.warn("景點審核退回失敗，景點ID: {}", spotId);
+                return ApiResponse.error("景點審核退回失敗");
+            }
+        } catch (Exception e) {
+            logger.error("審核退回景點時發生錯誤，景點ID: {}", spotId, e);
+            return ApiResponse.error("審核退回失敗: " + e.getMessage());
+        }
+    }
+
+    /**
      * 批次移至待審核狀態
      */
     @PostMapping("/api/batch-pending")
@@ -630,6 +738,61 @@ public class SpotAdminController {
     public ApiResponse<String> batchPendingSpots(@RequestBody List<Integer> spotIds) {
         int count = spotService.batchUpdateStatus(spotIds, (byte) 0); // 0=待審核
         return ApiResponse.success("已將 " + count + " 筆景點移至待審");
+    }
+
+    /**
+     * 批次審核通過 API
+     * @param spotIds 景點ID列表
+     * @return API回應
+     */
+    @PostMapping("/api/batch-approve")
+    @ResponseBody
+    public ApiResponse<String> batchApproveSpots(@RequestBody List<Integer> spotIds) {
+        try {
+            logger.info("開始批次審核通過，景點ID列表: {}", spotIds);
+            
+            if (spotIds == null || spotIds.isEmpty()) {
+                return ApiResponse.error("請選擇要通過的景點");
+            }
+            
+            int count = spotService.batchActivateSpots(spotIds);
+            logger.info("批次審核通過成功，共通過 {} 筆景點", count);
+            
+            return ApiResponse.success("已通過 " + count + " 筆景點");
+        } catch (Exception e) {
+            logger.error("批次審核通過時發生錯誤", e);
+            return ApiResponse.error("批次審核通過失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 批次審核拒絕 API
+     * @param spotIds 景點ID列表
+     * @return API回應
+     */
+    @PostMapping("/api/batch-reject")
+    @ResponseBody
+    public ApiResponse<String> batchRejectSpotsApi(@RequestBody List<Integer> spotIds) {
+        try {
+            logger.info("開始批次審核拒絕，景點ID列表: {}", spotIds);
+            
+            if (spotIds == null || spotIds.isEmpty()) {
+                return ApiResponse.error("請選擇要拒絕的景點");
+            }
+            
+            int count = 0;
+            for (Integer id : spotIds) {
+                if (spotService.rejectSpot(id, "批次拒絕", "")) {
+                    count++;
+                }
+            }
+            
+            logger.info("批次審核拒絕成功，共拒絕 {} 筆景點", count);
+            return ApiResponse.success("已拒絕 " + count + " 筆景點");
+        } catch (Exception e) {
+            logger.error("批次審核拒絕時發生錯誤", e);
+            return ApiResponse.error("批次審核拒絕失敗: " + e.getMessage());
+        }
     }
 
     /**
@@ -866,19 +1029,44 @@ public class SpotAdminController {
         try {
             Integer adminId = getCurrentUserId(session);
             GovernmentDataService.ImportResult result = governmentDataService.importGovernmentData(adminId, limit, null);
-            if (result.isSuccess()) {
-                resp.put("success", true);
-                resp.put("message", "成功匯入 " + result.getSuccessCount() + " 筆景點資料");
-            } else {
-                resp.put("success", false);
-                resp.put("message", result.getErrorMessage() != null ? result.getErrorMessage() : "匯入失敗");
-            }
+            resp.put("success", true);
+            resp.put("successCount", result.getSuccessCount());
+            resp.put("skippedCount", result.getSkippedCount());
+            resp.put("errorCount", result.getErrorCount());
+            resp.put("message", String.format(
+                "匯入完成！新增 %d 筆，跳過 %d 筆，錯誤 %d 筆。",
+                result.getSuccessCount(),
+                result.getSkippedCount(),
+                result.getErrorCount()
+            ));
         } catch (Exception e) {
             logger.error("匯入景點失敗", e);
             resp.put("success", false);
             resp.put("message", "匯入失敗，請稍後再試");
+            resp.put("successCount", 0);
+            resp.put("skippedCount", 0);
+            resp.put("errorCount", 0);
         }
         return resp;
+    }
+
+    /**
+     * 臨時測試端點 - 檢查景點圖片資料
+     */
+    @GetMapping("/api/test-images/{spotId}")
+    @ResponseBody
+    public Map<String, Object> testSpotImages(@PathVariable Integer spotId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            List<SpotImgVO> images = spotImgService.getImagesBySpotId(spotId);
+            result.put("spotId", spotId);
+            result.put("imageCount", images.size());
+            result.put("images", images);
+            return result;
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            return result;
+        }
     }
 
     // ===================================================================================
@@ -979,12 +1167,17 @@ public class SpotAdminController {
     }
 
     /**
-     * 從 Session 中獲取當前使用者ID
+     * 從 Session 中獲取當前使用者ID，若無則從 admin 物件取
      * @param session HTTP Session
      * @return 使用者ID
      */
     private Integer getCurrentUserId(HttpSession session) {
         Object adminId = session.getAttribute("adminId");
-        return adminId != null ? (Integer) adminId : null;
+        if (adminId != null) return (Integer) adminId;
+        Object adminObj = session.getAttribute("admin");
+        if (adminObj instanceof com.toiukha.administrant.model.AdministrantVO admin) {
+            return admin.getAdminId();
+        }
+        return null;
     }
 } 

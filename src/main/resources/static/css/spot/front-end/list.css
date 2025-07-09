@@ -392,11 +392,68 @@
     opacity: 1;
 }
 
+.spot-list-grid .spot-list-card .spot-list-card__image,
 .spot-list-card__image {
     position: relative;
+    width: 100%;
     height: 200px;
     overflow: hidden;
-    background: var(--md-sys-color-surface-container);
+    border-radius: 8px;
+}
+
+.spot-list-grid .spot-list-card .spot-list-card__image img,
+.spot-list-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 無圖片時的預設樣式 */
+.spot-list-grid .spot-list-card .spot-list-card__image:empty,
+.spot-list-card__image:empty,
+.spot-list-card__image:not(:has(img)) {
+    background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+    position: relative;
+}
+
+.spot-list-grid .spot-list-card .spot-list-card__image:empty::before,
+.spot-list-card__image:empty::before,
+.spot-list-card__image:not(:has(img))::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(45deg, rgba(255,255,255,.2) 25%, transparent 25%, transparent 50%, 
+        rgba(255,255,255,.2) 50%, rgba(255,255,255,.2) 75%, transparent 75%, transparent);
+    background-size: 30px 30px;
+    animation: stripe-animation 20s linear infinite;
+    opacity: 0.6;
+}
+
+@keyframes stripe-animation {
+    from {background-position: 0 0;}
+    to {background-position: 60px 60px;}
+}
+
+.spot-list-grid .spot-list-card .spot-list-card__image:empty::after,
+.spot-list-card__image:empty::after,
+.spot-list-card__image:not(:has(img))::after {
+    content: "景點探索中";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 18px;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    background: rgba(0,0,0,0.2);
+    padding: 8px 20px;
+    border-radius: 20px;
+    letter-spacing: 2px;
+    white-space: nowrap;
 }
 
 .spot-list-card__favorite {
@@ -448,6 +505,8 @@
     height: 100%;
     object-fit: cover;
     transition: transform var(--spot-transition);
+    min-height: 200px;
+    background: var(--md-sys-color-surface-variant);
 }
 
 .spot-list-card:hover .spot-list-card__img {
@@ -455,25 +514,30 @@
 }
 
 .spot-list-card__placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background: linear-gradient(135deg, #e8f4fd 0%, #e1f5fe 100%);
+    color: var(--md-sys-color-primary);
     gap: 0.5rem;
-    color: var(--md-sys-color-on-surface-variant);
-    background: var(--md-sys-color-surface-container);
+    padding: 1rem;
+    text-align: center;
 }
 
 .spot-list-card__placeholder .material-icons {
     font-size: 2.5rem;
-    opacity: 0.5;
+    opacity: 0.7;
 }
 
 .spot-list-card__placeholder span:last-child {
-    font-size: 0.85rem;
-    opacity: 0.7;
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
 .spot-list-card__content {
@@ -1343,4 +1407,56 @@
         min-width: auto;
         width: 100px;
     }
+}
+
+/* 卡片圖片區域基本樣式 */
+.spot-list-grid .spot-list-card .spot-list-card__image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    border-radius: var(--spot-card-radius) var(--spot-card-radius) 0 0;
+    background-color: #f5f5f5;
+}
+
+/* 有圖片時的樣式 */
+.spot-list-grid .spot-list-card .spot-list-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--spot-transition);
+}
+
+/* 沒有圖片時的佔位符樣式 */
+.spot-list-grid .spot-list-card .spot-list-card__placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    padding: 1.5rem;
+    text-align: center;
+    gap: 0.75rem;
+}
+
+.spot-list-grid .spot-list-card .spot-list-card__placeholder .material-icons {
+    font-size: 3rem;
+    color: #1976d2;
+    opacity: 0.8;
+}
+
+.spot-list-grid .spot-list-card .spot-list-card__placeholder span:last-child {
+    font-size: 1rem;
+    color: #1976d2;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* 懸停效果 */
+.spot-list-grid .spot-list-card:hover .spot-list-card__img {
+    transform: scale(1.05);
 } 

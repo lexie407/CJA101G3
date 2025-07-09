@@ -26,7 +26,6 @@ public class SpotListController {
     public String listSpots(Model model,
                            @RequestParam(required = false) String keyword,
                            @RequestParam(required = false) String region,
-                           @RequestParam(required = false) Double rating,
                            @RequestParam(required = false) String sortBy,
                            @RequestParam(required = false, defaultValue = "asc") String sortOrder) {
         
@@ -65,13 +64,6 @@ public class SpotListController {
             }
         }
         
-        // 根據評分過濾
-        if (rating != null) {
-            spots = spots.stream()
-                    .filter(spot -> spot.getGoogleRating() != null && spot.getGoogleRating() >= rating)
-                    .collect(Collectors.toList());
-        }
-        
         // 根據排序條件進行排序
         if (sortBy != null) {
             Comparator<SpotVO> comparator = switch (sortBy) {
@@ -92,7 +84,6 @@ public class SpotListController {
         model.addAttribute("spotList", spots);
         model.addAttribute("searchKeyword", keyword);
         model.addAttribute("selectedRegion", region);
-        model.addAttribute("rating", rating);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortOrder", sortOrder);
         

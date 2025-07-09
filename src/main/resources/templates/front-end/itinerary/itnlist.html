@@ -10,6 +10,10 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- 行程列表專用樣式 -->
     <link rel="stylesheet" th:href="@{/css/itinerary/front-end/list.css}">
+    <!-- 當前會員 ID -->
+    <script th:inline="javascript">
+        window.currentMemberId = /*[[${session.member != null ? session.member.memId : null}]]*/ null;
+    </script>
 </head>
 <body class="light">
     <div class="app-container">
@@ -50,29 +54,19 @@
                                                th:value="${param.keyword}">
                                     </div>
                                     <div class="itinerary-list-search-group">
-                                        <label for="isPublic" class="itinerary-list-search-label">
-                                            <span class="material-icons">visibility</span>
-                                            公開狀態
-                                        </label>
-                                        <select id="isPublic" name="isPublic" class="itinerary-list-search-select">
-                                            <option value="">全部</option>
-                                            <option value="1" th:selected="${param.isPublic == '1'}">公開</option>
-                                        </select>
-                                    </div>
-                                    <div class="itinerary-list-search-group">
                                         <label for="creatorType" class="itinerary-list-search-label">
                                             <span class="material-icons">person</span>
                                             建立者類型
                                         </label>
                                         <select id="creatorType" name="creatorType" class="itinerary-list-search-select">
                                             <option value="">全部</option>
-                                            <option value="2" th:selected="${param.creatorType == '2'}">
-                                                <span class="material-icons">verified</span>
+                                            <option value="2" th:selected="${param.creatorType != null and param.creatorType[0] == '2'}">
+                                                <!-- <span class="material-icons">verified</span> -->
                                                 官方推薦
                                             </option>
-                                            <option value="1" th:selected="${param.creatorType == '1'}">
-                                                <span class="material-icons">group</span>
-                                                會員建立
+                                            <option value="1" th:selected="${param.creatorType != null and param.creatorType[0] == '1'}">
+                                                <!-- <span class="material-icons">group</span> -->
+                                                會員
                                             </option>
                                         </select>
                                     </div>

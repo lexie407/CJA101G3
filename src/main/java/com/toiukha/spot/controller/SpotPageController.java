@@ -71,9 +71,9 @@ public class SpotPageController {
             System.out.println("景點首頁 - 載入景點數量: " + (activeSpots != null ? activeSpots.size() : "null"));
             
             if (activeSpots == null || activeSpots.isEmpty()) {
-                System.out.println("沒有找到任何景點，創建測試數據");
-                // 創建測試數據
-                activeSpots = createTestSpots();
+                System.out.println("沒有找到任何景點");
+                // 不創建測試數據，直接顯示空列表
+                activeSpots = new ArrayList<>();
             } else {
                 System.out.println("第一個景點: " + activeSpots.get(0).getSpotName());
             }
@@ -96,39 +96,36 @@ public class SpotPageController {
                 model.addAttribute("favoriteStatusMap", favoriteStatusMap);
             }
             
+            // 為假資料景點設定圖片路徑
+            Map<Integer, String> fakePictureUrlMap = new HashMap<>();
+            for (SpotVO spot : activeSpots) {
+                if (spot.getFirstPictureUrl() == null || spot.getFirstPictureUrl().isEmpty()) {
+                    String fakePictureUrl = null;
+                    switch (spot.getSpotId()) {
+                        case 1: fakePictureUrl = "/images/spot/zhongao_beach.jpg"; break;
+                        case 2: fakePictureUrl = "/images/spot/vase_rock.jpg"; break;
+                        case 3: fakePictureUrl = "/images/spot/tamsui_oldstreet_pexels.jpg"; break;
+                        case 4: fakePictureUrl = "/images/spot/taipei101_night_pexels.jpg"; break;
+                        case 5: fakePictureUrl = "/images/spot/npm_entrance_official.jpg"; break;
+                        default: fakePictureUrl = "/images/spot/zhongao_beach.jpg";
+                    }
+                    fakePictureUrlMap.put(spot.getSpotId(), fakePictureUrl);
+                }
+            }
+            model.addAttribute("fakePictureUrlMap", fakePictureUrlMap);
+            
             return "index";
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("載入景點時發生錯誤: " + e.getMessage());
             model.addAttribute("errorMessage", "載入景點資料失敗: " + e.getMessage());
-            model.addAttribute("spotList", createTestSpots());
+            model.addAttribute("spotList", new ArrayList<>());
             model.addAttribute("currentPage", "home");
             return "index";
         }
     }
     
-    /**
-     * 創建測試景點數據
-     * @return 測試景點列表
-     */
-    private List<SpotVO> createTestSpots() {
-        List<SpotVO> testSpots = new ArrayList<>();
-        
-        for (int i = 1; i <= 8; i++) {
-            SpotVO spot = new SpotVO();
-            spot.setSpotId(i);
-            spot.setSpotName("測試景點 " + i);
-            spot.setSpotDesc("這是測試景點描述，用於測試首頁顯示功能是否正常工作。這是一個很長的描述，需要在前端進行截斷處理。");
-            spot.setSpotLoc("台北市測試區測試路 " + i + " 號");
-            spot.setSpotStatus((byte) 1);
-            spot.setSpotCreateAt(LocalDateTime.now());
-            spot.setSpotUpdatedAt(LocalDateTime.now());
-            spot.setRegion("台北市");
-            testSpots.add(spot);
-        }
-        
-        return testSpots;
-    }
+
 
     /**
      * 景點列表頁面
@@ -222,7 +219,6 @@ public class SpotPageController {
      * 景點搜尋頁面
      * @param keyword 搜尋關鍵字 (可選)
      * @param region 地區篩選 (可選)
-     * @param rating 最低評分 (可選)
      * @param sortBy 排序方式 (可選)
      * @param sortDirection 排序方向 (可選)
      * @param model 模型物件
@@ -232,7 +228,6 @@ public class SpotPageController {
     public String spotSearch(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "region", required = false) String region,
-            @RequestParam(value = "rating", required = false) Double rating,
             @RequestParam(value = "sortBy", required = false, defaultValue = "rating") String sortBy,
             @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection,
             Model model) {
@@ -250,18 +245,11 @@ public class SpotPageController {
             // 如果有搜尋條件，使用搜尋邏輯
             List<SpotVO> spots;
             if ((keyword != null && !keyword.trim().isEmpty()) ||
-                (region != null && !region.trim().isEmpty()) ||
-                rating != null) {
-                
-                // 處理評分篩選
-                if (rating != null) {
-                    System.out.println("正在篩選評分 >= " + rating + " 的景點");
-                }
+                (region != null && !region.trim().isEmpty())) {
                 
                 spots = spotService.findBySearchCriteria(
                     keyword != null ? keyword.trim() : null,
                     region != null ? region.trim() : null,
-                    rating,
                     sortBy,
                     sortDirection
                 );
@@ -302,14 +290,12 @@ public class SpotPageController {
             
             // 檢查是否有搜尋條件
             boolean hasSearchConditions = (keyword != null && !keyword.trim().isEmpty()) ||
-                                        (region != null && !region.trim().isEmpty()) ||
-                                        rating != null;
+                                        (region != null && !region.trim().isEmpty());
             
             // 添加到模型
             model.addAttribute("spotList", spots);
             model.addAttribute("searchKeyword", keyword);
             model.addAttribute("selectedRegion", region);
-            model.addAttribute("selectedRating", rating);
             model.addAttribute("selectedSortBy", sortBy);
             model.addAttribute("selectedSortDirection", sortDirection);
             model.addAttribute("availableRegions", availableRegions);
@@ -326,25 +312,9 @@ public class SpotPageController {
                     if (conditionMsg.length() > 0) conditionMsg.append("、");
                     conditionMsg.append("地區「").append(region.trim()).append("」");
                 }
-                if (rating != null) {
-                    if (conditionMsg.length() > 0) conditionMsg.append("、");
-                    conditionMsg.append("評分 ").append(rating).append(" 星以上");
-                }
                 
                 if (spots.isEmpty()) {
-                    if (rating != null) {
-                        // 檢查是否有任何景點有評分資料
-                        long spotsWithRating = allSpots.stream()
-                            .filter(spot -> spot.getGoogleRating() != null && spot.getGoogleRating() > 0)
-                            .count();
-                        if (spotsWithRating == 0) {
-                            model.addAttribute("msg", "目前景點資料庫中尚無評分資訊，請選擇其他篩選條件或聯繫客服取得更多協助");
-                        } else {
-                            model.addAttribute("msg", "找不到符合" + conditionMsg + "的景點");
-                        }
-                    } else {
                         model.addAttribute("msg", "找不到符合" + conditionMsg + "的景點");
-                    }
                 } else {
                     model.addAttribute("msg", String.format("找到 %d 個符合%s的景點", spots.size(), conditionMsg));
                 }
@@ -474,7 +444,7 @@ public class SpotPageController {
      * @param session 會話物件
      * @return 詳情頁模板
      */
-    @GetMapping("/detail/{spotId}")
+    @GetMapping("/detail/{spotId:\\d+}")
     public String spotDetail(@PathVariable("spotId") Integer spotId, Model model, HttpSession session) {
         try {
             SpotVO spot = spotService.getSpotById(spotId);
@@ -487,6 +457,20 @@ public class SpotPageController {
             }
             
             model.addAttribute("spot", spot);
+
+            // 假資料圖片對應
+            String fakePictureUrl = null;
+            if (spot.getFirstPictureUrl() == null || spot.getFirstPictureUrl().isEmpty()) {
+                switch (spotId) {
+                    case 1: fakePictureUrl = "/images/spot/zhongao_beach.jpg"; break;
+                    case 2: fakePictureUrl = "/images/spot/vase_rock.jpg"; break;
+                    case 3: fakePictureUrl = "/images/spot/tamsui_oldstreet_pexels.jpg"; break;
+                    case 4: fakePictureUrl = "/images/spot/taipei101_night_pexels.jpg"; break;
+                    case 5: fakePictureUrl = "/images/spot/npm_entrance_official.jpg"; break;
+                    default: fakePictureUrl = "/images/spot/zhongao_beach.jpg";
+                }
+            }
+            model.addAttribute("fakePictureUrl", fakePictureUrl);
             
             // 從 session 獲取會員 ID
             Integer memId = getMemIdFromSession(session);
@@ -719,7 +703,7 @@ public class SpotPageController {
     public Map<String, Object> testRating(@RequestParam(value = "rating", required = false) Double rating) {
         Map<String, Object> result = new HashMap<>();
         try {
-            List<SpotVO> spots = spotService.findBySearchCriteria(null, null, rating, "rating");
+            List<SpotVO> spots = spotService.findBySearchCriteria(null, null, "rating", "desc");
             result.put("searchRating", rating);
             result.put("foundSpots", spots.size());
             result.put("spotDetails", spots.stream()

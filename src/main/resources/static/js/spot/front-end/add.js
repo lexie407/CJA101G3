@@ -160,10 +160,6 @@
          * 設定字元計數器
          */
         setupCharacterCounters() {
-            // 描述字元計數
-            if (this.elements.spotDesc && this.elements.descCharCount) {
-                this.updateCharacterCount('spotDesc');
-            }
             // 景點描述即時字數統計
             if (this.elements.spotDesc && this.elements.descCharCount) {
                 const updateDescCount = () => {

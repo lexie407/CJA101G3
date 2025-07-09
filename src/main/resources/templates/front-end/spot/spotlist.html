@@ -87,7 +87,7 @@
                                     </select>
                                 </div>
                                 <!-- 進階搜尋按鈕 -->
-                                <a th:href="@{/spot/user/search}" class="spot-list-control-btn spot-list-advanced-btn">
+                                <a th:href="@{/spot/search}" class="spot-list-control-btn spot-list-advanced-btn">
                                     <span class="material-icons">tune</span>
                                     <span>進階搜尋</span>
                                 </a>
@@ -130,18 +130,21 @@
                                             <span class="material-icons">check</span>
                                             上架中
                                         </span>
-                                        <!-- 景點圖片 -->
-                                        <img th:if="${spot.firstPictureUrl}" 
-                                             th:src="${spot.firstPictureUrl}" 
-                                             th:alt="${spot.spotName}"
-                                             class="spot-list-card__img"
-                                             loading="lazy"
-                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                        <!-- 預設圖片佔位符 -->
-                                        <div class="spot-list-card__placeholder" th:style="${spot.firstPictureUrl != null and spot.firstPictureUrl != '' ? 'display: none;' : 'display: flex;'}">
-                                            <span class="material-icons">image</span>
-                                            <span>暫無圖片</span>
-                                        </div>
+                                        <!-- 圖片加上可點擊連結 -->
+                                        <a th:href="@{/spot/detail/{id}(id=${spot.spotId})}" tabindex="0">
+                                            <img th:if="${spot.firstPictureUrl != null and spot.firstPictureUrl != ''}"
+                                                 th:src="${spot.firstPictureUrl}"
+                                                 th:alt="${spot.spotName}"
+                                                 class="spot-list-card__img"
+                                                 loading="lazy"
+                                                 style="object-fit:cover;">
+                                            <!-- 沒有圖片時顯示佔位符 -->
+                                            <div th:if="${spot.firstPictureUrl == null or spot.firstPictureUrl == ''}"
+                                                 class="spot-list-card__placeholder">
+                                                <span class="material-icons">photo_library</span>
+                                                <span>探索精彩景點</span>
+                                            </div>
+                                        </a>
                                     </div>
                                     <div class="spot-list-card__content">
                                         <div class="spot-list-card__header">
@@ -165,13 +168,12 @@
                                                 <span th:text="${spot.spotUpdatedAt != null ? #temporals.format(spot.spotUpdatedAt, 'yyyy-MM-dd') : (spot.spotCreateAt != null ? #temporals.format(spot.spotCreateAt, 'yyyy-MM-dd') : '2025-07-01')}">2024-01-01</span>
                                             </div>
                                             <div class="spot-list-card__views" th:if="${spot.spotViewCount != null}">
-                                                <span class="material-icons">visibility</span>
-                                                <span th:text="${spot.spotViewCount}">0</span>
+                                                <!-- <span class="material-icons">visibility</span> -->
+                                                <!-- <span th:text="${spot.spotViewCount}">0</span> -->
                                             </div>
                                         </div>
                                         <div class="spot-list-card__actions">
-                                            <a th:href="@{/spot/user/detail/{id}(id=${spot.spotId})}" class="spot-list-card__link">
-                                                <span class="material-icons">visibility</span>
+                                            <a th:href="@{/spot/detail/{id}(id=${spot.spotId})}" class="spot-list-card__link">
                                                 查看詳情
                                             </a>
                                             <div class="spot-list-card__action-buttons">
@@ -193,11 +195,11 @@
                             <h3 class="spot-list-empty__title">暫無景點資料</h3>
                             <p class="spot-list-empty__description">目前沒有可瀏覽的景點，請嘗試調整搜尋條件或新增景點</p>
                             <div class="spot-list-empty__actions">
-                                <a th:href="@{/spot/user/add}" class="spot-list-btn spot-list-btn--primary">
+                                <a th:href="@{/spot/add}" class="spot-list-btn spot-list-btn--primary">
                                     <span class="material-icons">add</span>
                                     新增景點
                                 </a>
-                                <a th:href="@{/spot/user/search}" class="spot-list-btn spot-list-btn--secondary">
+                                <a th:href="@{/spot/search}" class="spot-list-btn spot-list-btn--secondary">
                                     <span class="material-icons">search</span>
                                     進階搜尋
                                 </a>

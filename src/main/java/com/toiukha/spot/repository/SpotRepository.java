@@ -223,8 +223,7 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
            "s.spotStatus = 1 AND " +
            "(:keyword IS NULL OR LOWER(s.spotName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(s.spotLoc) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
-           "(:region IS NULL OR :region = '' OR s.region = :region) AND " +
-           "(:rating IS NULL OR (s.googleRating IS NOT NULL AND s.googleRating >= :rating)) " +
+           "(:region IS NULL OR :region = '' OR s.region = :region) " +
            "ORDER BY " +
            "CASE " +
            "    WHEN :sortBy = 'rating' AND :sortDirection = 'desc' THEN s.googleRating " +
@@ -239,7 +238,6 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
     List<SpotVO> findBySearchCriteria(
             @Param("keyword") String keyword,
             @Param("region") String region,
-            @Param("rating") Double rating,
             @Param("sortBy") String sortBy,
             @Param("sortDirection") String sortDirection);
 
