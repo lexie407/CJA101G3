@@ -7,7 +7,7 @@
 
     <title>我的廣告管理 - 島遊Kha</title>
     
-    <th:block th:replace="~{/navTemplate :: headResources}"></th:block>
+    <th:block th:replace="~{/navStoreTemplate :: headResources}"></th:block>
     <style>
         .page-header {
             display: flex;
@@ -197,10 +197,12 @@
 <body class="light">
 
 	<div class="app-container">
-		<div th:insert="~{/navTemplate :: navbar}"></div>
+		<div th:insert="~{/navStoreTemplate :: navbar}"></div>
 		<div class="main-content">
 			<header class="secondary-nav">
-                <div th:insert="~{/subnavItem_Store_back::subnav(${activeItem})}"></div>
+                <ul>
+                    <div th:insert="~{/subnavItem_Store_back:: subnav(${activeItem})}"></div>
+                </ul>
             </header>
 			<main class="content-area-main">
 <!-- 					放自己需要的內容 -->
