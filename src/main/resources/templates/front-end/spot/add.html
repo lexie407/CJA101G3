@@ -261,10 +261,10 @@
                                                 </div>
                                                 <!-- 圖片上傳區塊 -->
                                                 <div class="form-group">
-                                                    <label for="imageInput">景點圖片 <span class="text-danger">*</span></label>
-                                                    <div class="helper-text text-muted mb-2">請上傳1張圖片，支援 JPG、PNG 格式，單張不超過2MB</div>
+                                                    <label for="imageInput">景點圖片</label>
+                                                    <div class="helper-text text-muted mb-2">請上傳圖片，支援 JPG、PNG 格式，單張不超過2MB（可選）</div>
                                                     <input type="file" id="imageInput" class="spot-add-input" accept="image/jpeg,image/png,image/jpg">
-                                                    <div id="imageInputMsg" class="spot-add-error-text" style="color:#d32f2f; margin-top:4px;">請上傳圖片</div>
+                                                    <div id="imageInputMsg" class="spot-add-error-text" style="color:#d32f2f; margin-top:4px; display:none;">請上傳圖片</div>
                                                     <div id="imageContainer" class="mt-3 d-flex flex-wrap gap-3"></div>
                                                 </div>
                                                 <!-- 圖片上傳區塊結束 -->
@@ -399,13 +399,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 desc.focus();
                 valid = false;
             }
-            if(imgInput && imgError && !imgInput.files.length){
-                imgError.textContent = '請至少上傳1張圖片';
-                imgInput.focus();
-                valid = false;
-            } else if(imgError) {
-                imgError.textContent = '請上傳圖片';
-            }
+            // 移除圖片驗證
+            // if(imgInput && imgError && !imgInput.files.length){
+            //     imgError.textContent = '請至少上傳1張圖片';
+            //     imgInput.focus();
+            //     valid = false;
+            // } else if(imgError) {
+            //     imgError.textContent = '請上傳圖片';
+            // }
             if(!valid) e.preventDefault();
         });
     }
