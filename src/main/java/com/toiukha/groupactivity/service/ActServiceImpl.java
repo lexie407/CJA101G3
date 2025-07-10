@@ -373,6 +373,8 @@ public class ActServiceImpl implements ActService {
             if ((currentStatus == ActStatus.OPEN.getValue() || currentStatus == ActStatus.FULL.getValue()) && newStatus == ActStatus.CANCELLED.getValue()) {
                 act.setRecruitStatus(ActStatus.CANCELLED.getValue());
                 actRepo.save(act);
+                // 新增：發送通知
+                sendStatusChangeNotification(act, "已取消");
                 return;
             } else {
                 throw new IllegalStateException("活動未開始僅能取消活動");
@@ -382,10 +384,35 @@ public class ActServiceImpl implements ActService {
             if (currentStatus == ActStatus.FULL.getValue() && newStatus == ActStatus.ENDED.getValue()) {
                 act.setRecruitStatus(ActStatus.ENDED.getValue());
                 actRepo.save(act);
+                // 新增：發送通知
+                sendStatusChangeNotification(act, "已結束");
                 return;
             } else {
                 throw new IllegalStateException("活動已開始僅能結束活動");
             }
+        }
+    }
+
+    // 新增：發送狀態變更通知
+    private void sendStatusChangeNotification(ActVO act, String statusMessage) {
+        List<Integer> memberIds = partSvc.getParticipants(act.getActId());
+        for (Integer memId : memberIds) {
+            NotificationVO noti = new NotificationVO(
+                "活動狀態通知",
+                "活動「" + act.getActName() + "」" + statusMessage,
+                memId,
+                new java.sql.Timestamp(System.currentTimeMillis())
+            );
+            notiSvc.addOneNoti(noti);
+        }
+        if (!memberIds.contains(act.getHostId())) {
+            NotificationVO hostNoti = new NotificationVO(
+                "活動狀態通知",
+                "您的活動「" + act.getActName() + "」" + statusMessage,
+                act.getHostId(),
+                new java.sql.Timestamp(System.currentTimeMillis())
+            );
+            notiSvc.addOneNoti(hostNoti);
         }
     }
 
