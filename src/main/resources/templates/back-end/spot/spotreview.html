@@ -12,6 +12,197 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/spot-common.css}">
     <link rel="stylesheet" th:href="@{/css/spot/back-end/review.css}">
+    
+    <!-- 退回對話框樣式 -->
+    <style>
+        /* 對話框遮罩 */
+        #rejectModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        #rejectModal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 對話框內容 */
+        .modal-content {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 480px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+            overflow: hidden;
+        }
+        
+        /* 對話框標題 */
+        .modal-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px 24px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        
+        /* 對話框內容 */
+        .modal-body {
+            padding: 32px 24px;
+            text-align: center;
+        }
+        
+        .confirm-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .warning-icon {
+            font-size: 48px;
+            color: #ff9800;
+            margin-bottom: 8px;
+        }
+        
+        .confirm-message p {
+            margin: 0;
+            line-height: 1.6;
+        }
+        
+        .confirm-message p:first-of-type {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .sub-text {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        /* 對話框底部按鈕 */
+        .modal-footer {
+            background-color: #f8f9fa;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .modal-footer .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 100px;
+            justify-content: center;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+        
+        /* 動畫效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 576px) {
+            .modal-content {
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+            
+            .modal-header, .modal-body, .modal-footer {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            
+            .modal-footer {
+                flex-direction: column;
+            }
+            
+            .modal-footer .btn {
+                width: 100%;
+            }
+        }
+    </style>
+    
     <script th:src="@{/js/spot/back-end/review.js}" defer></script>
     
 </head>
@@ -39,29 +230,29 @@
                     <div class="action-buttons-left">
                         <!-- 篩選下拉選單 -->
                         <div class="filter-dropdown">
-                            <button class="modern-btn filter-btn dropdown-toggle" type="button" onclick="toggleFilterDropdown()">
-                                <i class="material-icons">filter_list</i>
-                                <span>篩選</span>
+                            <!-- <button class="modern-btn filter-btn dropdown-toggle" type="button" onclick="toggleFilterDropdown()"> -->
+                                <!-- <i class="material-icons">filter_list</i> -->
+                                <!-- <span>篩選</span>
                             </button>
                             <div class="dropdown-menu" id="filterDropdown">
                                 <button type="button" onclick="filterByStatus('all')" class="dropdown-item" data-status="all">
-                                    <i class="material-icons">list</i>
-                                    <span>全部顯示</span>
+                                    <i class="material-icons">list_alt</i>
+                                    <span>全部狀態（含待審核）</span>
                                 </button>
-                                <button type="button" onclick="filterByStatus(0)" class="dropdown-item active" data-status="0">
-                                    <i class="material-icons">schedule</i>
-                                    <span>待審核</span>
+                                <button type="button" onclick="filterByStatus(1)" class="dropdown-item" data-status="1">
+                                    <i class="material-icons">check_circle</i>
+                                    <span>上架</span>
                                 </button>
                                 <button type="button" onclick="filterByStatus(2)" class="dropdown-item" data-status="2">
                                     <i class="material-icons">reply</i>
                                     <span>退回</span>
                                 </button>
-                                <button type="button" onclick="filterByStatus(1)" class="dropdown-item" data-status="1">
-                                    <i class="material-icons">check_circle</i>
-                                    <span>通過</span>
+                                <button type="button" onclick="filterByStatus(3)" class="dropdown-item" data-status="3">
+                                    <i class="material-icons">block</i>
+                                    <span>下架</span>
                                 </button>
                             </div>
-                        </div>
+                        </div> -->
                         
                         <!-- 批次操作下拉選單 -->
                         <div class="batch-operation-dropdown">
@@ -172,29 +363,35 @@
             </div>
         </div>
         
-        <!-- 退回原因 Modal -->
+        <!-- 退回確認對話框 -->
         <div id="rejectModal" class="modal">
             <div class="modal-content">
-                <h5>退回原因</h5>
-                <form id="rejectForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="material-icons" style="vertical-align: middle; margin-right: 8px; color: #f44336;">warning</i>
+                        確認退回景點
+                    </h5>
+                    <button type="button" class="close-btn" onclick="closeModal()">
+                        <i class="material-icons">close</i>
+                    </button>
+                </div>
+                <div class="modal-body">
                     <input type="hidden" id="rejectSpotId">
-                    <div class="input-field">
-                        <label for="rejectReason">請選擇退回原因</label>
-                        <select id="rejectReason">
-                            <option value="資料不完整">資料不完整</option>
-                            <option value="地點錯誤">地點錯誤</option>
-                            <option value="描述不符">描述不符</option>
-                            <option value="其他">其他</option>
-                        </select>
+                    <div class="confirm-message">
+                        <i class="material-icons warning-icon">error_outline</i>
+                        <p>您確定要退回此景點申請嗎？</p>
+                        <p class="sub-text">此操作將會將景點狀態設為「已退回」</p>
                     </div>
-                    <div class="input-field">
-                        <label for="rejectRemark">補充說明 (可選填)</label>
-                        <input type="text" id="rejectRemark" placeholder="補充說明 (可選填)">
-                    </div>
-                </form>
+                </div>
                 <div class="modal-footer">
-                    <button class="btn-flat" onclick="submitReject()">確認退回</button>
-                    <button class="btn-flat" onclick="closeModal()">取消</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                        <i class="material-icons">cancel</i>
+                        取消
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="submitReject()">
+                        <i class="material-icons">reply</i>
+                        確認退回
+                    </button>
                 </div>
             </div>
         </div>

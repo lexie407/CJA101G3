@@ -16,6 +16,32 @@
     let isGoogleMapsLoaded = false;
     
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    // 台灣各縣市的地理中心座標
+    const regionCenters = {
+        '台北市': { lat: 25.0330, lng: 121.5654, zoom: 11 },
+        '新北市': { lat: 25.0173, lng: 121.4629, zoom: 10 },
+        '桃園市': { lat: 24.9936, lng: 121.3010, zoom: 10 },
+        '台中市': { lat: 24.1477, lng: 120.6736, zoom: 10 },
+        '台南市': { lat: 22.9999, lng: 120.2269, zoom: 10 },
+        '高雄市': { lat: 22.6273, lng: 120.3014, zoom: 10 },
+        '基隆市': { lat: 25.1276, lng: 121.7392, zoom: 12 },
+        '新竹市': { lat: 24.8138, lng: 120.9675, zoom: 12 },
+        '嘉義市': { lat: 23.4801, lng: 120.4491, zoom: 12 },
+        '新竹縣': { lat: 24.8387, lng: 121.0177, zoom: 10 },
+        '苗栗縣': { lat: 24.5602, lng: 120.8214, zoom: 10 },
+        '彰化縣': { lat: 24.0518, lng: 120.5161, zoom: 10 },
+        '南投縣': { lat: 23.9609, lng: 120.9718, zoom: 9 },
+        '雲林縣': { lat: 23.7092, lng: 120.4313, zoom: 10 },
+        '嘉義縣': { lat: 23.4518, lng: 120.2554, zoom: 10 },
+        '屏東縣': { lat: 22.5519, lng: 120.5487, zoom: 10 },
+        '宜蘭縣': { lat: 24.7021, lng: 121.7377, zoom: 10 },
+        '花蓮縣': { lat: 23.9871, lng: 121.6015, zoom: 9 },
+        '台東縣': { lat: 22.7972, lng: 121.1713, zoom: 9 },
+        '澎湖縣': { lat: 23.5711, lng: 119.5794, zoom: 11 },
+        '金門縣': { lat: 24.4324, lng: 118.3170, zoom: 11 },
+        '連江縣': { lat: 26.1605, lng: 119.9512, zoom: 11 }
+    };
 
     /**
      * 初始化所有功能
@@ -304,6 +330,36 @@
     }
 
     /**
+     * Leaflet 標記 (OpenStreetMap 備用方案)
+     */
+    function createLeafletMarker(spot) {
+        if (!window.L) return null;
+        
+        // 檢查座標是否有效
+        if (!spot.spotLat || !spot.spotLng || 
+            isNaN(spot.spotLat) || isNaN(spot.spotLng) ||
+            spot.spotLat < -90 || spot.spotLat > 90 ||
+            spot.spotLng < -180 || spot.spotLng > 180) {
+            console.warn(`⚠️ 景點 ${spot.spotName} 座標無效:`, spot.spotLat, spot.spotLng);
+            return null;
+        }
+
+        const marker = L.marker([spot.spotLat, spot.spotLng])
+            .addTo(map)
+            .bindPopup(createInfoWindowContent(spot));
+        
+        marker.spotId = spot.spotId;
+        
+        marker.on('click', () => {
+            highlightListItem(spot.spotId);
+            scrollToListItem(spot.spotId);
+        });
+        
+        markers.push(marker);
+        return marker;
+    }
+
+    /**
      * 創建標記內容
      */
     function createMarkerContent(spot) {
@@ -398,6 +454,12 @@
         const ratingFilter = document.getElementById('ratingFilter')?.value || 'all';
         const searchTerm = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
         
+        console.log('🔍 套用篩選條件:', {
+            region: regionFilter,
+            rating: ratingFilter,
+            search: searchTerm
+        });
+        
         filteredSpots = allSpots.filter(spot => {
             if (regionFilter !== 'all' && spot.region !== regionFilter) return false;
             if (ratingFilter !== 'all' && (!spot.googleRating || spot.googleRating < parseFloat(ratingFilter))) return false;
@@ -405,9 +467,27 @@
             return true;
         });
         
+        console.log(`📊 篩選結果: ${filteredSpots.length} / ${allSpots.length} 個景點`);
+        
         displaySpots(filteredSpots);
         displaySpotList(filteredSpots);
         updateStats();
+        
+        // 自動調整地圖視圖到篩選後的景點
+        if (filteredSpots.length > 0) {
+            setTimeout(() => {
+                fitMapToFilteredSpots();
+            }, 100); // 延遲一點時間確保標記已經建立
+        } else {
+            console.log('⚠️ 沒有符合篩選條件的景點');
+            // 如果沒有結果，顯示台灣全景
+            if (isGoogleMapsLoaded) {
+                map.setCenter({ lat: 23.8, lng: 121.0 });
+                map.setZoom(8);
+            } else if (window.L) {
+                map.setView([23.8, 121.0], 8);
+            }
+        }
     };
 
     /**
@@ -423,15 +503,26 @@
         if (searchInput) searchInput.value = '';
         applyFilters();
         showMessage('已清除所有篩選條件', 'info');
+        
+        // 清除篩選後，顯示所有景點並調整地圖視圖
+        setTimeout(() => {
+            window.fitMapToBounds();
+        }, 200);
     };
 
     /**
      * 按區域篩選
      */
     function filterByRegion(region) {
+        console.log('🔍 篩選地區:', region);
         document.querySelectorAll('.spot-map-region-badge').forEach(btn => btn.classList.remove('active'));
         const targetBtn = document.querySelector(`[data-region="${region}"]`);
-        if (targetBtn) targetBtn.classList.add('active');
+        if (targetBtn) {
+            targetBtn.classList.add('active');
+            console.log('✅ 地區按鈕已啟用:', region);
+        } else {
+            console.warn('⚠️ 找不到地區按鈕:', region);
+        }
         applyFilters();
     }
 
@@ -632,6 +723,65 @@
             map.fitBounds(group.getBounds());
         }
     };
+
+    /**
+     * 調整地圖視圖到篩選後的景點
+     */
+    function fitMapToFilteredSpots() {
+        if (markers.length === 0) return;
+        
+        console.log('🎯 調整地圖視圖到篩選後的景點，標記數量:', markers.length);
+        
+        // 檢查是否有特定地區篩選
+        const activeRegionBtn = document.querySelector('.spot-map-region-badge.active');
+        const selectedRegion = activeRegionBtn ? activeRegionBtn.dataset.region : 'all';
+        
+        // 顯示調整提示
+        if (selectedRegion !== 'all') {
+            showMessage(`正在調整地圖到 ${selectedRegion} 地區`, 'info');
+        }
+        
+        if (isGoogleMapsLoaded) {
+            // 如果選擇了特定地區且有對應的中心座標，使用預設中心
+            if (selectedRegion !== 'all' && regionCenters[selectedRegion]) {
+                const center = regionCenters[selectedRegion];
+                map.setCenter({ lat: center.lat, lng: center.lng });
+                map.setZoom(center.zoom);
+                console.log(`🎯 設定地圖中心到 ${selectedRegion}:`, center);
+            } else {
+                // 否則根據標記自動調整邊界
+                const bounds = new google.maps.LatLngBounds();
+                markers.forEach(marker => {
+                    if (marker.position) {
+                        bounds.extend(marker.position);
+                    }
+                });
+                
+                // 檢查是否有有效的邊界
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds);
+                    // 如果只有一個景點，設定合適的縮放級別
+                    if (markers.length === 1) {
+                        setTimeout(() => {
+                            if (map.getZoom() > 15) {
+                                map.setZoom(15);
+                            }
+                        }, 100);
+                    }
+                }
+            }
+        } else if (window.L && markers.length > 0) {
+            // OpenStreetMap (Leaflet) 的處理
+            if (selectedRegion !== 'all' && regionCenters[selectedRegion]) {
+                const center = regionCenters[selectedRegion];
+                map.setView([center.lat, center.lng], center.zoom);
+                console.log(`🎯 設定地圖中心到 ${selectedRegion}:`, center);
+            } else {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds());
+            }
+        }
+    }
     
     window.getCurrentLocation = () => {
         if (!navigator.geolocation) {

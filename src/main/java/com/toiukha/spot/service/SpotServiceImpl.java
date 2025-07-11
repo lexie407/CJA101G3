@@ -222,29 +222,47 @@ public class SpotServiceImpl implements SpotService {
         // 只針對有 keyword 的情況做名稱/地址分開搜尋
         if (keyword != null && !keyword.trim().isEmpty()) {
             String trimmedKeyword = keyword.trim();
-            // 只搜尋名稱
-            List<SpotVO> nameResults = spotRepository.findBySpotNameContainingAndSpotStatus(trimmedKeyword, spotStatus != null ? spotStatus.byteValue() : 1);
-            if (nameResults.size() >= 3) {
-                // 修復：正確處理分頁邏輯
-                return createPageFromList(nameResults, pageable);
-            }
-            // 名稱少於3個再搜尋地址
-            List<SpotVO> addressResults = spotRepository.findBySpotLocContainingAndSpotStatus(trimmedKeyword, spotStatus != null ? spotStatus.byteValue() : 1);
-            // 合併去重
-            List<SpotVO> combinedResults = new java.util.ArrayList<>(nameResults);
-            for (SpotVO addressResult : addressResults) {
-                boolean alreadyExists = combinedResults.stream().anyMatch(spot -> spot.getSpotId().equals(addressResult.getSpotId()));
-                if (!alreadyExists) {
-                    combinedResults.add(addressResult);
+            // 如果指定了具體狀態，使用該狀態；如果是null（全部狀態），使用特殊處理
+            if (spotStatus != null) {
+                // 只搜尋名稱
+                List<SpotVO> nameResults = spotRepository.findBySpotNameContainingAndSpotStatus(trimmedKeyword, spotStatus.byteValue());
+                if (nameResults.size() >= 3) {
+                    // 修復：正確處理分頁邏輯
+                    return createPageFromList(nameResults, pageable);
                 }
+                // 名稱少於3個再搜尋地址
+                List<SpotVO> addressResults = spotRepository.findBySpotLocContainingAndSpotStatus(trimmedKeyword, spotStatus.byteValue());
+                // 合併去重
+                List<SpotVO> combinedResults = new java.util.ArrayList<>(nameResults);
+                for (SpotVO addressResult : addressResults) {
+                    boolean alreadyExists = combinedResults.stream().anyMatch(spot -> spot.getSpotId().equals(addressResult.getSpotId()));
+                    if (!alreadyExists) {
+                        combinedResults.add(addressResult);
+                    }
+                }
+                // 修復：正確處理分頁邏輯
+                return createPageFromList(combinedResults, pageable);
+            } else {
+                // 全部狀態：搜尋所有已審核景點（排除待審核的0狀態）
+                List<SpotVO> nameResults = spotRepository.findBySpotNameContainingAndSpotStatusNot(trimmedKeyword, (byte) 0);
+                if (nameResults.size() >= 3) {
+                    return createPageFromList(nameResults, pageable);
+                }
+                // 名稱少於3個再搜尋地址
+                List<SpotVO> addressResults = spotRepository.findBySpotLocContainingAndSpotStatusNot(trimmedKeyword, (byte) 0);
+                // 合併去重
+                List<SpotVO> combinedResults = new java.util.ArrayList<>(nameResults);
+                for (SpotVO addressResult : addressResults) {
+                    boolean alreadyExists = combinedResults.stream().anyMatch(spot -> spot.getSpotId().equals(addressResult.getSpotId()));
+                    if (!alreadyExists) {
+                        combinedResults.add(addressResult);
+                    }
+                }
+                return createPageFromList(combinedResults, pageable);
             }
-            // 修復：正確處理分頁邏輯
-            return createPageFromList(combinedResults, pageable);
         }
-        // 沒有 keyword 則維持原本查詢，但確保只查詢已審核的景點
-        // 如果沒有指定狀態，預設查詢上架狀態（1）
-        Integer effectiveStatus = spotStatus != null ? spotStatus : 1;
-        return spotRepository.findByKeywordAndStatusAndRegion(keyword, effectiveStatus, region, pageable);
+        // 沒有 keyword 則維持原本查詢，但需要正確處理全部狀態
+        return spotRepository.findByKeywordAndStatusAndRegion(keyword, spotStatus, region, pageable);
     }
 
     /**
@@ -269,9 +287,8 @@ public class SpotServiceImpl implements SpotService {
 
     @Override
     public List<SpotVO> searchAllReviewedSpotsForAdmin(String keyword, Integer spotStatus, String region, Sort sort) {
-        // 如果沒有指定狀態，預設查詢上架狀態（1）
-        Integer effectiveStatus = spotStatus != null ? spotStatus : 1;
-        return spotRepository.findBySpotStatusAndRegionContaining(effectiveStatus, region, sort);
+        // 修改：當 spotStatus 為 null 時，查詢所有已審核景點（不包括待審核的狀態0）
+        return spotRepository.findBySpotStatusAndRegionContaining(spotStatus, region, sort);
     }
 
     @Override

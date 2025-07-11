@@ -39,12 +39,28 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
     List<SpotVO> findBySpotNameContainingAndSpotStatus(String spotName, byte spotStatus);
     
     /**
+     * 根據景點名稱查詢，排除指定狀態 (模糊搜尋)
+     * @param spotName 景點名稱
+     * @param spotStatus 要排除的景點狀態
+     * @return 符合條件的景點列表
+     */
+    List<SpotVO> findBySpotNameContainingAndSpotStatusNot(String spotName, byte spotStatus);
+    
+    /**
      * 根據景點地址查詢 (模糊搜尋)
      * @param spotLoc 景點地址
      * @param spotStatus 景點狀態
      * @return 符合條件的景點列表
      */
     List<SpotVO> findBySpotLocContainingAndSpotStatus(String spotLoc, byte spotStatus);
+    
+    /**
+     * 根據景點地址查詢，排除指定狀態 (模糊搜尋)
+     * @param spotLoc 景點地址
+     * @param spotStatus 要排除的景點狀態
+     * @return 符合條件的景點列表
+     */
+    List<SpotVO> findBySpotLocContainingAndSpotStatusNot(String spotLoc, byte spotStatus);
     
     /**
      * 根據狀態查詢景點
@@ -91,7 +107,7 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
      */
     @Query("SELECT s FROM SpotVO s WHERE " +
            "(:keyword IS NULL OR :keyword = '' OR s.spotName LIKE %:keyword% OR s.spotLoc LIKE %:keyword%) " +
-           "AND (:spotStatus IS NULL OR s.spotStatus = :spotStatus) " +
+           "AND (:spotStatus IS NULL AND s.spotStatus != 0 OR s.spotStatus = :spotStatus) " +
            "AND (:region IS NULL OR :region = '' OR :region = 'all' OR s.region = :region)")
     Page<SpotVO> findByKeywordAndStatusAndRegion(
         @Param("keyword") String keyword, 
@@ -168,7 +184,7 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
      * 查詢所有地區
      * @return 地區列表
      */
-    @Query("SELECT DISTINCT s.region FROM SpotVO s WHERE s.region IS NOT NULL ORDER BY s.region")
+    @Query("SELECT DISTINCT s.region FROM SpotVO s WHERE s.region IS NOT NULL AND s.region != '' ORDER BY s.region")
     List<String> getAllRegions();
     
     /**
@@ -179,7 +195,7 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
      * @return 景點分頁結果
      */
     @Query("SELECT s FROM SpotVO s WHERE " +
-           "(:spotStatus IS NULL OR s.spotStatus = :spotStatus) " +
+           "(:spotStatus IS NULL AND s.spotStatus != 0 OR s.spotStatus = :spotStatus) " +
            "AND (:region IS NULL OR :region = '' OR :region = 'all' OR s.region LIKE %:region%)")
     Page<SpotVO> findBySpotStatusAndRegionContaining(
         @Param("spotStatus") Integer spotStatus, 
@@ -194,7 +210,7 @@ public interface SpotRepository extends JpaRepository<SpotVO, Integer> {
      * @return 景點列表
      */
     @Query("SELECT s FROM SpotVO s WHERE " +
-           "(:spotStatus IS NULL OR s.spotStatus = :spotStatus) " +
+           "(:spotStatus IS NULL AND s.spotStatus != 0 OR s.spotStatus = :spotStatus) " +
            "AND (:region IS NULL OR :region = '' OR :region = 'all' OR s.region LIKE %:region%)")
     List<SpotVO> findBySpotStatusAndRegionContaining(
         @Param("spotStatus") Integer spotStatus, 

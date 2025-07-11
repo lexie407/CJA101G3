@@ -185,8 +185,8 @@ public class ItineraryAdminController {
         }
         
             // 驗證行程描述
-            if (itnDesc == null || itnDesc.trim().isEmpty() || itnDesc.length() < 10 || itnDesc.length() > 500) {
-                redirectAttr.addFlashAttribute("errorMessage", "行程描述必須為10-500個字元");
+            if (itnDesc == null || itnDesc.trim().isEmpty() || itnDesc.length() < 5 || itnDesc.length() > 500) {
+                redirectAttr.addFlashAttribute("errorMessage", "行程描述必須為5-500個字元");
                 return "redirect:/admin/itinerary/add";
             }
             
