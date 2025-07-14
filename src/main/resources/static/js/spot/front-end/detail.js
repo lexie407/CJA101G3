@@ -180,16 +180,7 @@ function showMapWarning() {
     const mapInfo = document.querySelector('.spot-detail-map-info');
     if (mapInfo) {
         mapInfo.innerHTML = `
-            <div class="spot-detail-map-status spot-detail-map-status--warning">
-                <span class="material-icons">info</span>
-                <span>此景點尚未設定精確座標，顯示的位置可能不準確</span>
-                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spotData.spotName)}" 
-                   target="_blank" 
-                   class="btn btn-sm btn-outline-primary mt-2">
-                    <span class="material-icons">map</span>
-                    在 Google 地圖中搜尋
-                </a>
-            </div>
+            
         `;
     }
 }

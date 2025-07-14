@@ -1425,17 +1425,25 @@
     from {
         opacity: 0;
         transform: translateY(-10px);
+        max-height: 0;
     }
     to {
         opacity: 1;
         transform: translateY(0);
+        max-height: 100px;
     }
 }
 
 @keyframes spot-add-shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    40%, 60% {
+        transform: translateX(5px);
+    }
 }
 
 @keyframes spot-add-spin {
@@ -1553,3 +1561,215 @@
   margin-top: 2px;
 }
 .multi-image-delete:hover { background: #c62828; } 
+
+/* 錯誤狀態樣式 - 使用更具體的選擇器提高優先級 */
+.spot-add-form-group .spot-add-input-container .spot-add-input.error,
+.spot-add-form-group .spot-add-textarea.error {
+    border-color: var(--md-sys-color-error);
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    box-shadow: 0 0 0 1px var(--md-sys-color-error);
+}
+
+.spot-add-form-group .spot-add-input-container .spot-add-input.error:focus,
+.spot-add-form-group .spot-add-textarea.error:focus {
+    border-color: var(--md-sys-color-error);
+    box-shadow: 0 0 0 2px rgba(var(--md-sys-color-error-rgb), 0.3);
+    outline: none;
+}
+
+/* 錯誤訊息樣式 */
+.spot-add-form-group .spot-add-error-text {
+    display: none;
+    color: var(--md-sys-color-error);
+    font-size: var(--md-sys-typescale-body-small-size);
+    margin-top: var(--md-sys-spacing-small);
+    padding: var(--md-sys-spacing-small);
+    border-radius: var(--md-sys-radius-small);
+    background-color: var(--md-sys-color-error-container);
+    border-left: 3px solid var(--md-sys-color-error);
+    animation: spot-add-slide-down 0.2s ease-out;
+    font-weight: 500;
+}
+
+.spot-add-form-group .spot-add-error-text.show {
+    display: block;
+}
+
+/* 強化錯誤狀態的視覺效果 */
+.spot-add-form-group .spot-add-input.error {
+    animation: spot-add-shake 0.5s ease-in-out;
+}
+
+/* 錯誤時圖示顏色 */
+.spot-add-form-group .spot-add-input-container .spot-add-input.error + .spot-add-input-icon {
+    color: var(--md-sys-color-error);
+}
+
+/* ==========================================================================
+   圖片上傳樣式
+   ========================================================================== */
+.spot-add-upload-container {
+    position: relative;
+}
+
+.spot-add-file-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    z-index: -1;
+}
+
+.spot-add-upload-area {
+    border: 2px dashed var(--md-sys-color-outline);
+    border-radius: var(--md-sys-radius-medium);
+    padding: var(--md-sys-spacing-extra-large);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    background: var(--md-sys-color-surface-container-lowest);
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spot-add-upload-area:hover {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
+}
+
+.spot-add-upload-area.dragover {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
+    transform: scale(1.02);
+}
+
+.spot-add-upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--md-sys-spacing-medium);
+}
+
+.spot-add-upload-icon {
+    font-size: 3rem !important;
+    color: var(--md-sys-color-primary);
+    opacity: 0.8;
+}
+
+.spot-add-upload-text {
+    text-align: center;
+}
+
+.spot-add-upload-primary {
+    font-size: var(--md-sys-typescale-title-medium-size);
+    font-weight: var(--md-sys-typescale-title-medium-weight);
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 var(--md-sys-spacing-small) 0;
+}
+
+.spot-add-upload-secondary {
+    font-size: var(--md-sys-typescale-body-medium-size);
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+}
+
+.spot-add-image-preview {
+    margin-top: var(--md-sys-spacing-large);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--md-sys-spacing-medium);
+}
+
+.spot-add-image-item {
+    position: relative;
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-radius-medium);
+    overflow: hidden;
+    box-shadow: var(--md-sys-elevation-level1);
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+}
+
+.spot-add-image-item:hover {
+    box-shadow: var(--md-sys-elevation-level2);
+    transform: translateY(-2px);
+}
+
+.spot-add-preview-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+}
+
+.spot-add-image-info {
+    padding: var(--md-sys-spacing-small);
+    background: var(--md-sys-color-surface-container);
+}
+
+.spot-add-image-name {
+    font-size: var(--md-sys-typescale-body-small-size);
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: var(--md-sys-spacing-extra-small);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.spot-add-image-size {
+    font-size: var(--md-sys-typescale-body-small-size);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.spot-add-remove-btn {
+    position: absolute;
+    top: var(--md-sys-spacing-small);
+    right: var(--md-sys-spacing-small);
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+    opacity: 0.9;
+}
+
+.spot-add-remove-btn:hover {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.spot-add-remove-btn .material-icons {
+    font-size: 1.2rem;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .spot-add-upload-area {
+        min-height: 120px;
+        padding: var(--md-sys-spacing-large);
+    }
+    
+    .spot-add-upload-icon {
+        font-size: 2.5rem !important;
+    }
+    
+    .spot-add-image-preview {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: var(--md-sys-spacing-small);
+    }
+    
+    .spot-add-preview-img {
+        height: 120px;
+    }
+} 
