@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -50,6 +56,9 @@ public class SpotPageController {
 
     @Autowired
     private SpotFavoriteService spotFavoriteService;
+    
+    @Autowired
+    private com.toiukha.spot.service.SpotImgService spotImgService;
 
     // ========== 1. 首頁和景點列表 ==========
 
@@ -532,6 +541,7 @@ public class SpotPageController {
     /**
      * 處理新增景點表單提交
      * @param spotVO 景點資料
+     * @param spotImg 景點圖片檔案
      * @param result 驗證結果
      * @param model 模型物件
      * @param session 會話物件
@@ -541,6 +551,7 @@ public class SpotPageController {
     @PostMapping("/add")
     public String processAddSpot(
             @Valid @ModelAttribute("spotVO") SpotVO spotVO,
+            @RequestParam(value = "spotImg", required = false) MultipartFile[] spotImg,
             BindingResult result,
             Model model,
             HttpSession session,
@@ -561,6 +572,26 @@ public class SpotPageController {
             result.rejectValue("spotName", "error.spotVO", "景點名稱已存在，請使用其他名稱");
         }
 
+        // 驗證圖片上傳（如果有的話）
+        if (spotImg != null && spotImg.length > 0) {
+            for (MultipartFile file : spotImg) {
+                if (!file.isEmpty()) {
+                    // 檢查檔案類型
+                    String contentType = file.getContentType();
+                    if (contentType == null || !contentType.startsWith("image/")) {
+                        result.rejectValue("spotImg", "error.spotVO", "只能上傳圖片檔案");
+                        break;
+                    }
+                    
+                    // 檢查檔案大小 (2MB)
+                    if (file.getSize() > 2 * 1024 * 1024) {
+                        result.rejectValue("spotImg", "error.spotVO", "圖片大小不能超過2MB");
+                        break;
+                    }
+                }
+            }
+        }
+
         // 若欄位驗證失敗
         if (result.hasErrors()) {
             List<String> errorMsgs = result.getFieldErrors().stream()
@@ -572,7 +603,64 @@ public class SpotPageController {
         }
 
         try {
+            // 先新增景點
             SpotVO savedSpot = spotService.addSpot(spotVO);
+            
+            // 如果有圖片上傳，處理圖片
+            if (spotImg != null && spotImg.length > 0) {
+                System.out.println("收到 " + spotImg.length + " 張圖片，景點ID: " + savedSpot.getSpotId());
+                
+                String firstImageUrl = null;
+                
+                for (int i = 0; i < spotImg.length; i++) {
+                    MultipartFile file = spotImg[i];
+                    if (file != null && !file.isEmpty()) {
+                        try {
+                            // 生成唯一檔名
+                            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                            String uploadDir = "src/main/resources/static/images/spot/";
+                            
+                            // 確保目錄存在
+                            File dir = new File(uploadDir);
+                            if (!dir.exists()) {
+                                dir.mkdirs();
+                            }
+                            
+                            // 保存檔案
+                            File dest = new File(uploadDir + fileName);
+                            Files.copy(file.getInputStream(), Paths.get(dest.toURI()));
+                            
+                            String imagePath = "/images/spot/" + fileName;
+                            
+                            // 第一張圖片設為主圖
+                            if (i == 0) {
+                                firstImageUrl = imagePath;
+                            }
+                            
+                            // 保存圖片記錄到資料庫
+                            com.toiukha.spot.model.SpotImgVO imgVO = new com.toiukha.spot.model.SpotImgVO();
+                            imgVO.setSpotId(savedSpot.getSpotId());
+                            imgVO.setImgPath(imagePath);
+                            imgVO.setImgDesc("用戶上傳的景點圖片");
+                            imgVO.setImgTime(LocalDateTime.now());
+                            spotImgService.saveImage(imgVO);
+                            
+                            System.out.println("圖片 " + (i+1) + " 保存成功: " + imagePath);
+                            
+                        } catch (IOException e) {
+                            System.err.println("保存圖片失敗: " + e.getMessage());
+                        }
+                    }
+                }
+                
+                // 更新景點的主圖片URL
+                if (firstImageUrl != null) {
+                    savedSpot.setFirstPictureUrl(firstImageUrl);
+                    spotService.updateSpot(savedSpot);
+                    System.out.println("景點主圖片設定為: " + firstImageUrl);
+                }
+            }
+            
             redirectAttr.addFlashAttribute("msg", "景點新增成功！等待管理員審核後上架。");
             return "redirect:/spot/list";
         } catch (Exception e) {

@@ -262,12 +262,12 @@ function initializeCharacterCounter() {
     // 行程描述字數統計
     const descInput = document.getElementById('itnDesc');
     if (descInput) {
-        const descCounter = createCharacterCounter(descInput.parentNode, 10, 500);
+        const descCounter = createCharacterCounter(descInput.parentNode, 5, 500);
         descInput.addEventListener('input', function() {
-            updateCharacterCount(this, descCounter, 10, 500);
+            updateCharacterCount(this, descCounter, 5, 500);
         });
         // 初始化字數
-        updateCharacterCount(descInput, descCounter, 10, 500);
+                  updateCharacterCount(descInput, descCounter, 5, 500);
     }
 }
 
@@ -812,7 +812,7 @@ function validateDesc() {
         return false;
     }
     
-    if (desc.length < 10) {
+    if (desc.length < 5) {
         showValidationError(descInput, '行程描述至少需要5個字元');
         return false;
     }
@@ -1007,7 +1007,7 @@ function resetForm() {
     }
     
     if (descInput && descCounter) {
-        updateCharacterCount(descInput, descCounter, 10, 500);
+        updateCharacterCount(descInput, descCounter, 5, 500);
     }
     
     showToast('表單已重置', 'info');

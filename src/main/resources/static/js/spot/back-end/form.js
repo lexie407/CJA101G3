@@ -137,7 +137,7 @@ function validateForm() {
         if (!firstErrorField) firstErrorField = spotDesc;
     } else {
         const descLength = spotDesc.value.trim().length;
-        if (descLength < 10) {
+        if (descLength < 5) {
             showFieldError('spotDesc', '景點描述至少需要5個字');
             spotDesc.classList.add('error');
             spotDesc.style.borderColor = 'var(--md-sys-color-error)';
@@ -319,7 +319,7 @@ function setupRealTimeValidation() {
                 return;
             }
             
-            if (length < 10) {
+            if (length < 5) {
                 this.classList.add('error');
                 this.style.borderColor = 'var(--md-sys-color-error)';
                 showFieldError('spotDesc', '景點描述至少需要5個字');
@@ -425,7 +425,7 @@ function updateValidationSummary() {
         validationErrors.push('景點描述為必填');
     } else {
         const descLength = spotDesc.value.trim().length;
-        if (descLength < 10 || descLength > 500) {
+        if (descLength < 5 || descLength > 500) {
             validationErrors.push('景點描述字數不符合要求');
         }
     }
@@ -476,9 +476,9 @@ function updateStatusSwitch() {
         if (isAddMode) {
             // 新增模式：強制設為待審核狀態，禁用狀態開關
             spotStatusInput.value = '0';
-            statusCheckbox.checked = false;
-            statusCheckbox.disabled = true;
-            statusText.textContent = '待審核';
+            statusCheckbox.checked = true;
+            statusCheckbox.disabled = false;
+            statusText.textContent = '上架';
             statusText.style.color = 'var(--md-sys-color-secondary)';
             
             // 更新狀態徽章
@@ -551,7 +551,7 @@ function setupCharacterCounters() {
     const fields = [
         { id: 'spotName', max: 50, min: 2, required: true },
         { id: 'spotLoc', max: 100, min: 5, required: true },
-        { id: 'spotDesc', max: 500, min: 10, required: true }
+        { id: 'spotDesc', max: 500, min: 5, required: true }
     ];
     
     fields.forEach(field => {

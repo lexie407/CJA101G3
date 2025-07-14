@@ -53,8 +53,8 @@ function initializeTable() {
         return;
     }
 
-    // 預設顯示待審核項目
-    filterByStatus('0');
+    // 預設顯示全部項目
+    filterByStatus('all');
     
     console.log('表格初始化完成');
 }
@@ -422,29 +422,29 @@ function closeModal() {
 
 function submitReject() {
     const idInput = document.getElementById('rejectSpotId');
-    const reasonSelect = document.getElementById('rejectReason');
-    const remarkInput = document.getElementById('rejectRemark');
     
-    if (!idInput || !reasonSelect) {
-        showCustomToast('表單元素不存在', 'red');
+    if (!idInput || !idInput.value) {
+        showCustomToast('找不到要退回的景點', 'red');
         return;
     }
     
     const id = idInput.value;
-    const reason = reasonSelect.value;
-    const remark = remarkInput ? remarkInput.value : '';
     
-    if (reason === '其他' && !remark.trim()) {
-        showCustomToast('請填寫補充說明', 'red');
-        return;
-    }
+    // 顯示載入狀態
+    const confirmBtn = document.querySelector('#rejectModal .btn-danger');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="material-icons">hourglass_empty</i>處理中...';
+    confirmBtn.disabled = true;
     
     fetch('/admin/spot/api/reject/' + id, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ reason, remark })
+        body: JSON.stringify({ 
+            reason: '審核退回',
+            remark: ''
+        })
     })
     .then(response => {
         console.log('退回 HTTP 狀態碼:', response.status);
@@ -456,12 +456,17 @@ function submitReject() {
     .then(result => {
         console.log('退回 API回傳', result);
         closeModal();
-        showCustomToast(result.message || '退回完成', 'orange');
-        setTimeout(() => location.reload(), 2500);
+        showCustomToast(result.message || '景點已成功退回', 'green');
+        setTimeout(() => location.reload(), 1500);
     })
     .catch(error => {
         console.error('退回錯誤:', error);
         showCustomToast('退回失敗: ' + error.message, 'red');
+    })
+    .finally(() => {
+        // 恢復按鈕狀態
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
     });
 }
 
@@ -574,7 +579,7 @@ function closeFilterDropdown() {
 }
 
 // 篩選功能
-let currentFilter = '0'; // 預設顯示待審核
+let currentFilter = 'all'; // 預設顯示全部
 
 function filterByStatus(status) {
     currentFilter = status;
@@ -617,12 +622,17 @@ function filterByStatus(status) {
 }
 
 function getStatusText(status) {
-    switch(status) {
-        case '0': return '待審核';
-        case '1': return '上架';
-        case '2': return '退回';
-        case '3': return '下架';
-        default: return '未知';
+    switch (status) {
+        case '1':
+            return '已上架';
+        case '2':
+            return '已退回';
+        case '3':
+            return '已下架';
+        case 'all':
+            return '全部狀態';
+        default:
+            return '未知狀態';
     }
 }
 

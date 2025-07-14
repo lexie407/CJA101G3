@@ -130,7 +130,7 @@
                                         <p class="spot-add-card__subtitle">請填寫完整的景點資訊</p>
                                     </div>
                                     <div class="spot-add-card__content">
-                                        <form id="spotAddForm" method="post" th:action="@{/spot/add}" th:object="${spotVO}" novalidate>
+                                        <form id="spotAddForm" method="post" th:action="@{/spot/add}" th:object="${spotVO}" enctype="multipart/form-data" novalidate>
                                             <!-- 基本資訊區塊 -->
                                             <div class="spot-add-section">
                                                 <h3 class="spot-add-section__title">
@@ -256,16 +256,32 @@
                                                                   placeholder="請詳細描述這個景點的特色、美景、歷史背景、適合的遊覽時間、交通方式等資訊..."></textarea>
                                                         <div id="descCharCount" class="spot-add-char-count">0/500</div>
                                                     </div>
-                                                    <div class="spot-add-help-text">請輸入100~500字，讓其他旅人更了解這個景點</div>
+                                                    <div class="spot-add-help-text">請輸入5~500字，讓其他旅人更了解這個景點</div>
                                                     <div class="spot-add-error-text" id="spotDescError"></div>
                                                 </div>
                                                 <!-- 圖片上傳區塊 -->
-                                                <div class="form-group">
-                                                    <label for="imageInput">景點圖片</label>
-                                                    <div class="helper-text text-muted mb-2">請上傳圖片，支援 JPG、PNG 格式，單張不超過2MB（可選）</div>
-                                                    <input type="file" id="imageInput" class="spot-add-input" accept="image/jpeg,image/png,image/jpg">
-                                                    <div id="imageInputMsg" class="spot-add-error-text" style="color:#d32f2f; margin-top:4px; display:none;">請上傳圖片</div>
-                                                    <div id="imageContainer" class="mt-3 d-flex flex-wrap gap-3"></div>
+                                                <div class="spot-add-form-group spot-add-form-group--full">
+                                                    <label for="spotImg" class="spot-add-label">景點圖片</label>
+                                                    <div class="spot-add-upload-container">
+                                                        <input type="file" 
+                                                               id="spotImg" 
+                                                               name="spotImg" 
+                                                               class="spot-add-file-input" 
+                                                               accept="image/jpeg,image/png,image/jpg"
+                                                               multiple>
+                                                        <div class="spot-add-upload-area" id="uploadArea">
+                                                            <div class="spot-add-upload-content">
+                                                                <span class="material-icons spot-add-upload-icon">cloud_upload</span>
+                                                                <div class="spot-add-upload-text">
+                                                                    <p class="spot-add-upload-primary">點擊或拖拽圖片到此處</p>
+                                                                    <p class="spot-add-upload-secondary">支援 JPG、PNG 格式，單張不超過2MB</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div id="imagePreview" class="spot-add-image-preview"></div>
+                                                    </div>
+                                                    <div class="spot-add-help-text">您可以上傳多張圖片來展示景點的不同角度和特色</div>
+                                                    <div class="spot-add-error-text" id="spotImgError"></div>
                                                 </div>
                                                 <!-- 圖片上傳區塊結束 -->
                                             </div>
@@ -372,45 +388,21 @@
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script src="/js/notification/websocket.js"></script>
     <!-- 景點模組通用腳本 -->
-    <script th:src="@{/js/spot/front-end/spot-common.js}" defer></script>
+    <script th:src="@{/js/spot/front-end/spot-common.js}"></script>
     <!-- 景點新增頁面腳本 -->
-    <script th:src="@{/js/spot/front-end/add.js}" defer></script>
+    <script th:src="@{/js/spot/front-end/add.js}"></script>
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var desc = document.getElementById('spotDesc');
-    var count = document.getElementById('descCharCount');
-    var form = document.getElementById('spotAddForm');
-    var error = document.getElementById('spotDescError');
-    var imgInput = document.getElementById('imageInput');
-    var imgError = document.getElementById('imageInputMsg');
-    if(desc && count){
-        desc.addEventListener('input', function(){
-            count.textContent = desc.value.length + '/500';
-            if(error) error.textContent = '';
-        });
-        // 初始化顯示
-        count.textContent = desc.value.length + '/500';
-    }
-    if(form && desc){
-        form.addEventListener('submit', function(e){
-            var valid = true;
-            if(desc.value.trim().length < 10){
-                if(error) error.textContent = '描述至少需10個字';
-                desc.focus();
-                valid = false;
+        // 等待所有腳本載入完成後初始化
+        window.addEventListener('load', function() {
+            console.log('頁面載入完成，開始初始化');
+            // 確保 SpotAdd 模組已載入並初始化
+            if (typeof SpotAdd !== 'undefined' && SpotAdd.init) {
+                console.log('找到 SpotAdd 模組，開始初始化');
+                SpotAdd.init();
+            } else {
+                console.error('SpotAdd 模組未找到');
             }
-            // 移除圖片驗證
-            // if(imgInput && imgError && !imgInput.files.length){
-            //     imgError.textContent = '請至少上傳1張圖片';
-            //     imgInput.focus();
-            //     valid = false;
-            // } else if(imgError) {
-            //     imgError.textContent = '請上傳圖片';
-            // }
-            if(!valid) e.preventDefault();
         });
-    }
-});
-</script>
+    </script>
 </body>
 </html> 

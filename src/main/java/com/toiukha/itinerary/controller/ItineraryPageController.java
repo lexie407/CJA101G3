@@ -216,8 +216,8 @@ public class ItineraryPageController {
                 return returnFormWithData(model, itnName, itnDesc, isPublic);
             }
             
-            if (itnDesc.length() < 10 || itnDesc.length() > 500) {
-                model.addAttribute("errorMessage", "行程描述長度必須在10-500字之間");
+            if (itnDesc.length() < 5 || itnDesc.length() > 500) {
+                model.addAttribute("errorMessage", "行程描述長度必須在5-500字之間");
                 return returnFormWithData(model, itnName, itnDesc, isPublic);
             }
             
@@ -401,8 +401,8 @@ public class ItineraryPageController {
                 return returnEditFormWithData(model, id, itnName, itnDesc, isPublic);
             }
             
-            if (itnDesc.length() < 10 || itnDesc.length() > 500) {
-                model.addAttribute("errorMessage", "行程描述長度必須在10-500字之間");
+            if (itnDesc.length() < 5 || itnDesc.length() > 500) {
+                model.addAttribute("errorMessage", "行程描述長度必須在5-500字之間");
                 return returnEditFormWithData(model, id, itnName, itnDesc, isPublic);
             }
             

@@ -93,7 +93,7 @@ public class SpotAdminController {
     @GetMapping("/spotlist")
     public String spotlistPage(
             @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "status", required = false) Integer status,
+            @RequestParam(name = "status", required = false) Integer status, // 預設 null
             @RequestParam(name = "region", required = false) String region,
             @RequestParam(name = "sort", defaultValue = "spotId") String sort,
             @RequestParam(name = "direction", defaultValue = "desc") String direction,
@@ -128,7 +128,7 @@ public class SpotAdminController {
     @GetMapping("/list")
     public String listPage(
             @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "status", required = false) Integer status,
+            @RequestParam(name = "status", required = false) Integer status, // 預設 null
             @RequestParam(name = "region", required = false) String region,
             @RequestParam(name = "sort", defaultValue = "spotId") String sort,
             @RequestParam(name = "direction", defaultValue = "desc") String direction,
@@ -333,7 +333,7 @@ public class SpotAdminController {
         SpotVO spotVO = new SpotVO();
         // 預設設定必要欄位，避免表單驗證錯誤
         spotVO.setCrtId(1); // 假設管理員ID為1
-        spotVO.setSpotStatus((byte) 0); // 預設為待審核狀態
+        spotVO.setSpotStatus((byte) 1); // 預設為上架狀態（後台管理員）
         
         model.addAttribute("spotVO", spotVO);
         model.addAttribute("currentPage", "spotManagement");
@@ -341,17 +341,19 @@ public class SpotAdminController {
     }
 
     /**
-     * 處理新增景點（後台）- 管理員新增的景點直接上架
+     * 處理新增景點（後台）- 管理員新增的景點可選擇上架或下架
      * @param spotVO 景點資料
      * @param result 驗證結果
-     * @param redirectAttr 重導向屬性
+     * @param spotStatusEnabled 狀態開關
+     * @param session HTTP會話
      * @return 重導向到景點列表頁面
      */
     @PostMapping("/add")
     @ResponseBody
     public Map<String, Object> processAdd(@Valid @ModelAttribute SpotVO spotVO,
                            BindingResult result,
-                                          HttpSession session) {
+                           @RequestParam(value = "spotStatusEnabled", required = false) String spotStatusEnabled,
+                           HttpSession session) {
         Map<String, Object> resp = new HashMap<>();
             if (result.hasErrors()) {
                 resp.put("success", false);
@@ -368,7 +370,10 @@ public class SpotAdminController {
             }
             logger.info("[DEBUG] 新增景點時取得的 adminId: {}", adminId);
             spotVO.setCrtId(adminId);
-            spotVO.setSpotStatus((byte) 1); // 直接上架
+            
+            // 根據狀態開關設定景點狀態：上架(1) 或 下架(3)
+            spotVO.setSpotStatus((byte) (spotStatusEnabled != null ? 1 : 3));
+            
             spotService.save(spotVO);
             resp.put("success", true);
             resp.put("message", "景點新增成功");
