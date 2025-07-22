@@ -161,7 +161,7 @@ public class ForumPageController {
         return "front-end/forum/search_Page";
     }
 
-    // 使用標題關鍵字搜尋文章，因為會查到上下架資料所以另開API
+    // 使用標題關鍵字搜尋文章，只找上架的文章
     @GetMapping("search")
     public String search(
             @RequestParam(value = "keyword", required = false) String title,

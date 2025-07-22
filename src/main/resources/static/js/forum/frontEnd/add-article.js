@@ -27,7 +27,35 @@ document.addEventListener('DOMContentLoaded', function (){
         button.disabled = true;
 
 
+        // 標題檢查
+        const title = document.getElementById('title').value.trim();
+        if (!title) {
+            alert('標題為必填！');
+            button.disabled = false; // 重新啟用按鈕
+            return;
+        }
+
+        // 內容檢查
+        const plainText = quill.getText().trim(); // 只取純文字並移除首尾空白
+        var delta = quill.getContents();
+        var hasImage = false;
+
+        for (var i = 0; i < delta.ops.length; i++) {
+            var op = delta.ops[i];
+            if (op.insert && op.insert.image) {
+                hasImage = true;
+                break;
+            }
+        }
+        console.log(plainText);
+        if (!plainText && !hasImage) {
+            alert('文章內容為必填！');
+            button.disabled = false; // 重新啟用按鈕
+            return;
+        }
+
         // ----------- 圖片處理區塊 -----------
+        // 取得 Quill 編輯器內容
         const temp = document.createElement('div');
         temp.innerHTML = quill.root.innerHTML;
 
@@ -52,12 +80,6 @@ document.addEventListener('DOMContentLoaded', function (){
         const finalHTML = temp.innerHTML;
         // ----------- 圖片處理區塊結束 -----------
 
-        // 標題檢查
-        const title = document.getElementById('title').value.trim();
-        if (!title) {
-            alert('標題為必填！');
-            return;
-        }
 
         // 會員編號檢查
         // const artHol = document.getElementById('artHol').value.trim();
@@ -66,11 +88,7 @@ document.addEventListener('DOMContentLoaded', function (){
         //     return;
         // }
 
-        // 內容檢查（清理後內容）
-        if (!finalHTML || finalHTML === '<p><br></p>') {
-            alert('文章內容為必填！');
-            return;
-        }
+
 
         // 文章類型
         // const artCat = document.getElementById('artCat').value;
