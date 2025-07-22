@@ -243,11 +243,10 @@ public class ArticleController {
             @RequestParam("memId") Integer memId) {
         
         Map<String, Object> response = new HashMap<>();
-        
         try {
             ArticleCollectionCompositePrimaryKey key = new ArticleCollectionCompositePrimaryKey(memId, artId);
             ArticleCollectionVO existingCollection = articleCollectionService.getOne(key);
-            
+
             if (existingCollection != null) {
                 // 如果已經收藏，則取消收藏
                 articleCollectionService.deleteOne(key);
@@ -268,7 +267,6 @@ public class ArticleController {
             response.put("message", "收藏操作失敗: " + e.getMessage());
             System.err.println("文章收藏時發生錯誤: " + e.getMessage());
         }
-        
         return ResponseEntity.ok(response);
     }
 

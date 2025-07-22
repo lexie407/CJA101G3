@@ -29,7 +29,7 @@
                     <p>分享您的想法或提出問題，與社群一起交流討論</p>
                 </div>
 
-<!--                TODO: 現在是已確認會員資料有載入-->
+<!--                確認會員資料有載入-->
                 <p id="current-user-info">會員資料載入中...</p>
                 <div th:if="${errors != null}">
                     <ul>
@@ -80,6 +80,8 @@
                                 <div id="editor">
 
                                 </div>
+<!--                               TODO：　確認圖片上傳限制-->
+                                圖片上傳請勿大於 5MB，且僅支援 JPG、PNG、GIF 格式
                             </div>
                         </div>
 
@@ -102,6 +104,10 @@
 
         </main>
     </div>
+</div>
+
+<div id="loadingOverlay" style="display: none;">
+    <div class="loading-spinner"></div>
 </div>
 
 <script src="/webjars/sockjs-client/sockjs.min.js"></script>
@@ -139,66 +145,6 @@
     });
 
 </script>
-
-<!--<script>-->
-<!--    document.querySelector('form').addEventListener('submit', async function (e) {-->
-<!--        e.preventDefault(); // 一律先攔截-->
-
-<!--        // 1️⃣ 文章內容檢查-->
-<!--        const content = quill.getText().trim();-->
-<!--        if (!content) {-->
-<!--            alert('文章內容為必填！');-->
-<!--            return; // 不送出-->
-<!--        }-->
-
-<!--        // 2️⃣ 上傳 base64 圖片-->
-<!--        const images = quill.root.querySelectorAll('img');-->
-<!--        const uploadPromises = [];-->
-<!--        const pathname = window.location.pathname;-->
-<!--        const contextPath = window.location.origin + pathname.substring(0, pathname.lastIndexOf('/') + 1);-->
-
-
-<!--        images.forEach((img) => {-->
-<!--            const src = img.getAttribute('src');-->
-<!--            if (src && src.startsWith('data:image/')) {-->
-<!--                const uploadPromise = fetch(contextPath + '/forum/artImage/uploadBase64', {-->
-<!--                    method: 'POST',-->
-<!--                    headers: { 'Content-Type': 'application/json' },-->
-<!--                    body: JSON.stringify({ imageData: src })-->
-<!--                })-->
-<!--                    .then(async res => {-->
-<!--                        const id = await res.text();-->
-<!--                        if (!res.ok || isNaN(Number(id))) {-->
-<!--                            alert('圖片上傳失敗：' + id);-->
-<!--                            img.remove(); // 移除錯誤圖片-->
-<!--                            return;-->
-<!--                        }-->
-<!--                        img.setAttribute('src', `/forum/artImage/showBase64/${id}`);-->
-<!--                    })-->
-<!--                    .catch(() => {-->
-<!--                        alert('圖片上傳失敗，圖片將被移除！');-->
-<!--                        img.remove();-->
-<!--                    });-->
-
-<!--                uploadPromises.push(uploadPromise);-->
-<!--            }-->
-<!--        });-->
-
-<!--        await Promise.all(uploadPromises); // 確保全部圖片都上傳完-->
-
-<!--        // 文章 HTML 儲存進隱藏欄位-->
-<!--        document.getElementById('artCon').value = quill.root.innerHTML;-->
-
-<!--        // 真正送出表單-->
-<!--        e.target.submit();-->
-<!--        getContent(); // 測試用，查看輸出內容-->
-<!--    });-->
-<!--    // 用來查看編輯器目前內容(測試用)-->
-<!--    function getContent() {-->
-<!--        const html = quill.root.innerHTML;-->
-<!--        document.getElementById('output').textContent = html;-->
-<!--    }-->
-<!--</script>-->
 
 
 

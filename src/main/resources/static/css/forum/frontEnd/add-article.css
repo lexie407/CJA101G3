@@ -227,7 +227,36 @@ body {
     min-height: 200px;
 }
 
-@keyframes ripple-animation {
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.7); /* 或用 md-sys-color-background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    border: 6px solid #ccc;
+    border-top: 6px solid var(--md-sys-color-primary);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+}
+
+
+@keyframes
+/*    loading動畫用*/
+spin {
+    to { transform: rotate(360deg); }
+}
+
+ripple-animation {
     to {
         transform: scale(4);
         opacity: 0;
